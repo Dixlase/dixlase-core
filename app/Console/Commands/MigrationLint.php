@@ -41,10 +41,14 @@ use Illuminate\Support\Facades\File;
 /**
  * Command for verifying migration immutability.
  *
- * Generate database/migration-lock.json with the `--lock` option just before v0.1.0 release,
- * then compare that lock file with current migration files using SHA-256
+ * Generate database/migration-lock.json with the `--lock` option just before the GA release
+ * (after the Beta 1 → GA beta series; see CLAUDE.md "Migration Editing Policy"),
+ * then compare that lock file with current migration files using SHA-256.
  * Detects modification, deletion, or renaming of existing migrations, and
- * new additions in `0001_01_01_*` format (after release, Laravel standard `YYYY_MM_DD_HHMMSS_*` is required)
+ * new additions in `0001_01_01_*` format (after GA, Laravel standard `YYYY_MM_DD_HHMMSS_*` is required).
+ *
+ * During the beta series (Beta 1 → GA) no lock file exists; this command
+ * treats that as success so beta-phase schema churn is unblocked.
  */
 class MigrationLint extends Command
 {
@@ -139,7 +143,8 @@ class MigrationLint extends Command
     {
         if (! File::exists($this->lockFilePath)) {
             $msg = 'Lockfile not found (database/migration-lock.json). '
-                .'Run `php artisan dls:migration:lint --lock` to create it before v0.1.0 release.';
+                .'During the Beta 1 → GA beta series this is expected; '
+                .'run `php artisan dls:migration:lint --lock` to create it just before the GA release.';
 
             if ($this->option('json')) {
                 $this->line(json_encode([
@@ -183,9 +188,9 @@ class MigrationLint extends Command
             }
         }
 
-        // Detection of new additions and naming convention violations
-        // New migrations added after release (when lock file exists)
-        // must use Laravel standard YYYY_MM_DD_HHMMSS_* format; 0001_01_01_* is a violation
+        // Detection of new additions and naming convention violations.
+        // New migrations added after GA (when the lock file exists)
+        // must use Laravel standard YYYY_MM_DD_HHMMSS_* format; 0001_01_01_* is a violation.
         foreach ($currentHashes as $path => $hash) {
             if (! isset($locked[$path])) {
                 $added[] = $path;
@@ -250,7 +255,7 @@ class MigrationLint extends Command
 
         if (! empty($namingViolations)) {
             $this->error(sprintf(
-                '[VIOLATION] %d naming convention violation(s) (new migrations after v0.1.0 must use YYYY_MM_DD_HHMMSS_* format):',
+                '[VIOLATION] %d naming convention violation(s) (new migrations after GA must use YYYY_MM_DD_HHMMSS_* format):',
                 count($namingViolations)
             ));
             foreach ($namingViolations as $path) {
@@ -271,8 +276,8 @@ class MigrationLint extends Command
         if (empty($modified) && empty($deleted) && empty($namingViolations)) {
             $this->info('✓ All migration files are consistent with the lockfile.');
         } else {
-            $this->error('Migration lint failed. Edits to locked migrations are prohibited after v0.1.0 release.');
-            $this->line('If this change is intentional during pre-release, regenerate the lockfile:');
+            $this->error('Migration lint failed. Edits to locked migrations are prohibited after the GA release.');
+            $this->line('If this change is intentional pre-GA, regenerate the lockfile:');
             $this->line('  php artisan dls:migration:lint --lock');
         }
     }
