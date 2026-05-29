@@ -162,11 +162,13 @@ class ExtensionEnableActionResolver
      * Whether the extension carries a signature good enough to satisfy a
      * `require_signature` preset.
      *
-     * An extension fails the requirement when the health result contains a
-     * signature issue that means "no usable signature": unsigned, invalid,
-     * expired, signed by an unknown key, or a verification error. A signature
-     * that merely awaits verification (`signature_pending_verification`) still
-     * counts as signed.
+     * Only an actually verified signature is acceptable. Any signature-related
+     * health issue — unsigned, invalid, expired, signed by an unknown key, a
+     * verification error, or pending verification — fails the requirement.
+     * The strict preset is meant to mean "actually verified", not merely
+     * "signature present"; relaxing it for `pending_verification` would let
+     * an unverifiable signature pass strict mode just because the verification
+     * module is missing.
      */
     private function signatureSatisfied(HealthScoreResult $result): bool
     {
@@ -176,6 +178,7 @@ class ExtensionEnableActionResolver
             'signature_expired',
             'signature_unknown_key',
             'signature_error',
+            'signature_pending_verification',
         ];
 
         foreach ($result->issues as $issue) {

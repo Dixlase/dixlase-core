@@ -67,13 +67,13 @@ class ExtensionCardPresenterPresetBadgesTest extends TestCase
         $this->assertTrue($badges['strict']['compatible']);
     }
 
-    public function test_pending_verification_counts_as_signed_for_strict(): void
+    public function test_pending_verification_does_not_satisfy_strict(): void
     {
         $badges = $this->buildBadges('healthy', 'pending_verification');
 
-        $this->assertTrue(
+        $this->assertFalse(
             $badges['strict']['compatible'],
-            'A plugin that carries a signature pending verification still counts as signed.'
+            'A signature that is not actually verified must not satisfy the Strict preset.'
         );
     }
 

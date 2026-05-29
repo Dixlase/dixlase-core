@@ -262,10 +262,10 @@ class ExtensionEnableActionResolverTest extends TestCase
     }
 
     /**
-     * A signature pending verification still counts as signed: the Strict
-     * preset does not block it.
+     * The Strict preset means "actually verified", so a signature pending
+     * verification is not enough — the plugin is blocked.
      */
-    public function test_resolve_treats_pending_verification_as_signed_under_strict(): void
+    public function test_resolve_blocks_pending_verification_under_strict(): void
     {
         SecuritySettingsRegistry::set('extension_security_preset', 'strict');
 
@@ -274,6 +274,6 @@ class ExtensionEnableActionResolverTest extends TestCase
             'plugin',
         );
 
-        $this->assertNotSame(PluginEnableAction::Blocked, $action);
+        $this->assertSame(PluginEnableAction::Blocked, $action);
     }
 }
