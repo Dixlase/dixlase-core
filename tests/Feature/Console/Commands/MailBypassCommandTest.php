@@ -39,7 +39,7 @@ class MailBypassCommandTest extends TestCase
             'action' => 'enable',
             '--reason' => 'test',
         ])
-            ->expectsConfirmation(__('admin/command.mail_bypass.confirm_enable'), 'yes')
+            ->expectsConfirmation(__('admin/command/mail-bypass.confirm_enable'), 'yes')
             ->assertExitCode(0);
     }
 }
