@@ -34,6 +34,7 @@
  */
 
 return [
-
     'description' => 'Disable a plugin by setting its status to 0 and removing symlinks',
+    'disabled' => 'Plugin :pluginName has been disabled.',
+    'not_found' => 'Plugin :pluginName not found.',
 ];

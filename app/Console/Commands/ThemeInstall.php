@@ -75,7 +75,7 @@ class ThemeInstall extends Command
 
         // Check if theme directory exists
         if (! file_exists($themeDir)) {
-            $this->error(__('admin/command.theme_install.theme_not_found', ['themeName' => $themeName]));
+            $this->error(__('admin/command/theme-install.theme_not_found', ['themeName' => $themeName]));
 
             return Command::FAILURE;
         }
@@ -85,7 +85,7 @@ class ThemeInstall extends Command
         $exists = Theme::where('slug', $slug)->exists();
 
         if ($exists && ! $this->option('force')) {
-            $this->error(__('admin/command.theme_install.already_registered', ['themeName' => $themeName]));
+            $this->error(__('admin/command/theme-install.already_registered', ['themeName' => $themeName]));
 
             return Command::FAILURE;
         }
@@ -278,8 +278,8 @@ class ThemeInstall extends Command
             'theme' => $themeDirName,
         ]);
 
-        $this->info(__('admin/command.theme_install.registered', ['themeName' => $themeName]));
-        $this->info(__('admin/command.theme_install.activate_help', ['themeName' => $themeName]));
+        $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
+        $this->info(__('admin/command/theme-install.activate_help', ['themeName' => $themeName]));
 
         return Command::SUCCESS;
     }

@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'テーマをデータベースにインストールします',
     'theme_name_prompt' => 'インストールするテーマ名',
     'theme_not_found' => 'テーマ \':themeName\' はテーマディレクトリに存在しません。',

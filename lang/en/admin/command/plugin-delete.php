@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Delete plugin files and directories (plugin must be uninstalled first).',
     'not_found' => 'Plugin directory \':directory\' not found.',
     'still_installed' => 'Plugin \':pluginName\' is still installed.',

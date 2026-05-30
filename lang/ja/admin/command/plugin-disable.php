@@ -34,6 +34,7 @@
  */
 
 return [
-
     'description' => 'プラグインを無効にし、シンボリックリンクを削除します',
+    'disabled' => 'プラグイン :pluginName を無効化しました。',
+    'not_found' => 'プラグイン :pluginName が見つかりません。',
 ];

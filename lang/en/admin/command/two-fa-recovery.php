@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning_disable' => '⚠️ Warning: Disabling two-factor authentication will reduce account security.',
     'confirm_disable' => 'Disable two-factor authentication for :name?',
     'cancelled' => 'Operation cancelled.',
@@ -47,7 +46,7 @@ return [
     'codes_save_warning' => '⚠️ These codes will not be shown again. Make sure to save them.',
     'two_fa_not_enabled' => ':name does not have two-factor authentication enabled.',
     'no_members_with_two_fa' => 'No members have two-factor authentication enabled.',
-    'members_with_two_fa' => '【Members with 2FA enabled: :count】',
+    'members_with_two_fa' => '2FA Enabled',
     'no_codes' => 'None',
     'col_id' => 'ID',
     'col_name' => 'Name',
@@ -71,7 +70,6 @@ return [
     'system_status_title' => '【System Two-Factor Status】',
     'metric' => 'Metric',
     'total_members' => 'Total Members',
-    'members_with_two_fa' => '2FA Enabled',
     'members_without_codes' => 'Without Recovery Codes',
     'warning_no_codes' => '⚠️ :count members have no recovery codes. They are at risk of lockout.',
     'invalid_action' => 'Invalid action: :action',

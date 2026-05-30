@@ -78,7 +78,7 @@ class SyncGitIgnore extends Command
     {
         // Error if .gitignore does not exist
         if (! File::exists($this->getGitIgnorePath())) {
-            $this->error(__('admin/command.git_sync.gitignore_not_found'));
+            $this->error(__('admin/command/git-sync.gitignore_not_found'));
 
             return self::FAILURE;
         }
@@ -112,7 +112,7 @@ class SyncGitIgnore extends Command
         $themesOnly = $this->option('themes-only');
         $force = $this->option('force');
 
-        $this->info(__('admin/command.git_sync.scanning'));
+        $this->info(__('admin/command/git-sync.scanning'));
         $this->newLine();
 
         // Get current .gitignore contents
@@ -156,7 +156,7 @@ class SyncGitIgnore extends Command
 
         // If there are no changes
         if ((! $hasPluginChanges || $themesOnly) && (! $hasThemeChanges || $pluginsOnly)) {
-            $this->info(__('admin/command.git_sync.gitignore_in_sync'));
+            $this->info(__('admin/command/git-sync.gitignore_in_sync'));
 
             return self::SUCCESS;
         }
@@ -164,14 +164,14 @@ class SyncGitIgnore extends Command
         // Exit if dry run
         if ($dryRun) {
             $this->newLine();
-            $this->warn(__('admin/command.git_sync.dry_run'));
+            $this->warn(__('admin/command/git-sync.dry_run'));
 
             return self::SUCCESS;
         }
 
         // Confirmation
-        if (! $force && ! $this->confirm(__('admin/command.git_sync.confirm_apply'), true)) {
-            $this->info(__('admin/command.git_sync.cancelled'));
+        if (! $force && ! $this->confirm(__('admin/command/git-sync.confirm_apply'), true)) {
+            $this->info(__('admin/command/git-sync.cancelled'));
 
             return self::SUCCESS;
         }
@@ -187,7 +187,7 @@ class SyncGitIgnore extends Command
         );
 
         $this->newLine();
-        $this->info(__('admin/command.git_sync.gitignore_synced'));
+        $this->info(__('admin/command/git-sync.gitignore_synced'));
 
         return self::SUCCESS;
     }
@@ -233,7 +233,7 @@ class SyncGitIgnore extends Command
             $gitIgnorePath = $this->getGitIgnorePath();
 
             if (! File::exists($gitIgnorePath)) {
-                $this->warn(__('admin/command.git_sync.gitignore_not_found'));
+                $this->warn(__('admin/command/git-sync.gitignore_not_found'));
 
                 return false;
             }
@@ -243,7 +243,7 @@ class SyncGitIgnore extends Command
 
             // Skip if already added
             if (str_contains($content, $exclusionLine)) {
-                $this->info(__('admin/command.git_sync.already_exists', ['path' => $exclusionLine]));
+                $this->info(__('admin/command/git-sync.already_exists', ['path' => $exclusionLine]));
 
                 return true;
             }
@@ -263,7 +263,7 @@ class SyncGitIgnore extends Command
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to add {$type} exclusion to .gitignore: ".$e->getMessage());
 
             return false;
@@ -293,7 +293,7 @@ class SyncGitIgnore extends Command
 
             return true;
         } catch (\Exception $e) {
-            $this->error(__('admin/command.git_sync.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
             Log::error("Failed to remove {$type} exclusion from .gitignore: ".$e->getMessage());
 
             return false;
@@ -401,7 +401,7 @@ class SyncGitIgnore extends Command
         $this->newLine();
 
         if (! empty($actualPlugins)) {
-            $this->info(__('admin/command.git_sync.plugins_found'));
+            $this->info(__('admin/command/git-sync.plugins_found'));
             foreach ($actualPlugins as $plugin) {
                 $status = in_array($plugin, $currentPlugins) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
                 $this->line("  {$status} {$plugin}");
@@ -410,7 +410,7 @@ class SyncGitIgnore extends Command
         }
 
         if (! empty($actualThemes)) {
-            $this->info(__('admin/command.git_sync.themes_found'));
+            $this->info(__('admin/command/git-sync.themes_found'));
             foreach ($actualThemes as $theme) {
                 $status = in_array($theme, $currentThemes) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
                 $this->line("  {$status} {$theme}");
@@ -427,14 +427,14 @@ class SyncGitIgnore extends Command
         $typeName = ucfirst($type);
 
         if (! empty($toAdd)) {
-            $this->info("{$typeName} ".__('admin/command.git_sync.to_add'));
+            $this->info("{$typeName} ".__('admin/command/git-sync.to_add'));
             foreach ($toAdd as $name) {
                 $this->line("  <fg=green>+ !{$type}/{$name}/</>");
             }
         }
 
         if (! empty($toRemove)) {
-            $this->warn("{$typeName} ".__('admin/command.git_sync.to_remove'));
+            $this->warn("{$typeName} ".__('admin/command/git-sync.to_remove'));
             foreach ($toRemove as $name) {
                 $this->line("  <fg=red>- !{$type}/{$name}/</>");
             }

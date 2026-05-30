@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Uninstall a theme (files will be preserved)',
     'theme_name_prompt' => 'The name of the theme to uninstall',
     'theme_not_found' => 'Theme \':themeName\' not found in the database.',

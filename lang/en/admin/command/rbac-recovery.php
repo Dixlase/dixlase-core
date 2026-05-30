@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning_grant' => '⚠️ Warning: Granting super admin grants full system access.',
     'confirm_grant' => 'Grant super admin permission to :name?',
     'cancelled' => 'Operation cancelled.',

@@ -34,7 +34,6 @@
  */
 
 return [
-
     'invalid_scope' => '無効なスコープ: :scope（admin_login または all を指定してください）',
     'reason_prompt' => 'バイパスを有効にする理由を入力してください',
     'reason_required' => '理由の入力は必須です。',

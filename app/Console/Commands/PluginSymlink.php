@@ -57,7 +57,7 @@ class PluginSymlink extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->description = __('admin/command.plugin_symlink.description');
+        $this->description = __('admin/command/plugin-symlink.description');
     }
 
     /**
@@ -71,17 +71,17 @@ class PluginSymlink extends Command
         $pluginDirName = $this->argument('plugin');
 
         if (! in_array($action, ['create', 'remove'])) {
-            $this->error(__('admin/command.plugin_symlink.invalid_action'));
+            $this->error(__('admin/command/plugin-symlink.invalid_action'));
 
             return 1;
         }
 
         if ($action === 'create') {
             $this->createPluginSymlink($pluginDirName);
-            $this->info(__('admin/command.plugin_symlink.created', ['plugin' => $pluginDirName]));
+            $this->info(__('admin/command/plugin-symlink.created', ['plugin' => $pluginDirName]));
         } else {
             $this->removePluginSymlink($pluginDirName);
-            $this->info(__('admin/command.plugin_symlink.removed', ['plugin' => $pluginDirName]));
+            $this->info(__('admin/command/plugin-symlink.removed', ['plugin' => $pluginDirName]));
         }
 
         return 0;

@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'テーマを切り替えます（有効化するテーマを選択）',
     'theme_name_prompt' => '切り替えるテーマ名',
     'no_installed_themes' => 'インストール済みのテーマがありません。',

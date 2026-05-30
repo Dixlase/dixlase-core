@@ -99,13 +99,13 @@ class SecurityResetCommand extends Command
 
         $this->exportCurrentSettings();
 
-        $this->warn(__('admin/command.security_reset.warning_minimal'));
+        $this->warn(__('admin/command/security-reset.warning_minimal'));
         $this->newLine();
-        $this->line(__('admin/command.security_reset.minimal_description'));
+        $this->line(__('admin/command/security-reset.minimal_description'));
         $this->newLine();
 
-        if (! $this->option('force') && ! $this->confirm(__('admin/command.security_reset.confirm_minimal'))) {
-            $this->info(__('admin/command.security_reset.cancelled'));
+        if (! $this->option('force') && ! $this->confirm(__('admin/command/security-reset.confirm_minimal'))) {
+            $this->info(__('admin/command/security-reset.cancelled'));
 
             return self::SUCCESS;
         }
@@ -117,7 +117,7 @@ class SecurityResetCommand extends Command
 
         $this->clearSecurityCaches();
 
-        $this->info(__('admin/command.security_reset.minimal_success'));
+        $this->info(__('admin/command/security-reset.minimal_success'));
 
         \App\Facades\Audit::logSecurity('security_emergency_reset_minimal', [
             'severity' => 'critical',
@@ -130,8 +130,8 @@ class SecurityResetCommand extends Command
             ],
         ]);
 
-        $this->warn(__('admin/command.security_reset.security_notice'));
-        $this->line(__('admin/command.security_reset.restore_hint'));
+        $this->warn(__('admin/command/security-reset.security_notice'));
+        $this->line(__('admin/command/security-reset.restore_hint'));
 
         return self::SUCCESS;
     }
@@ -151,14 +151,14 @@ class SecurityResetCommand extends Command
         $this->exportCurrentSettings();
 
         if ($category) {
-            $this->warn(__('admin/command.security_reset.warning_category', ['category' => $category]));
+            $this->warn(__('admin/command/security-reset.warning_category', ['category' => $category]));
         } else {
-            $this->warn(__('admin/command.security_reset.warning_full'));
+            $this->warn(__('admin/command/security-reset.warning_full'));
         }
         $this->newLine();
 
-        if (! $this->option('force') && ! $this->confirm(__('admin/command.security_reset.confirm_full'))) {
-            $this->info(__('admin/command.security_reset.cancelled'));
+        if (! $this->option('force') && ! $this->confirm(__('admin/command/security-reset.confirm_full'))) {
+            $this->info(__('admin/command/security-reset.cancelled'));
 
             return self::SUCCESS;
         }
@@ -173,7 +173,7 @@ class SecurityResetCommand extends Command
 
         $this->clearSecurityCaches();
 
-        $this->info(__('admin/command.security_reset.full_success', [
+        $this->info(__('admin/command/security-reset.full_success', [
             'count' => count($defaultSettings),
         ]));
 
@@ -197,7 +197,7 @@ class SecurityResetCommand extends Command
      */
     protected function showStatus(): int
     {
-        $this->info(__('admin/command.security_reset.status_title'));
+        $this->info(__('admin/command/security-reset.status_title'));
         $this->newLine();
 
         $settings = $this->getCurrentSecuritySettings();
@@ -231,7 +231,7 @@ class SecurityResetCommand extends Command
             }
 
             $this->table(
-                [__('admin/command.security_reset.setting'), __('admin/command.security_reset.value')],
+                [__('admin/command/security-reset.setting'), __('admin/command/security-reset.value')],
                 $rows
             );
             $this->newLine();
@@ -256,7 +256,7 @@ class SecurityResetCommand extends Command
 
         file_put_contents($path, json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-        $this->info(__('admin/command.security_reset.exported', ['path' => $path]));
+        $this->info(__('admin/command/security-reset.exported', ['path' => $path]));
 
         return self::SUCCESS;
     }
@@ -389,7 +389,7 @@ class SecurityResetCommand extends Command
             Cache::forget($key);
         }
 
-        $this->line(__('admin/command.security_reset.cache_cleared'));
+        $this->line(__('admin/command/security-reset.cache_cleared'));
     }
 
     /**
@@ -409,7 +409,7 @@ class SecurityResetCommand extends Command
 
         file_put_contents($path, json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-        $this->info(__('admin/command.security_reset.backup_created', ['path' => $path]));
+        $this->info(__('admin/command/security-reset.backup_created', ['path' => $path]));
     }
 
     /**
@@ -420,11 +420,11 @@ class SecurityResetCommand extends Command
         $reason = $this->option('reason');
 
         if (! $reason) {
-            $reason = $this->ask(__('admin/command.security_reset.reason_prompt'));
+            $reason = $this->ask(__('admin/command/security-reset.reason_prompt'));
         }
 
         if (! $reason) {
-            $this->error(__('admin/command.security_reset.reason_required'));
+            $this->error(__('admin/command/security-reset.reason_required'));
 
             return null;
         }
@@ -437,12 +437,12 @@ class SecurityResetCommand extends Command
      */
     protected function invalidAction(string $action): int
     {
-        $this->error(__('admin/command.security_reset.invalid_action', ['action' => $action]));
-        $this->line(__('admin/command.security_reset.valid_actions'));
-        $this->line('  - minimal : '.__('admin/command.security_reset.action_minimal'));
-        $this->line('  - full    : '.__('admin/command.security_reset.action_full'));
-        $this->line('  - status  : '.__('admin/command.security_reset.action_status'));
-        $this->line('  - export  : '.__('admin/command.security_reset.action_export'));
+        $this->error(__('admin/command/security-reset.invalid_action', ['action' => $action]));
+        $this->line(__('admin/command/security-reset.valid_actions'));
+        $this->line('  - minimal : '.__('admin/command/security-reset.action_minimal'));
+        $this->line('  - full    : '.__('admin/command/security-reset.action_full'));
+        $this->line('  - status  : '.__('admin/command/security-reset.action_status'));
+        $this->line('  - export  : '.__('admin/command/security-reset.action_export'));
 
         return self::FAILURE;
     }

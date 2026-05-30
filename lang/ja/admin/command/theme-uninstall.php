@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'テーマをアンインストールします（ファイルは保持されます）',
     'theme_name_prompt' => 'アンインストールするテーマ名',
     'theme_not_found' => 'テーマ \':themeName\' はデータベースに見つかりませんでした。',

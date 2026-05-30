@@ -34,7 +34,6 @@
  */
 
 return [
-
     'integrity' => [
         'building_chains' => 'Building hash chains...',
         'build_complete' => 'Set hash chain for :processed log(s). Remaining: :remaining',

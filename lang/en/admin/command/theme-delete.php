@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Delete theme files and directory (theme must be uninstalled first)',
     'theme_directory_prompt' => 'The directory name of the theme to delete',
     'force_option' => 'Force delete without confirmation',

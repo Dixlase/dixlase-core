@@ -34,7 +34,6 @@
  */
 
 return [
-
     'table_not_found' => 'security_settingsテーブルが見つかりません。',
     'usage' => '使用方法:',
     'option_show' => '現在のIP制限設定を表示',

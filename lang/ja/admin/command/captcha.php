@@ -34,7 +34,6 @@
  */
 
 return [
-
     'status_title' => '【CAPTCHAフェイルオーバー状態】',
     'setting' => '設定項目',
     'value' => '値',

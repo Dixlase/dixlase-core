@@ -73,7 +73,7 @@ class SecurityResetIpCommand extends Command
     public function handle(): int
     {
         if (! Schema::hasTable('global_settings')) {
-            $this->error(__('admin/command.security_reset_ip.table_not_found'));
+            $this->error(__('admin/command/security-reset-ip.table_not_found'));
 
             return Command::FAILURE;
         }
@@ -99,13 +99,13 @@ class SecurityResetIpCommand extends Command
         }
 
         // Display help if no options are specified
-        $this->info(__('admin/command.security_reset_ip.usage'));
+        $this->info(__('admin/command/security-reset-ip.usage'));
         $this->newLine();
-        $this->line('  --show              '.__('admin/command.security_reset_ip.option_show'));
-        $this->line('  --disable-all       '.__('admin/command.security_reset_ip.option_disable_all'));
-        $this->line('  --add-ip=<IP>       '.__('admin/command.security_reset_ip.option_add_ip'));
-        $this->line('  --remove-blocked=<IP> '.__('admin/command.security_reset_ip.option_remove_blocked'));
-        $this->line('  --force             '.__('admin/command.security_reset_ip.option_force'));
+        $this->line('  --show              '.__('admin/command/security-reset-ip.option_show'));
+        $this->line('  --disable-all       '.__('admin/command/security-reset-ip.option_disable_all'));
+        $this->line('  --add-ip=<IP>       '.__('admin/command/security-reset-ip.option_add_ip'));
+        $this->line('  --remove-blocked=<IP> '.__('admin/command/security-reset-ip.option_remove_blocked'));
+        $this->line('  --force             '.__('admin/command/security-reset-ip.option_force'));
 
         return Command::SUCCESS;
     }
@@ -115,7 +115,7 @@ class SecurityResetIpCommand extends Command
      */
     protected function showCurrentSettings(): int
     {
-        $this->info(__('admin/command.security_reset_ip.current_settings'));
+        $this->info(__('admin/command/security-reset-ip.current_settings'));
         $this->newLine();
 
         // Admin panel IP restriction
@@ -125,12 +125,12 @@ class SecurityResetIpCommand extends Command
         $blockedIps = SecuritySetting::get('blocked_admin_ips', '');
 
         $this->table(
-            [__('admin/command.security_reset_ip.setting'), __('admin/command.security_reset_ip.value')],
+            [__('admin/command/security-reset-ip.setting'), __('admin/command/security-reset-ip.value')],
             [
-                [__('admin/command.security_reset_ip.admin_allow_enabled'), $enableAllowed ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
-                [__('admin/command.security_reset_ip.admin_allowed_ips'), $allowedIps ?: __('admin/command.security_reset_ip.none')],
-                [__('admin/command.security_reset_ip.admin_block_enabled'), $enableBlocked ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
-                [__('admin/command.security_reset_ip.admin_blocked_ips'), $blockedIps ?: __('admin/command.security_reset_ip.none')],
+                [__('admin/command/security-reset-ip.admin_allow_enabled'), $enableAllowed ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
+                [__('admin/command/security-reset-ip.admin_allowed_ips'), $allowedIps ?: __('admin/command/security-reset-ip.none')],
+                [__('admin/command/security-reset-ip.admin_block_enabled'), $enableBlocked ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
+                [__('admin/command/security-reset-ip.admin_blocked_ips'), $blockedIps ?: __('admin/command/security-reset-ip.none')],
             ]
         );
 
@@ -141,14 +141,14 @@ class SecurityResetIpCommand extends Command
         $frontBlockedIps = SecuritySetting::get('blocked_front_ips', '');
 
         $this->newLine();
-        $this->info(__('admin/command.security_reset_ip.front_settings'));
+        $this->info(__('admin/command/security-reset-ip.front_settings'));
         $this->table(
-            [__('admin/command.security_reset_ip.setting'), __('admin/command.security_reset_ip.value')],
+            [__('admin/command/security-reset-ip.setting'), __('admin/command/security-reset-ip.value')],
             [
-                [__('admin/command.security_reset_ip.front_allow_enabled'), $enableFrontAllowed ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
-                [__('admin/command.security_reset_ip.front_allowed_ips'), $frontAllowedIps ?: __('admin/command.security_reset_ip.none')],
-                [__('admin/command.security_reset_ip.front_block_enabled'), $enableFrontBlocked ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
-                [__('admin/command.security_reset_ip.front_blocked_ips'), $frontBlockedIps ?: __('admin/command.security_reset_ip.none')],
+                [__('admin/command/security-reset-ip.front_allow_enabled'), $enableFrontAllowed ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
+                [__('admin/command/security-reset-ip.front_allowed_ips'), $frontAllowedIps ?: __('admin/command/security-reset-ip.none')],
+                [__('admin/command/security-reset-ip.front_block_enabled'), $enableFrontBlocked ? '✅ '.__('common.enabled') : '❌ '.__('common.disabled')],
+                [__('admin/command/security-reset-ip.front_blocked_ips'), $frontBlockedIps ?: __('admin/command/security-reset-ip.none')],
             ]
         );
 
@@ -161,8 +161,8 @@ class SecurityResetIpCommand extends Command
     protected function disableAllIpRestrictions(): int
     {
         if (! $this->option('force')) {
-            if (! $this->confirm(__('admin/command.security_reset_ip.confirm_disable_all'))) {
-                $this->info(__('admin/command.security_reset_ip.cancelled'));
+            if (! $this->confirm(__('admin/command/security-reset-ip.confirm_disable_all'))) {
+                $this->info(__('admin/command/security-reset-ip.cancelled'));
 
                 return Command::SUCCESS;
             }
@@ -182,8 +182,8 @@ class SecurityResetIpCommand extends Command
             'executed_via' => 'cli',
         ]);
 
-        $this->info(__('admin/command.security_reset_ip.disabled_all'));
-        $this->warn(__('admin/command.security_reset_ip.security_warning'));
+        $this->info(__('admin/command/security-reset-ip.disabled_all'));
+        $this->warn(__('admin/command/security-reset-ip.security_warning'));
 
         return Command::SUCCESS;
     }
@@ -194,14 +194,14 @@ class SecurityResetIpCommand extends Command
     protected function addToAllowedList(string $ip): int
     {
         if (! IpAccessControlHelper::isValidIpOrCidr($ip)) {
-            $this->error(__('admin/command.security_reset_ip.invalid_ip', ['ip' => $ip]));
+            $this->error(__('admin/command/security-reset-ip.invalid_ip', ['ip' => $ip]));
 
             return Command::FAILURE;
         }
 
         if (! $this->option('force')) {
-            if (! $this->confirm(__('admin/command.security_reset_ip.confirm_add_ip', ['ip' => $ip]))) {
-                $this->info(__('admin/command.security_reset_ip.cancelled'));
+            if (! $this->confirm(__('admin/command/security-reset-ip.confirm_add_ip', ['ip' => $ip]))) {
+                $this->info(__('admin/command/security-reset-ip.cancelled'));
 
                 return Command::SUCCESS;
             }
@@ -210,7 +210,7 @@ class SecurityResetIpCommand extends Command
         $ipList = IpAccessControlHelper::parseList((string) SecuritySetting::get('allowed_admin_ips', ''));
 
         if (in_array($ip, $ipList, true)) {
-            $this->warn(__('admin/command.security_reset_ip.ip_already_exists', ['ip' => $ip]));
+            $this->warn(__('admin/command/security-reset-ip.ip_already_exists', ['ip' => $ip]));
 
             return Command::SUCCESS;
         }
@@ -224,7 +224,7 @@ class SecurityResetIpCommand extends Command
             'executed_via' => 'cli',
         ]);
 
-        $this->info(__('admin/command.security_reset_ip.ip_added', ['ip' => $ip]));
+        $this->info(__('admin/command/security-reset-ip.ip_added', ['ip' => $ip]));
 
         return Command::SUCCESS;
     }
@@ -235,14 +235,14 @@ class SecurityResetIpCommand extends Command
     protected function removeFromBlockedList(string $ip): int
     {
         if (! IpAccessControlHelper::isValidIpOrCidr($ip)) {
-            $this->error(__('admin/command.security_reset_ip.invalid_ip', ['ip' => $ip]));
+            $this->error(__('admin/command/security-reset-ip.invalid_ip', ['ip' => $ip]));
 
             return Command::FAILURE;
         }
 
         if (! $this->option('force')) {
-            if (! $this->confirm(__('admin/command.security_reset_ip.confirm_remove_ip', ['ip' => $ip]))) {
-                $this->info(__('admin/command.security_reset_ip.cancelled'));
+            if (! $this->confirm(__('admin/command/security-reset-ip.confirm_remove_ip', ['ip' => $ip]))) {
+                $this->info(__('admin/command/security-reset-ip.cancelled'));
 
                 return Command::SUCCESS;
             }
@@ -251,7 +251,7 @@ class SecurityResetIpCommand extends Command
         $ipList = IpAccessControlHelper::parseList((string) SecuritySetting::get('blocked_admin_ips', ''));
 
         if (! in_array($ip, $ipList, true)) {
-            $this->warn(__('admin/command.security_reset_ip.ip_not_in_blocklist', ['ip' => $ip]));
+            $this->warn(__('admin/command/security-reset-ip.ip_not_in_blocklist', ['ip' => $ip]));
 
             return Command::SUCCESS;
         }
@@ -265,7 +265,7 @@ class SecurityResetIpCommand extends Command
             'executed_via' => 'cli',
         ]);
 
-        $this->info(__('admin/command.security_reset_ip.ip_removed', ['ip' => $ip]));
+        $this->info(__('admin/command/security-reset-ip.ip_removed', ['ip' => $ip]));
 
         return Command::SUCCESS;
     }

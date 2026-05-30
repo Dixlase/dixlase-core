@@ -34,7 +34,6 @@
  */
 
 return [
-
     'dead_letters' => [
         'no_action' => 'No action specified. Use one of the following options:',
         'option_notify' => 'Send notifications for unnotified dead letters',

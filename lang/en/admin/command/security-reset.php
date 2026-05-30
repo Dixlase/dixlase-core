@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning_minimal' => '⚠️ Warning: Minimal mode disables all security features.',
     'minimal_description' => 'Features disabled: CAPTCHA, IP restrictions, Lockdown, Login lockout',
     'confirm_minimal' => 'Switch to minimal configuration?',

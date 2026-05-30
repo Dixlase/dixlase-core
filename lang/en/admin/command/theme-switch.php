@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Switch to a different theme (select theme to enable)',
     'theme_name_prompt' => 'The name of the theme to switch to',
     'no_installed_themes' => 'No installed themes available.',

@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning_minimal' => '⚠️ 警告: 最小構成モードは全てのセキュリティ機能を無効化します。',
     'minimal_description' => '無効化される機能: CAPTCHA、IP制限、ロックダウン、ログインロックアウト',
     'confirm_minimal' => '最小構成モードに切り替えますか？',

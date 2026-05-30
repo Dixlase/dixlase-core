@@ -77,7 +77,7 @@ class PluginInstall extends Command
         $composerPath = $pluginPath.'/composer.json';
 
         if (! File::exists($pluginPath)) {
-            $this->error(__('admin/command.plugin.not_exists'));
+            $this->error(__('admin/command/plugin.not_exists'));
 
             return;
         }
@@ -115,7 +115,7 @@ class PluginInstall extends Command
             $composerData = json_decode(File::get($composerPath), true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->error(__('admin/command.make_plugin.installation.composer_parse_error', [
+                $this->error(__('admin/command/plugin-install.composer_parse_error', [
                     'error' => json_last_error_msg(),
                 ]));
 
@@ -191,19 +191,19 @@ class PluginInstall extends Command
             ]
         );
 
-        $this->info(__('admin/command.make_plugin.installation.installed', [
+        $this->info(__('admin/command/plugin-install.installed', [
             'pluginName' => $pluginName,
         ]));
 
         // Run migrations
-        $this->info(__('admin/command.make_plugin.installation.migrating'));
+        $this->info(__('admin/command/plugin-install.migrating'));
         $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $slug);
         $migrator->migrate($pluginName);
 
         // Run seeder (only if DatabaseSeeder exists)
         $seederClass = "Plugins\\{$pluginName}\\Database\\Seeders\\DatabaseSeeder";
         if (class_exists($seederClass)) {
-            $this->info(__('admin/command.make_plugin.installation.seeding'));
+            $this->info(__('admin/command/plugin-install.seeding'));
             $this->call('dls:plugin:seed', [
                 'plugin' => $pluginName,
                 '--force' => true,
@@ -226,19 +226,19 @@ class PluginInstall extends Command
             ]);
         } elseif (app()->runningInConsole() && ! app()->runningUnitTests()) {
             // Show confirmation prompt only when running from CLI
-            if ($this->confirm(__('admin/command.make_plugin.installation.enable_confirm', [
+            if ($this->confirm(__('admin/command/plugin-install.enable_confirm', [
                 'pluginName' => $pluginName,
             ]), false)) {
                 $this->call('dls:plugin:enable', [
                     'pluginName' => $pluginName,
                 ]);
             } else {
-                $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
+                $this->info(__('admin/command/plugin-install.enable_skipped', [
                     'pluginName' => $pluginName,
                 ]));
             }
         } else {
-            $this->info(__('admin/command.make_plugin.installation.enable_skipped', [
+            $this->info(__('admin/command/plugin-install.enable_skipped', [
                 'pluginName' => $pluginName,
             ]));
         }

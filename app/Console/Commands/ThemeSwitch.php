@@ -80,15 +80,15 @@ class ThemeSwitch extends Command
             ->first();
 
         if (! $theme) {
-            $this->error(__('admin/command.theme_switch.theme_not_found', ['themeName' => $themeName]));
+            $this->error(__('admin/command/theme-switch.theme_not_found', ['themeName' => $themeName]));
 
             return Command::FAILURE;
         }
 
         // Check if theme is installed
         if (! $theme->isInstalled()) {
-            $this->error(__('admin/command.theme_switch.not_installed', ['themeName' => $theme->name]));
-            $this->info(__('admin/command.theme_switch.install_first', ['themeName' => $theme->name]));
+            $this->error(__('admin/command/theme-switch.not_installed', ['themeName' => $theme->name]));
+            $this->info(__('admin/command/theme-switch.install_first', ['themeName' => $theme->name]));
 
             return Command::FAILURE;
         }
@@ -112,7 +112,7 @@ class ThemeSwitch extends Command
 
         // Check if already enabled
         if ($currentThemeId && $currentThemeId == $theme->id) {
-            $this->info(__('admin/command.theme_switch.already_enabled', ['themeName' => $theme->name]));
+            $this->info(__('admin/command/theme-switch.already_enabled', ['themeName' => $theme->name]));
 
             return Command::SUCCESS;
         }
@@ -121,7 +121,7 @@ class ThemeSwitch extends Command
         if ($currentThemeId) {
             $currentTheme = Theme::find($currentThemeId);
             if ($currentTheme) {
-                $this->info(__('admin/command.theme_switch.disabled', ['themeName' => $currentTheme->name]));
+                $this->info(__('admin/command/theme-switch.disabled', ['themeName' => $currentTheme->name]));
             }
         }
 
@@ -132,7 +132,7 @@ class ThemeSwitch extends Command
                 ['value' => $theme->id, 'updated_at' => now()]
             );
 
-        $this->info(__('admin/command.theme_switch.switched', ['themeName' => $theme->name]));
+        $this->info(__('admin/command/theme-switch.switched', ['themeName' => $theme->name]));
 
         // Update symlink
         try {
@@ -141,7 +141,7 @@ class ThemeSwitch extends Command
                 'theme' => $theme->directory,
             ]);
         } catch (\Exception $e) {
-            $this->warn(__('admin/command.theme_switch.symlink_warning'));
+            $this->warn(__('admin/command/theme-switch.symlink_warning'));
         }
 
         return Command::SUCCESS;
@@ -157,7 +157,7 @@ class ThemeSwitch extends Command
         $themes = Theme::whereNotNull('installed_at')->get();
 
         if ($themes->isEmpty()) {
-            $this->error(__('admin/command.theme_switch.no_installed_themes'));
+            $this->error(__('admin/command/theme-switch.no_installed_themes'));
 
             return Command::FAILURE;
         }
@@ -174,14 +174,14 @@ class ThemeSwitch extends Command
         $choices = $themes->mapWithKeys(function ($theme) use ($currentThemeId) {
             $label = $theme->name;
             if ($currentThemeId && $currentThemeId == $theme->id) {
-                $label .= ' '.__('admin/command.theme_switch.current_marker');
+                $label .= ' '.__('admin/command/theme-switch.current_marker');
             }
 
             return [$theme->slug => $label];
         })->toArray();
 
         $selected = $this->choice(
-            __('admin/command.theme_switch.select_prompt'),
+            __('admin/command/theme-switch.select_prompt'),
             $choices,
             $currentTheme ? $currentTheme->slug : null
         );
@@ -191,7 +191,7 @@ class ThemeSwitch extends Command
         $theme = $themes->firstWhere('slug', $selectedSlug);
 
         if (! $theme) {
-            $this->error(__('admin/command.theme_switch.selection_error'));
+            $this->error(__('admin/command/theme-switch.selection_error'));
 
             return Command::FAILURE;
         }
