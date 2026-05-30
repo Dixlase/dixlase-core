@@ -34,7 +34,6 @@
  */
 
 return [
-
     'git_not_found' => 'Gitリポジトリが見つかりません。.gitディレクトリが存在しません。',
     'gitignore_not_found' => '.gitignoreファイルが見つかりません。',
     'scanning' => 'ディレクトリをスキャン中...',

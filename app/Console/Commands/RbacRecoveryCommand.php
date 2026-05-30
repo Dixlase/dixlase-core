@@ -102,11 +102,11 @@ class RbacRecoveryCommand extends Command
 
         $this->showMemberStatus($member);
 
-        $this->warn(__('admin/command.rbac_recovery.warning_grant'));
+        $this->warn(__('admin/command/rbac-recovery.warning_grant'));
         $this->newLine();
 
-        if (! $this->option('force') && ! $this->confirm(__('admin/command.rbac_recovery.confirm_grant', ['name' => ($member->display_name ?? $member->account_name)]))) {
-            $this->info(__('admin/command.rbac_recovery.cancelled'));
+        if (! $this->option('force') && ! $this->confirm(__('admin/command/rbac-recovery.confirm_grant', ['name' => ($member->display_name ?? $member->account_name)]))) {
+            $this->info(__('admin/command/rbac-recovery.cancelled'));
 
             return self::SUCCESS;
         }
@@ -117,7 +117,7 @@ class RbacRecoveryCommand extends Command
             'role' => MemberRole::SUPER_ADMIN,
         ]);
 
-        $this->info(__('admin/command.rbac_recovery.grant_success', ['name' => ($member->display_name ?? $member->account_name)]));
+        $this->info(__('admin/command/rbac-recovery.grant_success', ['name' => ($member->display_name ?? $member->account_name)]));
 
         \App\Facades\Audit::logSecurity('rbac_emergency_grant_super_admin', [
             'severity' => 'critical',
@@ -132,7 +132,7 @@ class RbacRecoveryCommand extends Command
             ],
         ]);
 
-        $this->warn(__('admin/command.rbac_recovery.security_notice'));
+        $this->warn(__('admin/command/rbac-recovery.security_notice'));
 
         return self::SUCCESS;
     }
@@ -142,7 +142,7 @@ class RbacRecoveryCommand extends Command
      */
     protected function showStatus(): int
     {
-        $this->info(__('admin/command.rbac_recovery.system_status_title'));
+        $this->info(__('admin/command/rbac-recovery.system_status_title'));
         $this->newLine();
 
         $totalMembers = Member::count();
@@ -150,17 +150,17 @@ class RbacRecoveryCommand extends Command
         $adminCount = Member::where('role', MemberRole::ADMIN)->count();
 
         $this->table(
-            [__('admin/command.rbac_recovery.metric'), __('admin/command.rbac_recovery.value')],
+            [__('admin/command/rbac-recovery.metric'), __('admin/command/rbac-recovery.value')],
             [
-                [__('admin/command.rbac_recovery.total_members'), $totalMembers],
-                [__('admin/command.rbac_recovery.super_admins'), $superAdminCount],
-                [__('admin/command.rbac_recovery.admins'), $adminCount],
+                [__('admin/command/rbac-recovery.total_members'), $totalMembers],
+                [__('admin/command/rbac-recovery.super_admins'), $superAdminCount],
+                [__('admin/command/rbac-recovery.admins'), $adminCount],
             ]
         );
 
         if ($superAdminCount === 0) {
             $this->newLine();
-            $this->error(__('admin/command.rbac_recovery.warning_no_super_admin'));
+            $this->error(__('admin/command/rbac-recovery.warning_no_super_admin'));
         }
 
         return self::SUCCESS;
@@ -171,13 +171,13 @@ class RbacRecoveryCommand extends Command
      */
     protected function listMembers(): int
     {
-        $this->info(__('admin/command.rbac_recovery.members_title'));
+        $this->info(__('admin/command/rbac-recovery.members_title'));
         $this->newLine();
 
         $members = Member::all();
 
         if ($members->isEmpty()) {
-            $this->warn(__('admin/command.rbac_recovery.no_members'));
+            $this->warn(__('admin/command/rbac-recovery.no_members'));
 
             return self::SUCCESS;
         }
@@ -194,10 +194,10 @@ class RbacRecoveryCommand extends Command
 
         $this->table(
             [
-                __('admin/command.rbac_recovery.col_id'),
-                __('admin/command.rbac_recovery.col_name'),
-                __('admin/command.rbac_recovery.col_email'),
-                __('admin/command.rbac_recovery.col_roles'),
+                __('admin/command/rbac-recovery.col_id'),
+                __('admin/command/rbac-recovery.col_name'),
+                __('admin/command/rbac-recovery.col_email'),
+                __('admin/command/rbac-recovery.col_roles'),
             ],
             $rows
         );
@@ -213,11 +213,11 @@ class RbacRecoveryCommand extends Command
         $identifier = $this->option('member');
 
         if (! $identifier) {
-            $identifier = $this->ask(__('admin/command.rbac_recovery.member_prompt'));
+            $identifier = $this->ask(__('admin/command/rbac-recovery.member_prompt'));
         }
 
         if (! $identifier) {
-            $this->error(__('admin/command.rbac_recovery.member_required'));
+            $this->error(__('admin/command/rbac-recovery.member_required'));
 
             return null;
         }
@@ -227,7 +227,7 @@ class RbacRecoveryCommand extends Command
             : Member::where('email', $identifier)->first();
 
         if (! $member) {
-            $this->error(__('admin/command.rbac_recovery.member_not_found', ['identifier' => $identifier]));
+            $this->error(__('admin/command/rbac-recovery.member_not_found', ['identifier' => $identifier]));
 
             return null;
         }
@@ -243,11 +243,11 @@ class RbacRecoveryCommand extends Command
         $reason = $this->option('reason');
 
         if (! $reason) {
-            $reason = $this->ask(__('admin/command.rbac_recovery.reason_prompt'));
+            $reason = $this->ask(__('admin/command/rbac-recovery.reason_prompt'));
         }
 
         if (! $reason) {
-            $this->error(__('admin/command.rbac_recovery.reason_required'));
+            $this->error(__('admin/command/rbac-recovery.reason_required'));
 
             return null;
         }
@@ -260,15 +260,15 @@ class RbacRecoveryCommand extends Command
      */
     protected function showMemberStatus(Member $member): void
     {
-        $this->info(__('admin/command.rbac_recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
+        $this->info(__('admin/command/rbac-recovery.member_status_title', ['name' => ($member->display_name ?? $member->account_name)]));
         $this->newLine();
 
         $this->table(
-            [__('admin/command.rbac_recovery.field'), __('admin/command.rbac_recovery.value')],
+            [__('admin/command/rbac-recovery.field'), __('admin/command/rbac-recovery.value')],
             [
-                [__('admin/command.rbac_recovery.member_id'), $member->id],
-                [__('admin/command.rbac_recovery.email'), $member->email],
-                [__('admin/command.rbac_recovery.current_roles'), $member->role?->label() ?? __('admin/command.rbac_recovery.none')],
+                [__('admin/command/rbac-recovery.member_id'), $member->id],
+                [__('admin/command/rbac-recovery.email'), $member->email],
+                [__('admin/command/rbac-recovery.current_roles'), $member->role?->label() ?? __('admin/command/rbac-recovery.none')],
             ]
         );
     }
@@ -278,11 +278,11 @@ class RbacRecoveryCommand extends Command
      */
     protected function invalidAction(string $action): int
     {
-        $this->error(__('admin/command.rbac_recovery.invalid_action', ['action' => $action]));
-        $this->line(__('admin/command.rbac_recovery.valid_actions'));
-        $this->line('  - grant-super-admin : '.__('admin/command.rbac_recovery.action_grant'));
-        $this->line('  - status            : '.__('admin/command.rbac_recovery.action_status'));
-        $this->line('  - list              : '.__('admin/command.rbac_recovery.action_list'));
+        $this->error(__('admin/command/rbac-recovery.invalid_action', ['action' => $action]));
+        $this->line(__('admin/command/rbac-recovery.valid_actions'));
+        $this->line('  - grant-super-admin : '.__('admin/command/rbac-recovery.action_grant'));
+        $this->line('  - status            : '.__('admin/command/rbac-recovery.action_status'));
+        $this->line('  - list              : '.__('admin/command/rbac-recovery.action_list'));
 
         return self::FAILURE;
     }

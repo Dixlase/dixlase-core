@@ -68,7 +68,7 @@ class PluginDisable extends Command
         $plugin = Plugin::where('name', $pluginName)->first();
 
         if (! $plugin) {
-            $this->error(__('admin/command.make_plugin.not_found', ['pluginName' => $pluginName]));
+            $this->error(__('admin/command/plugin-disable.not_found', ['pluginName' => $pluginName]));
 
             return 1;
         }
@@ -86,7 +86,7 @@ class PluginDisable extends Command
         // plugin's content directories drop out of the next CSS build.
         app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
-        $this->info(__('admin/command.make_plugin.disabled', ['pluginName' => $pluginName]));
+        $this->info(__('admin/command/plugin-disable.disabled', ['pluginName' => $pluginName]));
 
         return 0;
     }

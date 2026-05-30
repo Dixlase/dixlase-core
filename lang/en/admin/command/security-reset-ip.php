@@ -34,7 +34,6 @@
  */
 
 return [
-
     'table_not_found' => 'security_settings table not found.',
     'usage' => 'Usage:',
     'option_show' => 'Show current IP restriction settings',

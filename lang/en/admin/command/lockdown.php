@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning' => '⚠️  Warning: Activating lockdown will prevent all users except allowed ones from accessing the system.',
     'type' => 'Type',
     'reason' => 'Reason',

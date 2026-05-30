@@ -69,7 +69,7 @@ class PluginDelete extends Command
 
         // Check if plugin directory exists
         if (! File::exists($pluginPath)) {
-            $this->error(__('admin/command.plugin_delete.not_found', ['directory' => $pluginDirectory]));
+            $this->error(__('admin/command/plugin-delete.not_found', ['directory' => $pluginDirectory]));
 
             return 1;
         }
@@ -78,16 +78,16 @@ class PluginDelete extends Command
         $plugin = DB::table('plugins')->where('directory', $pluginDirectory)->first();
 
         if ($plugin) {
-            $this->error(__('admin/command.plugin_delete.still_installed', ['pluginName' => $plugin->name]));
-            $this->warn(__('admin/command.plugin_delete.uninstall_first'));
+            $this->error(__('admin/command/plugin-delete.still_installed', ['pluginName' => $plugin->name]));
+            $this->warn(__('admin/command/plugin-delete.uninstall_first'));
 
             return 1;
         }
 
         // Confirmation prompt
         if (! $this->option('force')) {
-            if (! $this->confirm(__('admin/command.plugin_delete.confirm', ['directory' => $pluginDirectory]), false)) {
-                $this->info(__('admin/command.plugin_delete.cancelled'));
+            if (! $this->confirm(__('admin/command/plugin-delete.confirm', ['directory' => $pluginDirectory]), false)) {
+                $this->info(__('admin/command/plugin-delete.cancelled'));
 
                 return 0;
             }
@@ -96,9 +96,9 @@ class PluginDelete extends Command
         // Delete directory
         try {
             File::deleteDirectory($pluginPath);
-            $this->info(__('admin/command.plugin_delete.deleted', ['path' => $pluginPath]));
+            $this->info(__('admin/command/plugin-delete.deleted', ['path' => $pluginPath]));
         } catch (\Exception $e) {
-            $this->error(__('admin/command.plugin_delete.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command/plugin-delete.failed', ['error' => $e->getMessage()]));
 
             return 1;
         }
@@ -122,7 +122,7 @@ class PluginDelete extends Command
         // Note: Only update composer.local.json, keep composer.json in pristine state
         // Reflect autoload changes by manually running `composer dump-autoload`
 
-        $this->info(__('admin/command.plugin_delete.completed', ['directory' => $pluginDirectory]));
+        $this->info(__('admin/command/plugin-delete.completed', ['directory' => $pluginDirectory]));
 
         return 0;
     }

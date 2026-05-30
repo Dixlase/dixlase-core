@@ -34,6 +34,11 @@
  */
 
 return [
-
     'description' => 'Install the plugin, register it in the database, run migrations, and update autoload.',
+    'installed' => 'Plugin :pluginName has been installed.',
+    'migrating' => 'Running migrations...',
+    'seeding' => 'Running database seeders...',
+    'enable_confirm' => 'Do you want to enable plugin :pluginName now?',
+    'enable_skipped' => 'Plugin :pluginName has not been enabled. Run `php artisan dls:plugin:enable :pluginName` to enable it later.',
+    'composer_parse_error' => 'Failed to parse composer.json: :error',
 ];

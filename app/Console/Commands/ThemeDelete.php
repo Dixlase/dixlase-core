@@ -71,7 +71,7 @@ class ThemeDelete extends Command
 
         // Check if theme directory exists
         if (! File::exists($themePath)) {
-            $this->error(__('admin/command.theme_delete.not_found', ['directory' => $themeDirectory]));
+            $this->error(__('admin/command/theme-delete.not_found', ['directory' => $themeDirectory]));
 
             return Command::FAILURE;
         }
@@ -82,16 +82,16 @@ class ThemeDelete extends Command
         if ($theme) {
             // If theme is still installed
             if ($theme->isInstalled()) {
-                $this->error(__('admin/command.theme_delete.still_installed', ['themeName' => $theme->name]));
-                $this->warn(__('admin/command.theme_delete.uninstall_first'));
+                $this->error(__('admin/command/theme-delete.still_installed', ['themeName' => $theme->name]));
+                $this->warn(__('admin/command/theme-delete.uninstall_first'));
 
                 return Command::FAILURE;
             }
 
             // If theme is active (just in case)
             if ($theme->isEnabled()) {
-                $this->error(__('admin/command.theme_delete.still_enabled', ['themeName' => $theme->name]));
-                $this->warn(__('admin/command.theme_delete.disable_first'));
+                $this->error(__('admin/command/theme-delete.still_enabled', ['themeName' => $theme->name]));
+                $this->warn(__('admin/command/theme-delete.disable_first'));
 
                 return Command::FAILURE;
             }
@@ -99,8 +99,8 @@ class ThemeDelete extends Command
 
         // Confirmation prompt
         if (! $this->option('force')) {
-            if (! $this->confirm(__('admin/command.theme_delete.confirm', ['directory' => $themeDirectory]), false)) {
-                $this->info(__('admin/command.theme_delete.cancelled'));
+            if (! $this->confirm(__('admin/command/theme-delete.confirm', ['directory' => $themeDirectory]), false)) {
+                $this->info(__('admin/command/theme-delete.cancelled'));
 
                 return Command::SUCCESS;
             }
@@ -109,9 +109,9 @@ class ThemeDelete extends Command
         // Delete directory
         try {
             File::deleteDirectory($themePath);
-            $this->info(__('admin/command.theme_delete.deleted', ['path' => $themePath]));
+            $this->info(__('admin/command/theme-delete.deleted', ['path' => $themePath]));
         } catch (\Exception $e) {
-            $this->error(__('admin/command.theme_delete.failed', ['error' => $e->getMessage()]));
+            $this->error(__('admin/command/theme-delete.failed', ['error' => $e->getMessage()]));
 
             return Command::FAILURE;
         }
@@ -119,7 +119,7 @@ class ThemeDelete extends Command
         // Delete theme record from database as well (if exists)
         if ($theme) {
             $theme->delete();
-            $this->info(__('admin/command.theme_delete.database_removed', ['themeName' => $theme->name]));
+            $this->info(__('admin/command/theme-delete.database_removed', ['themeName' => $theme->name]));
         }
 
         // Remove theme exclusion rule from .git/info/exclude
@@ -136,7 +136,7 @@ class ThemeDelete extends Command
         ComposerLocalHelper::syncAutoload();
         $this->info(__('console/commands/theme_delete.updated_composer_local_json'));
 
-        $this->info(__('admin/command.theme_delete.completed', ['directory' => $themeDirectory]));
+        $this->info(__('admin/command/theme-delete.completed', ['directory' => $themeDirectory]));
 
         return Command::SUCCESS;
     }

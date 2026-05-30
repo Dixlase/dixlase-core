@@ -75,23 +75,23 @@ class ThemeUninstall extends Command
             ->first();
 
         if (! $theme) {
-            $this->error(__('admin/command.theme_uninstall.theme_not_found', ['themeName' => $themeName]));
+            $this->error(__('admin/command/theme-uninstall.theme_not_found', ['themeName' => $themeName]));
 
             return Command::FAILURE;
         }
 
         // Check if theme is enabled (unless --force is specified)
         if ($theme->isEnabled() && ! $this->option('force')) {
-            $this->error(__('admin/command.theme_uninstall.cannot_uninstall_enabled', ['themeName' => $theme->name]));
-            $this->warn(__('admin/command.theme_uninstall.disable_first'));
+            $this->error(__('admin/command/theme-uninstall.cannot_uninstall_enabled', ['themeName' => $theme->name]));
+            $this->warn(__('admin/command/theme-uninstall.disable_first'));
 
             return Command::FAILURE;
         }
 
         // Ask for confirmation (unless --no-interaction is specified)
         if (! $this->option('no-interaction')) {
-            if (! $this->confirm(__('admin/command.theme_uninstall.confirmation', ['themeName' => $theme->name]))) {
-                $this->info(__('admin/command.theme_uninstall.cancelled'));
+            if (! $this->confirm(__('admin/command/theme-uninstall.confirmation', ['themeName' => $theme->name]))) {
+                $this->info(__('admin/command/theme-uninstall.cancelled'));
 
                 return Command::SUCCESS;
             }
@@ -137,9 +137,9 @@ class ThemeUninstall extends Command
 
         // Delete theme from database
         $theme->delete();
-        $this->info(__('admin/command.theme_uninstall.uninstalled', ['themeName' => $theme->name]));
-        $this->info(__('admin/command.theme_uninstall.files_preserved'));
-        $this->info(__('admin/command.theme_uninstall.delete_hint'));
+        $this->info(__('admin/command/theme-uninstall.uninstalled', ['themeName' => $theme->name]));
+        $this->info(__('admin/command/theme-uninstall.files_preserved'));
+        $this->info(__('admin/command/theme-uninstall.delete_hint'));
 
         return Command::SUCCESS;
     }

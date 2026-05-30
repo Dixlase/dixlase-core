@@ -34,7 +34,6 @@
  */
 
 return [
-
     'invalid_scope' => 'Invalid scope: :scope (use admin_login or all)',
     'reason_prompt' => 'Enter the reason for enabling bypass',
     'reason_required' => 'Reason is required.',

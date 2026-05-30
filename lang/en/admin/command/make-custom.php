@@ -34,7 +34,6 @@
  */
 
 return [
-
     'observer' => [
         'description' => 'Create a new Observer class in the custom directory',
     ],

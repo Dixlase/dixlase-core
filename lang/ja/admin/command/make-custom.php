@@ -34,7 +34,6 @@
  */
 
 return [
-
     'observer' => [
         'description' => 'カスタムディレクトリにObserverクラスを作成します',
     ],

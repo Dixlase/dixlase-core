@@ -66,7 +66,7 @@ class PluginUninstall extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->description = __('admin/command.plugin_uninstall.description');
+        $this->description = __('admin/command/plugin-uninstall.description');
     }
 
     /**
@@ -96,15 +96,15 @@ class PluginUninstall extends Command
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
 
         if (! $plugin) {
-            $this->error(__('admin/command.plugin_uninstall.not_found', ['pluginName' => $pluginName]));
+            $this->error(__('admin/command/plugin-uninstall.not_found', ['pluginName' => $pluginName]));
 
             return 1;
         }
 
         // Check enabled state
         if (! is_null($plugin->enabled_at) && ! $this->option('force')) {
-            $this->error(__('admin/command.plugin_uninstall.still_enabled', ['pluginName' => $pluginName]));
-            $this->warn(__('admin/command.plugin_uninstall.disable_first'));
+            $this->error(__('admin/command/plugin-uninstall.still_enabled', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command/plugin-uninstall.disable_first'));
 
             return 1;
         }
@@ -113,11 +113,11 @@ class PluginUninstall extends Command
 
         // Confirm uninstallation (only when --no-interaction option is not present)
         if (! $this->option('no-interaction')) {
-            $this->warn(__('admin/command.plugin_uninstall.confirm', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command/plugin-uninstall.confirm', ['pluginName' => $pluginName]));
             $answer = $this->ask(__('console/commands/plugin_uninstall.please_enter_yes_no'));
 
             if (! in_array(strtolower($answer), ['yes', 'y'])) {
-                $this->info(__('admin/command.plugin_uninstall.cancelled'));
+                $this->info(__('admin/command/plugin-uninstall.cancelled'));
 
                 return 0;
             }
@@ -128,31 +128,31 @@ class PluginUninstall extends Command
 
         // Execute disable only when --force option is specified
         if (! is_null($plugin->enabled_at) && $this->option('force')) {
-            $this->warn(__('admin/command.plugin_uninstall.force_disabling', ['pluginName' => $pluginName]));
+            $this->warn(__('admin/command/plugin-uninstall.force_disabling', ['pluginName' => $pluginName]));
             $this->disablePlugin($pluginName);
             $plugin = DB::table('plugins')->where('name', $pluginName)->first();
         }
         // Rollback migrations
         if ($this->option('rollback')) {
-            $this->info(__('admin/command.plugin_uninstall.rollback_running'));
+            $this->info(__('admin/command/plugin-uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // Set step to a large value to rollback all migrations
             $migrator->rollback($plugin->directory, ['step' => 999]);
-        } elseif (! $this->option('no-interaction') && $this->confirm(__('admin/command.plugin_uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
-            $this->info(__('admin/command.plugin_uninstall.rollback_running'));
+        } elseif (! $this->option('no-interaction') && $this->confirm(__('admin/command/plugin-uninstall.rollback_confirm', ['pluginName' => $pluginName]), false)) {
+            $this->info(__('admin/command/plugin-uninstall.rollback_running'));
             $migrator = new PluginMigrator(app(Filesystem::class), app(ConnectionResolverInterface::class), 'plugin_migrations', $plugin->slug);
             // Set step to a large value to rollback all migrations
             $migrator->rollback($plugin->directory, ['step' => 999]);
         } else {
-            $this->info(__('admin/command.plugin_uninstall.rollback_skipped'));
+            $this->info(__('admin/command/plugin-uninstall.rollback_skipped'));
         }
 
         // Do not delete directory (use plugin:delete command)
-        $this->info(__('admin/command.plugin_uninstall.files_preserved'));
+        $this->info(__('admin/command/plugin-uninstall.files_preserved'));
 
         // Delete plugin from database
         DB::table('plugins')->where('name', $pluginName)->delete();
-        $this->info(__('admin/command.plugin_uninstall.database_removed', ['pluginName' => $pluginName]));
+        $this->info(__('admin/command/plugin-uninstall.database_removed', ['pluginName' => $pluginName]));
 
         // Note: Updating composer.local.json and .git/info/exclude
         // is done during plugin deletion (plugin:delete), so not needed here
@@ -169,8 +169,8 @@ class PluginUninstall extends Command
         // next CSS build.
         app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
-        $this->info(__('admin/command.plugin_uninstall.completed', ['pluginName' => $pluginName]));
-        $this->info(__('admin/command.plugin_uninstall.delete_hint'));
+        $this->info(__('admin/command/plugin-uninstall.completed', ['pluginName' => $pluginName]));
+        $this->info(__('admin/command/plugin-uninstall.delete_hint'));
 
         return 0;
     }

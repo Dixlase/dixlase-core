@@ -34,8 +34,6 @@
  */
 
 return [
-
-    // Common messages
     'starting' => 'Starting backup...',
     'completed' => 'Backup completed successfully!',
     'no_targets' => 'No backup targets specified.',
@@ -45,8 +43,6 @@ return [
     'no_backups_created' => 'No backups were created.',
     'files_saved' => 'File backup: :path',
     'database_saved' => 'Database backup: :path',
-
-    // File backup
     'section_files' => 'File Backup',
     'creating_file_backup' => 'Creating file backup: :file',
     'failed_to_create_zip' => 'Failed to create ZIP file.',
@@ -55,8 +51,6 @@ return [
     'no_files_added' => 'No files were added to the backup.',
     'file_backup_completed' => 'File backup completed: :file (:count files, :size)',
     'no_paths_to_backup' => 'No paths to backup.',
-
-    // Database backup
     'section_database' => 'Database Backup',
     'creating_database_backup' => 'Creating database backup: :file',
     'database_config_not_found' => 'Database configuration not found.',
@@ -64,8 +58,6 @@ return [
     'mysqldump_failed' => 'mysqldump failed: :error',
     'database_backup_completed' => 'Database backup completed: :file (Tables: :tables, :size)',
     'all_tables' => 'All tables',
-
-    // Backup list
     'list' => [
         'title' => 'Available Backups',
         'file_backups' => 'File Backups',
@@ -77,8 +69,6 @@ return [
         'date' => 'Date',
         'backup_directory' => 'Backup directory: :path',
     ],
-
-    // Backup cleanup
     'cleanup' => [
         'invalid_days' => 'Days must be a non-negative integer.',
         'confirm_delete_all' => 'Are you sure you want to delete ALL backups? This action cannot be undone.',
@@ -88,7 +78,5 @@ return [
         'no_backups_deleted' => 'No backups were deleted.',
         'deleted_count' => 'Deleted :count backup(s).',
     ],
-
-    // Old backup deletion
     'deleted_old_backup' => 'Deleted old backup: :file',
 ];

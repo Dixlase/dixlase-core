@@ -34,7 +34,6 @@
  */
 
 return [
-
     'status_title' => '[CAPTCHA Failover Status]',
     'setting' => 'Setting',
     'value' => 'Value',

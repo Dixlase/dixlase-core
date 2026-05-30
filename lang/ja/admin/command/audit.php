@@ -34,7 +34,6 @@
  */
 
 return [
-
     'integrity' => [
         'building_chains' => 'ハッシュチェーンを構築中...',
         'build_complete' => ':processed 件のログにハッシュチェーンを設定しました。残り: :remaining 件',

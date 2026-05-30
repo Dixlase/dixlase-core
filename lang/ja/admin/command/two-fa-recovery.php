@@ -34,7 +34,6 @@
  */
 
 return [
-
     'warning_disable' => '⚠️ 警告: 二段階認証を無効化すると、アカウントのセキュリティが低下します。',
     'confirm_disable' => ':name の二段階認証を無効化しますか？',
     'cancelled' => '操作がキャンセルされました。',
@@ -47,7 +46,7 @@ return [
     'codes_save_warning' => '⚠️ これらのコードは二度と表示されません。必ず保存してください。',
     'two_fa_not_enabled' => ':name は二段階認証が有効になっていません。',
     'no_members_with_two_fa' => '二段階認証が有効なメンバーはいません。',
-    'members_with_two_fa' => '【二段階認証が有効なメンバー: :count 名】',
+    'members_with_two_fa' => '二段階認証有効',
     'no_codes' => 'なし',
     'col_id' => 'ID',
     'col_name' => '名前',
@@ -71,7 +70,6 @@ return [
     'system_status_title' => '【システム全体の二段階認証状態】',
     'metric' => '項目',
     'total_members' => '総メンバー数',
-    'members_with_two_fa' => '二段階認証有効',
     'members_without_codes' => '回復コードなし',
     'warning_no_codes' => '⚠️ :count 名のメンバーが回復コードを持っていません。詰みリスクがあります。',
     'invalid_action' => '無効なアクション: :action',

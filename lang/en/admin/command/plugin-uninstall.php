@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Uninstall the plugin and remove from database (files are preserved).',
     'not_found' => 'Plugin \':pluginName\' not found.',
     'still_enabled' => 'Plugin \':pluginName\' is still enabled.',

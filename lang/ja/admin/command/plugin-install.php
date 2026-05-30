@@ -34,6 +34,11 @@
  */
 
 return [
-
     'description' => 'プラグインをインストールし、データベースに登録し、マイグレーションを実行し、オートロードを更新します。',
+    'installed' => 'プラグイン :pluginName をインストールしました。',
+    'migrating' => 'マイグレーションを実行中...',
+    'seeding' => 'シーダーを実行中...',
+    'enable_confirm' => 'プラグイン :pluginName を有効化しますか?',
+    'enable_skipped' => 'プラグイン :pluginName は有効化されませんでした。後で有効化するには `php artisan dls:plugin:enable :pluginName` を実行してください。',
+    'composer_parse_error' => 'composer.json の解析に失敗しました: :error',
 ];

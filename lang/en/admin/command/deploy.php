@@ -34,7 +34,6 @@
  */
 
 return [
-
     'init' => [
         'description' => 'Generate a new dixlase-deploy.json configuration file',
         'already_exists' => 'Configuration file already exists: :path',
@@ -43,9 +42,9 @@ return [
         'next_steps' => 'Next steps:',
         'step_edit' => 'Edit :path with your environment settings',
         'step_env' => 'Set up environment variables for sensitive data',
-        'step_doctor' => "Run 'php artisan deploy:doctor' to validate configuration",
-        'step_list' => "Run 'php artisan deploy:list' to see available environments",
-        'gitignore_warning' => "Important: Add 'dixlase-deploy.json' to your .gitignore to protect credentials",
+        'step_doctor' => 'Run \'php artisan deploy:doctor\' to validate configuration',
+        'step_list' => 'Run \'php artisan deploy:list\' to see available environments',
+        'gitignore_warning' => 'Important: Add \'dixlase-deploy.json\' to your .gitignore to protect credentials',
         'failed' => 'Failed to generate configuration: :error',
     ],
     'doctor' => [
@@ -89,7 +88,7 @@ return [
     'push' => [
         'description' => 'Push local Dixlase data to a remote environment',
         'config_not_found' => 'Configuration file not found.',
-        'environment_not_found' => "Environment ':environment' not found in configuration.",
+        'environment_not_found' => 'Environment \':environment\' not found in configuration.',
         'available_environments' => 'Available environments: :environments',
         'no_targets' => 'No sync targets specified.',
         'use_options' => 'Use --plugins, --themes, --custom, --uploads, --database, or --all',
@@ -104,7 +103,7 @@ return [
     'pull' => [
         'description' => 'Pull remote Dixlase data to local environment',
         'config_not_found' => 'Configuration file not found.',
-        'environment_not_found' => "Environment ':environment' not found in configuration.",
+        'environment_not_found' => 'Environment \':environment\' not found in configuration.',
         'available_environments' => 'Available environments: :environments',
         'no_targets' => 'No sync targets specified.',
         'use_options' => 'Use --plugins, --themes, --custom, --uploads, --database, or --all',

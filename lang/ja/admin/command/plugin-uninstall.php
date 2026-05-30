@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'プラグインをアンインストールし、データベースから削除します（ファイルは保持されます）。',
     'not_found' => 'プラグイン \':pluginName\' は見つかりません。',
     'still_enabled' => 'プラグイン \':pluginName\' は有効化されています。',

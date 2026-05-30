@@ -34,7 +34,6 @@
  */
 
 return [
-
     'init' => [
         'description' => 'dixlase-deploy.json設定ファイルを生成します',
         'already_exists' => '設定ファイルは既に存在します: :path',
@@ -43,9 +42,9 @@ return [
         'next_steps' => '次のステップ:',
         'step_edit' => ':path を環境設定に合わせて編集してください',
         'step_env' => '機密情報用の環境変数を設定してください',
-        'step_doctor' => "'php artisan deploy:doctor' を実行して設定を検証してください",
-        'step_list' => "'php artisan deploy:list' を実行して利用可能な環境を確認してください",
-        'gitignore_warning' => "重要: 認証情報を保護するため 'dixlase-deploy.json' を .gitignore に追加してください",
+        'step_doctor' => '\'php artisan deploy:doctor\' を実行して設定を検証してください',
+        'step_list' => '\'php artisan deploy:list\' を実行して利用可能な環境を確認してください',
+        'gitignore_warning' => '重要: 認証情報を保護するため \'dixlase-deploy.json\' を .gitignore に追加してください',
         'failed' => '設定ファイルの生成に失敗しました: :error',
     ],
     'doctor' => [
@@ -89,7 +88,7 @@ return [
     'push' => [
         'description' => 'ローカルのDixlaseデータをリモート環境にプッシュします',
         'config_not_found' => '設定ファイルが見つかりません。',
-        'environment_not_found' => "環境 ':environment' が設定に見つかりません。",
+        'environment_not_found' => '環境 \':environment\' が設定に見つかりません。',
         'available_environments' => '利用可能な環境: :environments',
         'no_targets' => '同期対象が指定されていません。',
         'use_options' => '--plugins, --themes, --custom, --uploads, --database, または --all を使用してください',
@@ -104,7 +103,7 @@ return [
     'pull' => [
         'description' => 'リモート環境からローカルにDixlaseデータをプルします',
         'config_not_found' => '設定ファイルが見つかりません。',
-        'environment_not_found' => "環境 ':environment' が設定に見つかりません。",
+        'environment_not_found' => '環境 \':environment\' が設定に見つかりません。',
         'available_environments' => '利用可能な環境: :environments',
         'no_targets' => '同期対象が指定されていません。',
         'use_options' => '--plugins, --themes, --custom, --uploads, --database, または --all を使用してください',

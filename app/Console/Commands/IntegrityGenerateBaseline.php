@@ -61,24 +61,24 @@ class IntegrityGenerateBaseline extends Command
      */
     public function handle(FileIntegrityService $service): int
     {
-        $this->info(__('admin/command.integrity.generating_baseline'));
+        $this->info(__('admin/command/integrity.generating_baseline'));
 
         // Check existing baseline
         if ($service->hasBaseline() && ! $this->option('force')) {
             $meta = $service->getBaselineMeta();
-            $this->warn(__('admin/command.integrity.baseline_exists', [
+            $this->warn(__('admin/command/integrity.baseline_exists', [
                 'date' => $meta['generated_at'] ?? 'unknown',
                 'version' => $meta['app_version'] ?? 'unknown',
             ]));
 
-            if (! $this->confirm(__('admin/command.integrity.overwrite_confirm'))) {
-                $this->info(__('admin/command.integrity.cancelled'));
+            if (! $this->confirm(__('admin/command/integrity.overwrite_confirm'))) {
+                $this->info(__('admin/command/integrity.cancelled'));
 
                 return Command::SUCCESS;
             }
         }
 
-        $this->output->write(__('admin/command.integrity.scanning_files'));
+        $this->output->write(__('admin/command/integrity.scanning_files'));
 
         // Generate baseline
         $baseline = $service->generateCoreBaseline();
@@ -86,7 +86,7 @@ class IntegrityGenerateBaseline extends Command
         $this->info(' '.__('common.done'));
 
         // Save
-        $this->output->write(__('admin/command.integrity.saving_baseline'));
+        $this->output->write(__('admin/command/integrity.saving_baseline'));
 
         if ($service->saveBaselineArray($baseline)) {
             $this->info(' '.__('common.done'));
@@ -103,25 +103,25 @@ class IntegrityGenerateBaseline extends Command
                 'started_at' => now(),
                 'finished_at' => now(),
                 'duration_ms' => 0,
-                'summary' => __('admin/command.integrity.baseline_generated'),
+                'summary' => __('admin/command/integrity.baseline_generated'),
             ]);
 
             $this->newLine();
-            $this->info(__('admin/command.integrity.baseline_success'));
+            $this->info(__('admin/command/integrity.baseline_success'));
             $this->table(
-                [__('admin/command.integrity.item'), __('admin/command.integrity.value')],
+                [__('admin/command/integrity.item'), __('admin/command/integrity.value')],
                 [
-                    [__('admin/command.integrity.files_count'), count($baseline['files'])],
-                    [__('admin/command.integrity.app_version'), $baseline['meta']['app_version'] ?? 'unknown'],
-                    [__('admin/command.integrity.hash_algo'), $baseline['meta']['hash_algo']],
-                    [__('admin/command.integrity.generated_at'), $baseline['meta']['generated_at']],
+                    [__('admin/command/integrity.files_count'), count($baseline['files'])],
+                    [__('admin/command/integrity.app_version'), $baseline['meta']['app_version'] ?? 'unknown'],
+                    [__('admin/command/integrity.hash_algo'), $baseline['meta']['hash_algo']],
+                    [__('admin/command/integrity.generated_at'), $baseline['meta']['generated_at']],
                 ]
             );
 
             return Command::SUCCESS;
         }
 
-        $this->error(__('admin/command.integrity.baseline_failed'));
+        $this->error(__('admin/command/integrity.baseline_failed'));
 
         return Command::FAILURE;
     }

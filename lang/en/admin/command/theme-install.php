@@ -34,7 +34,6 @@
  */
 
 return [
-
     'description' => 'Install a theme into the database',
     'theme_name_prompt' => 'The name of the theme to install',
     'theme_not_found' => 'Theme \':themeName\' does not exist in the themes directory.',
