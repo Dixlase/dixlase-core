@@ -42,17 +42,21 @@ class FrameSrcDefaultsTest extends TestCase
         $this->builder = app(CspBuilder::class);
     }
 
-    public function test_front_default_blocks_all_frames(): void
+    public function test_front_default_does_not_allow_self_frame_embedding(): void
     {
         $this->builder->setContext('front');
         $this->mockRequestPath('/');
 
         $csp = $this->builder->build();
 
-        $this->assertMatchesRegularExpression(
-            "/frame-src\\s+'none'(\\s|;|$)/",
+        // Front pages must not embed themselves in iframes by default.
+        // Trusted external origins (e.g. youtube, maps) from
+        // config/csp/domains.php may legitimately appear in frame-src, but
+        // 'self' must not.
+        $this->assertDoesNotMatchRegularExpression(
+            "/frame-src\\s[^;]*'self'/",
             $csp,
-            'Front frame-src should default to \'none\' so the page cannot embed iframes.'
+            'Front frame-src must not include \'self\'.'
         );
     }
 
@@ -63,10 +67,13 @@ class FrameSrcDefaultsTest extends TestCase
 
         $csp = $this->builder->build();
 
+        // Admin context adds 'self' to frame-src so same-origin preview
+        // iframes (FrontPage edit, DixlasePages page editor) work.
+        // The order of sources within the directive is not asserted.
         $this->assertMatchesRegularExpression(
-            "/frame-src\\s+'self'(\\s|;|$)/",
+            "/frame-src\\s[^;]*'self'/",
             $csp,
-            'Admin frame-src should be \'self\' to allow same-origin preview iframes.'
+            'Admin frame-src should include \'self\' to allow same-origin preview iframes.'
         );
     }
 

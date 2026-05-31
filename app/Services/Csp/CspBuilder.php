@@ -345,14 +345,32 @@ class CspBuilder
     }
 
     /**
-     * Add domain to specified directive
+     * Add a concrete origin to a directive while honouring CSP's "'none' is
+     * exclusive" rule.
+     *
+     * Per the CSP spec, `'none'` must be the only source expression for a
+     * given directive; otherwise browsers warn "'none' must be the only
+     * source expression" and treat the directive as if 'none' were absent.
+     * mergeDirectives() applies this exclusion when consolidating
+     * provider-supplied directives — apply the same rule here on the
+     * trusted-domains path so adding e.g. challenges.cloudflare.com to a
+     * `frame-src 'none'` baseline produces `frame-src https://...` rather
+     * than `frame-src 'none' https://...`.
      */
     protected function addDomainToDirective(array &$directives, string $directive, string $domain): void
     {
         if (! isset($directives[$directive])) {
             $directives[$directive] = [];
         }
-        if (! in_array($domain, $directives[$directive])) {
+
+        // Drop any pre-existing 'none' so the concrete origin doesn't
+        // co-exist with it (which the spec forbids).
+        $directives[$directive] = array_values(array_filter(
+            $directives[$directive],
+            fn ($value) => $value !== "'none'"
+        ));
+
+        if (! in_array($domain, $directives[$directive], true)) {
             $directives[$directive][] = $domain;
         }
     }
