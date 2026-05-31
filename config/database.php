@@ -96,6 +96,44 @@ return [
             ]) : [],
         ],
 
+        // Privilege-separated migration connection.
+        //
+        // Mirrors `mysql` but uses a separate DB user (`DB_MIGRATE_*`)
+        // that retains DDL grants (CREATE / ALTER / DROP / TRUNCATE).
+        // The default `mysql` user can then be locked down to DML only
+        // (SELECT / INSERT / UPDATE / DELETE), so a misrouted runtime
+        // query — e.g. RefreshDatabase pointed at production by a stray
+        // `artisan test` — cannot DROP tables.
+        //
+        // When DB_MIGRATE_USERNAME / DB_MIGRATE_PASSWORD are unset,
+        // this connection falls back to the regular `mysql` credentials.
+        // That preserves single-user behaviour for existing installs;
+        // only operators who provision a migrator user opt in.
+        //
+        // Run migrations with: `php artisan migrate --database=mysql_migrate`
+        // See: docs/operations/db-privilege-separation.md
+        // Background: docs/incidents/2026-05-29-mysql-tables-dropped.md
+        'mysql_migrate' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'dixlase'),
+            'username' => env('DB_MIGRATE_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('DB_MIGRATE_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => env('DB_PREFIX', 'dls_'),
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'timezone' => '+00:00',
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
