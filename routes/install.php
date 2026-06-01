@@ -49,6 +49,7 @@ Route::prefix('install')->name('install.')->middleware('install.steps')->group(
         Route::post('/language/{locale}', [InstallSettingsController::class, 'setLanguage'])->name('language');
 
         Route::get('/', [InstallController::class, 'index'])->name('index');
+        Route::post('/download-theme', [InstallController::class, 'downloadTheme'])->name('download-theme');
 
         // Mode selection
         Route::get('/mode', [InstallModeController::class, 'create'])->name('mode');

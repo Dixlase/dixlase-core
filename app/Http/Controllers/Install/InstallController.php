@@ -55,7 +55,11 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\Services\Install\InstallThemeDownloader;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Install Controller
@@ -93,10 +97,55 @@ class InstallController extends Controller
 
         $requirements = $this->checkServerRequirements();
 
+        // Themes shipped via GitHub Release ZIPs that are not bundled in the
+        // user's release tarball. Surface them to the install index so the
+        // user can download them in place before continuing.
+        $downloader = app(InstallThemeDownloader::class);
+        $missingDownloadableThemes = $requirements['has_theme']
+            ? []
+            : $downloader->missingThemes();
+
         return view('install.index', [
             'requirements' => $requirements,
             'currentLocale' => $locale,
             'availableLocales' => $this->availableLocales,
+            'missingDownloadableThemes' => $missingDownloadableThemes,
+        ]);
+    }
+
+    /**
+     * Download a registered theme from GitHub into themes/<directory>.
+     *
+     * Only callable before INSTALLED=true (the install.* route group is the
+     * boundary that enforces this).
+     */
+    public function downloadTheme(Request $request, InstallThemeDownloader $downloader): JsonResponse
+    {
+        $directory = (string) $request->input('directory', '');
+        if ($downloader->find($directory) === null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('install/index.theme_download.invalid'),
+            ], 422);
+        }
+
+        try {
+            $downloader->download($directory);
+        } catch (\Throwable $e) {
+            Log::channel('install')->error('Theme download failed', [
+                'directory' => $directory,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => __('install/index.theme_download.failed', ['error' => $e->getMessage()]),
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __('install/index.theme_download.success'),
         ]);
     }
 

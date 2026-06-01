@@ -23,4 +23,5 @@ import './layout';
 import './environment';
 import './database';
 import './complete';
+import './theme-download';
 import '../../components/mail-server/js/settings-install';

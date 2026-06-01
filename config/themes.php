@@ -39,4 +39,20 @@ return [
     'default_theme' => env('APP_THEME', 'DixlaseOnePage'), // Default theme
     'default_theme_slug' => env('DEFAULT_THEME_SLUG', 'dixlase-onepage'), // Default theme slug name
     'admin_theme' => 'admin', // Admin panel theme
+
+    /*
+     * Themes that the install wizard can fetch from GitHub when the user's
+     * release ZIP does not bundle them. Add new entries here as more first-party
+     * themes ship. Each entry:
+     *   - directory : target folder under themes/
+     *   - repository: GitHub owner/repo (used to query the latest release)
+     *   - label     : display name for the install wizard UI
+     */
+    'downloadable' => [
+        [
+            'directory' => 'DixlaseOnePage',
+            'repository' => 'Dixlase/theme-dixlase-onepage',
+            'label' => 'Dixlase OnePage',
+        ],
+    ],
 ];
