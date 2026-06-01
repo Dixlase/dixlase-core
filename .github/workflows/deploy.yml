@@ -56,10 +56,25 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          # Composer auth.json (or the equivalent JSON blob) for the
+          # private Dixlase theme/plugin repositories. Without this,
+          # `composer install` inside the compose-php-1 container hits
+          # HTTP 404 on the GitHub API zipball endpoint for private
+          # dist downloads and falls through to a `git clone` over SSH
+          # that the container's empty known_hosts then rejects.
+          # The secret is already provisioned for laravel-ci.yml and
+          # security.yml; this step is the missing hand-off.
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          # appleboy/ssh-action does not forward host env vars by
+          # default; `envs:` lists the names that should be exported
+          # into the remote shell so the `docker exec -e ...` below
+          # can hand the token down into the container.
+          envs: COMPOSER_AUTH
           script: |
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
@@ -118,8 +133,14 @@ jobs:
               esac
 
               # 4. Composer 依存関係とオートロード更新
+              # COMPOSER_AUTH is forwarded via `envs:` above. Pass it
+              # through to the container so composer can authenticate
+              # against GitHub for private dist (zipball) downloads;
+              # without this composer falls back to a `git clone` that
+              # the container's empty known_hosts rejects.
               if [ -f composer.json ]; then
-                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && composer install --no-dev --no-interaction --optimize-autoloader"
+                docker exec -e COMPOSER_AUTH="$COMPOSER_AUTH" compose-php-1 bash -c \
+                  "cd /var/www/apps/$SITE && composer install --no-dev --no-interaction --optimize-autoloader"
               fi
 
               # 5. CIでビルド済みのフロントエンドアセットをコピー
