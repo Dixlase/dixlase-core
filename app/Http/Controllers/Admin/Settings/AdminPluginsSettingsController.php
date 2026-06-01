@@ -203,7 +203,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $audit = PluginAudit::getBySlug($pluginSlug);
 
         if ($audit) {
-            return $audit->toAuditArray();
+            return $this->filterOptionalMismatches($pluginSlug, $audit->toAuditArray());
         }
 
         // Return empty result if no audit results exist
@@ -214,6 +214,41 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             'total_checked' => 0,
             'audited_at' => null,
         ];
+    }
+
+    /**
+     * Strip mismatches whose permission key is listed under plugin.json
+     * `_optional`, mirroring PluginHealthScorer's filter so the UI score and
+     * the UI mismatch list cannot disagree.
+     *
+     * Only `unused_declaration` rows are filtered — an `undeclared_usage`
+     * row indicates the plugin is touching a permission it never declared,
+     * which is a real issue regardless of `_optional`.
+     *
+     * PluginAudit::toAuditArray() remains raw so CLI tooling
+     * (dls:plugin:audit) can still inspect the unfiltered list.
+     *
+     * @param  array<string, mixed>  $auditArray
+     * @return array<string, mixed>
+     */
+    protected function filterOptionalMismatches(string $pluginSlug, array $auditArray): array
+    {
+        $optional = app(PluginPermissionService::class)->getOptionalPermissions($pluginSlug);
+
+        if (empty($optional) || empty($auditArray['mismatches'] ?? [])) {
+            return $auditArray;
+        }
+
+        $auditArray['mismatches'] = array_values(array_filter(
+            $auditArray['mismatches'],
+            static fn (array $m) => ! (
+                ($m['type'] ?? null) === 'unused_declaration'
+                && in_array($m['permission'] ?? '', $optional, true)
+            ),
+        ));
+        $auditArray['has_mismatches'] = ! empty($auditArray['mismatches']);
+
+        return $auditArray;
     }
 
     /**
@@ -228,7 +263,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     {
         $audit = $auditMap->get($slug);
         if ($audit instanceof PluginAudit) {
-            return $audit->toAuditArray();
+            return $this->filterOptionalMismatches($slug, $audit->toAuditArray());
         }
 
         return [
@@ -377,7 +412,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
                 Log::info('Plugin audit saved', ['plugin' => $pluginSlug, 'audit_id' => $audit->id]);
 
-                return $audit->toAuditArray();
+                return $this->filterOptionalMismatches($pluginSlug, $audit->toAuditArray());
             }
         } catch (\Exception $e) {
             Log::error('Plugin audit failed', [
