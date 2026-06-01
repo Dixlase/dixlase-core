@@ -70,6 +70,12 @@ namespace App\Contracts\Multilingual;
  *     {
  *         return DixlaseInquirySetting::get($field);
  *     }
+ *
+ *     public function getPrimaryLocale(): ?string
+ *     {
+ *         $lang = DixlaseInquirySetting::get('lang');
+ *         return $lang === 'auto' ? null : $lang;
+ *     }
  * }
  * ```
  *
@@ -99,4 +105,22 @@ interface TranslatableContentProvider
      * no per-locale translation exists for the requested locale.
      */
     public function getPrimaryValue(string $field): ?string;
+
+    /**
+     * Return the locale the provider's primary values are authored in,
+     * or null if no specific locale is declared (in which case the
+     * provider's values are treated as locale-neutral).
+     *
+     * The translation manager UI uses this to exclude the primary locale
+     * from its locale selector for singleton-shaped content: per-locale
+     * translations for the primary locale would be meaningless because
+     * the provider already supplies those values directly. The runtime
+     * helper short-circuits when the current locale matches this, so the
+     * primary value is returned without a translation table lookup.
+     *
+     * Providers that read the locale from their own settings (e.g. an
+     * "authoring language" config on the plugin/theme) should return it
+     * here; providers with no such concept may return null.
+     */
+    public function getPrimaryLocale(): ?string;
 }
