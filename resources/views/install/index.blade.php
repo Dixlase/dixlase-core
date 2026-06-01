@@ -172,6 +172,60 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
+    {{-- Theme download (shown only when no theme is present and there is a registered downloadable) --}}
+    @if(!$requirements['has_theme'] && count($missingDownloadableThemes) > 0)
+        <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+             x-data="installThemeDownload({
+                 endpoint: '{{ route('install.download-theme') }}',
+                 csrf: '{{ csrf_token() }}',
+                 modalId: 'installThemeDownloadModal',
+                 invalidMessage: @js(__('install/index.theme_download.invalid')),
+             })">
+            <h2 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">
+                <i class="fas fa-download mr-1"></i>{{ __('install/index.theme_download.heading') }}
+            </h2>
+            <p class="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                {{ __('install/index.theme_download.description') }}
+            </p>
+            <ul class="space-y-2">
+                @foreach($missingDownloadableThemes as $theme)
+                    <li class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ $theme['label'] }}</span>
+                        <button type="button"
+                                @click="downloadTheme(@js($theme['directory']))"
+                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="downloading">
+                            <i class="fas fa-download mr-1"></i>
+                            {{ __('install/index.theme_download.button', ['label' => $theme['label']]) }}
+                        </button>
+                    </li>
+                @endforeach
+            </ul>
+            <p x-show="errorMessage" x-cloak x-text="errorMessage"
+               class="text-sm text-red-600 dark:text-red-400 mt-3"></p>
+        </div>
+
+        {{-- Download progress modal --}}
+        <x-ui-modal
+            id="installThemeDownloadModal"
+            :title="__('install/index.theme_download.progress_title')"
+            message=""
+            iconType="info"
+            :dismissible="false"
+            :closeOnly="true"
+            :centered="true"
+        >
+            <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                {!! __('install/index.theme_download.progress_message') !!}
+            </p>
+            <x-slot:footer>
+                <div class="flex items-center justify-center w-full py-1">
+                    <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                </div>
+            </x-slot:footer>
+        </x-ui-modal>
+    @endif
+
     {{-- Recommended/optional checks --}}
     @php
         $recOptAllOk = !in_array(false, $requirements['recommended_extensions']) && !in_array(false, $requirements['optional_extensions']);

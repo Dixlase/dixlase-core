@@ -57,5 +57,15 @@ return [
         'label' => 'Theme',
         'not_found' => 'No theme found in themes/ directory',
     ],
+    'theme_download' => [
+        'heading' => 'Download a Theme',
+        'description' => 'No theme is bundled with this release. Download the official theme below to continue.',
+        'button' => 'Download :label',
+        'progress_title' => 'Downloading theme...',
+        'progress_message' => 'Please do not close this page.<br>This may take a moment.',
+        'success' => 'Theme downloaded successfully.',
+        'failed' => 'Theme download failed: :error',
+        'invalid' => 'Requested theme is not registered as downloadable.',
+    ],
     'start_button' => 'Start Installation',
 ];
