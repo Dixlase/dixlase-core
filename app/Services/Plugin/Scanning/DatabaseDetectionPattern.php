@@ -122,6 +122,24 @@ class DatabaseDetectionPattern extends DetectionPattern
                 // _optional in plugin.json — the health scorer already
                 // honors that escape hatch.
                 '/DB::table\s*\(\s*[\'"](users|members|members_role_permissions|plugins|media|settings|site_settings|security_settings|sites|captcha_enabled_forms|role_permission_overrides|audit_logs|webhooks|webhook_deliveries)[\'"]\)/i',
+                // Repository contracts under App\Contracts\Repositories\.
+                // CLAUDE.md "Cross-Plugin/Theme Data Access" requires
+                // plugins to reach core tables via these contracts
+                // (e.g. MediaRepositoryInterface) instead of importing
+                // App\Models\* directly. Each repository proxies a
+                // specific core table — Media -> media,
+                // SiteSetting -> site_settings, Plugin -> plugins,
+                // etc. — so a contract reference is the strongest
+                // static signal we get that the file touches the
+                // underlying table, even though the call goes through
+                // the abstraction. Without this, plugins that fully
+                // migrated to the contract idiom (DixlaseSEO from
+                // f3c5e8f onward) get a spurious `unused_declaration`
+                // mismatch on their declared core_tables_read entries.
+                // Same negative-lookbehind rationale as the App\Models
+                // pattern above: excludes deeper-namespaced look-alikes
+                // such as Plugins\Foo\App\Contracts\Repositories\Bar.
+                '/(?<![\\w\\\\])\\\\?App\\\\Contracts\\\\Repositories\\\\\w+RepositoryInterface/i',
             ],
             default => [],
         };

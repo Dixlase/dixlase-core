@@ -115,6 +115,52 @@ class DetectionPatternTest extends TestCase
     }
 
     /**
+     * DatabaseDetectionPattern: a `use` of a repository contract under
+     * App\Contracts\Repositories\ must count as core_tables_read
+     * evidence. CLAUDE.md "Cross-Plugin/Theme Data Access" requires
+     * plugins to reach core tables via these contracts instead of
+     * importing App\Models\* directly. Each repository proxies a
+     * known core table (Media -> media, SiteSetting -> site_settings,
+     * etc.), so the contract import is the strongest static signal
+     * that the file reaches the underlying table. Without this match,
+     * plugins that fully migrated to the contract idiom (DixlaseSEO
+     * after the f3c5e8f refactor) get a false-positive
+     * "unused_declaration" mismatch on their declared core_tables_read
+     * entries even though they legitimately access the table through
+     * the abstraction layer.
+     */
+    public function test_database_core_tables_read_counts_use_import_of_repository_contract(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\nuse App\\Contracts\\Repositories\\MediaRepositoryInterface;\n\nclass C {\n    public function __construct(private readonly MediaRepositoryInterface \$repo) {}\n}\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertNotEmpty(
+            $results,
+            'use App\\Contracts\\Repositories\\<X>RepositoryInterface; must count as core_tables_read '.
+            'evidence so the recommended contract-based access pattern is not penalised.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: regression guard — a plugin-nested
+     * repository contract (e.g. Plugins\Foo\App\Contracts\Repositories\Bar)
+     * must NOT be mis-detected as a core-table reference. Same
+     * negative-lookbehind rationale as the App\Models\X exclusion.
+     */
+    public function test_database_core_tables_read_ignores_plugin_nested_repository_contract(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\nuse Plugins\\DixlaseFoo\\App\\Contracts\\Repositories\\BarRepositoryInterface;\n\nclass C {}\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertEmpty(
+            $results,
+            'plugin-nested App\\Contracts\\Repositories\\X must NOT count as core_tables_read evidence.',
+        );
+    }
+
+    /**
      * DatabaseDetectionPattern: core_tables_write must still require an
      * actual write operation in the file — a use-only file imports the
      * model but does not write to it, and must therefore NOT count as
