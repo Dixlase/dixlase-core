@@ -36,15 +36,190 @@ use Tests\TestCase;
 class DetectionPatternTest extends TestCase
 {
     /**
-     * DatabaseDetectionPattern: コアテーブル読み取りのuse文のみは除外
+     * DatabaseDetectionPattern: `use App\Models\<core-class>;` IS treated as
+     * evidence of core_tables_read. PHP requires explicit imports, so the
+     * presence of a `use` line referencing a core model is a strong static
+     * signal that the file consumes that core table — especially when the
+     * plugin follows the recommended short-name idiom (`Member::...`).
+     * Before this change the `use ` filter masked the only static signal we
+     * had for plugins using `use ... + short-name`, producing false-positive
+     * "unused declaration" warnings (see plan/handoff-plugin-audit-false-positives.md).
      */
-    public function test_database_core_tables_read_excludes_use_import(): void
+    public function test_database_core_tables_read_counts_use_import_of_core_model(): void
     {
         $pattern = new DatabaseDetectionPattern('core_tables_read');
         $content = "<?php\nuse App\\Models\\Member;\n\nclass Test {}\n";
 
         $results = $pattern->scan($content, 'app/Test.php');
-        $this->assertEmpty($results);
+        $this->assertNotEmpty(
+            $results,
+            'use App\\Models\\<core-class>; must count as core_tables_read evidence so '.
+            'the recommended short-name idiom is not penalised.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: `use` of a non-core namespace must NOT
+     * spuriously match. The regex is intentionally constrained to
+     * App\Models\* and the enumerated App\Facades\* shortlist, so a use
+     * statement for any other namespace (helpers, traits, third-party
+     * vendor code, plugin internals) reads zero evidence.
+     */
+    public function test_database_core_tables_read_ignores_unrelated_use_import(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\nuse App\\Helpers\\StringTool;\nuse Plugins\\DixlaseInquiry\\App\\Services\\Inner;\n\nclass Test {}\n";
+
+        $results = $pattern->scan($content, 'app/Test.php');
+        $this->assertEmpty(
+            $results,
+            'use statements of non-core namespaces must NOT count as core_tables_read evidence.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: regression guard — direct FQN usage of a
+     * core facade (e.g. `\App\Facades\SiteSettings::get(...)`) must still
+     * match after we relaxed the leading-backslash requirement.
+     */
+    public function test_database_core_tables_read_still_detects_fqn_facade_call(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\n\$mode = \\App\\Facades\\SiteSettings::get('admin_mode', 0);\n";
+
+        $results = $pattern->scan($content, 'app/Controller.php');
+        $this->assertNotEmpty(
+            $results,
+            'FQN form \\App\\Facades\\SiteSettings::get(...) must still be recognised after the regex relaxation.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: the recommended idiom — `use App\Facades\SiteSettings;`
+     * (no leading backslash) combined with a later short-name call site — IS
+     * counted because the use line itself matches the new regex. This is the
+     * exact pattern DixlaseInquiry follows and the original false-positive
+     * case the handoff document targets.
+     */
+    public function test_database_core_tables_read_counts_use_import_of_core_facade(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_read');
+        $content = "<?php\nuse App\\Facades\\SiteSettings;\n\nclass C {\n    public function handle() {\n        return SiteSettings::get('admin_mode', 0);\n    }\n}\n";
+
+        $results = $pattern->scan($content, 'app/Controller.php');
+        $this->assertNotEmpty(
+            $results,
+            'use App\\Facades\\SiteSettings; must count as evidence so the recommended idiom '.
+            '(use + short-name call) is not penalised as an unused declaration.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: core_tables_write must still require an
+     * actual write operation in the file — a use-only file imports the
+     * model but does not write to it, and must therefore NOT count as
+     * evidence of core_tables_write.
+     */
+    public function test_database_core_tables_write_use_import_without_write_is_excluded(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        $content = "<?php\nuse App\\Models\\Member;\n\nclass Reader {\n    public function name(Member \$m) { return \$m->name; }\n}\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertEmpty(
+            $results,
+            'use-only file (no ->save/->create/->update/->delete/->insert/->upsert) must NOT count as core_tables_write.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: a `use` line of a core class must NOT
+     * count as core_tables_write evidence on its own, even when the
+     * file contains write calls elsewhere. The file-level
+     * hasWriteOperations() check is too coarse to tell whether those
+     * writes target the imported core class or the plugin's own models —
+     * a use-statement is only a class-level dependency signal, not a
+     * call-site signal. Restricting write evidence to inline FQN call
+     * sites eliminates the false positive where a plugin imports
+     * App\Facades\SiteSettings for READ access while writing to its own
+     * models in the same file (the original DixlaseInquiry case in
+     * plan/handoff-plugin-audit-false-positives.md).
+     */
+    public function test_database_core_tables_write_excludes_use_only_match(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        // Use a core facade for READ, write to a non-core (plugin) model.
+        // The file passes hasWriteOperations() because of $own->save(), but
+        // that write targets the plugin's own model — not core_settings.
+        $content = "<?php\nuse App\\Facades\\SiteSettings;\n\nclass C {\n    public function handle(\$own) {\n        \$mode = SiteSettings::get('admin_mode');\n        \$own->save();\n    }\n}\n";
+
+        $results = $pattern->scan($content, 'plugins/PluginX/app/Controller.php');
+        $this->assertEmpty(
+            $results,
+            'A use-statement for a core class must NOT count as core_tables_write evidence — '.
+            'the write call in the same file might target plugin-owned models, not the imported core class.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: inline FQN write calls on core models
+     * (e.g. `\App\Models\Member::create(...)` or
+     * `DB::table('members')->update(...)`) MUST still be detected.
+     * The use-only exclusion only drops pure `use ...;` matches, not
+     * call-site references.
+     */
+    public function test_database_core_tables_write_still_detects_inline_fqn_write(): void
+    {
+        $pattern = new DatabaseDetectionPattern('core_tables_write');
+        $content = "<?php\n\\App\\Models\\Member::find(1)->save();\n";
+
+        $results = $pattern->scan($content, 'app/Service.php');
+        $this->assertNotEmpty(
+            $results,
+            'Inline FQN write call on a core model must still count as core_tables_write evidence.',
+        );
+    }
+
+    /**
+     * DatabaseDetectionPattern: deeply-namespaced plugin classes (e.g.
+     * `\Plugins\DixlaseInquiry\App\Models\DixlaseInquiry`) must NOT be
+     * mis-detected as core-table access. The substring `\App\Models\X`
+     * appears inside the plugin FQN, but the leading namespace prefix
+     * (`Plugins\DixlaseInquiry`) clearly marks it as a plugin-owned
+     * class, not a core model. The negative lookbehind in the regex
+     * guarantees this exclusion.
+     *
+     * Without this guard, every plugin that follows the standard
+     * Plugins\<Plugin>\App\Models\* layout would be falsely flagged for
+     * core_tables_read / core_tables_write, which is the inverse of the
+     * intended behaviour and exactly the regression that surfaced when
+     * the use-statement filter was removed (see
+     * plan/handoff-plugin-audit-false-positives.md).
+     */
+    public function test_database_core_tables_ignores_plugin_nested_models(): void
+    {
+        $readPattern = new DatabaseDetectionPattern('core_tables_read');
+        $writePattern = new DatabaseDetectionPattern('core_tables_write');
+
+        $contentFqn = "<?php\n\$row = \\Plugins\\DixlaseInquiry\\App\\Models\\DixlaseInquiry::find(1);\n";
+        $contentUse = "<?php\nuse Plugins\\DixlaseInquiry\\App\\Models\\DixlaseInquirySetting;\n\nclass C {}\n";
+        // include a write call so the core_tables_write file-level guard
+        // is satisfied — but the namespace prefix should still prevent
+        // a plugin-owned model from contributing evidence.
+        $contentWrite = "<?php\n\$row = new \\Plugins\\DixlaseInquiry\\App\\Models\\DixlaseInquiry();\n\$row->save();\n";
+
+        $this->assertEmpty(
+            $readPattern->scan($contentFqn, 'plugins/DixlaseInquiry/app/Service.php'),
+            'FQN reference to a plugin-nested App\\Models\\X must NOT count as core_tables_read.',
+        );
+        $this->assertEmpty(
+            $readPattern->scan($contentUse, 'plugins/DixlaseInquiry/app/Service.php'),
+            'use statement of a plugin-nested App\\Models\\X must NOT count as core_tables_read.',
+        );
+        $this->assertEmpty(
+            $writePattern->scan($contentWrite, 'plugins/DixlaseInquiry/app/Service.php'),
+            'plugin-nested App\\Models\\X with ->save() must NOT count as core_tables_write.',
+        );
     }
 
     /**
