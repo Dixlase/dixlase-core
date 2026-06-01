@@ -86,25 +86,33 @@ class DatabaseDetectionPattern extends DetectionPattern
                 '/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/i',
             ],
             'core_tables_read', 'core_tables_write' => [
-                // Any class under App\Models\. The earlier hardcoded
-                // shortlist (User|Member|Plugin|Media|Setting|SiteSetting|
-                // SecuritySetting) missed core models like
-                // CaptchaEnabledForm, RolePermissionOverride, etc., and
-                // every newly-added core model needed a regex update
-                // to be detected. `\w+` is safe here because the `use`
-                // statement exclusion in validateMatch() already
-                // filters out pure-import lines, so only real usages
-                // (constructor calls, static method calls, property
-                // access) actually count toward the score.
-                '/\\\\App\\\\Models\\\\\w+/i',
+                // Any class under the *top-level* App\Models\. Accepts
+                // both the FQN form `\App\Models\Foo` and the bare form
+                // `App\Models\Foo` (the latter appears in
+                // `use App\Models\Foo;` statements, which are themselves
+                // evidence that the file consumes that core model — see
+                // validateMatch() below). The negative lookbehind
+                // (?<![\w\\]) is critical: it excludes the substring
+                // when it appears *inside* a deeper namespace such as
+                // `\Plugins\DixlaseInquiry\App\Models\Foo` (preceded by
+                // `y\`) or `Plugins\DixlaseInquiry\App\Models\Foo`
+                // (the `App` preceded by `\`). Without it, every plugin
+                // model under Plugins\<Plugin>\App\Models\ would be
+                // mis-detected as core_tables_* evidence.
+                // The earlier hardcoded shortlist
+                // (User|Member|Plugin|Media|Setting|SiteSetting|
+                // SecuritySetting) also missed core models like
+                // CaptchaEnabledForm, RolePermissionOverride, etc.
+                '/(?<![\\w\\\\])\\\\?App\\\\Models\\\\\w+/i',
                 // Core facades that wrap core models (read/write the
                 // underlying tables). The recommended plugin idiom is
-                // `App\Facades\SiteSettings::get(...)` instead of
-                // `App\Models\SiteSetting::getValue(...)`, but the
-                // earlier regex only matched the latter — penalising
-                // plugins that followed the recommendation. Mirror the
-                // current set of core facades under app/Facades/.
-                '/\\\\App\\\\Facades\\\\(SiteSettings|SiteContext|Audit|PluginPermission|Webhook)/i',
+                // `use App\Facades\SiteSettings;` followed by
+                // `SiteSettings::get(...)` — the use-statement is the
+                // only line containing the FQN, so the regex must
+                // accept the no-leading-backslash form too. Same
+                // negative-lookbehind rationale as above to exclude
+                // deeper-namespaced look-alikes.
+                '/(?<![\\w\\\\])\\\\?App\\\\Facades\\\\(SiteSettings|SiteContext|Audit|PluginPermission|Webhook)/i',
                 // Common core tables touched via raw DB::table(). The
                 // earlier shortlist missed members_role_permissions
                 // (role-permission seeders), captcha_enabled_forms
@@ -120,8 +128,28 @@ class DatabaseDetectionPattern extends DetectionPattern
     }
 
     /**
-     * Exclude if only use statement imports
-     * For core_tables_write, also verify that write operations exist in the file
+     * Decide whether a regex match should count as evidence of the
+     * declared permission.
+     *
+     * For core_tables_read we deliberately do NOT filter `use ` lines:
+     * a `use App\Models\Foo;` (or `use App\Facades\SiteSettings;`)
+     * statement is itself a declared dependency on a core class, which
+     * is the strongest static signal we get when the plugin follows
+     * the recommended short-name idiom (`SiteSettings::get(...)`).
+     * Pure namespace imports of unrelated classes never reach this
+     * method because the regex above only accepts top-level
+     * `App\Models\X` and the enumerated `App\Facades\X` paths.
+     *
+     * For core_tables_write we DO filter `use ` lines, for a different
+     * reason: hasWriteOperations() below is a file-level coarse check
+     * (any `->save()` / `->create()` / etc. anywhere in the file). A
+     * use-statement is a class-level dependency declaration but tells
+     * us nothing about whether the write calls in the file actually
+     * target *that imported class* — they might just as easily be
+     * writes on the plugin's own models. To avoid that false positive,
+     * core_tables_write evidence is restricted to inline FQN call sites
+     * (`\App\Models\Foo::create(...)` or `DB::table('members')->update`)
+     * where the regex match co-occurs with the actual write callsite.
      */
     public function validateMatch(string $match, string $line, string $fileContent, string $filePath): bool
     {
@@ -129,18 +157,18 @@ class DatabaseDetectionPattern extends DetectionPattern
             return false;
         }
 
-        // Common to core_tables_read / core_tables_write: exclude use statement imports only
-        if (in_array($this->subKey, ['core_tables_read', 'core_tables_write'], true)) {
-            $trimmedLine = ltrim($line);
+        if ($this->subKey === 'core_tables_write') {
+            // Write evidence requires at least one write call somewhere
+            // in the file, AND the match itself must not be a pure
+            // import line — see the docblock above for the rationale.
+            if (! $this->hasWriteOperations($fileContent)) {
+                return false;
+            }
 
+            $trimmedLine = ltrim($line);
             if (str_starts_with($trimmedLine, 'use ')) {
                 return false;
             }
-        }
-
-        // core_tables_write: detect only when write operations exist in the file
-        if ($this->subKey === 'core_tables_write') {
-            return $this->hasWriteOperations($fileContent);
         }
 
         return true;
