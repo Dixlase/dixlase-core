@@ -72,6 +72,7 @@ use App\Services\Theme\ThemePermissionService;
 use App\Services\TwoFa\TwoFaPasskeyService;
 use App\Services\Verification\CoreFileVerificationService;
 use App\Settings\ApiSettingDefinitions;
+use App\Settings\BackupSettingDefinitions;
 use App\Settings\CoreSettingDefinitions;
 use App\Settings\SecuritySettingDefinitions;
 use App\Traits\CustomFilesLoaderTrait;
@@ -209,6 +210,7 @@ class AppServiceProvider extends ServiceProvider
         CoreSettingDefinitions::register($registry);
         SecuritySettingDefinitions::register($registry);
         ApiSettingDefinitions::register($registry);
+        BackupSettingDefinitions::register($registry);
 
         // Skip if .env file does not exist
         if (! file_exists(base_path('.env'))) {
