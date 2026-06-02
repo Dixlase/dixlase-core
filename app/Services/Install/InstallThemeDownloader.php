@@ -35,6 +35,7 @@
 
 namespace App\Services\Install;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use ZipArchive;
@@ -166,6 +167,31 @@ class InstallThemeDownloader
             // unlinked in the finally block below.
             if (! File::copyDirectory($extracted, $targetPath)) {
                 throw new \RuntimeException("Failed to copy theme into themes/{$directory}");
+            }
+
+            // Source files are now in place, but the theme ships only
+            // resources/ — there is no public/build/ yet, so loading any
+            // page that depends on the theme's JS bundle (login, install
+            // wizard final step, the front page) breaks with
+            // "appearanceTheme is not defined" Alpine errors. Delegate
+            // to the existing dls:theme:build command, which runs
+            // npm install + npm run build inside themes/<directory> and
+            // creates the public symlink. Surface a clear actionable
+            // message if the build fails — usually because npm is not
+            // installed on the host — so the operator can finish the
+            // build manually instead of silently shipping a broken UI.
+            $exitCode = Artisan::call('dls:theme:build', [
+                'theme' => $directory,
+                '--no-interaction' => true,
+            ]);
+            if ($exitCode !== 0) {
+                $output = trim((string) Artisan::output());
+                throw new \RuntimeException(
+                    "Theme '{$directory}' was downloaded but the asset build failed. "
+                    ."Install Node.js (with npm) on this host and run "
+                    ."`php artisan dls:theme:build {$directory}` manually."
+                    .($output !== '' ? "\n\n".$output : '')
+                );
             }
         } finally {
             if (is_file($tmpZip)) {
