@@ -456,7 +456,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         // Check for unknown PHP files directly under public
         $publicPath = public_path();
-        $allowedPublicPhp = ['index.php'];
+        // setup-required.php is the friendly first-run page that takes
+        // over when vendor/autoload.php is missing — see public/index.php
+        // for the dispatch. It's a known, shipped-with-core entry point,
+        // so it must not be flagged as "unknown_php_in_public".
+        $allowedPublicPhp = ['index.php', 'setup-required.php'];
 
         foreach (glob($publicPath.'/*.php') as $file) {
             $filename = basename($file);
@@ -1032,7 +1036,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         // Check for unknown PHP files directly under public
         $publicPath = public_path();
-        $allowedPublicPhp = ['index.php'];
+        // setup-required.php is the friendly first-run page that takes
+        // over when vendor/autoload.php is missing — see public/index.php
+        // for the dispatch. It's a known, shipped-with-core entry point,
+        // so it must not be flagged as "unknown_php_in_public".
+        $allowedPublicPhp = ['index.php', 'setup-required.php'];
 
         foreach (glob($publicPath.'/*.php') as $file) {
             $filename = basename($file);
