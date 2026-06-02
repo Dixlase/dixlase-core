@@ -35,6 +35,19 @@
 
 use Illuminate\Support\Str;
 
+// Resolve the MySQL SSL CA option key once for reuse across the three
+// MySQL/MariaDB connection blocks. PHP 8.5 deprecated PDO::MYSQL_ATTR_SSL_CA
+// in favour of the namespaced Pdo\Mysql::ATTR_SSL_CA. The legacy constant
+// still exists but emits a "Deprecated:" notice on every access, which
+// surfaces in install-time output, `composer install` post-scripts, and
+// any other command that touches this config under PHP 8.5+. We keep the
+// legacy constant for PHP 8.3 and 8.4 — where Pdo\Mysql is not declared —
+// and pick up the new class constant when running on PHP 8.5+. defined()
+// is a name-only check, so it does not itself trigger the deprecation.
+$mysqlSslCaAttr = defined('Pdo\\Mysql::ATTR_SSL_CA')
+    ? \Pdo\Mysql::ATTR_SSL_CA
+    : \PDO::MYSQL_ATTR_SSL_CA;
+
 return [
 
     /*
@@ -92,7 +105,7 @@ return [
             'engine' => null,
             'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttr => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -130,7 +143,7 @@ return [
             'engine' => null,
             'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttr => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -151,7 +164,7 @@ return [
             'engine' => null,
             'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttr => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
