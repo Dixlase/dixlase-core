@@ -1,0 +1,47 @@
+# Excluded from the operator-facing release distribution ZIP built by
+# .github/workflows/release.yml. rsync --exclude-from format — one
+# pattern per line, '#' starts a comment, trailing '/' marks a directory.
+
+# ----- VCS metadata + GitHub config -----
+.git/
+.github/
+.gitignore
+.gitattributes
+.gitmodules
+.mailmap
+.gitmessage
+.gitignore.plugins
+
+# ----- Editor / IDE / AI assistant config -----
+.editorconfig
+.ai/
+.windsurf/
+.vscode.example/
+
+# ----- Tests + dev tooling -----
+tests/
+phpunit.xml
+phpstan.neon
+
+# ----- Build-time only -----
+# node_modules is also deleted before staging, but keep this as a
+# safety net in case the cleanup step is ever skipped.
+node_modules/
+
+# CI staging dir — without this, rsync recurses into its own target.
+dist/
+
+# ----- Composer overrides used only during local development -----
+composer.local.json
+composer.local.json.example
+
+# ----- Developer-facing docs (operators do not need these — README,
+# LICENSE*, and NOTICE* are intentionally kept) -----
+CHANGELOG.md
+CONTRIBUTING*
+COPYRIGHT-POLICY*
+TRADEMARK-POLICY*
+CLA-*
+SECURITY.md
+PLUGIN-API.md
+README.laravel.md
