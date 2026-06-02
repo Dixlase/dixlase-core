@@ -91,11 +91,47 @@ jobs:
         # Node on the destination host.
         run: npm run build
 
+      - name: Build bundled-theme assets
+        # composer/installers placed themes/DixlaseOnePage/ (and any
+        # other dixlase-theme composer packages) during composer install
+        # above. The theme ships only resources/ — no built public/
+        # assets, no public symlink — so without this step the release
+        # ZIP would extract into a UI that boots with "appearanceTheme
+        # is not defined" Alpine errors and an unstyled login / install
+        # / front page.
+        #
+        # We run npm directly rather than calling `php artisan
+        # dls:theme:build`, because artisan would require a bootable
+        # Laravel (.env, APP_KEY, …) which is extra ceremony in CI just
+        # to shell out to npm. The relative public symlink we create is
+        # the same one the artisan command writes — relative paths
+        # survive ZIP extraction; an absolute path would point at the
+        # CI runner's filesystem on the operator's machine.
+        run: |
+          set -e
+          mkdir -p public/assets/themes
+          shopt -s nullglob
+          for theme_dir in themes/*/; do
+            theme_name="$(basename "$theme_dir")"
+            if [ -f "$theme_dir/package.json" ]; then
+              echo "::group::Build theme: $theme_name"
+              (cd "$theme_dir" && npm ci && npm run build)
+              # Relative symlink: public/assets/themes/<name> → ../../../themes/<name>/resources/assets
+              ln -sfn "../../../themes/$theme_name/resources/assets" "public/assets/themes/$theme_name"
+              echo "::endgroup::"
+            else
+              echo "Skipping $theme_name (no package.json)"
+            fi
+          done
+
       - name: Clean dev-only artifacts before bundling
         run: |
           # node_modules is ~300MB and not needed at runtime — vite has
           # already emitted public/assets/build/ above.
           rm -rf node_modules
+
+          # Same logic for each bundled theme's node_modules.
+          find themes -mindepth 2 -maxdepth 2 -type d -name node_modules -prune -exec rm -rf {} +
 
           # Wipe runtime cache contents but keep .gitkeep so Laravel
           # finds the directory layout it expects on first boot.
