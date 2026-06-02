@@ -24,6 +24,9 @@ return [
     'Generic static domains serve multiple purposes' => '汎用的なstaticドメインは複数用途',
     'gstatic.com is special (Google static resources)' => 'gstatic.comは特殊（Google系の静的リソース）',
     'Font services provide both stylesheets and font files' => 'フォントサービスはスタイルシートとフォントファイルの両方を提供',
+    'Allow the hosted demo sign-up form to submit to the demo' => 'ホスト型デモ申込フォームがデモ払い出しサービスへ',
+    'provisioning service. form-action is not covered by the' => '送信できるよう許可する。form-action は trusted_domains の',
+    'trusted_domains keyword detection, so it must be listed here.' => 'キーワード検出の対象外のため、ここに明示的に列挙する必要がある。',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
@@ -50,5 +53,8 @@ return [
         'Generic static domains serve multiple purposes' => 'machine',
         'gstatic.com is special (Google static resources)' => 'machine',
         'Font services provide both stylesheets and font files' => 'machine',
+        'Allow the hosted demo sign-up form to submit to the demo' => 'human',
+        'provisioning service. form-action is not covered by the' => 'human',
+        'trusted_domains keyword detection, so it must be listed here.' => 'human',
     ],
 ];
