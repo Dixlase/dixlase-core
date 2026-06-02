@@ -95,7 +95,10 @@ return [
     |
     */
     'front_directives' => [
-        // Add any extra directives needed for the frontend here
+        // Allow the hosted demo sign-up form to submit to the demo
+        // provisioning service. form-action is not covered by the
+        // trusted_domains keyword detection, so it must be listed here.
+        'form-action' => ['https://demo.dixlase.org'],
     ],
 
     /*
