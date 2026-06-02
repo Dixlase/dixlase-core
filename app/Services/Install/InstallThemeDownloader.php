@@ -35,6 +35,7 @@
 
 namespace App\Services\Install;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use ZipArchive;
@@ -102,10 +103,24 @@ class InstallThemeDownloader
         $tmpDir = sys_get_temp_dir().'/dixlase-theme-'.bin2hex(random_bytes(8));
 
         try {
-            $response = Http::withOptions(['sink' => $tmpZip])
+            $request = Http::withOptions(['sink' => $tmpZip])
                 ->timeout(120)
-                ->withHeaders(['User-Agent' => 'Dixlase-Installer'])
-                ->get($zipUrl);
+                ->withHeaders(['User-Agent' => 'Dixlase-Installer']);
+
+            // First-party themes may live in a private repository during
+            // development. github.com's archive endpoint silently returns 404
+            // to anonymous requests against private repos (it intentionally
+            // hides their existence), so we forward the operator-configured
+            // GitHub PAT when one is available. The token comes from
+            // EXTENSION_GITHUB_TOKEN (config('extension-sources.github.default_token'));
+            // env() inside the config requires `php artisan config:clear`
+            // after the .env edit.
+            $token = $this->githubToken();
+            if ($token !== '') {
+                $request = $request->withToken($token);
+            }
+
+            $response = $request->get($zipUrl);
 
             if (! $response->successful()) {
                 throw new \RuntimeException(
@@ -142,8 +157,41 @@ class InstallThemeDownloader
                 File::deleteDirectory($targetPath);
             }
             File::ensureDirectoryExists(dirname($targetPath), 0775);
-            if (! File::moveDirectory($extracted, $targetPath)) {
-                throw new \RuntimeException("Failed to move theme into themes/{$directory}");
+
+            // File::moveDirectory() only calls rename(), which fails with
+            // EXDEV across filesystems. In a Docker setup the temp dir
+            // (sys_get_temp_dir() — typically /tmp on the container's
+            // overlay fs) and themes/ (bind-mounted from the host) live
+            // on different filesystems, so rename() silently fails and
+            // returns false. Copy the tree instead; the temp dir is
+            // unlinked in the finally block below.
+            if (! File::copyDirectory($extracted, $targetPath)) {
+                throw new \RuntimeException("Failed to copy theme into themes/{$directory}");
+            }
+
+            // Source files are now in place, but the theme ships only
+            // resources/ — there is no public/build/ yet, so loading any
+            // page that depends on the theme's JS bundle (login, install
+            // wizard final step, the front page) breaks with
+            // "appearanceTheme is not defined" Alpine errors. Delegate
+            // to the existing dls:theme:build command, which runs
+            // npm install + npm run build inside themes/<directory> and
+            // creates the public symlink. Surface a clear actionable
+            // message if the build fails — usually because npm is not
+            // installed on the host — so the operator can finish the
+            // build manually instead of silently shipping a broken UI.
+            $exitCode = Artisan::call('dls:theme:build', [
+                'theme' => $directory,
+                '--no-interaction' => true,
+            ]);
+            if ($exitCode !== 0) {
+                $output = trim((string) Artisan::output());
+                throw new \RuntimeException(
+                    "Theme '{$directory}' was downloaded but the asset build failed. "
+                    ."Install Node.js (with npm) on this host and run "
+                    ."`php artisan dls:theme:build {$directory}` manually."
+                    .($output !== '' ? "\n\n".$output : '')
+                );
             }
         } finally {
             if (is_file($tmpZip)) {
@@ -162,12 +210,21 @@ class InstallThemeDownloader
     private function resolveZipUrl(string $repo): string
     {
         $apiUrl = "https://api.github.com/repos/{$repo}/releases/latest";
-        $response = Http::timeout(30)
+        $request = Http::timeout(30)
             ->withHeaders([
                 'Accept' => 'application/vnd.github+json',
                 'User-Agent' => 'Dixlase-Installer',
-            ])
-            ->get($apiUrl);
+            ]);
+
+        // Same auth path as the archive download below. Without this,
+        // the API returns 404 for private repos and we fall straight to
+        // the branch tarball URL — which then also 404s anonymously.
+        $token = $this->githubToken();
+        if ($token !== '') {
+            $request = $request->withToken($token);
+        }
+
+        $response = $request->get($apiUrl);
 
         if ($response->successful()) {
             $tag = $response->json('tag_name');
@@ -179,5 +236,20 @@ class InstallThemeDownloader
         // No tagged release yet → fall back to the main branch ZIP so a
         // brand-new theme repository is still usable.
         return "https://github.com/{$repo}/archive/refs/heads/main.zip";
+    }
+
+    /**
+     * Resolve the GitHub PAT to authenticate downloads of private theme
+     * repositories. Reads the operator-configured token from
+     * extension-sources config (EXTENSION_GITHUB_TOKEN env). Returns an
+     * empty string when no token is configured — in which case the
+     * downloader falls back to anonymous requests, which work for
+     * public repos and 404 on private ones.
+     */
+    private function githubToken(): string
+    {
+        $token = config('extension-sources.github.default_token');
+
+        return is_string($token) ? trim($token) : '';
     }
 }
