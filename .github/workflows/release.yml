@@ -1,0 +1,184 @@
+name: Build release distribution ZIP
+
+# Produces the operator-facing distribution archive: dixlase-<tag>.zip
+# with vendor/, public/assets/build/, and themes/DixlaseOnePage/ already
+# installed. Operators extract → set up .env → visit the URL → the
+# install wizard handles the rest, with no composer or npm step needed
+# on the destination host.
+#
+# Trigger:
+#   - `release: published` → automatically attaches the ZIP to the
+#     GitHub release as a downloadable asset.
+#   - `workflow_dispatch` → manual run for testing the build before
+#     cutting a real release; result is uploaded as a workflow artifact.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag or ref to build (default: workflow run ref)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # required for softprops/action-gh-release to upload the asset
+
+env:
+  # PHP version used to build the bundled vendor/. composer.json pins
+  # the platform to PHP 8.2, so 8.2 is the safest target — the resulting
+  # vendor/ runs on 8.2, 8.3, 8.4, and 8.5+. Bumping this is fine as
+  # long as the platform pin moves with it.
+  PHP_VERSION: '8.2'
+  NODE_VERSION: '20'
+  # GitHub OAuth token used by Composer to clone private dependencies
+  # (currently dixlase/dixlase-onepage, which composer/installers routes
+  # to themes/DixlaseOnePage/). Identical secret name + format used by
+  # the existing test / deploy / security workflows.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build distribution ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve target ref
+        id: ref
+        run: |
+          REF="${{ github.event.release.tag_name }}"
+          [ -z "$REF" ] && REF="${{ inputs.tag }}"
+          [ -z "$REF" ] && REF="${{ github.ref_name }}"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "Building from ref: $REF"
+
+      - name: Checkout core at target ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
+
+      - name: Setup PHP ${{ env.PHP_VERSION }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, zip, gd, intl, bcmath, pdo_mysql, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Composer dependencies (production)
+        # --no-dev keeps PHPUnit / Mockery / etc. out of the ZIP.
+        # --optimize-autoloader pre-generates the classmap so the
+        # operator's first request does not pay the autoload-warmup cost.
+        # composer/installers routes dixlase/dixlase-onepage into
+        # themes/DixlaseOnePage/ automatically (see composer.json
+        # extra.installer-paths), so no separate clone step is needed.
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build front-end assets
+        # Populates public/assets/build/ so the operator does not need
+        # Node on the destination host.
+        run: npm run build
+
+      - name: Build bundled-theme assets
+        # composer/installers placed themes/DixlaseOnePage/ (and any
+        # other dixlase-theme composer packages) during composer install
+        # above. The theme ships only resources/ — no built public/
+        # assets, no public symlink — so without this step the release
+        # ZIP would extract into a UI that boots with "appearanceTheme
+        # is not defined" Alpine errors and an unstyled login / install
+        # / front page.
+        #
+        # We run npm directly rather than calling `php artisan
+        # dls:theme:build`, because artisan would require a bootable
+        # Laravel (.env, APP_KEY, …) which is extra ceremony in CI just
+        # to shell out to npm. The relative public symlink we create is
+        # the same one the artisan command writes — relative paths
+        # survive ZIP extraction; an absolute path would point at the
+        # CI runner's filesystem on the operator's machine.
+        run: |
+          set -e
+          mkdir -p public/assets/themes
+          shopt -s nullglob
+          for theme_dir in themes/*/; do
+            theme_name="$(basename "$theme_dir")"
+            if [ -f "$theme_dir/package.json" ]; then
+              echo "::group::Build theme: $theme_name"
+              (cd "$theme_dir" && npm ci && npm run build)
+              # Relative symlink: public/assets/themes/<name> → ../../../themes/<name>/resources/assets
+              ln -sfn "../../../themes/$theme_name/resources/assets" "public/assets/themes/$theme_name"
+              echo "::endgroup::"
+            else
+              echo "Skipping $theme_name (no package.json)"
+            fi
+          done
+
+      - name: Clean dev-only artifacts before bundling
+        run: |
+          # node_modules is ~300MB and not needed at runtime — vite has
+          # already emitted public/assets/build/ above.
+          rm -rf node_modules
+
+          # Same logic for each bundled theme's node_modules.
+          find themes -mindepth 2 -maxdepth 2 -type d -name node_modules -prune -exec rm -rf {} +
+
+          # Wipe runtime cache contents but keep .gitkeep so Laravel
+          # finds the directory layout it expects on first boot.
+          for d in storage/logs \
+                   storage/framework/cache/data \
+                   storage/framework/sessions \
+                   storage/framework/views \
+                   bootstrap/cache; do
+            if [ -d "$d" ]; then
+              find "$d" -type f ! -name '.gitkeep' -delete
+            fi
+          done
+
+      - name: Stage distribution tree
+        id: stage
+        run: |
+          TAG="${{ steps.ref.outputs.ref }}"
+          WRAPPER="dist/dixlase-${TAG}"
+          mkdir -p "$WRAPPER"
+
+          # rsync into a wrapper directory so the ZIP extracts as
+          # dixlase-<tag>/ rather than dumping files into whatever
+          # directory the operator unzipped in.
+          rsync -a --exclude-from=.github/release-dist-exclude.txt . "$WRAPPER/"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "wrapper=$WRAPPER" >> "$GITHUB_OUTPUT"
+          echo "Staged: $(du -sh "$WRAPPER" | cut -f1)"
+
+      - name: Build ZIP
+        id: zip
+        run: |
+          ZIP_NAME="dixlase-${{ steps.stage.outputs.tag }}.zip"
+          (cd dist && zip -rq "../$ZIP_NAME" "dixlase-${{ steps.stage.outputs.tag }}")
+          echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          ls -lh "$ZIP_NAME"
+
+      - name: Attach to GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.zip.outputs.name }}
+
+      - name: Upload as workflow artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: ${{ steps.zip.outputs.name }}
+          retention-days: 30
