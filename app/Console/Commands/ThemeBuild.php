@@ -74,9 +74,56 @@ class ThemeBuild extends Command
             return self::FAILURE;
         }
 
+        // Themes' tailwind.css @imports
+        // resources/src/common/css/dixlase-tailwind-plugin-sources.css —
+        // the aggregator file written by
+        // dls:tailwind:regenerate-plugin-sources whenever plugins change
+        // (and once at install-wizard completion). On a fresh clone, or
+        // when the install wizard's "Download theme" button fires
+        // before the regenerate has had a chance to run, that file does
+        // not exist yet and vite aborts with
+        // `Unable to resolve @import "..."` mid-build. Seed an empty
+        // stub in the exact format the aggregator emits when no plugin
+        // contributes sources, matching the docker-installer's setup.sh
+        // behaviour. If the file already exists (real aggregator output
+        // from a prior regenerate run) leave it alone — overwriting
+        // would clobber real plugin source declarations.
+        $aggregatorPath = base_path(\App\Services\Tailwind\PluginSourceAggregator::OUTPUT_PATH);
+        if (! File::exists($aggregatorPath)) {
+            File::ensureDirectoryExists(dirname($aggregatorPath), 0775);
+            File::put($aggregatorPath, <<<CSS
+/*
+ * AUTO-GENERATED placeholder seeded by dls:theme:build.
+ * The Dixlase install wizard and plugin lifecycle commands overwrite
+ * this file via php artisan dls:tailwind:regenerate-plugin-sources.
+ */
+
+/* No enabled plugin currently declares Tailwind content sources. */
+
+CSS);
+        }
+
+        // npm defaults its cache to $HOME/.npm. In a php-fpm container
+        // $HOME is typically /var/www (root-owned by the Docker image),
+        // so a CLI invocation (uid = root) writes /var/www/.npm with
+        // root ownership, and a subsequent web-triggered invocation
+        // (uid = www-data, 33) — notably the install wizard's
+        // "Download theme" button, which routes through here via
+        // InstallThemeDownloader::download() → Artisan::call('dls:theme:build')
+        // — then permanently fails with EACCES on mkdir /var/www/.npm
+        // and leaves a partial node_modules behind. Pin npm's cache to
+        // a project-local directory under storage/ that is already owned
+        // by whatever user runs Laravel, so CLI and web-request paths
+        // do not fight over the same root-owned home dir.
+        $npmCache = storage_path('app/private/npm-cache');
+        if (! File::isDirectory($npmCache)) {
+            File::ensureDirectoryExists($npmCache, 0775);
+        }
+        $npmEnv = ['NPM_CONFIG_CACHE' => $npmCache];
+
         if (! $this->option('no-install')) {
             $this->info("Running npm install in themes/{$theme}...");
-            $install = Process::path($themePath)->timeout(600)->run('npm install');
+            $install = Process::path($themePath)->env($npmEnv)->timeout(600)->run('npm install');
 
             if ($install->failed()) {
                 $this->error($install->errorOutput() ?: $install->output());
@@ -86,7 +133,7 @@ class ThemeBuild extends Command
         }
 
         $this->info("Running npm run build in themes/{$theme}...");
-        $build = Process::path($themePath)->timeout(600)->run('npm run build');
+        $build = Process::path($themePath)->env($npmEnv)->timeout(600)->run('npm run build');
 
         if ($build->failed()) {
             $this->error($build->errorOutput() ?: $build->output());
