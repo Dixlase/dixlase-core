@@ -40,6 +40,8 @@ namespace App\Services\Plugin;
 use App\Contracts\Plugin\PluginPermissionServiceInterface;
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Models\PluginAudit;
+use App\Models\SignatureWaiver;
+use App\Services\Signature\SignatureWaiverService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -459,7 +461,12 @@ class PluginPermissionService implements PluginPermissionServiceInterface
         $verifier = app(SignatureVerifierInterface::class);
         $result = $verifier->verify($pluginSlug);
 
-        return $result->toArray();
+        // Overlay the operator waiver (if any) onto the objective result. The
+        // verifier status is left untouched; only the `waived` flag is added.
+        $waived = app(SignatureWaiverService::class)
+            ->isWaived(SignatureWaiver::SCOPE_PLUGIN, $pluginSlug);
+
+        return $result->withWaived($waived)->toArray();
     }
 
     /**

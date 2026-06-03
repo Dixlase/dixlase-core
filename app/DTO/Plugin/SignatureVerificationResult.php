@@ -74,6 +74,9 @@ final readonly class SignatureVerificationResult implements JsonSerializable
      * @param  string|null  $keyLabel  Key label
      * @param  string|null  $message  Message
      * @param  array  $errors  Error list
+     * @param  bool  $waived  Operator waiver overlay (suppresses the warning;
+     *                        does NOT change $status). Set by the integration
+     *                        layer (PluginPermissionService), not the verifier.
      */
     public function __construct(
         public string $status,
@@ -84,6 +87,7 @@ final readonly class SignatureVerificationResult implements JsonSerializable
         public ?string $keyLabel = null,
         public ?string $message = null,
         public array $errors = [],
+        public bool $waived = false,
     ) {}
 
     /**
@@ -100,6 +104,35 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     public function isUnsigned(): bool
     {
         return $this->status === self::STATUS_UNSIGNED;
+    }
+
+    /**
+     * Whether an operator has waived the signature requirement (overlay).
+     *
+     * Orthogonal to $status: a waived result may still be invalid/unsigned
+     * underneath; the waiver only means the operator accepted it deliberately.
+     */
+    public function isWaived(): bool
+    {
+        return $this->waived;
+    }
+
+    /**
+     * Return a copy with the waiver overlay applied (this DTO is readonly).
+     */
+    public function withWaived(bool $waived = true): self
+    {
+        return new self(
+            status: $this->status,
+            type: $this->type,
+            signedBy: $this->signedBy,
+            signedAt: $this->signedAt,
+            keyId: $this->keyId,
+            keyLabel: $this->keyLabel,
+            message: $this->message,
+            errors: $this->errors,
+            waived: $waived,
+        );
     }
 
     /**
@@ -194,6 +227,7 @@ final readonly class SignatureVerificationResult implements JsonSerializable
             'key_label' => $this->keyLabel,
             'message' => $this->message,
             'errors' => $this->errors,
+            'waived' => $this->waived,
         ];
     }
 }

@@ -155,6 +155,7 @@ return [
         'signature_valid' => 'Signed',
         'signature_unsigned' => 'Unsigned',
         'signature_invalid' => 'Invalid',
+        'signature_waived' => 'Waived',
         'signature_pending' => 'Pending',
         'signature_not_scanned' => 'N/A',
         // Permission
@@ -288,6 +289,7 @@ return [
         'enable_warning_message' => 'This theme has the following notes:',
         'enable_warning_confirm' => 'Do you want to activate understanding the above?',
         'enable_warning_invalid_signature' => 'Invalid signature (possible tampering)',
+        'enable_warning_signature_waived' => 'Signature check waived by operator',
         'enable_warning_needs_attention' => 'Contains permissions that need attention',
         'total_evaluation' => 'Overall Evaluation',
         'health_score_display' => 'Score: :score/100',

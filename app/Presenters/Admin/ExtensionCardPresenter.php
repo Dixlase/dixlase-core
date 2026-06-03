@@ -478,8 +478,15 @@ class ExtensionCardPresenter
         $signatureType = $signature['type'] ?? null;
         $auditResult = $permissionSummary['audit'] ?? [];
         $hasMismatches = $auditResult['has_mismatches'] ?? false;
+        // Operator waiver overlay: a waived "invalid" signature is shown as a
+        // neutral yellow "waived" badge instead of the red "invalid" one.
+        $waived = ($signature['waived'] ?? false) === true;
 
-        if ($signatureStatus === 'invalid') {
+        if ($signatureStatus === 'invalid' && $waived) {
+            $badgeColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+            $badgeIcon = 'fas fa-user-shield';
+            $badgeLabel = __($translationPrefix.'.permissions.signature_waived');
+        } elseif ($signatureStatus === 'invalid') {
             $badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             $badgeIcon = 'fas fa-times-circle';
             $badgeLabel = __($translationPrefix.'.permissions.signature_invalid');
@@ -539,11 +546,13 @@ class ExtensionCardPresenter
         $hasPermissions = $permissionSummary['has_permissions'] ?? false;
         $hasMismatches = $permissionSummary['audit']['has_mismatches'] ?? false;
         $auditedAt = $permissionSummary['audit']['audited_at'] ?? null;
+        $waived = ($permissionSummary['signature']['waived'] ?? false) === true;
 
-        if ($signatureStatus === 'invalid') {
+        if ($waived) {
+            $warnings[] = __($translationPrefix.'.permissions.enable_warning_signature_waived');
+        } elseif ($signatureStatus === 'invalid') {
             $warnings[] = __($translationPrefix.'.permissions.enable_warning_invalid_signature');
-        }
-        if ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
+        } elseif ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
             $warnings[] = __($translationPrefix.'.permissions.install_warning_unsigned');
         }
         if (! $hasPermissions) {
@@ -581,11 +590,13 @@ class ExtensionCardPresenter
         $hasPermissions = $permissionSummary['has_permissions'] ?? false;
         $hasMismatches = $permissionSummary['audit']['has_mismatches'] ?? false;
         $auditedAt = $permissionSummary['audit']['audited_at'] ?? null;
+        $waived = ($permissionSummary['signature']['waived'] ?? false) === true;
 
-        if ($signatureStatus === 'invalid') {
+        if ($waived) {
+            $warnings[] = __($prefix.'.permissions.enable_warning_signature_waived');
+        } elseif ($signatureStatus === 'invalid') {
             $warnings[] = __($prefix.'.permissions.enable_warning_invalid_signature');
-        }
-        if ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
+        } elseif ($signatureStatus === 'unsigned' || $signatureStatus === 'none') {
             $warnings[] = __($prefix.'.permissions.install_warning_unsigned');
         }
         if (! $hasPermissions) {
