@@ -177,7 +177,16 @@ class CheckInstallationReady
         // reproduction, edited by a misbehaving deploy script).
         // Persist INSTALLED=true so admins are not bounced to
         // /install/complete on every fresh session.
-        if (! $isInstalled && $isMigrated) {
+        //
+        // Skip on /install/* requests: the install wizard intentionally
+        // leaves INSTALLED=false between confirm() (DB just migrated)
+        // and finalize() (the operator clicks the "Complete" button).
+        // Self-healing during that window flips the flag prematurely,
+        // and the post-heal branch below then bounces /install/complete
+        // straight to /, robbing the operator of the completion screen.
+        // The install-route branch further down handles the un-healed
+        // state correctly on its own.
+        if (! $isInstalled && $isMigrated && ! $request->is('install') && ! $request->is('install/*')) {
             $this->selfHealInstalledFlag($envPath);
             $isInstalled = true;
         }
