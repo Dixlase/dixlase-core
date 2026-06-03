@@ -134,7 +134,7 @@ class CoreSourceSnapshot
             }
             $target = $snapshotPath.'/'.$relative;
             File::ensureDirectoryExists(dirname($target));
-            File::copyDirectory($source, $target);
+            self::copyDirectoryWithoutSymlinks($source, $target);
         }
 
         foreach (self::SOURCE_FILES as $relative) {
@@ -170,11 +170,8 @@ class CoreSourceSnapshot
                 continue;
             }
             $live = $this->basePath.'/'.$relative;
-            if (is_dir($live)) {
-                File::deleteDirectory($live);
-            }
             File::ensureDirectoryExists(dirname($live));
-            File::copyDirectory($snapshotEntry, $live);
+            $this->replaceLiveDirectory($snapshotEntry, $live);
         }
 
         foreach (self::SOURCE_FILES as $relative) {
@@ -189,6 +186,104 @@ class CoreSourceSnapshot
             File::ensureDirectoryExists(dirname($live));
             File::copy($snapshotEntry, $live);
         }
+    }
+
+    /**
+     * Replace the contents of $live with $source, preserving every
+     * symlink that exists in the live tree.
+     *
+     * Symlink-aware analogue of `File::deleteDirectory($live);
+     * File::copyDirectory($source, $live);` — same effect for regular
+     * files and directories, but every symlink in the live tree is
+     * skipped on both the delete side (so it survives the swap) and the
+     * copy side (so the source's symlinks, if any, are not materialised
+     * into the live tree). Both the snapshot rollback path and
+     * CoreUpdater::applyToLiveTree() route their directory swaps
+     * through here so the runtime-created symlinks under public/ —
+     * public/storage (from `php artisan storage:link`) and
+     * public/assets/themes/<slug> (from `dls:theme:symlink`) — survive
+     * both a successful upgrade and a failed-then-rolled-back upgrade.
+     */
+    public function replaceLiveDirectory(string $source, string $live): void
+    {
+        self::removeContentPreservingSymlinks($live);
+        File::ensureDirectoryExists($live);
+        self::copyDirectoryWithoutSymlinks($source, $live);
+    }
+
+    /**
+     * Recursive copy from $from to $to that skips every symlink.
+     *
+     * Symlinks under the core source tree always point at protected
+     * paths outside the snapshot's scope (public/storage →
+     * storage/app/public, public/assets/themes/<slug> →
+     * themes/<slug>/resources/assets). Following them with PHP's
+     * `copy()` either fails on a dangling target (e.g. before
+     * storage:link's target dir exists on a fresh install) or pollutes
+     * the snapshot with user data that would shadow the real symlinks
+     * on restore. Skipping them entirely keeps snapshots small, side-
+     * effect-free, and tolerant of dangling-symlink installs.
+     */
+    protected static function copyDirectoryWithoutSymlinks(string $from, string $to): void
+    {
+        if (! is_dir($from)) {
+            return;
+        }
+        File::ensureDirectoryExists($to);
+
+        $iter = new \FilesystemIterator($from, \FilesystemIterator::SKIP_DOTS);
+        foreach ($iter as $item) {
+            $path = $item->getPathname();
+            $dest = $to.'/'.$item->getBasename();
+            if (is_link($path)) {
+                continue;
+            }
+            if (is_dir($path)) {
+                self::copyDirectoryWithoutSymlinks($path, $dest);
+            } elseif (is_file($path)) {
+                copy($path, $dest);
+            }
+        }
+    }
+
+    /**
+     * Recursively remove the contents of $dir while leaving every
+     * symlink in place (and the minimal directory scaffolding required
+     * to hold them).
+     *
+     * A directory that contained only symlinks before this call still
+     * contains only those symlinks afterwards — no `rmdir` is attempted
+     * on it. A directory that becomes empty after its non-symlink
+     * children are removed is itself removed.
+     */
+    protected static function removeContentPreservingSymlinks(string $dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $iter = new \FilesystemIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        foreach ($iter as $item) {
+            $path = $item->getPathname();
+            if (is_link($path)) {
+                continue;
+            }
+            if (is_dir($path)) {
+                self::removeContentPreservingSymlinks($path);
+                if (self::isEmptyDir($path)) {
+                    @rmdir($path);
+                }
+            } elseif (is_file($path)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    protected static function isEmptyDir(string $dir): bool
+    {
+        $iter = new \FilesystemIterator($dir, \FilesystemIterator::SKIP_DOTS);
+
+        return ! $iter->valid();
     }
 
     /**
