@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
 use App\Models\ThemeAudit;
@@ -451,6 +452,24 @@ class InstallConfirmController extends BaseInstallController
 
             // Run security audit for bundled themes
             $this->auditBundledThemes();
+
+            // Persist theme/plugin PSR-4 autoload to vendor/composer/autoload_psr4.php.
+            //
+            // registerThemeAutoload() above only patches the running PHP-FPM
+            // worker so the install-time db:seed call can resolve theme
+            // classes. The next request lands on a different worker (or the
+            // same worker after Laravel re-bootstraps), with no memory of
+            // that runtime addPsr4(). Without persisting, ThemeServiceProvider
+            // fails class_exists() on the theme's provider, never registers
+            // it, never require_once's the theme helpers file, and the very
+            // first front-page render after install 500s on the now-undefined
+            // dls_<theme>_localized_setting() call from the hero blade.
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_started'));
+            if (ComposerLocalHelper::syncAutoload()) {
+                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_completed'));
+            } else {
+                Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_failed'));
+            }
 
             // Delete session data
             session()->forget('install_data');
