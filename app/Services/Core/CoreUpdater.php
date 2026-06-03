@@ -278,6 +278,13 @@ class CoreUpdater
      * Replace each whitelisted source directory / file in the live tree
      * with the staged copy. Anything not whitelisted is left untouched
      * (.env, storage, vendor, plugins/themes/custom, etc.).
+     *
+     * Directory swaps route through CoreSourceSnapshot::replaceLiveDirectory()
+     * so every symlink in the live tree (public/storage,
+     * public/assets/themes/<slug>) survives the swap — the source ZIP
+     * never contains them and a naive delete+copy would silently strip
+     * them, breaking storage URLs and theme assets until the operator
+     * manually re-ran storage:link and dls:theme:symlink.
      */
     protected function applyToLiveTree(string $payloadRoot): void
     {
@@ -289,11 +296,8 @@ class CoreUpdater
                 continue;
             }
             $liveDir = $base.'/'.$relative;
-            if (is_dir($liveDir)) {
-                File::deleteDirectory($liveDir);
-            }
             File::ensureDirectoryExists(dirname($liveDir));
-            File::copyDirectory($stagedDir, $liveDir);
+            $this->snapshotter->replaceLiveDirectory($stagedDir, $liveDir);
         }
 
         foreach (CoreSourceSnapshot::SOURCE_FILES as $relative) {
