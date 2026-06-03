@@ -136,6 +136,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
             @endif
 
+            {{-- Flash messages (status / success / error / $errors) — the
+                 install wizard's theme-download AJAX path sets a session
+                 flash and then reloads the page so the result lands here. --}}
+            <x-ui-flash-message />
+
             <!-- Page Content -->
             <article>
                 @yield('content')
