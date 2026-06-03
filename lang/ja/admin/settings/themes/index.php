@@ -155,6 +155,7 @@ return [
         'signature_valid' => '署名あり',
         'signature_unsigned' => '未署名',
         'signature_invalid' => '署名不一致',
+        'signature_waived' => '免除済み',
         'signature_pending' => '検証待ち',
         'signature_not_scanned' => '未確認',
         // 権限
@@ -288,6 +289,7 @@ return [
         'enable_warning_message' => 'このテーマには以下の注意点があります：',
         'enable_warning_confirm' => '上記を理解した上で有効化しますか？',
         'enable_warning_invalid_signature' => '署名が無効です（改ざんの可能性）',
+        'enable_warning_signature_waived' => '署名チェックは運用者により免除されています',
         'enable_warning_needs_attention' => '確認が必要な権限が含まれています',
         'total_evaluation' => '総合評価',
         'health_score_display' => 'スコア: :score/100',
