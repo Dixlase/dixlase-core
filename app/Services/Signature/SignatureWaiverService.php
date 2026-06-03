@@ -41,6 +41,7 @@ namespace App\Services\Signature;
 
 use App\Models\SignatureWaiver;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
@@ -64,6 +65,10 @@ class SignatureWaiverService
         $this->assertScope($scope);
         $targetSlug = $this->canonicalTarget($scope, $targetSlug);
 
+        if (! $this->tableReady()) {
+            return false;
+        }
+
         return SignatureWaiver::query()
             ->active()
             ->forTarget($scope, $targetSlug)
@@ -77,6 +82,10 @@ class SignatureWaiverService
     {
         $this->assertScope($scope);
         $targetSlug = $this->canonicalTarget($scope, $targetSlug);
+
+        if (! $this->tableReady()) {
+            return null;
+        }
 
         return SignatureWaiver::query()
             ->active()
@@ -163,6 +172,10 @@ class SignatureWaiverService
      */
     public function listActiveWaivers(?string $scope = null): Collection
     {
+        if (! $this->tableReady()) {
+            return new Collection();
+        }
+
         $query = SignatureWaiver::query()->active();
 
         if ($scope !== null) {
@@ -188,6 +201,17 @@ class SignatureWaiverService
         }
 
         return Str::studly(str_replace('-', '_', $targetSlug));
+    }
+
+    /**
+     * Whether the waivers table exists yet. Lets the read methods stay safe on
+     * a deploy where the code has shipped but the migration has not run yet
+     * (e.g. production before `php artisan migrate`), instead of 500-ing every
+     * admin page that calls getSignatureInfo().
+     */
+    protected function tableReady(): bool
+    {
+        return Schema::hasTable((new SignatureWaiver())->getTable());
     }
 
     /**
