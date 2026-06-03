@@ -206,7 +206,31 @@ trait BuildsExtensionAssets
      */
     private function runProcess(array $command, string $cwd): bool
     {
-        $process = new Process($command, $cwd);
+        // npm defaults its cache to $HOME/.npm. In php-fpm containers
+        // $HOME is typically /var/www (Docker-image-default, root-owned),
+        // so mkdir /var/www/.npm fails with EACCES whenever this trait is
+        // invoked from a web request (uid = www-data, 33). Worse, the
+        // first CLI invocation (uid = root) creates /var/www/.npm with
+        // root ownership, and any subsequent web-triggered invocation —
+        // notably the install wizard's "Download theme" button, which
+        // routes through here via dls:theme:build — then permanently
+        // cannot write to it.
+        //
+        // Force npm to use a project-local cache under storage/, owned by
+        // the same user that already owns the Laravel writable tree.
+        // This isolates web vs. CLI invocations of the same build,
+        // sidesteps the Docker-image HOME convention, and avoids polluting
+        // the operator's real $HOME with build caches.
+        $env = [];
+        if (($command[0] ?? null) === 'npm') {
+            $cacheDir = storage_path('app/private/npm-cache');
+            if (! is_dir($cacheDir)) {
+                @mkdir($cacheDir, 0775, true);
+            }
+            $env['NPM_CONFIG_CACHE'] = $cacheDir;
+        }
+
+        $process = new Process($command, $cwd, $env);
         $process->setTimeout(600);
 
         $process->run(function ($type, $buffer) {
