@@ -143,6 +143,14 @@ class InstallController extends Controller
             ], 500);
         }
 
+        // The frontend reloads the page on success so the requirements
+        // re-check picks up the new theme. Stash the success message on
+        // the session so the reloaded page surfaces it through the
+        // shared <x-ui-flash-message /> component in layouts/install,
+        // instead of the message being lost the moment the AJAX call
+        // returns.
+        session()->flash('success', __('install/index.theme_download.success'));
+
         return response()->json([
             'success' => true,
             'message' => __('install/index.theme_download.success'),
