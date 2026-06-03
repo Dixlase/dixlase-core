@@ -368,8 +368,22 @@ class InstallConfirmController extends BaseInstallController
             $this->initializeDatabase($data, $adminPassword);
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initial_data_insertion_completed'));
 
-            // Create storage symbolic link
+            // Create storage symbolic link.
+            //
+            // `php artisan storage:link` only creates the public/storage
+            // symlink itself; the target (storage/app/public/) is assumed
+            // to exist as a real directory. On a fresh checkout where the
+            // directory was never committed (or was wiped by an external
+            // tool), the resulting symlink is dangling. Any PHP filesystem
+            // op that subsequently follows it — most notably
+            // CoreSourceSnapshot::capture() copying public/ for a core
+            // update — then fails with `Failed to open stream: No such
+            // file or directory`, aborts the update mid-flight, and
+            // leaves storage/app/private/core-update/.in-progress stuck
+            // until the 900s UI timeout. Ensure the target exists first
+            // so the symlink is always valid.
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_started'));
+            File::ensureDirectoryExists(storage_path('app/public'));
             Artisan::call('storage:link');
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_completed'));
 
