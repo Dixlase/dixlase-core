@@ -48,13 +48,13 @@ use RuntimeException;
 class WaiveCommand extends AbstractSignatureCommand
 {
     protected $signature = 'dls:signature:waive
-                            {target : Plugin slug or directory name}
-                            {--scope=plugin : plugin|theme|core (Phase 1: plugin only)}
+                            {target : Plugin/theme slug or directory name, or "core" for --scope=core}
+                            {--scope=plugin : plugin|theme|core}
                             {--reason= : Why the signature is being waived (required)}
                             {--confirm : Required to actually record the waiver}
                             {--json : Output the result as JSON}';
 
-    protected $description = 'Record an operator waiver so an extension is no longer flagged as invalid/unsigned';
+    protected $description = 'Record an operator waiver so an extension (or core) is no longer flagged as invalid/unsigned';
 
     public function handle(SignatureWaiverService $service): int
     {
@@ -63,14 +63,14 @@ class WaiveCommand extends AbstractSignatureCommand
             return $scope;
         }
 
+        if (! $this->ensureCoreMutationAllowed($scope)) {
+            return self::FAILURE;
+        }
+
         $target = (string) $this->argument('target');
 
-        if (! $this->pluginExists($target)) {
-            $this->error(sprintf(
-                'Plugin "%s" not found (no plugins/%s/plugin.json).',
-                $target,
-                $this->directoryName($target)
-            ));
+        if (! $this->targetExists($scope, $target)) {
+            $this->error(sprintf('%s "%s" not found.', ucfirst($scope), $this->canonicalTarget($scope, $target)));
 
             return self::FAILURE;
         }
@@ -111,7 +111,9 @@ class WaiveCommand extends AbstractSignatureCommand
         }
 
         $this->info(sprintf('Waived %s "%s" (waiver #%d).', $waiver->scope, $waiver->target_slug, $waiver->id));
-        $this->line('Run `php artisan dls:plugin:audit '.$waiver->target_slug.'` to refresh the displayed status.');
+        $this->line($waiver->scope === 'core'
+            ? 'Run `php artisan dls:core:verify` to see the waived overlay.'
+            : 'Run `php artisan dls:plugin:audit '.$waiver->target_slug.'` to refresh the displayed status.');
 
         return self::SUCCESS;
     }

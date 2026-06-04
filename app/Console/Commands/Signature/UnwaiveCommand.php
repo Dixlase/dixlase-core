@@ -46,11 +46,11 @@ use App\Services\Signature\SignatureWaiverService;
 class UnwaiveCommand extends AbstractSignatureCommand
 {
     protected $signature = 'dls:signature:unwaive
-                            {target : Plugin slug or directory name}
-                            {--scope=plugin : plugin|theme|core (Phase 1: plugin only)}
+                            {target : Plugin/theme slug or directory name, or "core" for --scope=core}
+                            {--scope=plugin : plugin|theme|core}
                             {--json : Output the result as JSON}';
 
-    protected $description = 'Revoke the active signature waiver for an extension (restores its warning)';
+    protected $description = 'Revoke the active signature waiver for an extension or core (restores its warning)';
 
     public function handle(SignatureWaiverService $service): int
     {
@@ -60,7 +60,9 @@ class UnwaiveCommand extends AbstractSignatureCommand
         }
 
         $target = (string) $this->argument('target');
+        $label = $this->canonicalTarget($scope, $target);
 
+        // Unwaiving restores the integrity warning — it is not gated.
         $revoked = $service->unwaive($scope, $target);
 
         if ($this->option('json')) {
@@ -68,20 +70,19 @@ class UnwaiveCommand extends AbstractSignatureCommand
                 'action' => 'unwaive',
                 'status' => $revoked ? 'revoked' : 'no_active_waiver',
                 'scope' => $scope,
-                'target' => $this->directoryName($target),
+                'target' => $label,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
             return self::SUCCESS;
         }
 
         if (! $revoked) {
-            $this->warn(sprintf('No active waiver found for %s "%s".', $scope, $this->directoryName($target)));
+            $this->warn(sprintf('No active waiver found for %s "%s".', $scope, $label));
 
             return self::SUCCESS;
         }
 
-        $this->info(sprintf('Revoked the waiver for %s "%s".', $scope, $this->directoryName($target)));
-        $this->line('Run `php artisan dls:plugin:audit '.$this->directoryName($target).'` to refresh the displayed status.');
+        $this->info(sprintf('Revoked the waiver for %s "%s".', $scope, $label));
 
         return self::SUCCESS;
     }
