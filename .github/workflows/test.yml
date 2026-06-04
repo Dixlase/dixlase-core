@@ -68,33 +68,12 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_PAT }}
 
-      - name: Fetch registered submodules
+      - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          # PAT でサブモジュール URL の認証を設定
           git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
-
-          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
-          if [ -f .gitmodules ]; then
-            echo "=== Registered submodules ==="
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              echo "Initializing: $name ($path)"
-              git submodule init "$path" 2>&1 || true
-            done
-            echo "=== Fetching submodules (individually) ==="
-            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              echo "--- Updating: $path ---"
-              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
-            done
-            echo "=== Submodule status ==="
-            git submodule status 2>&1 || true
-            echo "=== Plugin directories ==="
-            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
-            ls -d themes/*/ 2>/dev/null || echo "No theme directories found"
-          fi
+          .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -202,30 +181,12 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_PAT }}
 
-      - name: Fetch registered submodules
+      - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          # PAT でサブモジュール URL の認証を設定
           git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
-
-          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
-          if [ -f .gitmodules ]; then
-            echo "=== Registered submodules ==="
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              echo "Initializing: $name ($path)"
-              git submodule init "$path" 2>&1 || true
-            done
-            echo "=== Fetching submodules (individually) ==="
-            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              echo "--- Updating: $path ---"
-              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
-            done
-            echo "=== Plugin directories ==="
-            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
-          fi
+          .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -364,29 +325,12 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_PAT }}
 
-      - name: Fetch registered submodules
+      - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          # PAT でサブモジュール URL の認証を設定
           git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
-
-          # .gitmodules に登録されたサブモジュールのみ取得（未登録の gitlink は無視）
-          if [ -f .gitmodules ]; then
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              echo "Initializing: $name ($path)"
-              git submodule init "$path" 2>&1 || true
-            done
-            echo "=== Fetching submodules (individually) ==="
-            # 一括 update は 1 つの submodule が失敗すると後続が中断されるため個別に実行
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              echo "--- Updating: $path ---"
-              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
-            done
-            echo "=== Plugin directories ==="
-            ls -d plugins/*/ 2>/dev/null || echo "No plugin directories found"
-          fi
+          .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -447,20 +391,12 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_PAT }}
 
-      - name: Fetch registered submodules
+      - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
           git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
-          if [ -f .gitmodules ]; then
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              git submodule init "$path" 2>&1 || true
-            done
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
-            done
-          fi
+          .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -500,20 +436,12 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_PAT }}
 
-      - name: Fetch registered submodules
+      - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
           git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
-          if [ -f .gitmodules ]; then
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              name=$(echo "$key" | sed 's/^submodule\.\(.*\)\.path$/\1/')
-              git submodule init "$path" 2>&1 || true
-            done
-            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read key path; do
-              git submodule update --depth=1 --force "$path" 2>&1 || echo "WARN: Failed to update $path (continuing)"
-            done
-          fi
+          .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
