@@ -1,0 +1,40 @@
+# Plugins integration-tested in CI by Dixlase Core.
+#
+# Format: <directory-name>\t<git-url>
+# Comments start with '#' and are skipped.
+#
+# Each plugin listed here is shallow-cloned into plugins/<dir-name>/ by
+# .github/scripts/fetch-integration-plugins.sh at the start of every CI
+# run that needs the bundled plugins (test.yml's plugin-tests / migration /
+# migration-lint / comment-translation-status, plugin-api-check.yml).
+#
+# This file replaced the per-plugin entries that used to live in
+# .gitmodules. The motivation was that `git clone` of dixlase-core
+# unavoidably creates an empty placeholder directory for every gitlink
+# in the tree, even when --no-recurse-submodules is passed — so a plain
+# clone left plugins/ littered with 9 empty directories. The fix is to
+# keep the integration plugin list outside git's submodule machinery:
+# fresh clones leave plugins/ empty, the install wizard / dls:plugin:install
+# fetch real plugins on demand for operators, and this TSV is the
+# canonical list for CI to clone for integration testing.
+#
+# Adding a new plugin:
+#   1. Append a row here.
+#   2. If the plugin ships PHPUnit tests, register its testsuite in
+#      phpunit.xml so test.yml's plugin-tests job picks it up.
+#   3. Place it in the appropriate tier in test.yml's --testsuite=
+#      arguments (well-tested / moderate / minimal).
+#
+# Removing a plugin:
+#   1. Delete its row here.
+#   2. Drop the matching testsuite from phpunit.xml and the --testsuite=
+#      string in test.yml.
+DixlaseLegal	https://github.com/Dixlase/plugin-dixlase-legal.git
+DixlaseInquiry	https://github.com/Dixlase/plugin-dixlase-inquiry.git
+DixlaseSEO	https://github.com/Dixlase/plugin-dixlase-seo.git
+DixlaseCoreDevKit	https://github.com/Dixlase/plugin-dixlase-core-devkit.git
+DixlaseOfficialDocs	https://github.com/Dixlase/plugin-dixlase-official-docs.git
+DixlaseMenus	https://github.com/Dixlase/plugin-dixlase-menus.git
+DixlasePages	https://github.com/Dixlase/plugin-dixlase-pages.git
+DixlaseDevKit	https://github.com/Dixlase/plugin-dixlase-devkit.git
+DixlaseUsers	https://github.com/Dixlase/plugin-dixlase-users.git
