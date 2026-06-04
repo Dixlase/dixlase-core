@@ -358,6 +358,11 @@ return [
                         'route' => 'admin.settings.systems.info',
                         'icon' => 'fas fa-fw fa-info-circle',
                     ],
+                    'integrity' => [
+                        'text' => 'admin/navigation.settings.systems.integrity',
+                        'route' => 'admin.settings.systems.integrity',
+                        'icon' => 'fas fa-fw fa-shield-alt',
+                    ],
                 ],
             ],
         ],

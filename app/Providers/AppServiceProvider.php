@@ -37,6 +37,7 @@ namespace App\Providers;
 
 use App\Contracts\Backup\BackupServiceInterface;
 use App\Contracts\Backup\RestoreServiceInterface;
+use App\Contracts\Core\CoreManifestBuilderInterface;
 use App\Contracts\Encryption\FileEncryptionServiceInterface;
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
 use App\Contracts\LegalPage\LegalPageServiceInterface;
@@ -54,6 +55,7 @@ use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\Services\Backup\CoreBackupService;
 use App\Services\Backup\CoreRestoreService;
+use App\Services\Core\CoreManifestBuilder;
 use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
 use App\Services\LegalPageService;
@@ -130,6 +132,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
+
+        // Bind the Core integrity manifest builder (shared by the verifier and
+        // the first-party DixlaseSigner sign-core command).
+        $this->app->bind(CoreManifestBuilderInterface::class, CoreManifestBuilder::class);
 
         // Bind license verification service. Ships as a no-op stub in v0.1.0;
         // a future official DixlaseLicensing plugin can override this binding

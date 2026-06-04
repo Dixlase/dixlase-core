@@ -41,25 +41,18 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /**
- * Shared scope handling and plugin resolution for the dls:signature:* commands.
+ * Shared scope handling and target resolution for the dls:signature:* commands.
  *
  * Abstract, so Laravel's command discovery (which skips non-instantiable
- * classes) does not register it as a runnable command.
+ * classes) does not register it as a runnable command. Supports plugin, theme,
+ * and core scopes; mutating the core signature is gated (see coreGateOpen()).
  */
 abstract class AbstractSignatureCommand extends Command
 {
     /**
-     * Scopes a mutating command may act on in Phase 1 (plugin only).
-     * Theme is Phase 2, core is Phase 3.
-     */
-    protected const PHASE1_SCOPES = [SignatureWaiver::SCOPE_PLUGIN];
-
-    /**
-     * Resolve and validate the --scope option for a mutating command.
+     * Validate the --scope option.
      *
-     * @return string|int the scope string, or an exit code the caller should
-     *                    return immediately (FAILURE = unknown scope,
-     *                    SUCCESS = valid scope not yet supported in Phase 1)
+     * @return string|int the scope string, or an exit code to return (FAILURE on unknown scope)
      */
     protected function resolveScope(): string|int
     {
@@ -75,33 +68,81 @@ abstract class AbstractSignatureCommand extends Command
             return self::FAILURE;
         }
 
-        if (! in_array($scope, self::PHASE1_SCOPES, true)) {
-            $this->warn(sprintf(
-                'Phase 1 only supports --scope=plugin. "%s" support is reserved for Phase 2/3 '
-                .'(see .claude/plans/handoff-signature-waiver-implementation.md).',
-                $scope
-            ));
-
-            return self::SUCCESS;
-        }
-
         return $scope;
     }
 
     /**
-     * The studly directory name used on disk (matches CoreSignatureVerifier),
-     * accepting either a slug (dixlase-inquiry) or a directory (DixlaseInquiry).
+     * Canonical target identifier: 'core' for the core scope, otherwise the
+     * studly directory name (matches CoreSignatureVerifier / the waiver service).
      */
-    protected function directoryName(string $target): string
+    protected function canonicalTarget(string $scope, string $target): string
     {
+        if ($scope === SignatureWaiver::SCOPE_CORE) {
+            return 'core';
+        }
+
         return Str::studly(str_replace('-', '_', $target));
     }
 
     /**
-     * Does the plugin exist on disk (plugin.json present)?
+     * Does the target exist on disk? (core always "exists".)
      */
-    protected function pluginExists(string $target): bool
+    protected function targetExists(string $scope, string $target): bool
     {
-        return File::exists(base_path('plugins/'.$this->directoryName($target).'/plugin.json'));
+        return match ($scope) {
+            SignatureWaiver::SCOPE_PLUGIN => File::exists(base_path('plugins/'.$this->canonicalTarget($scope, $target).'/plugin.json')),
+            SignatureWaiver::SCOPE_THEME => File::exists(base_path('themes/'.$this->canonicalTarget($scope, $target).'/theme.json')),
+            SignatureWaiver::SCOPE_CORE => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Absolute path(s) whose deletion removes the signature for this target.
+     * For core, both the manifest and the detached signature are removed.
+     *
+     * @return array<int, string>
+     */
+    protected function signatureFilesFor(string $scope, string $target): array
+    {
+        return match ($scope) {
+            SignatureWaiver::SCOPE_PLUGIN => [base_path('plugins/'.$this->canonicalTarget($scope, $target).'/signature.sig')],
+            SignatureWaiver::SCOPE_THEME => [base_path('themes/'.$this->canonicalTarget($scope, $target).'/signature.sig')],
+            SignatureWaiver::SCOPE_CORE => [
+                base_path((string) config('core-integrity.signature_file', 'core-signature.sig')),
+                base_path((string) config('core-integrity.manifest_file', 'core-manifest.json')),
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Whether mutating the CORE signature (waive/remove) is permitted. Removing
+     * or waiving the root-of-trust signature is the genuinely dangerous op, so
+     * it is gated to dev/customized installs.
+     */
+    protected function coreGateOpen(): bool
+    {
+        return (bool) config('core-integrity.allow_unsign', false) || (bool) config('app.debug', false);
+    }
+
+    /**
+     * Enforce the core mutation gate. Returns true if allowed; otherwise prints
+     * the reason and returns false (the caller should return FAILURE).
+     */
+    protected function ensureCoreMutationAllowed(string $scope): bool
+    {
+        if ($scope !== SignatureWaiver::SCOPE_CORE) {
+            return true;
+        }
+
+        if ($this->coreGateOpen()) {
+            return true;
+        }
+
+        $this->error('Mutating the core signature is disabled on this install.');
+        $this->line('Set DLS_CORE_ALLOW_UNSIGN=true (or APP_DEBUG=true) to allow it on a development / customized install.');
+
+        return false;
     }
 }

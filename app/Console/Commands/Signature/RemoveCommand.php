@@ -50,12 +50,12 @@ use Illuminate\Support\Facades\File;
 class RemoveCommand extends AbstractSignatureCommand
 {
     protected $signature = 'dls:signature:remove
-                            {target : Plugin slug or directory name}
-                            {--scope=plugin : plugin|theme|core (Phase 1: plugin only)}
-                            {--confirm : Required (destructive: deletes signature.sig)}
+                            {target : Plugin/theme slug or directory name, or "core" for --scope=core}
+                            {--scope=plugin : plugin|theme|core}
+                            {--confirm : Required (destructive: deletes the signature)}
                             {--json : Output the result as JSON}';
 
-    protected $description = 'Delete an extension signature.sig (destructive; result is the unsigned state)';
+    protected $description = 'Delete a signature (destructive; result is the unsigned state). For core, removes the manifest + signature';
 
     public function handle(): int
     {
@@ -64,34 +64,46 @@ class RemoveCommand extends AbstractSignatureCommand
             return $scope;
         }
 
-        $target = (string) $this->argument('target');
-        $directory = $this->directoryName($target);
+        if (! $this->ensureCoreMutationAllowed($scope)) {
+            return self::FAILURE;
+        }
 
-        if (! $this->pluginExists($target)) {
-            $this->error(sprintf('Plugin "%s" not found (no plugins/%s/plugin.json).', $target, $directory));
+        $target = (string) $this->argument('target');
+        $label = $this->canonicalTarget($scope, $target);
+
+        if (! $this->targetExists($scope, $target)) {
+            $this->error(sprintf('%s "%s" not found.', ucfirst($scope), $label));
 
             return self::FAILURE;
         }
 
-        $signaturePath = base_path('plugins/'.$directory.'/signature.sig');
+        $files = $this->signatureFilesFor($scope, $target);
+        $existing = array_values(array_filter($files, static fn (string $f): bool => File::exists($f)));
 
-        if (! File::exists($signaturePath)) {
-            $this->infoOrJson($scope, $directory, 'already_unsigned', sprintf('No signature.sig for "%s" — already unsigned.', $directory));
+        if (empty($existing)) {
+            $this->infoOrJson($scope, $label, 'already_unsigned', sprintf('No signature present for %s "%s" — already unsigned.', $scope, $label));
 
             return self::SUCCESS;
         }
 
         if (! $this->option('confirm')) {
-            $this->warn(sprintf('This permanently deletes plugins/%s/signature.sig (destructive).', $directory));
-            $this->line('The extension will become "unsigned"; operators can restore it only by reinstalling.');
+            $this->warn(sprintf('This permanently deletes the signature for %s "%s" (destructive):', $scope, $label));
+            foreach ($existing as $file) {
+                $this->line('  - '.str_replace(base_path().'/', '', $file));
+            }
+            $this->line($scope === 'core'
+                ? 'Core will become "unsigned" until re-signed in a build environment.'
+                : 'The extension will become "unsigned"; operators can restore it only by reinstalling.');
             $this->line('Re-run with --confirm to proceed.');
 
             return self::SUCCESS;
         }
 
-        File::delete($signaturePath);
+        foreach ($existing as $file) {
+            File::delete($file);
+        }
 
-        $this->infoOrJson($scope, $directory, 'removed', sprintf('Removed plugins/%s/signature.sig. Status becomes "unsigned" on next audit.', $directory));
+        $this->infoOrJson($scope, $label, 'removed', sprintf('Removed the signature for %s "%s". Status becomes "unsigned".', $scope, $label));
 
         return self::SUCCESS;
     }

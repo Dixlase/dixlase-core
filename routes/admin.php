@@ -721,6 +721,23 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])
                     ->middleware('check.menu.access:settings.systems.info')
                     ->name('info');
+
+                // Core integrity (signature verification + waiver danger zone)
+                Route::get('/integrity', [Systems\AdminSystemIntegrityController::class, 'index'])
+                    ->middleware('check.menu.access:settings.systems.integrity')
+                    ->name('integrity');
+                Route::post('/integrity/recheck', [Systems\AdminSystemIntegrityController::class, 'recheck'])
+                    ->middleware('check.menu.edit:settings.systems.integrity')
+                    ->name('integrity.recheck');
+                Route::post('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'waive'])
+                    ->middleware('check.menu.edit:settings.systems.integrity')
+                    ->name('integrity.waive');
+                Route::delete('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'unwaive'])
+                    ->middleware('check.menu.edit:settings.systems.integrity')
+                    ->name('integrity.unwaive');
+                Route::delete('/integrity/signature', [Systems\AdminSystemIntegrityController::class, 'removeSignature'])
+                    ->middleware('check.menu.edit:settings.systems.integrity')
+                    ->name('integrity.remove');
             });
 
             // Logout
