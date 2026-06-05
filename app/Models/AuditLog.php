@@ -260,6 +260,13 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_EXTERNAL_CALL_BLOCKED = 'plugin_external_call_blocked';
 
+    // Signature trust-management actions (plugin / theme / core)
+    public const ACTION_SIGNATURE_REMOVED = 'signature_removed';
+
+    public const ACTION_SIGNATURE_WAIVED = 'signature_waived';
+
+    public const ACTION_SIGNATURE_WAIVER_REVOKED = 'signature_waiver_revoked';
+
     public const ACTION_THEME_INSTALLED = 'theme_installed';
 
     public const ACTION_THEME_ENABLED = 'theme_enabled';

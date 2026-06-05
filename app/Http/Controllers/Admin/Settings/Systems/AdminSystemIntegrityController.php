@@ -44,7 +44,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 
 class AdminSystemIntegrityController extends AdminLoggedInController
 {
@@ -65,7 +64,7 @@ class AdminSystemIntegrityController extends AdminLoggedInController
         $this->viewParams['changedFiles'] = $this->changedFiles($result);
         $this->viewParams['waiver'] = $this->activeWaiver($waivers);
         // Danger-zone actions (waive / remove) are gated to dev / customized installs.
-        $this->viewParams['gateOpen'] = $this->gateOpen();
+        $this->viewParams['gateOpen'] = $waivers->coreMutationGateOpen();
 
         return view('admin::settings.systems.integrity', $this->viewParams);
     }
@@ -87,7 +86,7 @@ class AdminSystemIntegrityController extends AdminLoggedInController
      */
     public function waive(Request $request, SignatureWaiverService $waivers): RedirectResponse
     {
-        if (! $this->gateOpen()) {
+        if (! $waivers->coreMutationGateOpen()) {
             abort(403);
         }
 
@@ -105,8 +104,8 @@ class AdminSystemIntegrityController extends AdminLoggedInController
             SignatureWaiver::SCOPE_CORE,
             'core',
             $validated['reason'],
-            Auth::id(),
-            Auth::user()?->name,
+            actor: Auth::user(),
+            source: 'admin',
         );
 
         Cache::forget(CoreIntegrityVerifier::CACHE_KEY);
@@ -121,7 +120,7 @@ class AdminSystemIntegrityController extends AdminLoggedInController
      */
     public function unwaive(SignatureWaiverService $waivers): RedirectResponse
     {
-        $waivers->unwaive(SignatureWaiver::SCOPE_CORE, 'core', Auth::id());
+        $waivers->unwaive(SignatureWaiver::SCOPE_CORE, 'core', actor: Auth::user(), source: 'admin');
 
         Cache::forget(CoreIntegrityVerifier::CACHE_KEY);
 
@@ -134,42 +133,19 @@ class AdminSystemIntegrityController extends AdminLoggedInController
      * Remove the core signature (manifest + detached signature) — destructive,
      * gated. The install becomes "unsigned" until re-signed in a build env.
      */
-    public function removeSignature(): RedirectResponse
+    public function removeSignature(SignatureWaiverService $waivers): RedirectResponse
     {
-        if (! $this->gateOpen()) {
+        if (! $waivers->coreMutationGateOpen()) {
             abort(403);
         }
 
-        foreach ($this->signatureFiles() as $file) {
-            if (File::exists($file)) {
-                File::delete($file);
-            }
-        }
+        $waivers->removeSignature(SignatureWaiver::SCOPE_CORE, 'core', actor: Auth::user(), source: 'admin');
 
         Cache::forget(CoreIntegrityVerifier::CACHE_KEY);
 
         return redirect()
             ->route('admin.settings.systems.integrity')
             ->with('success', __('admin/settings/systems/integrity.flash.signature_removed'));
-    }
-
-    /**
-     * Whether mutating the core signature is permitted on this install.
-     */
-    protected function gateOpen(): bool
-    {
-        return (bool) config('core-integrity.allow_unsign', false) || (bool) config('app.debug', false);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function signatureFiles(): array
-    {
-        return [
-            base_path((string) config('core-integrity.signature_file', 'core-signature.sig')),
-            base_path((string) config('core-integrity.manifest_file', 'core-manifest.json')),
-        ];
     }
 
     /**

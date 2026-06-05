@@ -37,11 +37,15 @@ namespace App\Console\Commands\Signature;
 
 use App\Models\SignatureWaiver;
 use App\Services\Signature\SignatureWaiverService;
+use Illuminate\Console\Command;
 
 /**
  * List active signature waivers (read-only, all scopes).
+ *
+ * Read-only diagnostic — kept in Core (available on every site). The mutating
+ * dls:signature:waive / :unwaive / :remove commands live in DixlaseDevKit.
  */
-class WaiversCommand extends AbstractSignatureCommand
+class WaiversCommand extends Command
 {
     protected $signature = 'dls:signature:waivers
                             {--scope= : Optional filter: plugin|theme|core}
