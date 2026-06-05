@@ -362,6 +362,7 @@ class ExtensionSourceManager
             'available_version' => $isNewer ? $release->version : null,
             'available_version_published_at' => $isNewer ? $publishedAt : null,
             'release_url' => $isNewer ? $releaseUrl : null,
+            'release_notes' => $isNewer ? $release->changelog : null,
             'last_version_check' => now(),
         ])->save();
 
@@ -421,6 +422,7 @@ class ExtensionSourceManager
             if ($release && version_compare($release->version, $plugin->version, '>')) {
                 $plugin->update([
                     'available_version' => $release->version,
+                    'release_notes' => $release->changelog,
                     'last_version_check' => now(),
                 ]);
                 $updates[] = [
@@ -452,6 +454,7 @@ class ExtensionSourceManager
             if ($release && version_compare($release->version, $theme->version, '>')) {
                 $theme->update([
                     'available_version' => $release->version,
+                    'release_notes' => $release->changelog,
                     'last_version_check' => now(),
                 ]);
                 $updates[] = [
