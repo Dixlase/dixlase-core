@@ -164,8 +164,17 @@ window.closeModal = function (modalId) {
     if (modalElement) {
         if (typeof Alpine !== 'undefined' && modalElement._x_dataStack) {
             const alpineData = modalElement._x_dataStack[0];
-            if (alpineData && typeof alpineData.close === 'function') {
-                alpineData.close();
+            if (alpineData) {
+                // Force-close: skip the `submitting` guard that close()
+                // applies. That guard exists to stop user-driven close
+                // paths (backdrop click, ESC key) from racing with an
+                // in-flight form submit, and remains in place for those.
+                // Programmatic callers of closeModal() — e.g. a form's
+                // @submit handler that swaps the confirm modal for an
+                // in-progress modal — are deliberately requesting close,
+                // so honour it unconditionally.
+                alpineData.submitting = false;
+                alpineData.show = false;
             }
         }
     }
@@ -189,9 +198,22 @@ window.submitModalForm = function (formId) {
         }
     }
 
-    // Default behavior: submit actual form
+    // Default behavior: submit the actual form.
+    //
+    // Use requestSubmit() rather than submit() so the form's `submit`
+    // event listeners fire — `form.submit()` programmatically bypasses
+    // them by spec, which prevents callers from hooking into the moment
+    // a confirm-modal triggers form navigation (e.g. to swap the confirm
+    // modal for an "in-progress" modal during a long-running apply).
+    // requestSubmit() is supported in all modern browsers (Chrome 76+,
+    // Firefox 75+, Safari 16+); fall back to submit() if the runtime
+    // is older to preserve the previous behaviour rather than no-op.
     const form = document.getElementById(formId);
     if (form) {
-        form.submit();
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
     }
 };
