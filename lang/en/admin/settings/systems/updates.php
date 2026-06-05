@@ -90,4 +90,12 @@ return [
         'title' => 'Run Updates',
         'message' => 'Apply :count selected update(s) sequentially. Continue?',
     ],
+
+    // In-progress modal (shown while the bulk apply request is being
+    // processed by the controller and the page has not yet redirected)
+    'in_progress' => [
+        'title' => 'Applying updates...',
+        'description_line1' => 'Please do not close this page.',
+        'description_line2' => 'This may take a moment.',
+    ],
 ];

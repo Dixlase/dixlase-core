@@ -64,12 +64,14 @@ file is governed by the AGPL terms below.
           id="systemUpdatesApplyForm"
           x-data="{
               selectedCount: 0,
+              applying: false,
               recompute() {
                   this.selectedCount = this.$root.querySelectorAll('input[type=checkbox][data-update-target]:checked').length;
               },
           }"
           x-init="recompute()"
-          @change="recompute()">
+          @change="recompute()"
+          @submit="applying = true; closeModal('confirmSystemUpdatesModal'); $nextTick(() => openModal('updatesInProgressModal'))">
         @csrf
 
         {{-- Core section --}}
@@ -304,6 +306,34 @@ file is governed by the AGPL terms below.
                 form="systemUpdatesApplyForm"
             >
                 <p class="text-sm text-gray-700 dark:text-gray-300 text-center" x-text="`{{ __('admin/settings/systems/updates.confirm.message', ['count' => '%count%']) }}`.replace('%count%', selectedCount)"></p>
+            </x-ui-modal>
+
+            {{-- In-progress modal shown while the bulk apply request is in
+                 flight. The submit button on confirmSystemUpdatesModal
+                 carries the form="systemUpdatesApplyForm" attribute, so it
+                 submits the bulk form; the form's @submit handler closes
+                 the confirm modal and opens this one. The modal auto-
+                 dismisses when the controller's redirect lands and the
+                 page reloads — there is no in-page "completion" state to
+                 manage. Matches the install wizard's installProgressModal
+                 in style and behaviour. --}}
+            <x-ui-modal
+                id="updatesInProgressModal"
+                :title="__('admin/settings/systems/updates.in_progress.title')"
+                message=""
+                icon_type="info"
+                :dismissible="false"
+                :closeOnly="true"
+            >
+                <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                    {{ __('admin/settings/systems/updates.in_progress.description_line1') }}<br>
+                    {{ __('admin/settings/systems/updates.in_progress.description_line2') }}
+                </p>
+                <x-slot:footer>
+                    <div class="flex items-center justify-center w-full py-1">
+                        <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                    </div>
+                </x-slot:footer>
             </x-ui-modal>
         @else
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
