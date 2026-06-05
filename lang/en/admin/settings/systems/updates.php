@@ -27,6 +27,7 @@ return [
     // Common
     'check_now' => 'Check Now',
     'apply_selected' => 'Update Selected',
+    'apply_one' => 'Update',
     'select_all' => 'Select All',
     'last_checked_at' => 'Last checked: :date',
     'never_checked' => 'Never checked',
@@ -75,6 +76,7 @@ return [
         'name' => 'Name',
         'current' => 'Current',
         'available' => 'Available',
+        'action' => 'Action',
     ],
 
     // Flash messages
@@ -85,17 +87,25 @@ return [
         'apply_summary' => ':succeeded of :total succeeded, :failed failed',
     ],
 
-    // Confirm modal
+    // Confirm modal (bulk apply)
     'confirm' => [
         'title' => 'Run Updates',
         'message' => 'Apply :count selected update(s) sequentially. Continue?',
     ],
 
     // In-progress modal (shown while the bulk apply request is being
-    // processed by the controller and the page has not yet redirected)
+    // processed by the controller and the page has not yet redirected;
+    // the per-row single-update path opens the same modal so its
+    // in-flight UX matches the bulk-apply path).
     'in_progress' => [
         'title' => 'Applying updates...',
         'description_line1' => 'Please do not close this page.',
         'description_line2' => 'This may take a moment.',
+    ],
+
+    // Confirm modal (single-item per-row "Update" button)
+    'single_confirm' => [
+        'title' => 'Run Update',
+        'message' => 'Update :name?',
     ],
 ];
