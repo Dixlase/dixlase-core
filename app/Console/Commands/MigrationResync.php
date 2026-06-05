@@ -41,26 +41,45 @@ use Illuminate\Support\Facades\DB;
 /**
  * Realign the `migrations` bookkeeping table to the current migration filenames.
  *
- * During the beta series (Beta 1 → GA) core migrations are re-sorted/renumbered
- * (see CLAUDE.md "Migration Editing Policy"). Renumbering renames the files, but
- * Laravel records applied migrations by filename, so an already-migrated database
- * (a live brand/demo/production site) would then see every renamed file as
- * "pending" and try to re-run it, hitting "table already exists".
+ * During the beta series (Beta 1 → GA) core, plugin, and theme migrations
+ * are re-sorted/renumbered (see CLAUDE.md "Migration Editing Policy").
+ * Renumbering renames the files, but Laravel records applied migrations
+ * by filename, so an already-migrated database (a live brand/demo/production
+ * site) would then see every renamed file as "pending" and try to re-run
+ * it, hitting "table already exists".
  *
- * This command fixes that WITHOUT a destructive `migrate:fresh`: only the table
- * structure (not the filename) is invariant under a re-sort, so we match each
- * recorded migration to the current file by the stable suffix (everything after
- * the `YYYY_MM_DD_NNNNNN_` prefix, e.g. `create_signature_waivers_table`) and
- * UPDATE the recorded name to the current filename.
+ * This command fixes that WITHOUT a destructive `migrate:fresh`: only the
+ * table structure (not the filename) is invariant under a re-sort, so we
+ * match each recorded migration to the current file by the stable suffix
+ * (everything after the `YYYY_MM_DD_NNNNNN_` prefix, e.g.
+ * `create_signature_waivers_table`) and UPDATE the recorded name to the
+ * current filename.
  *
- * It only ever touches the `migrations` bookkeeping table — never data tables,
- * never the schema, and it does not run any migration. After a resync, run
- * `php artisan migrate` to apply genuinely-new migrations.
+ * The scan covers three scopes that all land in the same `migrations`
+ * table: core (`database/migrations/`), plugins
+ * (`plugins/<slug>/database/migrations/`), and themes
+ * (`themes/<slug>/database/migrations/`). Two scopes shipping the same
+ * suffix is dropped from the realignment and reported as a collision —
+ * leaving the ledger row untouched is safer than guessing which scope
+ * the recorded row originally belonged to.
+ *
+ * It only ever touches the `migrations` bookkeeping table — never data
+ * tables, never the schema, and it does not run any migration. After a
+ * resync, run `php artisan migrate` to apply genuinely-new migrations.
  *
  * Default is a dry-run preview; pass --confirm to apply.
  */
 class MigrationResync extends Command
 {
+    /**
+     * Suffix → list of filenames seen for it, populated during the scan
+     * whenever two scopes ship the same suffix. Surfaced in the report
+     * so the operator can rename one of them and re-run.
+     *
+     * @var array<string, list<string>>
+     */
+    protected array $collisions = [];
+
     /**
      * The name and signature of the console command.
      *
@@ -97,8 +116,9 @@ class MigrationResync extends Command
             $suffix = $this->suffixOf($row->migration);
 
             if ($suffix === null || ! isset($fileMap[$suffix])) {
-                // Not a core migration we can match (plugin/theme tracking, or
-                // an orphaned record). Leave it untouched.
+                // No matching current file in any scanned scope (an orphaned
+                // record from a removed plugin/theme, or a suffix dropped
+                // because of a collision). Leave the ledger row untouched.
                 $skipped[] = $row->migration;
 
                 continue;
@@ -183,33 +203,92 @@ class MigrationResync extends Command
     }
 
     /**
-     * Map the stable suffix of every current core migration file to its full
+     * Map the stable suffix of every current migration file to its full
      * migration name (filename without `.php`).
+     *
+     * Scans core (`database/migrations/`) plus every plugin and theme
+     * (`plugins/<slug>/database/migrations/`,
+     * `themes/<slug>/database/migrations/`). Plugins and themes use the
+     * same `YYYY_MM_DD_NNNNNN_<suffix>` naming and land in the same
+     * Laravel `migrations` bookkeeping table, so realigning their
+     * filenames must go through the same suffix-keyed lookup.
+     *
+     * Same-suffix collisions across scopes (a vanishingly rare event
+     * given typical `create_<scope>_<thing>_table` prefixes, but possible
+     * if two plugins ship identically-suffixed files) are deliberately
+     * dropped from the map and surfaced via `$this->collisions` so the
+     * report can warn the operator. A collided suffix means we cannot
+     * unambiguously realign that ledger row — leaving it untouched is
+     * safer than guessing.
      *
      * @return array<string, string> suffix => migration name
      */
     protected function buildSuffixToNameMap(): array
     {
-        $dir = $this->basePath().'/database/migrations';
+        $this->collisions = [];
         $map = [];
 
-        foreach (glob($dir.'/*.php') ?: [] as $file) {
-            $name = basename($file, '.php');
+        foreach ($this->migrationDirectories() as $dir) {
+            foreach (glob($dir.'/*.php') ?: [] as $file) {
+                $name = basename($file, '.php');
 
-            // Skip underscore-prefixed backups (Laravel ignores these too).
-            if (str_starts_with($name, '_')) {
-                continue;
+                // Skip underscore-prefixed backups (Laravel ignores these too).
+                if (str_starts_with($name, '_')) {
+                    continue;
+                }
+
+                $suffix = $this->suffixOf($name);
+                if ($suffix === null) {
+                    continue;
+                }
+
+                if (isset($map[$suffix])) {
+                    // Two scopes ship the same suffix — refuse to map
+                    // either, so the ledger row stays untouched.
+                    $this->collisions[$suffix] = array_values(array_unique(array_merge(
+                        $this->collisions[$suffix] ?? [$map[$suffix]],
+                        [$name],
+                    )));
+                    unset($map[$suffix]);
+
+                    continue;
+                }
+
+                if (isset($this->collisions[$suffix])) {
+                    $this->collisions[$suffix][] = $name;
+                    $this->collisions[$suffix] = array_values(array_unique($this->collisions[$suffix]));
+
+                    continue;
+                }
+
+                $map[$suffix] = $name;
             }
-
-            $suffix = $this->suffixOf($name);
-            if ($suffix === null) {
-                continue;
-            }
-
-            $map[$suffix] = $name;
         }
 
         return $map;
+    }
+
+    /**
+     * Resolve every migration directory the command will scan.
+     *
+     * Order: core first, then plugins (alphabetical), then themes
+     * (alphabetical). The order only affects which scope "wins" a
+     * collision-free suffix; collisions are dropped regardless.
+     *
+     * @return list<string>
+     */
+    protected function migrationDirectories(): array
+    {
+        $base = $this->basePath();
+        $dirs = [$base.'/database/migrations'];
+
+        foreach (['plugins', 'themes'] as $scope) {
+            $scopeDirs = glob($base.'/'.$scope.'/*/database/migrations', GLOB_ONLYDIR) ?: [];
+            sort($scopeDirs);
+            $dirs = array_merge($dirs, $scopeDirs);
+        }
+
+        return array_values(array_filter($dirs, 'is_dir'));
     }
 
     /**
@@ -252,6 +331,7 @@ class MigrationResync extends Command
                 'change_count' => count($plan),
                 'skipped' => $skipped,
                 'pending' => $pending,
+                'collisions' => $this->collisions,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             return Command::SUCCESS;
@@ -266,6 +346,7 @@ class MigrationResync extends Command
         if ($status === 'clean') {
             $this->info('✓ The migrations table is already aligned with the current filenames.');
             $this->printPending($pending);
+            $this->printCollisions();
 
             return Command::SUCCESS;
         }
@@ -282,7 +363,7 @@ class MigrationResync extends Command
         $this->newLine();
 
         if (! empty($skipped)) {
-            $this->line(sprintf('<fg=gray>Skipped %d record(s) with no matching core migration file (left untouched):</>', count($skipped)));
+            $this->line(sprintf('<fg=gray>Skipped %d record(s) with no matching migration file (left untouched):</>', count($skipped)));
             foreach ($skipped as $name) {
                 $this->line('  <fg=gray>·</> '.$name);
             }
@@ -290,6 +371,7 @@ class MigrationResync extends Command
         }
 
         $this->printPending($pending);
+        $this->printCollisions();
 
         if ($status === 'dry_run') {
             $this->warn('Dry-run only. Re-run with --confirm to apply, then run `php artisan migrate`.');
@@ -312,6 +394,26 @@ class MigrationResync extends Command
         $this->line(sprintf('<fg=cyan>%d pending migration(s) not yet applied (run `php artisan migrate`):</>', count($pending)));
         foreach ($pending as $name) {
             $this->line('  <fg=cyan>+</> '.$name);
+        }
+        $this->newLine();
+    }
+
+    protected function printCollisions(): void
+    {
+        if ($this->collisions === []) {
+            return;
+        }
+
+        $this->warn(sprintf(
+            '%d suffix(es) collided across scopes — those ledger rows were left untouched.',
+            count($this->collisions),
+        ));
+        $this->line('<fg=yellow>Rename one of the colliding files so each suffix is unique, then re-run:</>');
+        foreach ($this->collisions as $suffix => $files) {
+            $this->line(sprintf('  <fg=yellow>·</> %s', $suffix));
+            foreach ($files as $f) {
+                $this->line('      '.$f);
+            }
         }
         $this->newLine();
     }
