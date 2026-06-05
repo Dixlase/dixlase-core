@@ -113,7 +113,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $plugins = Plugin::query()
             ->whereNotNull('available_version')
             ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason'])
+            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason', 'release_url', 'release_notes'])
             ->map(fn (Plugin $p) => [
                 'id' => $p->id,
                 'slug' => $p->slug,
@@ -125,6 +125,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'updateFailedAt' => $p->update_failed_at,
                 'updateFailedAtFormatted' => $p->update_failed_at?->format('Y/m/d H:i'),
                 'updateFailureReason' => $p->update_failure_reason,
+                'releaseUrl' => $p->release_url,
+                'releaseNotes' => $p->release_notes,
             ])
             ->values()
             ->all();
@@ -132,7 +134,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $themes = Theme::query()
             ->whereNotNull('available_version')
             ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason'])
+            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason', 'release_url', 'release_notes'])
             ->map(fn (Theme $t) => [
                 'id' => $t->id,
                 'slug' => $t->slug,
@@ -144,6 +146,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'updateFailedAt' => $t->update_failed_at,
                 'updateFailedAtFormatted' => $t->update_failed_at?->format('Y/m/d H:i'),
                 'updateFailureReason' => $t->update_failure_reason,
+                'releaseUrl' => $t->release_url,
+                'releaseNotes' => $t->release_notes,
             ])
             ->values()
             ->all();
@@ -160,6 +164,12 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $this->viewParams['lastCheckedAt'] = $lastCheckedAt;
         $this->viewParams['lastCheckedAtFormatted'] = $lastCheckedAt?->format('Y/m/d H:i');
         $this->viewParams['totalCount'] = count($plugins) + count($themes) + ($core['available'] ? 1 : 0);
+        // Drives the visibility of the "ターミナルから実行する場合" CLI
+        // alternative block in the core section. Operators on the
+        // simple-mode admin do not need the docker exec command — they
+        // either use the in-page button or they are not the audience
+        // for raw artisan output to begin with.
+        $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
 
         return view('admin::settings.systems.updates.index', $this->viewParams);
     }
@@ -470,7 +480,7 @@ HTML;
      * `core_releases` row.
      *
      * @param  array{type: ?string, slug: ?string}  $target
-     * @return array{available: bool, current_version: ?string, available_version: ?string, available_version_published_at: ?\Illuminate\Support\Carbon, release_url: ?string, preselected: bool}
+     * @return array{available: bool, current_version: ?string, available_version: ?string, available_version_published_at: ?\Illuminate\Support\Carbon, release_url: ?string, release_notes: ?string, preselected: bool}
      */
     protected function buildCoreSection(array $target): array
     {
@@ -485,6 +495,7 @@ HTML;
             'available_version' => $available ? $state->available_version : null,
             'available_version_published_at' => $available ? $state->available_version_published_at : null,
             'release_url' => $available ? $state->release_url : null,
+            'release_notes' => $available ? $state->release_notes : null,
             'preselected' => $available && $target['type'] === 'core',
             'update_failed_at' => $state->update_failed_at,
             'update_failed_at_formatted' => $state->update_failed_at?->format('Y/m/d H:i'),
