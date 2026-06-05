@@ -27,6 +27,7 @@ return [
     // 共通
     'check_now' => 'いますぐ確認',
     'apply_selected' => '選択を更新',
+    'apply_one' => '更新',
     'select_all' => 'すべて選択',
     'last_checked_at' => '最終チェック: :date',
     'never_checked' => '未チェック',
@@ -75,6 +76,7 @@ return [
         'name' => '名前',
         'current' => '現在',
         'available' => '利用可能',
+        'action' => '操作',
     ],
 
     // フラッシュメッセージ
@@ -85,17 +87,24 @@ return [
         'apply_summary' => ':total 件中 :succeeded 件成功 / :failed 件失敗',
     ],
 
-    // 確認モーダル
+    // 確認モーダル (一括適用)
     'confirm' => [
         'title' => 'アップデートを実行',
         'message' => '選択された :count 件のアップデートを順次適用します。よろしいですか？',
     ],
 
     // 実行中モーダル（一括適用リクエストが処理中で、ページがまだリダイレクト
-    // していない間に表示される）
+    // していない間に表示される。各行の個別「更新」ボタンの経路もこの同じ
+    // モーダルを開き、一括適用と同じ in-flight UX になる）
     'in_progress' => [
         'title' => 'アップデート実行中…',
         'description_line1' => 'このページを閉じないでください。',
         'description_line2' => 'しばらくお待ちください。',
+    ],
+
+    // 確認モーダル (各行の個別「更新」ボタン)
+    'single_confirm' => [
+        'title' => 'アップデートを実行',
+        'message' => ':name をアップデートしますか？',
     ],
 ];

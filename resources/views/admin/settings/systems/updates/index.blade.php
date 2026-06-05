@@ -21,7 +21,34 @@ file is governed by the AGPL terms below.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto max-w-5xl">
+{{--
+    Per-row single-item update wiring.
+
+    `pendingSingleUpdate` carries the in-flight target across the row
+    button → confirm modal → mini-form submit handoff. `askSingleUpdate()`
+    is invoked by each row's "更新" button with the target's kind / id /
+    display name; it populates `pendingSingleUpdate` and opens the
+    single-update confirm modal. The modal's confirm button then submits
+    the matching hidden mini-form (one per updatable plugin / theme,
+    rendered just below the core form) via the shared `submitModalForm()`
+    helper. The bulk-apply checkboxes and their separate confirm modal
+    remain unchanged — the two paths reuse the same `apply` controller
+    endpoint, the only difference is the size of the `plugins[]` /
+    `themes[]` array it receives.
+--}}
+<div class="mx-auto max-w-5xl"
+     x-data="{
+         pendingSingleUpdate: { kind: null, id: null, name: null, formId: null },
+         askSingleUpdate(kind, id, name) {
+             this.pendingSingleUpdate = {
+                 kind: kind,
+                 id: id,
+                 name: name,
+                 formId: `singleUpdateForm_${kind}_${id}`,
+             };
+             openModal('confirmSingleUpdateModal');
+         },
+     }">
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/systems/updates.description') }}</p>
 
     {{-- Header: Last check time and recheck button --}}
@@ -57,6 +84,31 @@ file is governed by the AGPL terms below.
           class="hidden">
         @csrf
     </form>
+
+    {{-- Hidden mini-forms backing the per-row "更新" buttons. One per
+         updatable plugin and one per updatable theme. Each carries a
+         single-element `plugins[]` / `themes[]` array that the existing
+         `apply` controller handles transparently — the loop over
+         selected IDs just runs once. Sit outside the bulk-apply form
+         for the same nested-<form> reason as #coreUpdateForm above. --}}
+    @foreach($plugins as $plugin)
+        <form id="singleUpdateForm_plugin_{{ $plugin['id'] }}"
+              method="POST"
+              action="{{ route('admin.settings.systems.updates.apply') }}"
+              class="hidden">
+            @csrf
+            <input type="hidden" name="plugins[]" value="{{ $plugin['id'] }}">
+        </form>
+    @endforeach
+    @foreach($themes as $theme)
+        <form id="singleUpdateForm_theme_{{ $theme['id'] }}"
+              method="POST"
+              action="{{ route('admin.settings.systems.updates.apply') }}"
+              class="hidden">
+            @csrf
+            <input type="hidden" name="themes[]" value="{{ $theme['id'] }}">
+        </form>
+    @endforeach
 
     {{-- Main form: Selection + bulk apply --}}
     <form method="POST"
@@ -180,6 +232,7 @@ file is governed by the AGPL terms below.
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.name') }}</th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.current') }}</th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.available') }}</th>
+                            <th class="py-2 pl-2 text-right w-32"><span class="sr-only">{{ __('admin/settings/systems/updates.table.action') }}</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -210,6 +263,19 @@ file is governed by the AGPL terms below.
                                 <td class="py-2 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $plugin['currentVersion'] }}</td>
                                 <td class="py-2 pr-4 font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">
                                     <i class="fas fa-arrow-up text-[10px] mr-1"></i>v{{ $plugin['availableVersion'] }}
+                                </td>
+                                <td class="py-2 pl-2 text-right">
+                                    <x-form-button
+                                        type="button"
+                                        size="sm"
+                                        variant="primary"
+                                        icon="fas fa-cloud-arrow-down"
+                                        :label="__('admin/settings/systems/updates.apply_one')"
+                                        data-update-id="{{ $plugin['id'] }}"
+                                        data-update-name="{{ $plugin['name'] }}"
+                                        data-update-kind="plugin"
+                                        xClick="askSingleUpdate($el.dataset.updateKind, parseInt($el.dataset.updateId, 10), $el.dataset.updateName)"
+                                    />
                                 </td>
                             </tr>
                         @endforeach
@@ -244,6 +310,7 @@ file is governed by the AGPL terms below.
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.name') }}</th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.current') }}</th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.available') }}</th>
+                            <th class="py-2 pl-2 text-right w-32"><span class="sr-only">{{ __('admin/settings/systems/updates.table.action') }}</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -274,6 +341,19 @@ file is governed by the AGPL terms below.
                                 <td class="py-2 pr-4 font-mono text-xs text-gray-600 dark:text-gray-400">v{{ $theme['currentVersion'] }}</td>
                                 <td class="py-2 pr-4 font-mono text-xs text-blue-700 dark:text-blue-300 font-semibold">
                                     <i class="fas fa-arrow-up text-[10px] mr-1"></i>v{{ $theme['availableVersion'] }}
+                                </td>
+                                <td class="py-2 pl-2 text-right">
+                                    <x-form-button
+                                        type="button"
+                                        size="sm"
+                                        variant="primary"
+                                        icon="fas fa-cloud-arrow-down"
+                                        :label="__('admin/settings/systems/updates.apply_one')"
+                                        data-update-id="{{ $theme['id'] }}"
+                                        data-update-name="{{ $theme['name'] }}"
+                                        data-update-kind="theme"
+                                        xClick="askSingleUpdate($el.dataset.updateKind, parseInt($el.dataset.updateId, 10), $el.dataset.updateName)"
+                                    />
                                 </td>
                             </tr>
                         @endforeach
@@ -316,7 +396,9 @@ file is governed by the AGPL terms below.
                  dismisses when the controller's redirect lands and the
                  page reloads — there is no in-page "completion" state to
                  manage. Matches the install wizard's installProgressModal
-                 in style and behaviour. --}}
+                 in style and behaviour. Reused by the per-row single-
+                 update flow below — both bulk and single paths open this
+                 same modal so the in-flight UX is identical. --}}
             <x-ui-modal
                 id="updatesInProgressModal"
                 :title="__('admin/settings/systems/updates.in_progress.title')"
@@ -333,6 +415,53 @@ file is governed by the AGPL terms below.
                     <div class="flex items-center justify-center w-full py-1">
                         <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
                     </div>
+                </x-slot:footer>
+            </x-ui-modal>
+
+            {{-- Single-item confirm modal shared by every per-row "更新"
+                 button. The target's display name is interpolated from
+                 the outer scope's `pendingSingleUpdate.name`, populated
+                 by askSingleUpdate() on click. The confirm button cannot
+                 use the modal's built-in form="..." mode because the
+                 target form is selected dynamically, so the footer slot
+                 is overridden and submits `pendingSingleUpdate.formId`
+                 directly via submitModalForm(). The confirm click also
+                 closes this modal and opens updatesInProgressModal so
+                 the single-update flow gets the same in-flight feedback
+                 as the bulk-apply path. --}}
+            <x-ui-modal
+                id="confirmSingleUpdateModal"
+                :title="__('admin/settings/systems/updates.single_confirm.title')"
+                message=""
+                icon_type="info"
+                :cancel_label="__('common.cancel')"
+            >
+                <p class="text-sm text-gray-700 dark:text-gray-300 text-center"
+                   x-text="`{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}`.replace('%name%', pendingSingleUpdate.name || '')"></p>
+                <x-slot:footer>
+                    {{-- Buttons sit directly inside .modal-actions (which
+                         is flex items-center justify-center) so they
+                         centre to match the bulk-apply confirm modal's
+                         default layout. The mx-2 spacing matches the
+                         default footer's button gap. --}}
+                    <x-form-button
+                        type="button"
+                        variant="secondary"
+                        icon="fas fa-times"
+                        :label="__('common.cancel')"
+                        xDisabled="submitting"
+                        xClick="close()"
+                        class="mx-2"
+                    />
+                    <x-form-button
+                        type="button"
+                        variant="primary"
+                        icon="fas fa-cloud-arrow-down"
+                        :label="__('admin/settings/systems/updates.apply_one')"
+                        xDisabled="submitting"
+                        xClick="closeModal('confirmSingleUpdateModal'); submitting = true; openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
+                        class="mx-2"
+                    />
                 </x-slot:footer>
             </x-ui-modal>
         @else
