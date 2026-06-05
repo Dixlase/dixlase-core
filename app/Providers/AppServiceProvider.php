@@ -49,6 +49,7 @@ use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Contracts\Security\PolicyEvaluatorInterface;
 use App\Contracts\Security\RiskEvaluatorInterface;
 use App\Contracts\Security\SecretProviderInterface;
+use App\Contracts\Signature\SignatureWaiverServiceInterface;
 use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
@@ -68,6 +69,7 @@ use App\Services\RouteSlugRegistry;
 use App\Services\Security\EnvSecretProvider;
 use App\Services\Security\LowRiskEvaluator;
 use App\Services\Security\NullPolicyEvaluator;
+use App\Services\Signature\SignatureWaiverService;
 use App\Services\Site\SettingDefinitionRegistry;
 use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
@@ -136,6 +138,10 @@ class AppServiceProvider extends ServiceProvider
         // Bind the Core integrity manifest builder (shared by the verifier and
         // the first-party DixlaseSigner sign-core command).
         $this->app->bind(CoreManifestBuilderInterface::class, CoreManifestBuilder::class);
+
+        // Bind the signature waiver/removal manager (used by Core + the
+        // first-party DixlaseDevKit dls:signature:* commands).
+        $this->app->bind(SignatureWaiverServiceInterface::class, SignatureWaiverService::class);
 
         // Bind license verification service. Ships as a no-op stub in v0.1.0;
         // a future official DixlaseLicensing plugin can override this binding
