@@ -85,6 +85,15 @@ return [
         'check_failed' => 'アップデートチェックに失敗しました: :error',
         'no_selection' => '更新対象が選択されていません。',
         'apply_summary' => ':total 件中 :succeeded 件成功 / :failed 件失敗',
+        'backup_failed' => '更新前のバックアップに失敗したため、アップデートを中止しました。エラー: :error',
+    ],
+
+    // 更新前のバックアップ推奨
+    'backup' => [
+        'recommendation_title' => 'アップデート前にバックアップを取ることを推奨します',
+        'recommendation_body' => 'アップデートが途中で失敗すると、ファイルや DB スキーマが不整合な状態で残ることがあります。先にバックアップを取っておくと、問題が起きたときにバックアップ管理画面から復元できます。',
+        'recommendation_link' => 'バックアップ管理画面を開く',
+        'checkbox_label' => '先にバックアップを取る',
     ],
 
     // 確認モーダル (一括適用)
@@ -106,6 +115,14 @@ return [
     'single_confirm' => [
         'title' => 'アップデートを実行',
         'message' => ':name をアップデートしますか？',
+    ],
+
+    // 確認モーダル (コアの「更新」ボタン — single_confirm と分けて、
+    // v:current → v:available のバージョン遷移を明示できるように
+    // メッセージを別に持つ)
+    'core_confirm' => [
+        'title' => 'コアをアップデート',
+        'message' => 'コアを v:current から v:available にアップデートします。よろしいですか？',
     ],
 
     // リリースノート（GitHub Releases の body を Markdown として

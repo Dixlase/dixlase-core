@@ -39,6 +39,7 @@ file is governed by the AGPL terms below.
 <div class="mx-auto max-w-5xl"
      x-data="{
          pendingSingleUpdate: { kind: null, id: null, name: null, formId: null },
+         backupFirst: true,
          askSingleUpdate(kind, id, name) {
              this.pendingSingleUpdate = {
                  kind: kind,
@@ -50,6 +51,26 @@ file is governed by the AGPL terms below.
          },
      }">
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/systems/updates.description') }}</p>
+
+    {{-- Pre-update backup recommendation banner. Sits above the
+         last-check header so the operator sees it before they reach
+         the "更新" buttons. The "先にバックアップを取る" checkbox in
+         each confirm modal (and inline next to the core update
+         button) defaults to ON so the banner's recommendation is the
+         default-applied behaviour, not a checkbox the operator has
+         to discover. --}}
+    <div class="flex items-start gap-3 mb-6 rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 p-4">
+        <i class="fas fa-shield-alt text-yellow-600 dark:text-yellow-400 mt-0.5"></i>
+        <div class="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
+            <p class="font-medium">{{ __('admin/settings/systems/updates.backup.recommendation_title') }}</p>
+            <p class="text-xs text-yellow-700 dark:text-yellow-300">{{ __('admin/settings/systems/updates.backup.recommendation_body') }}</p>
+            <p class="text-xs">
+                <a href="{{ route('admin.settings.systems.backup.index') }}" class="text-yellow-700 dark:text-yellow-300 underline hover:text-yellow-900 dark:hover:text-yellow-100">
+                    {{ __('admin/settings/systems/updates.backup.recommendation_link') }}
+                </a>
+            </p>
+        </div>
+    </div>
 
     {{-- Header: Last check time and recheck button --}}
     <div class="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -81,8 +102,15 @@ file is governed by the AGPL terms below.
     <form id="coreUpdateForm"
           method="POST"
           action="{{ route('admin.settings.systems.updates.apply-core') }}"
-          class="hidden">
+          class="hidden"
+          @submit="closeModal('confirmCoreUpdateModal'); $nextTick(() => openModal('updatesInProgressModal'))">
         @csrf
+        {{-- Driven by the outer x-data's backupFirst flag, which the
+             "先にバックアップを取る" checkbox inside
+             confirmCoreUpdateModal flips. Sent as a literal '1' / '0'
+             so the controller's nullable|in:0,1 validator accepts it
+             either way. --}}
+        <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
     </form>
 
     {{-- Hidden mini-forms backing the per-row "更新" buttons. One per
@@ -98,6 +126,7 @@ file is governed by the AGPL terms below.
               class="hidden">
             @csrf
             <input type="hidden" name="plugins[]" value="{{ $plugin['id'] }}">
+            <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
         </form>
     @endforeach
     @foreach($themes as $theme)
@@ -107,6 +136,7 @@ file is governed by the AGPL terms below.
               class="hidden">
             @csrf
             <input type="hidden" name="themes[]" value="{{ $theme['id'] }}">
+            <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
         </form>
     @endforeach
 
@@ -125,6 +155,7 @@ file is governed by the AGPL terms below.
           @change="recompute()"
           @submit="applying = true; closeModal('confirmSystemUpdatesModal'); $nextTick(() => openModal('updatesInProgressModal'))">
         @csrf
+        <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
 
         {{-- Core section --}}
         <section class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -159,19 +190,26 @@ file is governed by the AGPL terms below.
                                 </a>
                             @endif
                         </div>
-                        {{-- Same label key, icon, and `size="sm"` as the
-                             per-row "更新" button on the plugin and theme
-                             tables so the action across all three
-                             sections (core / plugin / theme) reads
-                             identically and the buttons align visually
-                             on the same right edge. --}}
-                        <x-form-button type="submit"
-                            form="coreUpdateForm"
+                        {{-- Opens the core-specific confirm modal
+                             (confirmCoreUpdateModal) instead of
+                             submitting the form directly — same
+                             two-step UX as the bulk / single update
+                             buttons so an accidental click on the
+                             core's "更新" button cannot kick off an
+                             upgrade. The "先にバックアップを取る"
+                             checkbox lives inside that modal alongside
+                             the version-comparison message. Label /
+                             icon / sm size match the per-row "更新"
+                             button on the plugin and theme tables so
+                             the three sections (core / plugin / theme)
+                             read identically. --}}
+                        <x-form-button type="button"
                             size="sm"
                             :label="__('admin/settings/systems/updates.apply_one')"
                             variant="primary"
                             class="mr-4"
-                            icon="fas fa-cloud-arrow-down" />
+                            icon="fas fa-cloud-arrow-down"
+                            xClick="openModal('confirmCoreUpdateModal')" />
                     </div>
 
                     {{-- Release notes (GitHub Releases body, persisted to
@@ -496,7 +534,52 @@ file is governed by the AGPL terms below.
                 form="systemUpdatesApplyForm"
             >
                 <p class="text-sm text-gray-700 dark:text-gray-300 text-center" x-text="`{{ __('admin/settings/systems/updates.confirm.message', ['count' => '%count%']) }}`.replace('%count%', selectedCount)"></p>
+                {{-- "先にバックアップを取る" toggle, bound to the outer
+                     x-data's backupFirst flag. The hidden backup_first
+                     input inside #systemUpdatesApplyForm is reactively
+                     bound to the same flag, so unchecking here carries
+                     through to the apply request. Default ON: operators
+                     who do not engage with the checkbox get the safer
+                     behaviour. --}}
+                <label class="mt-4 flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
+                    <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
+                </label>
             </x-ui-modal>
+
+            {{-- Core-specific confirm modal. The core "更新" button
+                 opens this instead of submitting directly so an
+                 accidental click cannot trigger an upgrade — the
+                 operator has to (1) acknowledge the v:current →
+                 v:available transition, and (2) confirm the
+                 "先にバックアップを取る" stance, before the form
+                 actually goes. The modal's built-in confirm button
+                 carries the form="coreUpdateForm" attribute, so the
+                 click submits #coreUpdateForm whose @submit handler
+                 closes this modal and opens updatesInProgressModal. --}}
+            @if($core['available'])
+                <x-ui-modal
+                    id="confirmCoreUpdateModal"
+                    :title="__('admin/settings/systems/updates.core_confirm.title')"
+                    message=""
+                    icon_type="info"
+                    confirm_color="blue"
+                    :confirm_label="__('admin/settings/systems/updates.apply_one')"
+                    :cancel_label="__('common.cancel')"
+                    form="coreUpdateForm"
+                >
+                    <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                        {{ __('admin/settings/systems/updates.core_confirm.message', [
+                            'current' => $core['current_version'],
+                            'available' => $core['available_version'],
+                        ]) }}
+                    </p>
+                    <label class="mt-4 flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
+                        <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
+                    </label>
+                </x-ui-modal>
+            @endif
 
             {{-- In-progress modal shown while the bulk apply request is in
                  flight. The submit button on confirmSystemUpdatesModal
@@ -548,6 +631,16 @@ file is governed by the AGPL terms below.
             >
                 <p class="text-sm text-gray-700 dark:text-gray-300 text-center"
                    x-text="`{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}`.replace('%name%', pendingSingleUpdate.name || '')"></p>
+                {{-- Same "先にバックアップを取る" toggle as the bulk
+                     modal. The single-item mini-form's hidden
+                     backup_first input is bound to the same outer
+                     backupFirst flag, so this checkbox's state reaches
+                     the controller when submitModalForm() fires from
+                     the confirm button below. --}}
+                <label class="mt-4 flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
+                    <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
+                </label>
                 <x-slot:footer>
                     {{-- Buttons sit directly inside .modal-actions (which
                          is flex items-center justify-center) so they

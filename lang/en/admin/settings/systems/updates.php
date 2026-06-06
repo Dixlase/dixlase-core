@@ -85,6 +85,15 @@ return [
         'check_failed' => 'Update check failed: :error',
         'no_selection' => 'No items selected for update.',
         'apply_summary' => ':succeeded of :total succeeded, :failed failed',
+        'backup_failed' => 'Pre-update backup failed, so the update was not started. Error: :error',
+    ],
+
+    // Pre-update backup recommendation
+    'backup' => [
+        'recommendation_title' => 'Recommended: take a backup before updating',
+        'recommendation_body' => 'A botched update can leave files or DB schema in an inconsistent state. Take a backup first so you can restore from the backup page if anything goes wrong.',
+        'recommendation_link' => 'Open the backup management page',
+        'checkbox_label' => 'Take a backup before updating',
     ],
 
     // Confirm modal (bulk apply)
@@ -107,6 +116,14 @@ return [
     'single_confirm' => [
         'title' => 'Run Update',
         'message' => 'Update :name?',
+    ],
+
+    // Confirm modal (core "更新" button — separate from the per-row
+    // single_confirm so the message can name the v:current → v:available
+    // bump explicitly)
+    'core_confirm' => [
+        'title' => 'Update Core',
+        'message' => 'Update the core from v:current to v:available. Continue?',
     ],
 
     // Release notes (changelog from GitHub Releases body, rendered as
