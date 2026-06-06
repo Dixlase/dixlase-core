@@ -39,7 +39,10 @@ use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
@@ -76,6 +79,19 @@ class ThemeUpdate extends Command
         $this->info("Checking for updates for '{$slug}' (current: v{$theme->version})...");
 
         $snapshotPath = null;
+        // Whether we got far enough into the try block to invoke
+        // ThemeMigrator::migrate(). Used by the catch handler to decide
+        // whether to attempt ThemeMigrator::rollback() — without this
+        // flag we cannot tell, from inside the catch, whether the
+        // failure happened before migrate started (no DB rows to roll
+        // back) or after some migrations had been applied.
+        $migrationsAttempted = false;
+        $migrator = new ThemeMigrator(
+            app(Filesystem::class),
+            app(ConnectionResolverInterface::class),
+            'theme_migrations',
+            $slug,
+        );
 
         try {
             $provider = $manager->makeProvider($theme->source);
@@ -117,6 +133,21 @@ class ThemeUpdate extends Command
             }
 
             $this->extractUpdate($zipPath, $theme);
+
+            // Apply any new migration files shipped with this release.
+            // The theme's migrations live in
+            // themes/<Directory>/database/migrations and are tracked in
+            // dls_theme_migrations by ThemeMigrationRepository; the
+            // matching install command (dls:theme:install) runs them at
+            // install time but the original update command did not, so
+            // schema changes shipped in a theme update used to land on
+            // disk without ever executing against the database.
+            // Migrate AFTER extract so the new model / service classes
+            // any migration may reference are already in autoload reach.
+            $this->info('Running theme migrations...');
+            $migrationsAttempted = true;
+            $migrator->migrate($theme->directory);
+            $this->info('Theme migrations complete.');
 
             $theme->update([
                 'version' => $release->version,
@@ -166,6 +197,24 @@ class ThemeUpdate extends Command
                 } catch (\Throwable $restoreError) {
                     $this->error("ROLLBACK FAILED: {$restoreError->getMessage()}");
                     $this->error("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+                }
+            }
+
+            // Roll back any theme migrations that did get applied this
+            // run. Best-effort: ThemeMigrator::rollback() reverses the
+            // migrations recorded in dls_theme_migrations during this
+            // batch, but a migration that failed midway through a
+            // multi-statement DDL on MySQL may have left partial effects
+            // that are not in the migration table and therefore cannot
+            // be auto-reversed. Surface that case loudly so the operator
+            // can recover by hand.
+            if ($migrationsAttempted) {
+                try {
+                    $migrator->rollback($theme->directory);
+                    $this->warn('Theme migrations rolled back.');
+                } catch (\Throwable $rollbackError) {
+                    $this->error("MIGRATION ROLLBACK FAILED: {$rollbackError->getMessage()}");
+                    $this->error('Database may be in an inconsistent state — inspect dls_theme_migrations and the theme schema, then recover manually.');
                 }
             }
 
