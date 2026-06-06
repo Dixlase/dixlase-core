@@ -228,10 +228,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- Recommended/optional checks --}}
     @php
-        $recOptAllOk = !in_array(false, $requirements['recommended_extensions']) && !in_array(false, $requirements['optional_extensions']);
-        $recOptTotal = count($requirements['recommended_extensions']) + count($requirements['optional_extensions']);
+        $recommendedPhpSettings = $requirements['php_settings_recommended'] ?? [];
+        $recOptAllOk = !in_array(false, $requirements['recommended_extensions'])
+                       && !in_array(false, $requirements['optional_extensions'])
+                       && !collect($recommendedPhpSettings)->contains(fn($i) => !$i['ok']);
+        $recOptTotal = count($requirements['recommended_extensions'])
+                       + count($requirements['optional_extensions'])
+                       + count($recommendedPhpSettings);
         $recOptFailed = collect($requirements['recommended_extensions'])->filter(fn($s) => !$s)->count()
-                      + collect($requirements['optional_extensions'])->filter(fn($s) => !$s)->count();
+                      + collect($requirements['optional_extensions'])->filter(fn($s) => !$s)->count()
+                      + collect($recommendedPhpSettings)->filter(fn($i) => !$i['ok'])->count();
     @endphp
     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
          x-data="{ open: {{ $recOptAllOk ? 'false' : 'true' }} }">
@@ -247,6 +253,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
         </button>
         <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2 mt-2">
+            @foreach ($recommendedPhpSettings as $setting => $info)
+                <li>
+                    <strong>{{ $setting }}</strong> ({{ __('install/common.recommended') }}: {{ $info['required'] }}):
+                    <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
+                        {{ $info['current'] }}{{ $info['ok'] ? ' ' . __('install/common.ok') : '' }}
+                    </span>
+                </li>
+            @endforeach
             @foreach ($requirements['recommended_extensions'] as $ext => $status)
                 <li>
                     <strong>{{ $ext }}</strong> ({{ __('install/common.recommended') }}):

@@ -220,9 +220,14 @@ class InstallController extends Controller
             'public' => is_writable(base_path('public')),
         ];
 
-        // PHP settings check
+        // PHP settings check (required minima; recommended values reported separately below)
         $phpSettings = [
             'memory_limit' => $this->checkMemoryLimit(128),
+            'max_execution_time' => $this->checkMaxExecutionTime(30),
+        ];
+
+        // Soft thresholds: stricter values we'd like to see but don't gate install on.
+        $phpSettingsRecommended = [
             'max_execution_time' => $this->checkMaxExecutionTime(60),
         ];
 
@@ -248,6 +253,7 @@ class InstallController extends Controller
             'optional_extensions' => $optionalExtensions,
             'permissions' => $permissions,
             'php_settings' => $phpSettings,
+            'php_settings_recommended' => $phpSettingsRecommended,
             'has_theme' => $hasTheme,
         ];
     }
