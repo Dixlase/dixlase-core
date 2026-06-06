@@ -39,7 +39,7 @@ composer.local.json
 /.idea
 /.vscode
 /.zed
-DS_Store
+.DS_Store
 CLAUDE.md
 CLAUDE.local.md
 AGENTS.md
