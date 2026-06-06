@@ -135,7 +135,29 @@ class CoreUpdater
             $log('Applied source.');
 
             $log('Running migrations...');
-            Artisan::call('migrate', ['--force' => true, '--no-interaction' => true]);
+            // Scope migrate to the core's own migration path. Plugin and
+            // theme ServiceProviders register their own database/migrations
+            // directories on Laravel's default migrator via
+            // loadMigrationsFrom() (see PluginLoaderTrait::loadPluginMigrations
+            // and each plugin's own ServiceProvider) — but those rows are
+            // tracked in `dls_plugin_migrations` and `dls_theme_migrations`
+            // by PluginMigrationRepository / ThemeMigrationRepository,
+            // not in `dls_migrations`. Without an explicit --path the
+            // default migrator walks every registered path, sees the
+            // plugin / theme migration files, fails to find a matching
+            // row in `dls_migrations`, and tries to re-create tables that
+            // the plugin / theme installer already created — surfacing as
+            // SQLSTATE[42S01] "Base table or view already exists" that
+            // aborts the whole core update partway through the apply
+            // phase. The plugin and theme migrators own their own
+            // application lifecycle (dls:plugin:install runs them via
+            // PluginMigrator), so the core's migrate has no business
+            // touching them anyway.
+            Artisan::call('migrate', [
+                '--path' => 'database/migrations',
+                '--force' => true,
+                '--no-interaction' => true,
+            ]);
             $log('Migrations complete.');
 
             $log('Clearing caches...');
