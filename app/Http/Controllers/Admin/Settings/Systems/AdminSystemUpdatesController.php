@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Contracts\Backup\BackupServiceInterface;
 use App\Models\Plugin;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
@@ -204,13 +205,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * detached subprocess so file replacement does not tear down the
      * PHP-FPM worker that initiated the request.
      */
-    public function apply(Request $request)
+    public function apply(Request $request, BackupServiceInterface $backupService)
     {
         $request->validate([
             'plugins' => 'array',
             'plugins.*' => 'integer',
             'themes' => 'array',
             'themes.*' => 'integer',
+            'backup_first' => 'nullable|in:0,1',
         ]);
 
         $pluginIds = $request->input('plugins', []);
@@ -219,6 +221,30 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         if (empty($pluginIds) && empty($themeIds)) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('info', __('admin/settings/systems/updates.messages.no_selection'));
+        }
+
+        // If the operator ticked "先にバックアップを取る" on the confirm
+        // modal, snapshot the DB plus the source tree(s) about to be
+        // overwritten before any extract step runs. Abort the whole
+        // apply if the backup fails — the operator asked for safety,
+        // running the update without the requested backup defeats that.
+        if ($request->input('backup_first') === '1') {
+            $targets = [BackupServiceInterface::TARGET_DATABASE];
+            if (! empty($pluginIds)) {
+                $targets[] = BackupServiceInterface::TARGET_PLUGINS_ALL;
+            }
+            if (! empty($themeIds)) {
+                $targets[] = BackupServiceInterface::TARGET_THEMES_ALL;
+            }
+            $backupResult = $backupService->backup($targets, [
+                'reason' => 'pre-update backup (admin updates page)',
+            ]);
+            if (! $backupResult->success) {
+                return redirect()->route('admin.settings.systems.updates.index')
+                    ->with('error', __('admin/settings/systems/updates.messages.backup_failed', [
+                        'error' => $backupResult->error ?? 'unknown error',
+                    ]));
+            }
         }
 
         $succeeded = 0;
@@ -276,8 +302,12 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * "Or run from a terminal") so operators on hosts where PHP exec()
      * is disabled, or who prefer manual control, still have a path.
      */
-    public function applyCore(Request $request)
+    public function applyCore(Request $request, BackupServiceInterface $backupService)
     {
+        $request->validate([
+            'backup_first' => 'nullable|in:0,1',
+        ]);
+
         $state = \App\Models\CoreRelease::singleton();
         $current = (string) (\App\Models\CoreVersionHistory::currentVersion() ?? config('app.version', '0.0.0'));
         $hasUpdate = $state->available_version !== null
@@ -291,6 +321,26 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         if (! function_exists('exec')) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('error', __('admin/settings/systems/updates.core.exec_disabled'));
+        }
+
+        // Pre-update source backup (opt-in via the confirm modal). The
+        // DB backup that CoreUpdater::update() captures inside the
+        // detached subprocess covers the data side; this is the file
+        // side — a TARGET_CORE_SOURCE archive of the same whitelist
+        // CoreSourceSnapshot uses, persisted as a regular backup
+        // record so the operator can restore from it via the backup
+        // page even after the rollback snapshot has been discarded.
+        if ($request->input('backup_first') === '1') {
+            $backupResult = $backupService->backup(
+                [BackupServiceInterface::TARGET_CORE_SOURCE],
+                ['reason' => "pre-core-update backup v{$current} -> v{$state->available_version}"],
+            );
+            if (! $backupResult->success) {
+                return redirect()->route('admin.settings.systems.updates.index')
+                    ->with('error', __('admin/settings/systems/updates.messages.backup_failed', [
+                        'error' => $backupResult->error ?? 'unknown error',
+                    ]));
+            }
         }
 
         // Under PHP-FPM the PHP_BINARY constant points at the FPM binary

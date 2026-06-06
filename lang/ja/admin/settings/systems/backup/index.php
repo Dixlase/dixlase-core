@@ -65,6 +65,9 @@ return [
         'private' => 'プライベート',
         'custom' => 'カスタム',
         'logs' => 'ログ',
+        'core_source' => 'コアソース',
+        'plugins_all' => 'プラグイン全部',
+        'themes_all' => 'テーマ全部',
     ],
 
     // タイプ
