@@ -44,10 +44,20 @@ use Illuminate\Support\Facades\Event;
 class CoreBackupService implements BackupServiceInterface
 {
     /**
-     * Optional targets not included in backup by default
+     * Optional targets not included in backup by default.
+     *
+     * TARGET_CORE_SOURCE / TARGET_PLUGINS_ALL / TARGET_THEMES_ALL are
+     * intentionally opt-in: a routine operator-initiated backup should
+     * not double up on source code that already lives in version
+     * control. The "take a backup first" toggle on the admin updates
+     * page selects them explicitly when the matching update path is
+     * about to overwrite that source tree on disk.
      */
     private const OPTIONAL_TARGETS = [
         BackupServiceInterface::TARGET_LOGS,
+        BackupServiceInterface::TARGET_CORE_SOURCE,
+        BackupServiceInterface::TARGET_PLUGINS_ALL,
+        BackupServiceInterface::TARGET_THEMES_ALL,
     ];
 
     /**
@@ -175,6 +185,14 @@ class CoreBackupService implements BackupServiceInterface
             BackupServiceInterface::TARGET_PRIVATE,
             BackupServiceInterface::TARGET_CUSTOM,
             BackupServiceInterface::TARGET_LOGS,
+            // Source-tree targets — exposed to the operator so the
+            // backup-settings page can list them, but excluded from
+            // the default selection set via OPTIONAL_TARGETS above.
+            // Primarily driven by the admin updates page's
+            // "take a backup first" toggle.
+            BackupServiceInterface::TARGET_CORE_SOURCE,
+            BackupServiceInterface::TARGET_PLUGINS_ALL,
+            BackupServiceInterface::TARGET_THEMES_ALL,
         ];
     }
 
@@ -291,8 +309,40 @@ class CoreBackupService implements BackupServiceInterface
             ),
             BackupServiceInterface::TARGET_CUSTOM => $this->addDirectoryToZip($zip, base_path('custom'), 'custom'),
             BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'logs'),
+            BackupServiceInterface::TARGET_CORE_SOURCE => $this->addCoreSourceToZip($zip),
+            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip($zip, base_path('plugins'), 'plugins'),
+            BackupServiceInterface::TARGET_THEMES_ALL => $this->addDirectoryToZip($zip, base_path('themes'), 'themes'),
             default => throw new \InvalidArgumentException("Unknown backup target: {$target}"),
         };
+    }
+
+    /**
+     * Add core source tree to ZIP.
+     *
+     * Mirrors the SOURCE_DIRECTORIES + SOURCE_FILES whitelist that
+     * CoreSourceSnapshot uses when capturing a pre-upgrade snapshot —
+     * the same path set the upgrade process is about to overwrite on
+     * disk. Each directory is added under a `core/<rel-path>/` prefix
+     * inside the ZIP so the restore step can find it again without
+     * having to re-derive the whitelist.
+     */
+    private function addCoreSourceToZip(\ZipArchive $zip): void
+    {
+        foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_DIRECTORIES as $rel) {
+            $abs = base_path($rel);
+            if (! is_dir($abs)) {
+                continue;
+            }
+            $this->addDirectoryToZip($zip, $abs, 'core/'.$rel);
+        }
+
+        foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_FILES as $rel) {
+            $abs = base_path($rel);
+            if (! is_file($abs)) {
+                continue;
+            }
+            $zip->addFile($abs, 'core/'.$rel);
+        }
     }
 
     /**

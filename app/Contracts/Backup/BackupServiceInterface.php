@@ -63,6 +63,32 @@ interface BackupServiceInterface
     public const TARGET_LOGS = 'logs';
 
     /**
+     * Backup target: core source tree (app/, bootstrap/, config/,
+     * database/{migrations,seeders}/, lang/, public/, resources/,
+     * routes/ + the SOURCE_FILES whitelist in CoreSourceSnapshot).
+     * Same path set CoreUpdater snapshots before applying a core
+     * upgrade — sized to roll a core upgrade back from a stored
+     * backup if the snapshot itself was discarded.
+     */
+    public const TARGET_CORE_SOURCE = 'core_source';
+
+    /**
+     * Backup target: every installed plugin's source tree (the whole
+     * plugins/ directory). Used by the "take a backup first" path on
+     * the admin updates page so a botched plugin update can be
+     * restored from this backup even after the rollback snapshot has
+     * been discarded.
+     */
+    public const TARGET_PLUGINS_ALL = 'plugins_all';
+
+    /**
+     * Backup target: every installed theme's source tree (the whole
+     * themes/ directory). Mirror of TARGET_PLUGINS_ALL for the theme
+     * update path.
+     */
+    public const TARGET_THEMES_ALL = 'themes_all';
+
+    /**
      * Execute backup
      *
      * @param  string[]  $targets  Backup targets (array of TARGET_* constants)
