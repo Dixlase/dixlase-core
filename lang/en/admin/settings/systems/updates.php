@@ -108,4 +108,13 @@ return [
         'title' => 'Run Update',
         'message' => 'Update :name?',
     ],
+
+    // Release notes (changelog from GitHub Releases body, rendered as
+    // Markdown under each available update)
+    'release_notes' => [
+        'heading' => 'Release notes',
+        'show' => 'Show release notes',
+        'hide' => 'Hide release notes',
+        'empty' => 'No release notes were published with this release.',
+    ],
 ];

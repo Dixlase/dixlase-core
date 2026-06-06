@@ -58,6 +58,7 @@ class CoreRelease extends Model
         'last_notified_version',
         'available_version_published_at',
         'release_url',
+        'release_notes',
         'last_version_check',
         'update_failed_at',
         'update_failure_reason',
