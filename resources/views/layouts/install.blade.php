@@ -110,35 +110,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </header>
 
-            <!-- Error Messages -->
-            @if(session('error'))
-                <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
-                    @if(is_array(session('error')))
-                        <strong class="sr-only">{{ __('install/common.error_label') }}:</strong>
-                        @foreach(session('error') as $error)
-                            <div>{{ $error }}</div>
-                        @endforeach
-                    @else
-                        <strong class="sr-only">{{ __('install/common.error_label') }}:</strong>
-                        {{ session('error') }}
-                    @endif
-                </aside>
-            @endif
-
-            @if(isset($errors) && $errors->any())
-                <aside class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 mb-4 rounded-lg border border-red-200 dark:border-red-800" role="alert" aria-live="polite">
-                    <strong class="font-semibold">{{ __('install/common.validation_errors') }}:</strong>
-                    <ul class="list-disc list-inside mt-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </aside>
-            @endif
-
-            {{-- Flash messages (status / success / error / $errors) — the
-                 install wizard's theme-download AJAX path sets a session
-                 flash and then reloads the page so the result lands here. --}}
+            {{-- Flash messages (status / success / error / $errors) —
+                 single source of truth for session flash + validation errors.
+                 The install wizard's theme-download AJAX path also sets a
+                 session flash and then reloads the page so the result lands here. --}}
             <x-ui-flash-message />
 
             <!-- Page Content -->
