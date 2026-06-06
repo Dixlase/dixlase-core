@@ -61,11 +61,14 @@ class CoreBackupServiceTest extends TestCase
         $this->assertContains(BackupServiceInterface::TARGET_PRIVATE, $targets);
         $this->assertContains(BackupServiceInterface::TARGET_CUSTOM, $targets);
         $this->assertContains(BackupServiceInterface::TARGET_LOGS, $targets);
-        $this->assertCount(5, $targets);
+        $this->assertContains(BackupServiceInterface::TARGET_CORE_SOURCE, $targets);
+        $this->assertContains(BackupServiceInterface::TARGET_PLUGINS_ALL, $targets);
+        $this->assertContains(BackupServiceInterface::TARGET_THEMES_ALL, $targets);
+        $this->assertCount(8, $targets);
     }
 
     /**
-     * getDefaultTargets はオプション項目（logs）を除く
+     * getDefaultTargets はオプション項目（logs / core_source / plugins_all / themes_all）を除く
      */
     public function test_get_default_targets_excludes_optional_targets(): void
     {
@@ -76,6 +79,9 @@ class CoreBackupServiceTest extends TestCase
         $this->assertContains(BackupServiceInterface::TARGET_PRIVATE, $targets);
         $this->assertContains(BackupServiceInterface::TARGET_CUSTOM, $targets);
         $this->assertNotContains(BackupServiceInterface::TARGET_LOGS, $targets);
+        $this->assertNotContains(BackupServiceInterface::TARGET_CORE_SOURCE, $targets);
+        $this->assertNotContains(BackupServiceInterface::TARGET_PLUGINS_ALL, $targets);
+        $this->assertNotContains(BackupServiceInterface::TARGET_THEMES_ALL, $targets);
         $this->assertCount(4, $targets);
     }
 
@@ -89,6 +95,9 @@ class CoreBackupServiceTest extends TestCase
         $this->assertEquals('private', BackupServiceInterface::TARGET_PRIVATE);
         $this->assertEquals('custom', BackupServiceInterface::TARGET_CUSTOM);
         $this->assertEquals('logs', BackupServiceInterface::TARGET_LOGS);
+        $this->assertEquals('core_source', BackupServiceInterface::TARGET_CORE_SOURCE);
+        $this->assertEquals('plugins_all', BackupServiceInterface::TARGET_PLUGINS_ALL);
+        $this->assertEquals('themes_all', BackupServiceInterface::TARGET_THEMES_ALL);
     }
 
     /**

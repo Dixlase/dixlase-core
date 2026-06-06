@@ -252,8 +252,36 @@ class CoreRestoreService implements RestoreServiceInterface
             ),
             BackupServiceInterface::TARGET_CUSTOM => $this->restoreDirectory($zip, 'custom', base_path('custom')),
             BackupServiceInterface::TARGET_LOGS => $this->restoreDirectory($zip, 'logs', storage_path('logs')),
+            BackupServiceInterface::TARGET_CORE_SOURCE => $this->restoreCoreSource($zip),
+            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->restoreDirectory($zip, 'plugins', base_path('plugins')),
+            BackupServiceInterface::TARGET_THEMES_ALL => $this->restoreDirectory($zip, 'themes', base_path('themes')),
             default => throw new \InvalidArgumentException("Unknown restore target: {$target}"),
         };
+    }
+
+    /**
+     * Restore the core source tree from `core/<rel-path>/` entries in
+     * the backup ZIP. Mirror of CoreBackupService::addCoreSourceToZip()
+     * — iterates the same SOURCE_DIRECTORIES + SOURCE_FILES whitelist
+     * and restores whatever the backup actually captured (entries
+     * missing from the ZIP are skipped, which matches how the backup
+     * skipped missing live entries).
+     */
+    private function restoreCoreSource(\ZipArchive $zip): void
+    {
+        foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_DIRECTORIES as $rel) {
+            $this->restoreDirectory($zip, 'core/'.$rel, base_path($rel));
+        }
+
+        foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_FILES as $rel) {
+            $contents = $zip->getFromName('core/'.$rel);
+            if ($contents === false) {
+                continue;
+            }
+            $dest = base_path($rel);
+            \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($dest));
+            file_put_contents($dest, $contents);
+        }
     }
 
     /**
