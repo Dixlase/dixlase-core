@@ -39,7 +39,10 @@ use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
@@ -75,6 +78,19 @@ class PluginUpdate extends Command
         $this->info("Checking for updates for '{$slug}' (current: v{$plugin->version})...");
 
         $snapshotPath = null;
+        // Whether we got far enough into the try block to invoke
+        // PluginMigrator::migrate(). Used by the catch handler to decide
+        // whether to attempt PluginMigrator::rollback() — without this
+        // flag we cannot tell, from inside the catch, whether the
+        // failure happened before migrate started (no DB rows to roll
+        // back) or after some migrations had been applied.
+        $migrationsAttempted = false;
+        $migrator = new PluginMigrator(
+            app(Filesystem::class),
+            app(ConnectionResolverInterface::class),
+            'plugin_migrations',
+            $slug,
+        );
 
         try {
             $provider = $manager->makeProvider($plugin->source);
@@ -114,6 +130,21 @@ class PluginUpdate extends Command
             $this->info("Snapshot captured at {$snapshotPath}");
 
             $this->extractUpdate($zipPath, $plugin);
+
+            // Apply any new migration files shipped with this release.
+            // The plugin's migrations live in
+            // plugins/<Directory>/database/migrations and are tracked in
+            // dls_plugin_migrations by PluginMigrationRepository; the
+            // matching install command (dls:plugin:install) runs them at
+            // install time but the original update command did not, so
+            // schema changes shipped in a plugin update used to land on
+            // disk without ever executing against the database.
+            // Migrate AFTER extract so the new model / service classes
+            // any migration may reference are already in autoload reach.
+            $this->info('Running plugin migrations...');
+            $migrationsAttempted = true;
+            $migrator->migrate($plugin->directory);
+            $this->info('Plugin migrations complete.');
 
             $plugin->update([
                 'version' => $release->version,
@@ -159,6 +190,24 @@ class PluginUpdate extends Command
                 } catch (\Throwable $restoreError) {
                     $this->error("ROLLBACK FAILED: {$restoreError->getMessage()}");
                     $this->error("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+                }
+            }
+
+            // Roll back any plugin migrations that did get applied this
+            // run. Best-effort: PluginMigrator::rollback() reverses the
+            // migrations recorded in dls_plugin_migrations during this
+            // batch, but a migration that failed midway through a
+            // multi-statement DDL on MySQL may have left partial effects
+            // that are not in the migration table and therefore cannot
+            // be auto-reversed. Surface that case loudly so the operator
+            // can recover by hand.
+            if ($migrationsAttempted) {
+                try {
+                    $migrator->rollback($plugin->directory);
+                    $this->warn('Plugin migrations rolled back.');
+                } catch (\Throwable $rollbackError) {
+                    $this->error("MIGRATION ROLLBACK FAILED: {$rollbackError->getMessage()}");
+                    $this->error('Database may be in an inconsistent state — inspect dls_plugin_migrations and the plugin schema, then recover manually.');
                 }
             }
 
