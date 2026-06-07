@@ -57,6 +57,7 @@ return new class extends Migration
             $table->string('last_notified_version', 32)->nullable();
             $table->timestamp('available_version_published_at')->nullable();
             $table->string('release_url')->nullable();
+            $table->text('release_notes')->nullable();
             $table->timestamp('last_version_check')->nullable();
 
             // Update failure tracking
