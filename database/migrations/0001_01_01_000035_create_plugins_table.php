@@ -64,6 +64,7 @@ return new class extends Migration
             $table->string('last_notified_version', 32)->nullable(); // Suppress duplicate update notifications
             $table->timestamp('available_version_published_at')->nullable(); // Release published date (for "released N days ago")
             $table->string('release_url')->nullable(); // GitHub release page URL (notes fetched on demand)
+            $table->text('release_notes')->nullable(); // Release notes body (Markdown from GitHub Releases) for inline render on the updates page
             $table->timestamp('last_version_check')->nullable(); // Last update check timestamp
             // Update failure tracking
             $table->timestamp('update_failed_at')->nullable(); // Last update attempt failure timestamp
