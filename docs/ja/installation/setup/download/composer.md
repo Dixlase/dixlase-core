@@ -5,8 +5,8 @@
 ## 予定される使用方法
 
 ```bash
-composer create-project dixlase/dixlase my-site
-cd my-site
+composer create-project dixlase/dixlase-core dixlase
+cd dixlase
 ```
 
 現時点では、[Git Clone](git-clone.md)または[ZIPダウンロード](zip-download.md)でDixlaseを入手してください。
