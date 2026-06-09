@@ -23,10 +23,10 @@ Bug reports and Discussions are welcomed today; code-bearing contributions resum
 
 Dixlase is distributed under a **dual license** (AGPL v3 + commercial). To maintain this licensing model, contributions to the Dixlase **core repository** require a signed Contributor License Agreement.
 
-Two CLA forms are available depending on who is contributing:
+A single CLA document ([CLA.md](./CLA.md)) covers both individuals and entities; you choose a signing capacity (individual or entity) at the top.
 
-- **[Individual CLA](./CLA-INDIVIDUAL.md)** — for any person contributing on their own behalf.
-- **[Corporate CLA](./CLA-CORPORATE.md)** — for an organization that wants to authorize its employees to contribute on its behalf. Sign this in addition to (or instead of) the Individual CLA when contributions are part of an employment relationship and the employer asserts rights in the work.
+- **Sign as an individual** — for any person contributing on their own behalf.
+- **Sign as a legal entity** — for an organization that wants to authorize its employees to contribute on its behalf (complete Schedules A and B). Sign in this capacity when contributions are part of an employment relationship and the employer asserts rights in the work.
 
 In summary, under the CLA:
 
@@ -39,8 +39,8 @@ In summary, under the CLA:
 
 When external PRs reopen, CLA submission will initially be handled by email:
 
-1. Read [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) (and [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) if applicable) in full
-2. Fill in the contributor information fields and sign at the bottom
+1. Read [`CLA.md`](./CLA.md) in full and choose your signing capacity (individual or entity)
+2. Fill in the applicable information fields (and Schedules A and B for entities) and sign at the bottom
 3. Email the completed file to **info@dixlase.org** with the subject `CLA submission — <your name or organization>`
 4. Wait for confirmation before submitting your first pull request
 
