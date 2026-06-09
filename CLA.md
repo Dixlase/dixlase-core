@@ -172,6 +172,8 @@ For questions about this Agreement, contact exc-D at:
 
 ## Signature
 
+> **About signing.** Completing the signature block below and emailing it to info@dixlase.org is the current (interim) method of agreement. Once an automated mechanism such as CLA Assistant is adopted, You may also agree to this Agreement, in accordance with Section 13, by consenting through that mechanism within a GitHub pull request where it clearly references this Agreement (for individual signing, via the automated in-PR flow; for entity signing, via email submission together with maintenance of Schedule A).
+
 ```
  Please sign: __________________________________  Date: _________________
 
