@@ -37,8 +37,10 @@ namespace App\Http\Controllers\Install;
 
 use App\Http\Requests\Install\InstallDatabaseRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Installation - Step 3: Database settings
@@ -91,6 +93,9 @@ class InstallDatabaseController extends BaseInstallController
             'db_password',
         ]);
 
+        // Keep the raw password for the immediate .env write below; the
+        // session copy is encrypted to match the existing wizard contract.
+        $rawDbPassword = (string) $request->input('db_password', '');
         if ($request->filled('db_password')) {
             $data['db_password'] = Crypt::encryptString($request->db_password);
         }
@@ -101,7 +106,81 @@ class InstallDatabaseController extends BaseInstallController
 
         session(['install_data' => array_merge(session('install_data', []), $data)]);
 
+        // Write the freshly-chosen DB settings to .env immediately so the
+        // wizard's later screens (confirm / mail) and any code that opens
+        // a DB connection during this same request lifecycle stop using
+        // the boot-time defaults (e.g. DB_HOST=mysql when the host is
+        // actually running natively, or after switching to sqlite). The
+        // final install step still rewrites .env with the same values,
+        // so this is purely a "make the next page work" patch.
+        $this->persistDbEnv($request, $rawDbPassword);
+
         return redirect()->route('install.mail');
+    }
+
+    /**
+     * Persist the selected DB driver/credentials to .env and refresh the
+     * runtime config so the next request — and any DB connection opened
+     * later in this request — uses the user's choice instead of the
+     * boot-time defaults.
+     */
+    private function persistDbEnv(Request $request, string $rawPassword): void
+    {
+        $connection = (string) $request->input('db_connection', 'mysql');
+
+        if ($connection === 'sqlite') {
+            $database = (string) $request->input('db_database', '');
+            // Match the resolution that InstallConfirmController and the
+            // testConnection() endpoint use, so the .env value matches
+            // what the wizard actually opened during the test.
+            if ($database === '' || $database[0] !== '/') {
+                $database = database_path('database.sqlite');
+            }
+
+            $envData = [
+                'DB_CONNECTION' => 'sqlite',
+                'DB_DATABASE' => $database,
+                // SQLite ignores these but leaving stale values (DB_HOST=mysql
+                // from the docker preset) lets other code paths still try to
+                // open a TCP connection. Blank them out.
+                'DB_HOST' => '',
+                'DB_PORT' => '',
+                'DB_USERNAME' => '',
+                'DB_PASSWORD' => '',
+            ];
+        } else {
+            $envData = [
+                'DB_CONNECTION' => $connection,
+                'DB_HOST' => (string) $request->input('db_host', ''),
+                'DB_PORT' => (string) $request->input('db_port', ''),
+                'DB_DATABASE' => (string) $request->input('db_database', ''),
+                'DB_USERNAME' => (string) $request->input('db_username', ''),
+                'DB_PASSWORD' => $rawPassword,
+            ];
+        }
+
+        try {
+            $this->updateEnv($envData);
+            // Clear the cached config + refresh the runtime $app['config']
+            // so the new DB_* values take effect from this point on.
+            Artisan::call('config:clear');
+            config([
+                'database.default' => $envData['DB_CONNECTION'],
+                'database.connections.'.$envData['DB_CONNECTION'].'.database' => $envData['DB_DATABASE'],
+                'database.connections.'.$envData['DB_CONNECTION'].'.host' => $envData['DB_HOST'] ?? null,
+                'database.connections.'.$envData['DB_CONNECTION'].'.port' => $envData['DB_PORT'] ?? null,
+                'database.connections.'.$envData['DB_CONNECTION'].'.username' => $envData['DB_USERNAME'] ?? null,
+                'database.connections.'.$envData['DB_CONNECTION'].'.password' => $envData['DB_PASSWORD'] ?? null,
+            ]);
+            DB::purge();
+        } catch (\Throwable $e) {
+            // Don't block the wizard if .env write fails — InstallConfirmController
+            // re-writes the same values at the final step and that path has its
+            // own logging. Just leave a breadcrumb here.
+            Log::channel('install')->warning('Failed to persist DB settings to .env mid-wizard', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
