@@ -76,7 +76,10 @@ custom/*
 
 # プラグインとテーマのディレクトリを除外
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
-# テーマ: DixlaseOnePageはGit Submoduleとしてコアに同梱
+# テーマ: DixlaseOnePage は composer/installers 経由で
+#   themes/DixlaseOnePage/ に展開される vendor 管理ディレクトリで、
+#   Core の git では tracking しない（b451bc75 で Submodule → Composer
+#   依存に移行）。
 plugins/*
 !plugins/DixlaseInquiry/
 !plugins/DixlaseLegal/
@@ -91,7 +94,6 @@ plugins/*
 !plugins/DixlaseCoreDevKit/
 !plugins/DixlaseAuthority/
 themes/*
-!themes/DixlaseOnePage/
 
 license-info.json
 license.txt
