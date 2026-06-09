@@ -57,7 +57,7 @@ return [
     | Offline-pinned public keys (root trust anchor)
     |--------------------------------------------------------------------------
     | Core is the root of trust and must verify at install time, possibly with
-    | no network and no DixlaseAuthority plugin present. Pin the current public
+    | no network and no DixlasePublicKeys plugin present. Pin the current public
     | key(s) here ("pin the root, fetch the leaves"). The verifier checks these
     | first, then falls back to AuthorityPublicKeyResolver for online rotation.
     | Format: 'key_id' => 'base64:...' (or plain base64).
