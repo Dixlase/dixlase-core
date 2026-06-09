@@ -47,7 +47,7 @@ use Throwable;
  *
  * Resolve the corresponding public key from key ID. Priority order:
  *   1. Local DB cache (fresh)
- *   2. HTTPS fetch from keys.dixlase.net → update DB cache → return
+ *   2. HTTPS fetch from authority.dixlase.net → update DB cache → return
  *   3. Local DB cache (even if stale, used as fallback when network is unavailable)
  *   4. null (unable to retrieve)
  *

@@ -47,7 +47,7 @@ use Illuminate\Support\Str;
  * Core standard signature verification implementation
  *
  * Ed25519-based cryptographic verification completed within Core alone. Public keys for verification are
- * retrieved from keys.dixlase.net via AuthorityPublicKeyResolver and
+ * retrieved from authority.dixlase.net via AuthorityPublicKeyResolver and
  * cached in the local DB. This allows signature verification to work in user environments (DixlaseDevKit
  * not installed).
  *
