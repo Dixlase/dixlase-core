@@ -6,9 +6,14 @@ name: Build release distribution ZIP
 # install wizard handles the rest, with no composer or npm step needed
 # on the destination host.
 #
+# A versionless copy (dixlase-core.zip) is attached alongside so external
+# links can use the static `releases/latest/download/dixlase-core.zip`
+# URL — GitHub resolves it to whichever release is currently "Latest",
+# so the brand site / docs do not need to be edited on every new tag.
+#
 # Trigger:
-#   - `release: published` → automatically attaches the ZIP to the
-#     GitHub release as a downloadable asset.
+#   - `release: published` → automatically attaches both ZIPs to the
+#     GitHub release as downloadable assets.
 #   - `workflow_dispatch` → manual run for testing the build before
 #     cutting a real release; result is uploaded as a workflow artifact.
 on:
@@ -198,15 +203,25 @@ jobs:
         id: zip
         run: |
           ZIP_NAME="dixlase-${{ steps.stage.outputs.tag }}.zip"
+          LATEST_ALIAS="dixlase-core.zip"
           (cd dist && zip -rq "../$ZIP_NAME" "dixlase-${{ steps.stage.outputs.tag }}")
+          # Versionless alias of the same archive. Lets external links use
+          # the static `releases/latest/download/dixlase-core.zip` URL,
+          # which GitHub auto-resolves to whichever release is currently
+          # published as "Latest" — no need to update download links on
+          # the brand site / docs each time a new tag ships.
+          cp "$ZIP_NAME" "$LATEST_ALIAS"
           echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
-          ls -lh "$ZIP_NAME"
+          echo "latest_alias=$LATEST_ALIAS" >> "$GITHUB_OUTPUT"
+          ls -lh "$ZIP_NAME" "$LATEST_ALIAS"
 
       - name: Attach to GitHub release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.zip.outputs.name }}
+          files: |
+            ${{ steps.zip.outputs.name }}
+            ${{ steps.zip.outputs.latest_alias }}
 
       - name: Upload as workflow artifact
         if: github.event_name == 'workflow_dispatch'
