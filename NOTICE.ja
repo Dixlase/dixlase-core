@@ -13,7 +13,7 @@
           または
 
       (b) exc-D inc. から提供される商用ライセンス
-          (詳細は LICENSE.commercial、または
+          (詳細は LICENSE-COMMERCIAL、または
           info@dixlase.org までお問い合わせください)。
 
     Dixlase コアリポジトリへのコントリビューションは、
@@ -30,7 +30,7 @@
     LICENSE               GNU Affero General Public License v3 原文
     LICENSE-EXCEPTIONS    Dixlase プラグイン・テーマ例外条項
                           (AGPL §7 に基づく追加許可)
-    LICENSE.commercial    商用ライセンス条項(別途契約)
+    LICENSE-COMMERCIAL    商用ライセンス条項(別途契約)
     NOTICE                プロジェクト著作権とデュアルライセンス概要
                           (英語版)
     NOTICE.ja             本ファイル(日本語版)

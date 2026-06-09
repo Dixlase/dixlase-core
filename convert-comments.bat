@@ -13,7 +13,7 @@ rem       Dixlase Plugin and Theme Exception (see LICENSE-EXCEPTIONS for
 rem       full exception terms); or
 rem
 rem   (b) a commercial license agreement obtained from exc-D inc.
-rem       (see LICENSE.commercial, or contact info@dixlase.org).
+rem       (see LICENSE-COMMERCIAL, or contact info@dixlase.org).
 rem
 rem Unless you have entered into a commercial license agreement, this
 rem file is governed by the AGPL terms above.
