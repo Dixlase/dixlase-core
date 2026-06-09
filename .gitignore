@@ -57,7 +57,7 @@ PLUGIN-API.md
 #    Flow) — they carry the externally-visible deferral statement that gates
 #    PR acceptance until the CLA's formal legal review is complete; the JA
 #    audience needs to read this without running the generator locally.
-# LICENSE / LICENSE-ja / LICENSE.commercial / LICENSE.commercial-ja have no
+# LICENSE / LICENSE-ja / LICENSE-COMMERCIAL / LICENSE-COMMERCIAL.ja have no
 # .md suffix and are not matched by this pattern.
 *.ja.md
 !plugins/**/*.ja.md

@@ -12,7 +12,7 @@
           full exception terms); or
 
       (b) a commercial license agreement obtained from exc-D inc.
-          (see LICENSE.commercial for details, or contact
+          (see LICENSE-COMMERCIAL for details, or contact
           info@dixlase.org).
 
     Contributions to the Dixlase Core repository are governed by the
@@ -28,7 +28,7 @@ File map:
     LICENSE              GNU Affero General Public License v3 (verbatim)
     LICENSE-EXCEPTIONS   Dixlase Plugin and Theme Exception (additional
                          permission under AGPL §7)
-    LICENSE.commercial   Commercial license terms (separate agreement)
+    LICENSE-COMMERCIAL   Commercial license terms (separate agreement)
     NOTICE               This file — project copyright and dual-license
                          summary (English)
     NOTICE.ja            Japanese counterpart of this file

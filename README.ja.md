@@ -124,7 +124,7 @@ GitHub リリースには正本である英語ソースのみが含まれます�
 Dixlase CMS は**デュアルライセンス**で配布されています:
 
 - **オープンソースライセンス**: [GNU Affero General Public License v3](./LICENSE) および Dixlase プラグイン・テーマ例外条項([LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja))
-- **商用ライセンス**: AGPL v3 の条件に準拠できない用途(クローズドソース SaaS での改変版配布など)に対しては、別途商用ライセンスをご用意しています — 詳細は [LICENSE.commercial](./LICENSE.commercial)(現在ドラフト)、または **info@dixlase.org** までお問い合わせください。
+- **商用ライセンス**: AGPL v3 の条件に準拠できない用途(クローズドソース SaaS での改変版配布など)に対しては、別途商用ライセンスをご用意しています — 詳細は [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL)(現在ドラフト)、または **info@dixlase.org** までお問い合わせください。
 
 ファイル全体の構成は [NOTICE.ja](./NOTICE.ja) にまとめています([English](./NOTICE))。
 

@@ -26,11 +26,11 @@ The Dixlase core is distributed under two parallel licenses, and recipients choo
 
   (a) the GNU Affero General Public License version 3 ("AGPL"), together with the Dixlase Plugin and Theme Exception, as set out in [`LICENSE`](./LICENSE); and
 
-  (b) a separate commercial license offered by exc-D, as set out in [`LICENSE.commercial`](./LICENSE.commercial), for parties who do not wish to comply with the AGPL.
+  (b) a separate commercial license offered by exc-D, as set out in [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL), for parties who do not wish to comply with the AGPL.
 
 Both licenses cover the same software; they differ only in obligations.
 
-> **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE.commercial`](./LICENSE.commercial) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to info@dixlase.org.
+> **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to info@dixlase.org.
 
 ## 3. Plugin and Theme Exception
 
@@ -63,7 +63,7 @@ The legally operative documents are:
 | Layer | Document |
 |---|---|
 | Open-source license (downstream recipients) | [`LICENSE`](./LICENSE) — AGPL v3 + Plugin and Theme Exception |
-| Commercial license (downstream recipients) | [`LICENSE.commercial`](./LICENSE.commercial) |
+| Commercial license (downstream recipients) | [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) |
 | Contributor agreement (individual and corporate) | [`CLA.md`](./CLA.md) |
 | Plugin API boundary | [`PLUGIN-API.md`](./PLUGIN-API.md) |
 

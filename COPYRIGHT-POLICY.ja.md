@@ -26,11 +26,11 @@ Dixlase コアは、以下の 2 つのライセンスにより並行して配布
 
   (a) GNU Affero General Public License バージョン 3(以下「AGPL」といいます)および Dixlase プラグイン・テーマ例外条項([`LICENSE`](./LICENSE))
 
-  (b) AGPL の遵守を希望しない当事者向けに exc-D が別途提供する商用ライセンス([`LICENSE.commercial`](./LICENSE.commercial))
+  (b) AGPL の遵守を希望しない当事者向けに exc-D が別途提供する商用ライセンス([`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL))
 
 両ライセンスは同一のソフトウェアを対象とし、義務の内容のみが異なります。
 
-> **商用ライセンスの提供状況に関する注記**: [`LICENSE.commercial`](./LICENSE.commercial) に記載の商用ライセンスの枠組みは整備済みですが、価格・契約条件は現在準備中です。お問い合わせは info@dixlase.org までお願いします。
+> **商用ライセンスの提供状況に関する注記**: [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) に記載の商用ライセンスの枠組みは整備済みですが、価格・契約条件は現在準備中です。お問い合わせは info@dixlase.org までお願いします。
 
 ## 3. プラグイン・テーマ例外条項
 
@@ -63,7 +63,7 @@ CLA モデルにおいては:
 | 階層 | 文書 |
 |---|---|
 | オープンソースライセンス(下流の受領者向け) | [`LICENSE`](./LICENSE) — AGPL v3 + プラグイン・テーマ例外条項 |
-| 商用ライセンス(下流の受領者向け) | [`LICENSE.commercial`](./LICENSE.commercial) |
+| 商用ライセンス(下流の受領者向け) | [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) |
 | コントリビューター契約(個人・法人共通) | [`CLA.md`](./CLA.md) |
 | Plugin API 境界 | [`PLUGIN-API.md`](./PLUGIN-API.md) |
 
