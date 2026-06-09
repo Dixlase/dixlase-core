@@ -43,7 +43,7 @@ kebab-case slug of your organisation:
 ### `authority_key_id`
 
 The identifier of the public-key entry that signs your releases on the
-authority server (`keys.dixlase.net` or your own bundle). Verifiers use it
+authority server (`authority.dixlase.net` or your own bundle). Verifiers use it
 to look up the key without round-tripping through the file contents:
 
 ```json

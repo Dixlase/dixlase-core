@@ -37,7 +37,7 @@
 
 ### `authority_key_id`
 
-リリースに署名している authority サーバ（`keys.dixlase.net` または自前バンドル）
+リリースに署名している authority サーバ（`authority.dixlase.net` または自前バンドル）
 上の公開鍵エントリの識別子。検証側はファイル内容を巡回せずにこの ID から
 公開鍵を引く:
 

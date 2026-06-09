@@ -111,7 +111,7 @@ jobs:
               mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
 
               # 3-b. サイト固有プラグインの clone / 更新
-              # DixlaseAuthority は keys.dixlase.net 専用 (署名鍵管理プラグイン)。
+              # DixlaseAuthority は authority.dixlase.net 専用 (署名鍵管理プラグイン)。
               # core の submodule からは外し、各サイトで standalone clone として運用する。
               # 旧 submodule の残骸が残っているサイトでは git reset --hard が submodule pointer に
               # 詰まるため、不要なサイトでは丸ごと撤去する。

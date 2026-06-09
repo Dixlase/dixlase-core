@@ -45,7 +45,7 @@ return new class extends Migration
      * Authority public key cache table
      *
      * Purpose:
-     * - Cache public keys retrieved from keys.dixlase.net locally
+     * - Cache public keys retrieved from authority.dixlase.net locally
      * - Used for signature verification during plugin installation
      * - Verification possible offline if cache exists
      */

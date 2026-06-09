@@ -43,11 +43,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | URL of the official Dixlase key management site. Used to retrieve the public
-    | key for plugin signatures. In production, specify https://keys.dixlase.net (default).
+    | key for plugin signatures. In production, specify https://authority.dixlase.net (default).
     | Override via env only when using a different Authority in development environments.
     |
     */
-    'url' => env('DIXLASE_AUTHORITY_URL', 'https://keys.dixlase.net'),
+    'url' => env('DIXLASE_AUTHORITY_URL', 'https://authority.dixlase.net'),
 
     /*
     |--------------------------------------------------------------------------
