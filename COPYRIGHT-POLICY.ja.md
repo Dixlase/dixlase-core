@@ -42,8 +42,8 @@ https://github.com/Dixlase/dixlase-core に存在する Dixlase の **コアリ�
 
 | コントリビューター種別 | 適用契約 |
 |---|---|
-| 個人 | [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) |
-| 法人(従業員のコントリビューションを包括) | [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) |
+| 個人 | [`CLA.md`](./CLA.md)(署名区分: 個人) |
+| 法人(従業員のコントリビューションを包括) | [`CLA.md`](./CLA.md)(署名区分: 法人。Schedule A・B を併記) |
 
 CLA モデルにおいては:
 
@@ -64,8 +64,7 @@ CLA モデルにおいては:
 |---|---|
 | オープンソースライセンス(下流の受領者向け) | [`LICENSE`](./LICENSE) — AGPL v3 + プラグイン・テーマ例外条項 |
 | 商用ライセンス(下流の受領者向け) | [`LICENSE.commercial`](./LICENSE.commercial) |
-| 個人コントリビューター契約 | [`CLA-INDIVIDUAL.md`](./CLA-INDIVIDUAL.md) |
-| 法人コントリビューター契約 | [`CLA-CORPORATE.md`](./CLA-CORPORATE.md) |
+| コントリビューター契約(個人・法人共通) | [`CLA.md`](./CLA.md) |
 | Plugin API 境界 | [`PLUGIN-API.md`](./PLUGIN-API.md) |
 
 本ポリシーはスタンスのサマリーであり、契約ではありません。本ポリシーの記述と上記いずれかの契約文書の記述が異なる場合、当該契約文書が優先します。

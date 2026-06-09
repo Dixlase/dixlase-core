@@ -120,8 +120,7 @@ GitHub releases ship the canonical English source only; users (and the [Dixlase 
 
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute
 - [Copyright Policy](./COPYRIGHT-POLICY.md) — Dual-license stance and CLA model overview
-- [Individual CLA](./CLA-INDIVIDUAL.md) — For individual contributors
-- [Corporate CLA](./CLA-CORPORATE.md) — For organizations contributing on behalf of employees
+- [Contributor License Agreement](./CLA.md) — Single CLA for individuals and entities (choose a signing capacity at the top)
 - [Security Policy](./SECURITY.md) — Reporting vulnerabilities
 - [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
 
@@ -148,7 +147,7 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 > **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code-bearing contributions will reopen once the Contributor License Agreement (CLA)'s formal legal review is complete.
 
-Contributions to the Dixlase core repository are governed by a Contributor License Agreement. The agreement texts ([CLA-INDIVIDUAL.md](./CLA-INDIVIDUAL.md) for individuals, [CLA-CORPORATE.md](./CLA-CORPORATE.md) for organizations) are included in the repository for transparency and review, but are **not currently in active use**. They will become operative once external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) for the planned PR-based contribution flow.
+Contributions to the Dixlase core repository are governed by a Contributor License Agreement. The agreement text ([CLA.md](./CLA.md) — a single document covering both individuals and entities, selected via a signing capacity at the top) is included in the repository for transparency and review, but is **not currently in active use**. They will become operative once external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) for the planned PR-based contribution flow.
 
 ---
 
