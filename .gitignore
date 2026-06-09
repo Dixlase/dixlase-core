@@ -93,7 +93,7 @@ plugins/*
 !plugins/DixlaseUsers/
 !plugins/DixlaseDevKit/
 !plugins/DixlaseCoreDevKit/
-!plugins/DixlaseAuthority/
+!plugins/DixlasePublicKeys/
 themes/*
 
 license-info.json
