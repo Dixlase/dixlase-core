@@ -722,22 +722,28 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.access:settings.systems.info')
                     ->name('info');
 
-                // Core integrity (signature verification + waiver danger zone)
-                Route::get('/integrity', [Systems\AdminSystemIntegrityController::class, 'index'])
-                    ->middleware('check.menu.access:settings.systems.integrity')
-                    ->name('integrity');
-                Route::post('/integrity/recheck', [Systems\AdminSystemIntegrityController::class, 'recheck'])
-                    ->middleware('check.menu.edit:settings.systems.integrity')
-                    ->name('integrity.recheck');
-                Route::post('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'waive'])
-                    ->middleware('check.menu.edit:settings.systems.integrity')
-                    ->name('integrity.waive');
-                Route::delete('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'unwaive'])
-                    ->middleware('check.menu.edit:settings.systems.integrity')
-                    ->name('integrity.unwaive');
-                Route::delete('/integrity/signature', [Systems\AdminSystemIntegrityController::class, 'removeSignature'])
-                    ->middleware('check.menu.edit:settings.systems.integrity')
-                    ->name('integrity.remove');
+                // Core integrity (signature verification + waiver danger zone).
+                // DISABLED for the initial release — the core signature-check
+                // feature is not surfaced to users yet (full implementation in a
+                // later version). The engine, verifier, controller and view all
+                // remain; only this admin entry point is turned off. Re-enable
+                // together with the nav entry when shipping core signing.
+                // See .backlog/core-signing-deferred.md.
+                // Route::get('/integrity', [Systems\AdminSystemIntegrityController::class, 'index'])
+                //     ->middleware('check.menu.access:settings.systems.integrity')
+                //     ->name('integrity');
+                // Route::post('/integrity/recheck', [Systems\AdminSystemIntegrityController::class, 'recheck'])
+                //     ->middleware('check.menu.edit:settings.systems.integrity')
+                //     ->name('integrity.recheck');
+                // Route::post('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'waive'])
+                //     ->middleware('check.menu.edit:settings.systems.integrity')
+                //     ->name('integrity.waive');
+                // Route::delete('/integrity/waive', [Systems\AdminSystemIntegrityController::class, 'unwaive'])
+                //     ->middleware('check.menu.edit:settings.systems.integrity')
+                //     ->name('integrity.unwaive');
+                // Route::delete('/integrity/signature', [Systems\AdminSystemIntegrityController::class, 'removeSignature'])
+                //     ->middleware('check.menu.edit:settings.systems.integrity')
+                //     ->name('integrity.remove');
             });
 
             // Logout

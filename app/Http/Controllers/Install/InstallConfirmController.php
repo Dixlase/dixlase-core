@@ -144,33 +144,16 @@ class InstallConfirmController extends BaseInstallController
             'mailTestStatus' => $mailTestStatus,
             'currentLocale' => $locale,
             'availableLocales' => $this->availableLocales,
-            'coreIntegrity' => $this->coreIntegrityPanel(),
         ]);
-    }
 
-    /**
-     * Pre-flight core integrity panel for the confirmation screen.
-     *
-     * @return array{key: string, classes: string, changed_count: int, is_invalid: bool}
-     */
-    private function coreIntegrityPanel(): array
-    {
-        $result = app(CoreIntegrityVerifier::class)->verify();
-
-        $classes = match ($result->status) {
-            CoreIntegrityResult::STATUS_GENUINE => 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800 text-green-800 dark:text-green-300',
-            CoreIntegrityResult::STATUS_MODIFIED => 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
-            CoreIntegrityResult::STATUS_PENDING => 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300',
-            CoreIntegrityResult::STATUS_INVALID, CoreIntegrityResult::STATUS_ERROR => 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800 text-red-800 dark:text-red-300',
-            default => 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300',
-        };
-
-        return [
-            'key' => $result->status,
-            'classes' => $classes,
-            'changed_count' => $result->changedCount(),
-            'is_invalid' => $result->status === CoreIntegrityResult::STATUS_INVALID,
-        ];
+        // NOTE: the visible core-integrity pre-flight panel is intentionally not
+        // shown on the confirm screen for the initial release (the core
+        // signature-check feature is not surfaced to users yet). The store()
+        // INVALID guard below is kept as a dormant safety net — it only ever
+        // triggers for a genuinely tampered *signed* core, which cannot happen
+        // while core is unsigned. Re-introduce coreIntegrityPanel() + the
+        // confirm.blade.php panel when shipping core signing.
+        // See .backlog/core-signing-deferred.md.
     }
 
     /**
