@@ -55,6 +55,8 @@ return [
         'verification' => 'Verification',
         'hash' => 'Hash',
         'actions' => 'Actions',
+        'path' => 'Storage path',
+        'file_name' => 'File name',
         'no_records' => 'No backups have been created yet.',
     ],
 
@@ -66,8 +68,8 @@ return [
         'custom' => 'Custom',
         'logs' => 'Logs',
         'core_source' => 'Core source',
-        'plugins_all' => 'All plugins',
-        'themes_all' => 'All themes',
+        'plugins_all' => 'Plugins',
+        'themes_all' => 'Themes',
     ],
 
     // タイプ

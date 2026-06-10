@@ -30,6 +30,9 @@ return [
         'private' => 'プライベート',
         'custom' => 'カスタム',
         'logs' => 'ログ',
+        'core_source' => 'コアソース',
+        'plugins_all' => 'プラグイン',
+        'themes_all' => 'テーマ',
     ],
 
     'flash' => [

@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </thead>
                 <tbody>
                     @foreach($records as $record)
-                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <tr>
                             <td class="px-4 py-2 whitespace-nowrap">{{ $record->created_at?->format('Y-m-d H:i:s') }}</td>
                             <td class="px-4 py-2">
                                 <div class="flex flex-wrap gap-1">
@@ -131,6 +131,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             title="{{ __('admin/settings/systems/backup/index.actions.delete') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {{-- Storage path / file name detail row --}}
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <td colspan="7" class="px-4 pt-0 pb-2 text-xs text-gray-500 dark:text-gray-400">
+                                <div class="flex flex-wrap gap-x-6 gap-y-1">
+                                    <span>
+                                        {{ __('admin/settings/systems/backup/index.table.path') }}:
+                                        <span class="font-mono">{{ $record->file_path ? dirname($record->file_path) : '-' }}</span>
+                                    </span>
+                                    <span>
+                                        {{ __('admin/settings/systems/backup/index.table.file_name') }}:
+                                        <span class="font-mono">{{ $record->file_name ?: '-' }}</span>
+                                    </span>
                                 </div>
                             </td>
                         </tr>
