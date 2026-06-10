@@ -19,7 +19,7 @@ Dixlase は初期開発期にあります。**外部からの Pull Request は�
 - ドキュメントの Pull Request (代わりに Issues での指摘をお願いします)
 - 翻訳の Pull Request (CLA 法務レビュー完了後に再開)
 
-将来の PR ベースのコントリビューションフローは [`CONTRIBUTING-FUTURE.md`](./CONTRIBUTING-FUTURE.md) に記載されています。当該文書は現時点では情報提供を目的としており、CLA 法務レビュー完了後に運用開始されます。
+将来の PR ベースのコントリビューションフローは、CLA の法務レビューとあわせて現在 **策定中** です。外部からのコードコントリビューション受付の再開時に [`CONTRIBUTING-FUTURE.md`](./CONTRIBUTING-FUTURE.md) で公開します。
 
 ## バグ報告
 

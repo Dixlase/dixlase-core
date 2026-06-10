@@ -19,7 +19,7 @@ Dixlase is in early development. **External pull requests are not currently acce
 - Documentation pull requests (please file an Issue instead)
 - Translation pull requests (will reopen after CLA legal review)
 
-The future PR-based contribution flow is documented in [`CONTRIBUTING-FUTURE.md`](./CONTRIBUTING-FUTURE.md). That document is currently informational; it will become operative once the CLA legal review is complete and external code contributions are reopened.
+The future PR-based contribution flow is currently **being finalized** together with the CLA legal review; it will be published in [`CONTRIBUTING-FUTURE.md`](./CONTRIBUTING-FUTURE.md) when external code contributions reopen.
 
 ## Reporting Bugs
 
