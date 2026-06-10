@@ -35,6 +35,9 @@ return [
         'private' => 'Private',
         'custom' => 'Custom',
         'logs' => 'Logs',
+        'core_source' => 'Core source',
+        'plugins_all' => 'Plugins',
+        'themes_all' => 'Themes',
     ],
 
     'statuses' => [

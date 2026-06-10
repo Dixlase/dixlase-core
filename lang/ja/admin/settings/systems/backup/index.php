@@ -55,6 +55,8 @@ return [
         'verification' => '検証',
         'hash' => 'ハッシュ',
         'actions' => '操作',
+        'path' => '保存先パス',
+        'file_name' => 'ファイル名',
         'no_records' => 'まだバックアップは作成されていません。',
     ],
 
@@ -66,8 +68,8 @@ return [
         'custom' => 'カスタム',
         'logs' => 'ログ',
         'core_source' => 'コアソース',
-        'plugins_all' => 'プラグイン全部',
-        'themes_all' => 'テーマ全部',
+        'plugins_all' => 'プラグイン',
+        'themes_all' => 'テーマ',
     ],
 
     // タイプ
