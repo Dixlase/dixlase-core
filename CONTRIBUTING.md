@@ -2,66 +2,35 @@
 
 Thank you for your interest in Dixlase.
 
-## Current Contribution Status (v0.x)
+## Current Status (v0.x)
 
-Dixlase is in early development. **External pull requests are not currently accepted.** External code contributions will reopen once the formal legal review of the Contributor License Agreement (CLA) is complete.
+Dixlase is in early development. **External pull requests are not currently accepted** — code contributions will open once the formal legal review of the Contributor License Agreement ([CLA](./CLA.md), in preparation) is complete. This document will be replaced with the full PR-based contribution guide at that time.
 
-**Currently welcomed:**
+**Welcome now (via [Issues](https://github.com/Dixlase/dixlase-core/issues) / [Discussions](https://github.com/Dixlase/dixlase-core/discussions)):**
 
-- Bug reports via [Issues](https://github.com/Dixlase/dixlase-core/issues)
-- Feature suggestions via [Discussions](https://github.com/Dixlase/dixlase-core/discussions) or Issues
-- Documentation typo / error reports via Issues
-- Questions and feedback via Discussions
+- Bug reports — a clear description, steps to reproduce, expected vs. actual behavior, and environment details (OS, PHP version, browser)
+- Feature suggestions — the use case, proposed behavior, and alternatives considered
+- Documentation / translation error reports
+- Questions and feedback
 
-**Not currently accepted:**
+**Not accepted yet:** pull requests of any kind (code, documentation, translations).
 
-- Source code pull requests (will reopen after CLA legal review)
-- Documentation pull requests (please file an Issue instead)
-- Translation pull requests (will reopen after CLA legal review)
+> Code snippets included in bug reports are treated as **reference information only**; a maintainer will independently re-implement any fix. This is required by Dixlase's dual-license model until the CLA review is complete.
 
-The future PR-based contribution flow is currently **being finalized** together with the CLA legal review; it will be published in [`CONTRIBUTING-FUTURE.md`](./CONTRIBUTING-FUTURE.md) when external code contributions reopen.
+## Security Vulnerabilities
 
-## Reporting Bugs
-
-When reporting bugs, please include:
-
-- A clear description of the problem
-- Steps to reproduce
-- Expected vs. actual behavior
-- Environment details (OS, PHP version, browser, etc.)
-- Relevant logs or error messages
-
-> **A note on code snippets in bug reports.** If you include a code suggestion to help fix the bug, it is treated as **reference information only**. A maintainer will independently re-implement any fix; your snippet is unlikely to be committed verbatim. This is necessary because external code contributions cannot currently be accepted under Dixlase's dual-license model until the CLA's formal legal review is complete.
-
-## Suggesting Features
-
-When proposing a new feature, open an issue describing:
-
-- The use case or problem the feature addresses
-- The proposed behavior or API
-- Alternatives you considered
-
-For larger or design-heavy proposals, starting a thread in [GitHub Discussions](https://github.com/Dixlase/dixlase-core/discussions) before opening an issue is encouraged.
-
-## Reporting Security Vulnerabilities
-
-**Do not report security vulnerabilities through public issues.** Instead, please follow the procedure in [SECURITY.md](./SECURITY.md).
+**Do not report security vulnerabilities through public issues.** Follow the procedure in [SECURITY.md](./SECURITY.md).
 
 ## Plugins and Themes
 
-Plugins and themes that interact with Dixlase's Plugin API (see [PLUGIN-API.md](./PLUGIN-API.md)) are outside the scope of the core repository: their authors retain full copyright and may distribute them under any license of their choice. The current PR deferral applies to the Dixlase core repository only.
+Plugins and themes built on the Plugin API (see [PLUGIN-API.md](./PLUGIN-API.md)) are outside the scope of the core repository: their authors retain full copyright and may distribute them under any license of their choice. The PR deferral applies to the core repository only.
 
 ## Translations
 
-Dixlase ships with **English source comments as the canonical form**. Each supported locale lives at `resources/comment-translations/{locale}/` (mirrored inside each plugin and theme), and `./convert-comments.sh ja` flips a development checkout to Japanese in-place. See [`docs/development/comment-translation.md`](./docs/development/comment-translation.md) for the full architecture.
-
-If you spot a translation issue, please file an Issue rather than a PR — translation pull requests will reopen alongside code PRs once the CLA legal review is complete. In the meantime, dictionary files (`resources/comment-translations/{locale}/...`) are versioned with the source so any improvement you note in an Issue becomes easy for a maintainer to reproduce and apply.
+Dixlase ships with English source comments as the canonical form; per-locale dictionaries live at `resources/comment-translations/{locale}/` and can be applied with `./convert-comments.sh ja` (see [`docs/development/comment-translation.md`](./docs/development/comment-translation.md)). Please report translation issues via Issues — the dictionaries are versioned with the source, so reported fixes are easy for a maintainer to apply.
 
 ## Questions?
 
-If you have questions about contributing, feel free to:
+Open a [Discussion](https://github.com/Dixlase/dixlase-core/discussions) or email info@dixlase.org.
 
-- Open a [discussion](https://github.com/Dixlase/dixlase-core/discussions) on GitHub
-- Email us at info@dixlase.org
-
-Thank you for helping make Dixlase better — even before PRs reopen, your bug reports and feedback are valuable.
+Even before PRs open, your bug reports and feedback are valuable contributions.

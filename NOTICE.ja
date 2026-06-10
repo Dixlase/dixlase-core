@@ -32,8 +32,13 @@
                           (AGPL §7 に基づく追加許可)
     LICENSE-COMMERCIAL    商用ライセンス条項(別途契約)
     NOTICE                プロジェクト著作権とデュアルライセンス概要
-                          (英語版)
-    NOTICE.ja             本ファイル(日本語版)
-    LICENSE-EXCEPTIONS.ja LICENSE-EXCEPTIONS の日本語版
+    PLUGIN-API.md         例外条項が参照する Plugin API 境界(暫定版)
+    COPYRIGHT-POLICY.md   著作権・ライセンスの方針(契約ではない)
+    CLA.md                コントリビューターライセンス契約(策定中)
+    CONTRIBUTING.md       現在のコントリビューション方針
+    SECURITY.md           脆弱性報告の方針
+    TRADEMARK-POLICY.md   商標使用の方針
+
+    *.ja / *.ja.md        上記ファイルの日本語版
 
 =======================================================================

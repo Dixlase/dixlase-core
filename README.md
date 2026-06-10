@@ -145,9 +145,9 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 ### Contribution Licensing
 
-> **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code-bearing contributions will reopen once the Contributor License Agreement (CLA)'s formal legal review is complete.
+> **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code contributions will open once the Contributor License Agreement (CLA)'s formal legal review is complete.
 
-Contributions to the Dixlase core repository will be governed by a Contributor License Agreement — a single document covering both individuals and entities. The CLA is currently **being finalized under formal legal review**; the full text will be published in [CLA.md](./CLA.md) when external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) (in preparation) for the planned PR-based contribution flow.
+Contributions to the Dixlase core repository will be governed by a Contributor License Agreement — a single document covering both individuals and entities. The CLA is currently **being finalized under formal legal review**; the full text will be published in [CLA.md](./CLA.md) when external code contributions open. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure. When contributions open, [CONTRIBUTING.md](./CONTRIBUTING.md) will be replaced with the full PR-based contribution guide.
 
 ---
 
