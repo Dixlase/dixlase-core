@@ -192,7 +192,6 @@ return [
                 'files' => 'File Logs',
             ],
             'info' => 'System Information',
-            'integrity' => 'Core Integrity',
         ],
     ],
 ];

@@ -281,10 +281,6 @@ return [
                             'access_roles' => MemberRole::ADMIN->value,
                             'view_roles' => MemberRole::ADMIN->value,
                         ],
-                        'integrity' => [
-                            'access_roles' => MemberRole::SUPER_ADMIN->value,
-                            'view_roles' => MemberRole::SUPER_ADMIN->value,
-                        ],
                     ],
                 ],
             ],
