@@ -25,13 +25,20 @@
 
 File map:
 
-    LICENSE              GNU Affero General Public License v3 (verbatim)
-    LICENSE-EXCEPTIONS   Dixlase Plugin and Theme Exception (additional
-                         permission under AGPL §7)
-    LICENSE-COMMERCIAL   Commercial license terms (separate agreement)
-    NOTICE               This file — project copyright and dual-license
-                         summary (English)
-    NOTICE.ja            Japanese counterpart of this file
-    LICENSE-EXCEPTIONS.ja Japanese counterpart of LICENSE-EXCEPTIONS
+    LICENSE               GNU Affero General Public License v3 (verbatim)
+    LICENSE-EXCEPTIONS    Dixlase Plugin and Theme Exception (additional
+                          permission under AGPL §7)
+    LICENSE-COMMERCIAL    Commercial license terms (separate agreement)
+    NOTICE                This file — project copyright and dual-license
+                          summary
+    PLUGIN-API.md         Plugin API boundary referenced by the exception
+                          (interim version)
+    COPYRIGHT-POLICY.md   Copyright and licensing stance (not a contract)
+    CLA.md                Contributor License Agreement (in preparation)
+    CONTRIBUTING.md       Current contribution policy
+    SECURITY.md           Vulnerability reporting policy
+    TRADEMARK-POLICY.md   Trademark usage policy
+
+    *.ja / *.ja.md        Japanese counterparts of the above files
 
 =======================================================================
