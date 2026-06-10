@@ -35,8 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -93,28 +95,31 @@ class ThemeMigrate extends Command
 
         $this->info("Running migrations for theme: {$themeName}");
 
-        // Execute migration
-        $options = [
-            '--path' => "themes/{$themeName}/database/migrations",
-            '--force' => $this->option('force'),
-        ];
+        // Use ThemeMigrator so rows land in dls_theme_migrations (not
+        // dls_migrations). The previous Artisan::call('migrate', --path)
+        // recorded into the stock ledger and exposed the theme migrations
+        // to any subsequent stock `php artisan migrate` run, which would
+        // re-apply them and hit "table already exists".
+        $themeSlug = Str::slug(Str::headline($themeName), '-');
+        $migrator = new ThemeMigrator(
+            app(Filesystem::class),
+            app(ConnectionResolverInterface::class),
+            'theme_migrations',
+            $themeSlug,
+        );
 
-        if ($this->option('pretend')) {
-            $options['--pretend'] = true;
+        try {
+            $migrated = $migrator->migrate($themeName, null, [
+                'pretend' => (bool) $this->option('pretend'),
+            ]);
+        } catch (\Throwable $e) {
+            $this->error("Migration failed for theme: {$themeName}: ".$e->getMessage());
+
+            return 1;
         }
 
-        if ($this->option('step')) {
-            $options['--step'] = (int) $this->option('step');
-        }
+        $this->info("Migrations completed for theme: {$themeName} (".count($migrated).' applied)');
 
-        $exitCode = Artisan::call('migrate', $options, $this->getOutput());
-
-        if ($exitCode === 0) {
-            $this->info("Migrations completed successfully for theme: {$themeName}");
-        } else {
-            $this->error("Migration failed for theme: {$themeName}");
-        }
-
-        return $exitCode;
+        return 0;
     }
 }

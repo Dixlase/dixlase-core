@@ -44,6 +44,7 @@ use App\Services\Core\CoreIntegrityVerifier;
 use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
 use App\Services\Theme\ThemePermissionService;
+use App\Services\ThemeMigrator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -366,12 +367,21 @@ class InstallConfirmController extends BaseInstallController
             ]);
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.database_seeder_completed'));
 
-            // Run theme migrations
+            // Run theme migrations via ThemeMigrator so the rows land in
+            // dls_theme_migrations (matching the ThemeInstall CLI path).
+            // The previous Artisan::call('migrate', --path ...) recorded
+            // them in dls_migrations instead, which left the rows in the
+            // wrong ledger and exposed the theme migrations to stock
+            // `php artisan migrate` runs (re-applying already-applied
+            // migrations and hitting "table already exists").
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_migration_started'));
-            Artisan::call('migrate', [
-                '--path' => 'themes/DixlaseOnePage/database/migrations',
-                '--force' => true,
-            ]);
+            $themeMigrator = new ThemeMigrator(
+                app(\Illuminate\Filesystem\Filesystem::class),
+                app(\Illuminate\Database\ConnectionResolverInterface::class),
+                'theme_migrations',
+                'dixlase-onepage',
+            );
+            $themeMigrator->migrate('DixlaseOnePage');
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.dixlase_onepage_migration_completed'));
 
             // Run theme seeders
