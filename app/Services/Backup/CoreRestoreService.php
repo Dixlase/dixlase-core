@@ -115,9 +115,26 @@ class CoreRestoreService implements RestoreServiceInterface
         // Create RestoreRecord
         $restoreRecord = $this->createRestoreRecord($backup, $preRestoreBackupId, $targets);
 
+        // Snapshot the bookkeeping tables as raw attribute arrays
+        // BEFORE any target runs: restoring the database target
+        // replaces every table with the dump, which erases rows
+        // created after the dump was taken — including the record of
+        // the backup being restored, the pre-restore safety
+        // snapshot's record, and the RestoreRecord for this very
+        // restore. The backup ZIPs on disk do not rewind with the
+        // data, so these two tables must keep reflecting reality.
+        $bookkeepingBackupRows = BackupRecord::query()
+            ->get()->map(fn (BackupRecord $row) => $row->getAttributes())->all();
+        $bookkeepingRestoreRows = RestoreRecord::query()
+            ->get()->map(fn (RestoreRecord $row) => $row->getAttributes())->all();
+
         try {
             foreach ($targets as $target) {
                 $this->restoreTarget($zip, $target);
+            }
+
+            if (in_array(BackupServiceInterface::TARGET_DATABASE, $targets, true)) {
+                $this->reinsertBookkeepingRows($bookkeepingBackupRows, $bookkeepingRestoreRows);
             }
 
             $duration = microtime(true) - $startTime;
@@ -155,6 +172,17 @@ class CoreRestoreService implements RestoreServiceInterface
             );
         } catch (\Throwable $e) {
             $zip->close();
+
+            // The database target may have been imported before the
+            // failure, erasing the bookkeeping rows — put them back so
+            // markAsFailed() below has a row to update and the restore
+            // shows up as failed in the history.
+            try {
+                $this->reinsertBookkeepingRows($bookkeepingBackupRows, $bookkeepingRestoreRows);
+            } catch (\Throwable) {
+                // The DB may be unusable mid-restore; the original error matters more.
+            }
+
             $restoreRecord->markAsFailed($e->getMessage());
 
             Event::dispatch(DixlaseEvents::BACKUP_RESTORE_FAILED, [
@@ -234,6 +262,34 @@ class CoreRestoreService implements RestoreServiceInterface
             'targets' => $targets,
             'status' => RestoreRecord::STATUS_IN_PROGRESS,
         ]);
+    }
+
+    /**
+     * Re-insert bookkeeping rows erased by a database restore.
+     *
+     * database.sql replaces every table with the dump's contents, so
+     * rows created after the dump vanish: the BackupRecord being
+     * restored, the pre-restore safety snapshot's record, the
+     * RestoreRecord of this restore, and any other backup/restore
+     * history accumulated since the dump. Without them the restore
+     * cannot be rolled back from the UI and the snapshot ZIPs become
+     * orphan files invisible to retention cleanup. The ZIPs on disk
+     * do not rewind with the data, so the pre-import state of these
+     * two tables is upserted back wholesale (original IDs kept so
+     * rows keep referencing each other).
+     *
+     * @param  array<int,array<string,mixed>>  $backupRows
+     * @param  array<int,array<string,mixed>>  $restoreRows
+     */
+    private function reinsertBookkeepingRows(array $backupRows, array $restoreRows): void
+    {
+        if ($backupRows !== []) {
+            BackupRecord::query()->getQuery()->upsert($backupRows, ['id']);
+        }
+
+        if ($restoreRows !== []) {
+            RestoreRecord::query()->getQuery()->upsert($restoreRows, ['id']);
+        }
     }
 
     /**
@@ -390,8 +446,19 @@ class CoreRestoreService implements RestoreServiceInterface
             }
 
             $relativePath = substr($entryName, strlen($prefix));
-            // Skip directory entries
-            if ($relativePath === '' || str_ends_with($relativePath, '/')) {
+            if ($relativePath === '') {
+                continue;
+            }
+
+            // Directory entries are written by the backup only for
+            // empty directories — recreate them so scaffold dirs
+            // (e.g. custom/tests/Unit) survive a restore.
+            if (str_ends_with($relativePath, '/')) {
+                $emptyDir = $destDir.'/'.rtrim($relativePath, '/');
+                if (! is_dir($emptyDir)) {
+                    mkdir($emptyDir, 0755, true);
+                }
+
                 continue;
             }
 
@@ -412,6 +479,15 @@ class CoreRestoreService implements RestoreServiceInterface
     /**
      * Delete directory contents (excluding immediate subdirectories contained in preserveDirs)
      *
+     * Symlinks are left untouched: backup archives do not record
+     * symlinks (the backup iterator skips them), so a restore can
+     * never recreate one it deletes. Worse, isDir() follows links, so
+     * recursing into a symlinked directory wipes data OUTSIDE the
+     * restore target — e.g. clearing public/ would empty media via
+     * the public/storage -> storage/app/public link. Links such as
+     * public/storage are installer infrastructure, not restorable
+     * content, so the safe move is to skip them entirely.
+     *
      * @param  string[]  $preserveDirs
      */
     private function clearDirectory(string $dir, array $preserveDirs = []): void
@@ -422,6 +498,9 @@ class CoreRestoreService implements RestoreServiceInterface
 
         foreach (new \DirectoryIterator($dir) as $item) {
             if ($item->isDot()) {
+                continue;
+            }
+            if ($item->isLink()) {
                 continue;
             }
             $name = $item->getFilename();
@@ -439,6 +518,10 @@ class CoreRestoreService implements RestoreServiceInterface
 
     /**
      * Recursively delete directory
+     *
+     * Symlinks are unlinked (the link itself), never recursed into:
+     * isDir() follows links, so descending into a symlinked directory
+     * would delete files outside the tree being removed.
      */
     private function removeDirectory(string $dir): void
     {
@@ -448,6 +531,10 @@ class CoreRestoreService implements RestoreServiceInterface
 
         foreach (new \DirectoryIterator($dir) as $item) {
             if ($item->isDot()) {
+                continue;
+            }
+            if ($item->isLink()) {
+                @unlink($item->getPathname());
                 continue;
             }
             if ($item->isDir()) {
