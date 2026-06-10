@@ -35,12 +35,10 @@
 
 namespace App\Http\Controllers\Install;
 
-use App\DTO\Core\CoreIntegrityResult;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
 use App\Models\ThemeAudit;
-use App\Services\Core\CoreIntegrityVerifier;
 use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
 use App\Services\Theme\ThemePermissionService;
@@ -144,33 +142,7 @@ class InstallConfirmController extends BaseInstallController
             'mailTestStatus' => $mailTestStatus,
             'currentLocale' => $locale,
             'availableLocales' => $this->availableLocales,
-            'coreIntegrity' => $this->coreIntegrityPanel(),
         ]);
-    }
-
-    /**
-     * Pre-flight core integrity panel for the confirmation screen.
-     *
-     * @return array{key: string, classes: string, changed_count: int, is_invalid: bool}
-     */
-    private function coreIntegrityPanel(): array
-    {
-        $result = app(CoreIntegrityVerifier::class)->verify();
-
-        $classes = match ($result->status) {
-            CoreIntegrityResult::STATUS_GENUINE => 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800 text-green-800 dark:text-green-300',
-            CoreIntegrityResult::STATUS_MODIFIED => 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
-            CoreIntegrityResult::STATUS_PENDING => 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300',
-            CoreIntegrityResult::STATUS_INVALID, CoreIntegrityResult::STATUS_ERROR => 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800 text-red-800 dark:text-red-300',
-            default => 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300',
-        };
-
-        return [
-            'key' => $result->status,
-            'classes' => $classes,
-            'changed_count' => $result->changedCount(),
-            'is_invalid' => $result->status === CoreIntegrityResult::STATUS_INVALID,
-        ];
     }
 
     /**
@@ -194,16 +166,6 @@ class InstallConfirmController extends BaseInstallController
 
                 return redirect()->route('install.confirm')
                     ->with('error', '');
-            }
-
-            // Core integrity gate: block installation only when the signature is
-            // INVALID (manifest present but signature fails = tampering). Unsigned
-            // dev builds and modified-but-authentic releases are allowed through.
-            if (app(CoreIntegrityVerifier::class)->verify()->status === CoreIntegrityResult::STATUS_INVALID) {
-                Log::channel('install')->error('Install blocked: core integrity is INVALID (signature verification failed).');
-
-                return redirect()->route('install.confirm')
-                    ->with('error', __('install/confirm.integrity.blocked'));
             }
 
             // Decrypt administrator password

@@ -71,27 +71,4 @@ return [
     'db_name' => 'Database Name',
     'db_user' => 'Database Username',
     'db_password' => 'Database Password',
-
-    // Core integrity pre-flight
-    'integrity' => [
-        'title' => 'Core integrity',
-        'status' => [
-            'genuine' => 'Genuine',
-            'modified' => 'Modified',
-            'unsigned' => 'Unsigned (development build)',
-            'pending_verification' => 'Verification pending',
-            'invalid' => 'Invalid signature',
-            'error' => 'Verification error',
-        ],
-        'desc' => [
-            'genuine' => 'This is a genuine, unmodified Dixlase release.',
-            'modified' => 'This is an official release with local modifications. You can continue, but note the changes below.',
-            'unsigned' => 'No signed manifest is present (development build). You can continue.',
-            'pending_verification' => 'The trusted key is not available yet. You can continue; verify later from the admin panel.',
-            'invalid' => 'The core signature did not verify — the files may have been tampered with. Installation is blocked.',
-            'error' => 'Integrity could not be verified. You may continue at your own risk.',
-        ],
-        'changed' => ':count file(s) differ from the signed manifest.',
-        'blocked' => 'Installation was blocked because the core signature is invalid (possible tampering). Re-download a genuine release and try again.',
-    ],
 ];
