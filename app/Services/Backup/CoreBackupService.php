@@ -280,8 +280,11 @@ class CoreBackupService implements BackupServiceInterface
                 $this->addTargetToZip($zip, $target, $tempDir);
             }
 
+            // version 2: directory targets are stored under their
+            // core-relative paths (storage/app/public, storage/logs, ...)
+            // instead of flat top-level names (media/, logs/, ...)
             $manifest = [
-                'version' => 1,
+                'version' => 2,
                 'generator' => 'dixlase-core',
                 'php_version' => PHP_VERSION,
                 'created_at' => now()->toIso8601String(),
@@ -295,20 +298,25 @@ class CoreBackupService implements BackupServiceInterface
 
     /**
      * Add specified targets to ZIP
+     *
+     * Directory targets are placed under the same relative path they
+     * occupy in a live installation (e.g. storage/app/public, not a
+     * flat media/ folder), so an extracted archive mirrors the core
+     * directory layout. CoreRestoreService relies on these prefixes.
      */
     private function addTargetToZip(\ZipArchive $zip, string $target, string $tempDir): void
     {
         match ($target) {
             BackupServiceInterface::TARGET_DATABASE => $this->addDatabaseToZip($zip, $tempDir),
-            BackupServiceInterface::TARGET_MEDIA => $this->addDirectoryToZip($zip, storage_path('app/public'), 'media'),
+            BackupServiceInterface::TARGET_MEDIA => $this->addDirectoryToZip($zip, storage_path('app/public'), 'storage/app/public'),
             BackupServiceInterface::TARGET_PRIVATE => $this->addDirectoryToZip(
                 $zip,
                 storage_path('app/private'),
-                'private',
+                'storage/app/private',
                 self::PRIVATE_EXCLUDE_DIRS,
             ),
             BackupServiceInterface::TARGET_CUSTOM => $this->addDirectoryToZip($zip, base_path('custom'), 'custom'),
-            BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'logs'),
+            BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'storage/logs'),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->addCoreSourceToZip($zip),
             BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip($zip, base_path('plugins'), 'plugins'),
             BackupServiceInterface::TARGET_THEMES_ALL => $this->addDirectoryToZip($zip, base_path('themes'), 'themes'),
