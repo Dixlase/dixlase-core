@@ -166,7 +166,19 @@ trait PluginLoaderTrait
                 $this->loadPluginViews($customPath, $defaultPath, $pluginSlug);
                 break;
             case 'migrations':
-                $this->loadPluginMigrations($customPath, $defaultPath);
+                // Plugin/theme migrations are intentionally NOT registered
+                // with Laravel's stock migrator here. They are applied via
+                // PluginMigrator / ThemeMigrator (PluginInstall and
+                // ThemeInstall commands), which record into the dedicated
+                // dls_plugin_migrations / dls_theme_migrations ledgers and
+                // namespace ran-state by slug. Registering them with the
+                // stock migrator as well would cause:
+                //   1. Duplicate ledger tracking (rows in both dls_migrations
+                //      and dls_plugin_migrations / dls_theme_migrations).
+                //   2. `php artisan migrate` re-running already-applied
+                //      plugin/theme migrations after a rename, hitting
+                //      "table already exists" because the stock ledger
+                //      has no record of them.
                 break;
             default:
                 $this->loadCustomFiles($type, $defaultPath, $customPath, $pluginSlug);
@@ -271,17 +283,21 @@ trait PluginLoaderTrait
     }
 
     /**
-     * Load migration files
+     * No-op kept for backward source compatibility.
+     *
+     * Plugin/theme migrations are applied through PluginMigrator /
+     * ThemeMigrator (PluginInstall and ThemeInstall commands) and are
+     * recorded in the dedicated dls_plugin_migrations /
+     * dls_theme_migrations ledgers — they must NOT be handed to the
+     * stock migrator via loadMigrationsFrom(). See the comment under
+     * `case 'migrations'` in loadFilesByType() for the full rationale.
+     *
+     * @deprecated Stock-migrator registration of plugin/theme paths is
+     *             intentionally disabled. Do not re-enable.
      */
     protected function loadPluginMigrations($customPath, $corePath)
     {
-        $paths = array_filter([$customPath, $corePath]);
-
-        foreach ($paths as $path) {
-            if (is_dir($path)) {
-                $this->loadMigrationsFrom($path);
-            }
-        }
+        // Intentionally empty.
     }
 
     /**
