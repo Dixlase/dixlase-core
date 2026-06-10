@@ -619,16 +619,41 @@ class CoreBackupService implements BackupServiceInterface
                     return true;
                 },
             ),
-            \RecursiveIteratorIterator::LEAVES_ONLY,
+            // SELF_FIRST so directories are visited too — LEAVES_ONLY
+            // never yields empty directories (hasChildren() is true
+            // for any directory), which made backups silently drop
+            // empty scaffold dirs such as custom/tests/Unit.
+            \RecursiveIteratorIterator::SELF_FIRST,
         );
 
         foreach ($iterator as $file) {
-            if (! $file->isFile()) {
+            // Symlinks are dropped: ZipArchive would store the link
+            // target's content as a regular file, and restore would
+            // then materialize it inside the tree — silently
+            // duplicating data the link merely pointed at.
+            if ($file->isLink()) {
                 continue;
             }
+
             $filePath = $file->getPathname();
             $relativePath = substr($filePath, $sourceLen);
             $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
+
+            // Record empty directories as explicit entries so restore
+            // can recreate them (restore wipes the target before
+            // extracting, so anything absent from the archive is lost).
+            if ($file->isDir()) {
+                if (! (new \FilesystemIterator($filePath))->valid()) {
+                    $zip->addEmptyDir($namespace.'/'.$relativePath);
+                }
+
+                continue;
+            }
+
+            if (! $file->isFile()) {
+                continue;
+            }
+
             $zip->addFile($filePath, $namespace.'/'.$relativePath);
         }
     }
