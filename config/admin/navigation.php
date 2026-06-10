@@ -358,11 +358,10 @@ return [
                         'route' => 'admin.settings.systems.info',
                         'icon' => 'fas fa-fw fa-info-circle',
                     ],
-                    'integrity' => [
-                        'text' => 'admin/navigation.settings.systems.integrity',
-                        'route' => 'admin.settings.systems.integrity',
-                        'icon' => 'fas fa-fw fa-shield-alt',
-                    ],
+                    // 'integrity' (Core Integrity) is intentionally not listed for
+                    // the initial release — the core signature-check feature is not
+                    // surfaced to users yet. The page/route are disabled too
+                    // (see routes/admin.php + .backlog/core-signing-deferred.md).
                 ],
             ],
         ],

@@ -62,16 +62,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </aside>
 @endif
 
-{{-- Core integrity pre-flight check --}}
-<aside class="border px-4 py-3 rounded-lg mb-6 {{ $coreIntegrity['classes'] }}" role="status" aria-labelledby="core-integrity-heading">
-    <p id="core-integrity-heading" class="font-semibold">
-        {{ __('install/confirm.integrity.title') }}: {{ __('install/confirm.integrity.status.' . $coreIntegrity['key']) }}
-    </p>
-    <p class="text-sm mt-1">{{ __('install/confirm.integrity.desc.' . $coreIntegrity['key']) }}</p>
-    @if($coreIntegrity['changed_count'] > 0)
-        <p class="text-sm mt-1">{{ __('install/confirm.integrity.changed', ['count' => $coreIntegrity['changed_count']]) }}</p>
-    @endif
-</aside>
+{{-- Core integrity pre-flight panel is intentionally hidden for the initial
+     release (the core signature-check feature is not surfaced to users yet).
+     Re-add it together with InstallConfirmController::coreIntegrityPanel().
+     See .backlog/core-signing-deferred.md. --}}
 
 @php
     // ✅ `force_ssl` に応じてプロトコルを決定
