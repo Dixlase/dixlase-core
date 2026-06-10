@@ -42,8 +42,8 @@ Contributions to the Dixlase **core repository** at https://github.com/Dixlase/d
 
 | Contributor type | Agreement |
 |---|---|
-| Individual person | [`CLA.md`](./CLA.md) (signing capacity: individual) |
-| Organization (covering its employees) | [`CLA.md`](./CLA.md) (signing capacity: entity; complete Schedules A and B) |
+| Individual person | [`CLA.md`](./CLA.md) (signing capacity: individual) — in preparation |
+| Organization (covering its employees) | [`CLA.md`](./CLA.md) (signing capacity: entity; complete Schedules A and B) — in preparation |
 
 Under the CLA model:
 
@@ -64,7 +64,7 @@ The legally operative documents are:
 |---|---|
 | Open-source license (downstream recipients) | [`LICENSE`](./LICENSE) — AGPL v3 + Plugin and Theme Exception |
 | Commercial license (downstream recipients) | [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) |
-| Contributor agreement (individual and corporate) | [`CLA.md`](./CLA.md) |
+| Contributor agreement (individual and corporate) | [`CLA.md`](./CLA.md) — in preparation |
 | Plugin API boundary | [`PLUGIN-API.md`](./PLUGIN-API.md) |
 
 This Policy is a stance summary, not a contract. Where its summary statements differ from an operative document, the operative document controls.

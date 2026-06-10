@@ -120,7 +120,7 @@ GitHub releases ship the canonical English source only; users (and the [Dixlase 
 
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute
 - [Copyright Policy](./COPYRIGHT-POLICY.md) — Dual-license stance and CLA model overview
-- [Contributor License Agreement](./CLA.md) — Single CLA for individuals and entities (choose a signing capacity at the top)
+- [Contributor License Agreement](./CLA.md) — In preparation; the full text will be published when external contributions reopen
 - [Security Policy](./SECURITY.md) — Reporting vulnerabilities
 - [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
 
@@ -147,7 +147,7 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 > **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code-bearing contributions will reopen once the Contributor License Agreement (CLA)'s formal legal review is complete.
 
-Contributions to the Dixlase core repository are governed by a Contributor License Agreement. The agreement text ([CLA.md](./CLA.md) — a single document covering both individuals and entities, selected via a signing capacity at the top) is included in the repository for transparency and review, but is **not currently in active use**. They will become operative once external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) for the planned PR-based contribution flow.
+Contributions to the Dixlase core repository will be governed by a Contributor License Agreement — a single document covering both individuals and entities. The CLA is currently **being finalized under formal legal review**; the full text will be published in [CLA.md](./CLA.md) when external code contributions reopen. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure and [CONTRIBUTING-FUTURE.md](./CONTRIBUTING-FUTURE.md) (in preparation) for the planned PR-based contribution flow.
 
 ---
 
