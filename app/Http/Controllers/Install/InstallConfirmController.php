@@ -35,10 +35,12 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\DTO\Core\CoreIntegrityResult;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
 use App\Models\ThemeAudit;
+use App\Services\Core\CoreIntegrityVerifier;
 use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
 use App\Services\Theme\ThemePermissionService;
@@ -143,6 +145,15 @@ class InstallConfirmController extends BaseInstallController
             'currentLocale' => $locale,
             'availableLocales' => $this->availableLocales,
         ]);
+
+        // NOTE: the visible core-integrity pre-flight panel is intentionally not
+        // shown on the confirm screen for the initial release (the core
+        // signature-check feature is not surfaced to users yet). The store()
+        // INVALID guard below is kept as a dormant safety net — it only ever
+        // triggers for a genuinely tampered *signed* core, which cannot happen
+        // while core is unsigned. Re-introduce coreIntegrityPanel() + the
+        // confirm.blade.php panel when shipping core signing.
+        // See .backlog/core-signing-deferred.md.
     }
 
     /**
@@ -166,6 +177,16 @@ class InstallConfirmController extends BaseInstallController
 
                 return redirect()->route('install.confirm')
                     ->with('error', '');
+            }
+
+            // Core integrity gate: block installation only when the signature is
+            // INVALID (manifest present but signature fails = tampering). Unsigned
+            // dev builds and modified-but-authentic releases are allowed through.
+            if (app(CoreIntegrityVerifier::class)->verify()->status === CoreIntegrityResult::STATUS_INVALID) {
+                Log::channel('install')->error('Install blocked: core integrity is INVALID (signature verification failed).');
+
+                return redirect()->route('install.confirm')
+                    ->with('error', __('install/confirm.integrity.blocked'));
             }
 
             // Decrypt administrator password
