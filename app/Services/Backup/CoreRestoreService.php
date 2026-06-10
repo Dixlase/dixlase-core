@@ -243,20 +243,50 @@ class CoreRestoreService implements RestoreServiceInterface
     {
         match ($target) {
             BackupServiceInterface::TARGET_DATABASE => $this->restoreDatabase($zip),
-            BackupServiceInterface::TARGET_MEDIA => $this->restoreDirectory($zip, 'media', storage_path('app/public')),
+            BackupServiceInterface::TARGET_MEDIA => $this->restoreDirectory(
+                $zip,
+                $this->resolveNamespace($zip, 'storage/app/public', 'media'),
+                storage_path('app/public'),
+            ),
             BackupServiceInterface::TARGET_PRIVATE => $this->restoreDirectory(
                 $zip,
-                'private',
+                $this->resolveNamespace($zip, 'storage/app/private', 'private'),
                 storage_path('app/private'),
                 self::PRIVATE_PRESERVE_DIRS,
             ),
             BackupServiceInterface::TARGET_CUSTOM => $this->restoreDirectory($zip, 'custom', base_path('custom')),
-            BackupServiceInterface::TARGET_LOGS => $this->restoreDirectory($zip, 'logs', storage_path('logs')),
+            BackupServiceInterface::TARGET_LOGS => $this->restoreDirectory(
+                $zip,
+                $this->resolveNamespace($zip, 'storage/logs', 'logs'),
+                storage_path('logs'),
+            ),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->restoreCoreSource($zip),
             BackupServiceInterface::TARGET_PLUGINS_ALL => $this->restoreDirectory($zip, 'plugins', base_path('plugins')),
             BackupServiceInterface::TARGET_THEMES_ALL => $this->restoreDirectory($zip, 'themes', base_path('themes')),
             default => throw new \InvalidArgumentException("Unknown restore target: {$target}"),
         };
+    }
+
+    /**
+     * Resolve the ZIP namespace for a directory target.
+     *
+     * Manifest v2 archives store directory targets under their
+     * core-relative paths (e.g. storage/app/public). Archives created
+     * before that change used flat top-level names (media/, private/,
+     * logs/); fall back to the legacy prefix when the archive has no
+     * entries under the current one, so old backups stay restorable.
+     */
+    private function resolveNamespace(\ZipArchive $zip, string $namespace, string $legacyNamespace): string
+    {
+        $prefix = $namespace.'/';
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            if (str_starts_with((string) $zip->getNameIndex($i), $prefix)) {
+                return $namespace;
+            }
+        }
+
+        return $legacyNamespace;
     }
 
     /**
