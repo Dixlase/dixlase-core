@@ -55,6 +55,23 @@ For the avoidance of doubt:
     GNU Affero General Public License. Modifications to core files
     remain subject to the full AGPL-3.0 terms.
 
+  - Code residing under the custom/ directory (the site-local
+    override location) is NOT covered by this exception, regardless
+    of whether it interacts with Dixlase by subclassing core or
+    plugin classes, by service-container binding, by Blade view
+    namespace override, or by any other mechanism. The upstream
+    license of the work it derives from continues to apply: the
+    GNU Affero General Public License when the upstream is the
+    Dixlase core, and the license under which the plugin or theme
+    is distributed when the upstream is a plugin or theme (each
+    plugin or theme author selects this license independently).
+    The AGPL section 13 source-disclosure requirements reach an
+    override file only when the Dixlase core itself has been
+    modified; overrides that customize only a plugin or theme
+    without modifying the Dixlase core remain governed solely by
+    that plugin's or theme's own license terms and do not, by
+    themselves, trigger AGPL section 13.
+
   - The Plugin API definition (PLUGIN-API.md) is versioned together with
     Dixlase. The applicable Plugin API is the version distributed
     with the specific release of Dixlase that the plugin or theme
