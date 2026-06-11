@@ -98,7 +98,7 @@ exc-D may update this Policy from time to time. Substantive changes will be anno
 
 ## 9. Governing Law and Jurisdiction
 
-This Policy is governed by the laws of Japan. Any disputes arising out of or in connection with this Policy shall be submitted to the exclusive jurisdiction of the Tokyo District Court as the court of first instance.
+This Policy is governed by the laws of Japan. Any disputes arising out of or in connection with this Policy shall be submitted to the exclusive jurisdiction of the Osaka District Court as the court of first instance.
 
 ## 10. Contact
 
