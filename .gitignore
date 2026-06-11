@@ -73,6 +73,11 @@ PLUGIN-API.md
 # Dixlase カスタム
 # カスタムファイルを入れるディレクトリを除外
 custom/*
+# Exceptions: documentation for the reserved layout / namespace
+# contract. Without these, a fresh clone never sees the explanation of
+# what custom/ is for. See custom/README.md for the full layout.
+!custom/README.md
+!custom/README.ja.md
 
 # プラグインとテーマのディレクトリを除外
 # プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）

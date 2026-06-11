@@ -61,17 +61,26 @@ $themes = detectExtensionDirectories($baseDir.'/themes');
 // PSR-4 マッピングを構築
 $autoload = [];
 
+// Custom\Plugins\{P}\App\ and Custom\Themes\{T}\App\ are reserved
+// for the deferred plugin/theme logic-override loader -- see
+// .backlog/custom-overrides-plugin-theme.md for the design.
+// The PSR-4 mapping is emitted unconditionally so that once the
+// loader trait lands, user code already written under those
+// namespaces will autoload without a second composer.local.json
+// migration. Composer tolerates missing target directories.
 foreach ($plugins as $name) {
     $autoload["Plugins\\{$name}\\App\\"] = "plugins/{$name}/app";
     $autoload["Plugins\\{$name}\\Database\\Factories\\"] = "plugins/{$name}/database/factories";
     $autoload["Plugins\\{$name}\\Database\\Seeders\\"] = "plugins/{$name}/database/seeders";
     $autoload["Plugins\\{$name}\\Tests\\"] = "plugins/{$name}/tests";
+    $autoload["Custom\\Plugins\\{$name}\\App\\"] = "custom/plugins/{$name}/app";
 }
 
 foreach ($themes as $name) {
     $autoload["Themes\\{$name}\\App\\"] = "themes/{$name}/app";
     $autoload["Themes\\{$name}\\Database\\Factories\\"] = "themes/{$name}/database/factories";
     $autoload["Themes\\{$name}\\Database\\Seeders\\"] = "themes/{$name}/database/seeders";
+    $autoload["Custom\\Themes\\{$name}\\App\\"] = "custom/themes/{$name}/app";
 }
 
 // composer.local.json を生成
