@@ -82,6 +82,27 @@ For the avoidance of doubt:
     Dixlase, except as required for reasonable and customary use in
     describing the origin of the plugin or theme.
 
+Interpretive note on the scope of AGPL section 13:
+
+For the purposes of AGPL section 13, the phrase "modified Program"
+includes any code that, by mechanism of dynamic loading through the
+Dixlase core, replaces or modifies the runtime behaviour of the
+Dixlase core itself — including by subclassing core classes, binding
+services in the container to override core implementations,
+overriding core Blade views via the namespace mechanism, or any
+equivalent mechanism. The fact that such code is loaded from a
+directory outside the core source tree (such as custom/) does not,
+on its own, exclude it from the scope of section 13.
+
+This note clarifies the existing application of section 13 to
+runtime modifications of the Dixlase core and does not introduce
+new obligations beyond those already imposed by the AGPL. The
+note does not extend section 13 to overrides that affect only the
+runtime behaviour of plugins or themes without modifying the
+Dixlase core itself; such overrides remain governed by the upstream
+license terms of the plugin or theme being overridden, consistent
+with the avoidance-of-doubt clause above.
+
 If you modify Dixlase core and redistribute it, you may choose to
 remove this exception. If you do not remove the exception, the exception
 also applies to your modified version.
