@@ -301,20 +301,23 @@ trait PluginLoaderTrait
     }
 
     /**
-     * Resolve the plugin's service provider
+     * Resolve the plugin's service provider.
+     *
+     * Earlier revisions also checked `custom\plugins\{Plugin}\App\
+     * Providers\{Plugin}ServiceProvider` (lowercase `custom\plugins`)
+     * as a site-level override. PSR-4 normalizes namespaces to studly
+     * case, so that branch could never resolve a class — it was dead
+     * code that conflicted with the correct
+     * `Custom\Plugins\{Plugin}\App\Providers\...` form planned for the
+     * deferred override system. It was removed so the future loader
+     * has a clean slate. See
+     * .backlog/custom-overrides-plugin-theme.md.
      */
     protected function resolvePluginServiceProvider(string $pluginName, string $pluginDirectory): ?string
     {
         $defaultProvider = "Plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginDirectory}ServiceProvider";
-        $customProvider = "custom\\plugins\\{$pluginDirectory}\\App\\Providers\\{$pluginDirectory}ServiceProvider";
 
-        if (class_exists($customProvider)) {
-            return $customProvider;
-        } elseif (class_exists($defaultProvider)) {
-            return $defaultProvider;
-        }
-
-        return null;
+        return class_exists($defaultProvider) ? $defaultProvider : null;
     }
 
     /**
