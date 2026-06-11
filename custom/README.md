@@ -129,8 +129,20 @@ implications:
 cover `custom/` overrides, regardless of mechanism.** The exception
 applies only to plugins and themes residing under `plugins/` or
 `themes/` and loaded through `PluginLoaderTrait` /
-`ThemeLoaderTrait`. Subclasses placed under `custom/` are part of
-the modified Dixlase program and remain subject to the AGPL.
+`ThemeLoaderTrait`. The upstream license of the work you are
+overriding continues to apply to the override file:
+
+- Overrides of **Dixlase Core** (`custom/app/...`,
+  `custom/resources/views/...`) → AGPL.
+- Overrides of a **Dixlase plugin or theme** distributed under the
+  GPL (`custom/plugins/{Plugin}/...`,
+  `custom/themes/{Theme}/...`) → GPL.
+
+In addition, because the override file is loaded into the
+modified Dixlase program as a whole, the AGPL section 13
+source-disclosure requirements attach to that program when it is
+offered to users over a network — irrespective of whether the
+specific override file itself is AGPL- or GPL-based.
 
 If you need to ship proprietary overrides, the supported paths are:
 
