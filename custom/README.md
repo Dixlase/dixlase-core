@@ -130,19 +130,32 @@ cover `custom/` overrides, regardless of mechanism.** The exception
 applies only to plugins and themes residing under `plugins/` or
 `themes/` and loaded through `PluginLoaderTrait` /
 `ThemeLoaderTrait`. The upstream license of the work you are
-overriding continues to apply to the override file:
+overriding continues to apply to the override file, and the AGPL
+section 13 obligation follows whether or not the Dixlase core
+itself has been modified:
 
-- Overrides of **Dixlase Core** (`custom/app/...`,
-  `custom/resources/views/...`) → AGPL.
-- Overrides of a **Dixlase plugin or theme** distributed under the
-  GPL (`custom/plugins/{Plugin}/...`,
-  `custom/themes/{Theme}/...`) → GPL.
+| What you override | Override file license | AGPL §13 attachment | In practice |
+|---|---|---|---|
+| **Dixlase Core** (`custom/app/...`, `custom/resources/views/...`) | AGPL (derivative of the AGPL core) | Yes — the core has been modified | Source disclosure to all network users of the running site (anonymous public included) |
+| **GPL plugin** (`custom/plugins/{Plugin}/...`) | GPL (derivative of the GPL plugin) | No — the core source is untouched | Only GPL §6 applies; disclosure obligation runs to recipients when you distribute, not to network users |
+| **GPL theme** (`custom/themes/{Theme}/...`) | GPL (derivative of the GPL theme) | No — same as above | Same as above |
 
-In addition, because the override file is loaded into the
-modified Dixlase program as a whole, the AGPL section 13
-source-disclosure requirements attach to that program when it is
-offered to users over a network — irrespective of whether the
-specific override file itself is AGPL- or GPL-based.
+The plugin / theme row is the deliberate design point of Dixlase's
+dual-license model: agencies building client sites can write
+proprietary-grade plugin or theme customizations inside `custom/`
+without that customization forcing disclosure to the general
+public, as long as the Dixlase core source files themselves remain
+unchanged. The moment any core file under `app/`,
+`resources/views/` (core layouts), `config/`, or another core path
+is edited, AGPL §13 attaches to the running modified core and the
+public-disclosure obligation kicks in for that program.
+
+This is not legal advice. The "no §13 unless core is modified"
+reading relies on the standard "mere aggregation" interpretation of
+GPL/AGPL §0 and is the position Dixlase takes as its own
+copyright holder. The Free Software Foundation takes a stricter
+view in some contexts; if your deployment is high-risk, consult
+counsel for your specific case.
 
 If you need to ship proprietary overrides, the supported paths are:
 
