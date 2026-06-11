@@ -104,8 +104,9 @@ exc-D は、随時本ポリシーを更新することがあります。実質�
 
 本ポリシーに関するご質問は、以下までご連絡ください。
 
-- Email: info@dixlase.org
-- Website: https://exc-d.com
+- メール: info@dixlase.org
+- プロジェクトサイト: https://dixlase.org
+- 運営会社: 株式会社エクシーディー <https://exc-d.com>
 
 ---
 
