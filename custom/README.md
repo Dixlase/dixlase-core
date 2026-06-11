@@ -122,8 +122,9 @@ implications:
   GPLv3/AGPLv3 §0 definition of *modify*. The copied file remains
   bound by the upstream license. For AGPL-licensed Core files,
   section 13 source-disclosure may apply when the site is reachable
-  over a network. For GPL-licensed plugins and themes, section 6
-  obligations trigger on distribution.
+  over a network. For plugins and themes, the plugin's or theme's
+  own license terms apply to the copied file — for GPL plugins or
+  themes, section 6 disclosure runs to recipients on distribution.
 
 **The Plugin and Theme Exception (`LICENSE-EXCEPTIONS`) does not
 cover `custom/` overrides, regardless of mechanism.** The exception
@@ -137,8 +138,8 @@ itself has been modified:
 | What you override | Override file license | AGPL §13 attachment | In practice |
 |---|---|---|---|
 | **Dixlase Core** (`custom/app/...`, `custom/resources/views/...`) | AGPL (derivative of the AGPL core) | Yes — the core has been modified | Source disclosure to all network users of the running site (anonymous public included) |
-| **GPL plugin** (`custom/plugins/{Plugin}/...`) | GPL (derivative of the GPL plugin) | No — the core source is untouched | Only GPL §6 applies; disclosure obligation runs to recipients when you distribute, not to network users |
-| **GPL theme** (`custom/themes/{Theme}/...`) | GPL (derivative of the GPL theme) | No — same as above | Same as above |
+| **A plugin** (`custom/plugins/{Plugin}/...`) | The plugin's own license — the override is a derivative of that plugin (the official Dixlase plugins are GPL, third-party plugins use whichever license their author selects) | No — the core source is untouched | The plugin's own license governs the override. For GPL plugins, GPL §6 disclosure runs to recipients on distribution, not to network users. Permissive or commercial plugins follow their own terms |
+| **A theme** (`custom/themes/{Theme}/...`) | The theme's own license — same author-chosen licensing as plugins | No — same as above | Same as above, scoped to the theme's own license |
 
 The plugin / theme row is the deliberate design point of Dixlase's
 dual-license model: agencies building client sites can write
