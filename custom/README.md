@@ -103,6 +103,46 @@ but the namespace and path are reserved. Code written now under
 container-bound to the original plugin class. See the backlog file
 for status.
 
+## License considerations
+
+`custom/` keeps signatures intact, but it does **not** create a
+license-free zone. Two distinct mechanisms have different
+implications:
+
+- **Subclass + container binding (the documented pattern above)**
+  uses the upstream class through its public API. No upstream source
+  is copied. Under the prevailing interpretation this is "use of an
+  API", not creation of a derivative work, and is the lower-risk
+  path. The Free Software Foundation takes a stricter view in some
+  contexts, so this is not absolute legal certainty — but it is the
+  safest path the override system supports.
+
+- **Copying an upstream source file** (Core, plugin, or theme) into
+  `custom/` and editing it constitutes "modification" under the
+  GPLv3/AGPLv3 §0 definition of *modify*. The copied file remains
+  bound by the upstream license. For AGPL-licensed Core files,
+  section 13 source-disclosure may apply when the site is reachable
+  over a network. For GPL-licensed plugins and themes, section 6
+  obligations trigger on distribution.
+
+**The Plugin and Theme Exception (`LICENSE-EXCEPTIONS`) does not
+cover `custom/` overrides, regardless of mechanism.** The exception
+applies only to plugins and themes residing under `plugins/` or
+`themes/` and loaded through `PluginLoaderTrait` /
+`ThemeLoaderTrait`. Subclasses placed under `custom/` are part of
+the modified Dixlase program and remain subject to the AGPL.
+
+If you need to ship proprietary overrides, the supported paths are:
+
+1. Write a proprietary plugin under `plugins/` that interacts with
+   Dixlase only through the Plugin API — this is what the exception
+   exists for, and it is the cleanest route.
+2. Obtain a commercial license (see `LICENSE-COMMERCIAL`) and use
+   the terms of that agreement.
+
+This is not legal advice. Consult counsel for the specific
+implications in your jurisdiction and deployment model.
+
 ## Notes
 
 - This directory's contents are gitignored except for `README.md` and
