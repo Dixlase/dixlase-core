@@ -105,7 +105,8 @@ This Policy is governed by the laws of Japan. Any disputes arising out of or in 
 For questions about this Policy, contact exc-D at:
 
 - Email: info@dixlase.org
-- Website: https://exc-d.com
+- Project website: https://dixlase.org
+- Operating company: exc-D inc. <https://exc-d.com>
 
 ---
 
