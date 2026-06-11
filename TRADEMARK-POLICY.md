@@ -227,7 +227,7 @@ A summary of substantive changes will be added to the project
 
 This Policy is governed by the laws of Japan. Any disputes arising out
 of or in connection with this Policy shall be submitted to the
-exclusive jurisdiction of the Tokyo District Court as the court of
+exclusive jurisdiction of the Osaka District Court as the court of
 first instance.
 
 ## 11. Contact
