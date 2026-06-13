@@ -81,6 +81,23 @@ jobs:
 
             for SITE in brand docs demo keys; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
+
+              # 0. サイトが未セットアップなら skip
+              # 本番サーバー側に $BASE/$SITE が存在しない (host) か、
+              # compose-php-1 の /var/www/apps/$SITE が存在しない (container)
+              # 状態ならそのサイトは未セットアップ扱いで通過させる。
+              # これがないと keys のように bind mount が未追加のサイトで
+              # `cd: ... No such file or directory` or `chown: cannot access`
+              # で loop 全体が exit 1 して以降のサイトに deploy できなくなる。
+              if [ ! -d "$BASE/$SITE" ]; then
+                echo "  Skipping: host path $BASE/$SITE does not exist"
+                continue
+              fi
+              if ! docker exec compose-php-1 test -d "/var/www/apps/$SITE"; then
+                echo "  Skipping: container path /var/www/apps/$SITE does not exist"
+                continue
+              fi
+
               cd "$BASE/$SITE"
 
               # 1. deploy ユーザーが git 操作できるよう所有権を戻す
