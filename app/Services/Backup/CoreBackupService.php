@@ -304,11 +304,13 @@ class CoreBackupService implements BackupServiceInterface
                 $this->addTargetToZip($zip, $target, $tempDir, $sourceTreeExcludes);
             }
 
-            // version 2: directory targets are stored under their
-            // core-relative paths (storage/app/public, storage/logs, ...)
-            // instead of flat top-level names (media/, logs/, ...)
+            // version 3: every target is stored under its core-relative
+            // path so an extracted archive mirrors the live layout —
+            // media/private/logs under storage/… (v2) and now the
+            // core_source tree at the root (app/, config/, artisan, …)
+            // instead of under a core/ wrapper (v1/v2).
             $manifest = [
-                'version' => 2,
+                'version' => 3,
                 'generator' => 'dixlase-core',
                 'php_version' => PHP_VERSION,
                 'created_at' => now()->toIso8601String(),
@@ -391,9 +393,12 @@ class CoreBackupService implements BackupServiceInterface
      * Mirrors the SOURCE_DIRECTORIES + SOURCE_FILES whitelist that
      * CoreSourceSnapshot uses when capturing a pre-upgrade snapshot —
      * the same path set the upgrade process is about to overwrite on
-     * disk. Each directory is added under a `core/<rel-path>/` prefix
-     * inside the ZIP so the restore step can find it again without
-     * having to re-derive the whitelist.
+     * disk. Each path is stored under its own core-relative location
+     * (app/…, config/…, artisan, …) so an extracted archive mirrors
+     * the live installation layout. The whitelist itself is how the
+     * restore step rediscovers these entries — no `core/` wrapper is
+     * needed. (Manifest v2 and earlier wrapped them under `core/`;
+     * CoreRestoreService falls back to that prefix for old archives.)
      */
     private function addCoreSourceToZip(\ZipArchive $zip): void
     {
@@ -402,7 +407,7 @@ class CoreBackupService implements BackupServiceInterface
             if (! is_dir($abs)) {
                 continue;
             }
-            $this->addDirectoryToZip($zip, $abs, 'core/'.$rel);
+            $this->addDirectoryToZip($zip, $abs, $rel);
         }
 
         foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_FILES as $rel) {
@@ -410,7 +415,7 @@ class CoreBackupService implements BackupServiceInterface
             if (! is_file($abs)) {
                 continue;
             }
-            $zip->addFile($abs, 'core/'.$rel);
+            $zip->addFile($abs, $rel);
         }
     }
 
