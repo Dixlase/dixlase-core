@@ -23,25 +23,18 @@ Our mission is to create **the world's most secure CMS**, released as open-sourc
 
 ## 📦 Setup
 
-### 1. Clone the repository
+Dixlase ships with two installers for production / staging use; pick the
+one that matches your environment:
 
-```bash
-git clone https://github.com/Dixlase/dixlase-core.git
-cd dixlase-core/docker
-```
+- **[Docker installer](https://github.com/Dixlase/dixlase-installer-docker)** — Brings up Dixlase via `docker compose` on Docker-equipped hosts.
+- **[One-liner installer](https://github.com/Dixlase/dixlase-oneliner-installer)** — Single-command install for fresh VPS / bare-metal hosts.
 
-### 2. Start Docker containers
+See each repository's README for prerequisites, supported OS / PHP /
+MySQL versions, and step-by-step instructions.
 
-```bash
-docker compose up -d
-```
-
-### 3. Prepare Laravel
-
-```bash
-docker compose exec -T -w /var/www/html laravel.test composer install
-docker compose exec -T -w /var/www/html laravel.test php artisan key:generate
-```
+For working on the Core itself (this repository), clone it and start the
+dev Docker stack — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the
+local development environment.
 
 ---
 
@@ -110,9 +103,21 @@ GitHub releases ship the canonical English source only; users (and the [Dixlase 
 
 ## 🤝 Contributing
 
-1. Open an issue for bug reports or feature requests
-2. Fork & submit a pull request
-3. Join our community (Discord planned)
+> **Currently:** Dixlase is in early development and **does not yet
+> accept external code contributions**. The Contributor License
+> Agreement (CLA) is under formal legal review; code Pull Requests
+> will open once it is finalized.
+
+Bug reports and feature proposals via **GitHub Issues** are welcome
+in the meantime, as are questions via **GitHub Discussions**. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the current contribution
+scope.
+
+Once the CLA is finalized, contributions will open under the
+[Dixlase Copyright Policy](./COPYRIGHT-POLICY.md) and the Dixlase
+CLA (the full text will be published in [CLA.md](./CLA.md)). At
+that point, [CONTRIBUTING.md](./CONTRIBUTING.md) will be replaced
+with the full PR-based contribution guide.
 
 ---
 
@@ -142,12 +147,6 @@ Plugins and themes that interact with Dixlase CMS exclusively through the [Plugi
 ### Source Code Availability (AGPL §13)
 
 If you run Dixlase CMS on a server and make it accessible to users over a network, AGPL §13 requires that users be able to obtain the source code of your running version. Ensure that the "Source" link in your admin footer (or equivalent) is accessible to users. The URL advertised there is configurable via the `DIXLASE_SOURCE_URL` environment variable.
-
-### Contribution Licensing
-
-> **Currently:** Dixlase is in early development and **does not accept external pull requests**. Bug reports via Issues and questions via Discussions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Code contributions will open once the Contributor License Agreement (CLA)'s formal legal review is complete.
-
-Contributions to the Dixlase core repository will be governed by a Contributor License Agreement — a single document covering both individuals and entities. The CLA is currently **being finalized under formal legal review**; the full text will be published in [CLA.md](./CLA.md) when external code contributions open. See [COPYRIGHT-POLICY.md](./COPYRIGHT-POLICY.md) for the broader licensing structure. When contributions open, [CONTRIBUTING.md](./CONTRIBUTING.md) will be replaced with the full PR-based contribution guide.
 
 ---
 
