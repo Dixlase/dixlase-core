@@ -211,6 +211,12 @@ class ExtensionSourceSettingsTest extends TestCase
 
     public function test_test_source_uses_config_values(): void
     {
+        // Token must be set so checkConnection() takes the authenticated path
+        // and hits /user (which we fake) rather than the public path /users/{owner}
+        // which would attempt a real GitHub request and surface as a flaky 403.
+        config()->set('extension-sources.github.default_token', 'test-token');
+
+        Http::preventStrayRequests();
         Http::fake([
             'api.github.com/user' => Http::response([
                 'login' => 'config-user',
