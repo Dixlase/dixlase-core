@@ -1,5 +1,7 @@
 # Dixlase
 
+For Japanese, see [README.ja.md](./README.ja.md).
+
 **Dixlase** is a next-generation CMS built on Laravel.
 From minimal landing pages to event management, reservations, and e-commerce, every feature is provided as an installable plugin.
 Our mission is to create **the world's most secure CMS**, released as open-source under the AGPL license.
@@ -23,18 +25,37 @@ Our mission is to create **the world's most secure CMS**, released as open-sourc
 
 ## 📦 Setup
 
-Dixlase ships with two installers for production / staging use; pick the
-one that matches your environment:
+Pick the method that matches your environment:
 
-- **[Docker installer](https://github.com/Dixlase/dixlase-installer-docker)** — Brings up Dixlase via `docker compose` on Docker-equipped hosts.
-- **[One-liner installer](https://github.com/Dixlase/dixlase-oneliner-installer)** — Single-command install for fresh VPS / bare-metal hosts.
+### Docker installer
 
-See each repository's README for prerequisites, supported OS / PHP /
-MySQL versions, and step-by-step instructions.
+For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker), which brings up Dixlase via `docker compose`. See the installer repository's README for prerequisites and step-by-step instructions.
 
-For working on the Core itself (this repository), clone it and start the
-dev Docker stack — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the
-local development environment.
+### Quick install script
+
+For fresh VPS / bare-metal hosts with PHP 8.2+ and Composer, install with a single command:
+
+```bash
+curl -sS https://install.dixlase.net | php
+```
+
+The script checks PHP version and required extensions, downloads the latest release, runs `composer install`, generates an application key, sets directory permissions, and prints the URL to the Web-based installation wizard.
+
+### Manual install (ZIP + Composer)
+
+Download the latest release ZIP from [GitHub Releases](https://github.com/Dixlase/dixlase-core/releases), then:
+
+```bash
+unzip dixlase-*.zip
+cd dixlase
+composer install
+```
+
+After this, open the site URL in a browser — the installation wizard will guide you through database setup, the admin account, and initial settings.
+
+---
+
+For working on the Core itself (this repository), clone it and start the dev Docker stack — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the local development environment.
 
 ---
 
@@ -89,7 +110,7 @@ GitHub releases ship the canonical English source only; users (and the [Dixlase 
 ## 📚 Documentation
 
 ### Official Resources
-- [Official Site (WIP)](https://dixlase.com)
+- [Project Site — dixlase.org](https://dixlase.org/)
 - [Plugin Marketplace (Planned)](https://market.dixlase.com)
 - [Developer Docs (WIP)](https://docs.dixlase.com)
 

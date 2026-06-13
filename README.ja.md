@@ -1,5 +1,7 @@
 # Dixlase
 
+For English, see [README.md](./README.md).
+
 **Dixlase** は Laravel をベースに開発中の次世代 CMS です。
 ミニマルなランディングページから、イベント管理、予約管理、EC まで、必要な機能をプラグインとして追加できます。
 「**世界一セキュアな CMS**」を目指し、AGPL ライセンスのオープンソースとして公開予定です。
@@ -23,18 +25,37 @@
 
 ## 📦 セットアップ
 
-Dixlase は本番 / ステージング環境向けに 2 つのインストーラを提供しています。
-環境に合わせて選択してください:
+環境に合わせて以下から選んでください:
 
-- **[Docker インストーラ](https://github.com/Dixlase/dixlase-installer-docker)** — Docker 環境のホストで `docker compose` 経由で Dixlase を立ち上げます。
-- **[ワンライナーインストーラ](https://github.com/Dixlase/dixlase-oneliner-installer)** — クリーンな VPS / ベアメタル環境にワンコマンドでインストール。
+### Docker インストーラ
 
-前提条件、対応 OS / PHP / MySQL のバージョン、手順は各リポジトリの README
-をご確認ください。
+Docker 環境のホストでは [Docker インストーラ](https://github.com/Dixlase/dixlase-installer-docker) を利用し、`docker compose` 経由で Dixlase を立ち上げます。前提条件と手順はインストーラリポジトリの README をご確認ください。
 
-コア自体の開発(本リポジトリでの作業)を行う場合は、本リポジトリを clone
-して開発用 Docker スタックを起動してください — ローカル開発環境の
-セットアップは [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) を参照。
+### クイックインストールスクリプト
+
+PHP 8.2 以上と Composer が用意されたクリーンな VPS / ベアメタル環境では、1 コマンドでインストールできます:
+
+```bash
+curl -sS https://install.dixlase.net | php
+```
+
+スクリプトは PHP バージョンと必要な拡張のチェック、最新リリースのダウンロード、`composer install` の実行、アプリケーションキーの生成、ディレクトリパーミッションの設定、Web インストールウィザードへの URL 表示を行います。
+
+### 手動インストール(ZIP + Composer)
+
+[GitHub Releases](https://github.com/Dixlase/dixlase-core/releases) から最新リリースの ZIP をダウンロードして:
+
+```bash
+unzip dixlase-*.zip
+cd dixlase
+composer install
+```
+
+その後ブラウザでサイト URL にアクセスすると、インストールウィザードがデータベース設定・管理者アカウント作成・初期設定をガイドします。
+
+---
+
+コア自体の開発(本リポジトリでの作業)を行う場合は、本リポジトリを clone して開発用 Docker スタックを起動してください — ローカル開発環境のセットアップは [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) を参照。
 
 ---
 
@@ -88,7 +109,7 @@ GitHub リリースには正本である英語ソースのみが含まれます�
 
 ## 📚 ドキュメント
 
-- [公式サイト（準備中）](https://dixlase.com)
+- [プロジェクトサイト — dixlase.org](https://dixlase.org/)
 - [プラグインマーケット（計画中）](https://market.dixlase.com)
 - [開発ドキュメント（準備中）](https://docs.dixlase.com)
 
