@@ -19,6 +19,12 @@ return [
     'form' => [
         'default_targets_label' => 'デフォルトのバックアップ対象',
         'default_targets_help' => 'ここで選択した対象は、新規バックアップ作成時に初期チェック状態になります。「ログ」はファイル変更が頻繁でサイズが大きくなりやすいため、オプション扱いです。',
+        'exclusions_label' => '除外設定（プラグイン／テーマ対象）',
+        'exclude_node_modules_label' => 'node_modules を除外',
+        'exclude_node_modules_help' => 'ビルド時にのみ使用されるパッケージキャッシュで、サイトの動作には不要です。',
+        'exclude_vendor_label' => 'vendor を除外',
+        'exclude_vendor_help' => '除外すると、復元時にプラグイン／テーマのソースと依存ライブラリのバージョンが合わなくなる可能性があります。完全な状態で復元したい場合はオフにしてください。',
+        'exclusions_help' => 'バックアップ時に除外したディレクトリは、そのバックアップの復元時にも削除・上書きされず保護されます。.git は常に除外・保護されます。',
         'default_retention_label' => 'デフォルト保持期間（日）',
         'default_retention_help' => 'この期間が過ぎると、データベース管理画面からのクリーンアップ対象になります。空欄でデフォルト無期限保持。',
         'save_button' => '設定を保存',

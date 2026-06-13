@@ -43,6 +43,9 @@ class AdminSystemBackupSettingsRequest extends FormRequest
             'default_targets' => ['required', 'array', 'min:1'],
             'default_targets.*' => ['string', 'in:'.implode(',', $availableTargets)],
             'default_retention_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            // Unchecked toggles are simply absent from the request
+            'exclude_node_modules' => ['nullable', 'boolean'],
+            'exclude_vendor' => ['nullable', 'boolean'],
         ];
     }
 

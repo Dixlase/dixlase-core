@@ -81,6 +81,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
+        {{-- Source-tree exclusions (plugins/themes targets) --}}
+        <div class="mb-6">
+            <p class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
+                {{ __('admin/settings/systems/backup/settings.form.exclusions_label') }}
+            </p>
+            <div class="space-y-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div>
+                    <x-form-toggle
+                        :label="__('admin/settings/systems/backup/settings.form.exclude_node_modules_label')"
+                        id="excludeNodeModules"
+                        name="exclude_node_modules"
+                        :checked="old('exclude_node_modules', $excludeNodeModules)"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ __('admin/settings/systems/backup/settings.form.exclude_node_modules_help') }}
+                    </p>
+                </div>
+                <div>
+                    <x-form-toggle
+                        :label="__('admin/settings/systems/backup/settings.form.exclude_vendor_label')"
+                        id="excludeVendor"
+                        name="exclude_vendor"
+                        :checked="old('exclude_vendor', $excludeVendor)"
+                    />
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        {{ __('admin/settings/systems/backup/settings.form.exclude_vendor_help') }}
+                    </p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                {{ __('admin/settings/systems/backup/settings.form.exclusions_help') }}
+            </p>
+        </div>
+
         {{-- Save button --}}
         <div class="flex justify-end">
             <x-form-button
