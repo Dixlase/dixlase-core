@@ -41,7 +41,15 @@ curl -sS https://install.dixlase.net | php
 
 スクリプトは PHP バージョンと必要な拡張のチェック、最新リリースのダウンロード、`composer install` の実行、アプリケーションキーの生成、ディレクトリパーミッションの設定、Web インストールウィザードへの URL 表示を行います。
 
-### 手動インストール(ZIP + Composer)
+### Composer create-project
+
+Composer が使える環境では、1 コマンドで新規インストールをスキャフォールドできます:
+
+```bash
+composer create-project dixlase/dixlase-core dixlase
+```
+
+### 手動インストール(ZIP)
 
 [GitHub Releases](https://github.com/Dixlase/dixlase-core/releases) から最新リリースの ZIP をダウンロードして:
 
@@ -110,8 +118,7 @@ GitHub リリースには正本である英語ソースのみが含まれます�
 ## 📚 ドキュメント
 
 - [プロジェクトサイト — dixlase.org](https://dixlase.org/)
-- [プラグインマーケット（計画中）](https://market.dixlase.com)
-- [開発ドキュメント（準備中）](https://docs.dixlase.com)
+- 開発ドキュメント（準備中）
 
 ---
 
@@ -148,7 +155,11 @@ CLA 確定後、コントリビューションは [コピーライトポリシ�
 Dixlase CMS は**デュアルライセンス**で配布されています:
 
 - **オープンソースライセンス**: [GNU Affero General Public License v3](./LICENSE) および Dixlase プラグイン・テーマ例外条項([LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja))
-- **商用ライセンス**: AGPL v3 の条件に準拠できない用途(クローズドソース SaaS での改変版配布など)に対しては、別途商用ライセンスをご用意しています — 詳細は [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL)(現在ドラフト)、または **info@dixlase.org** までお問い合わせください。
+- **商用ライセンス**: AGPL v3 の遵守が現実的でないユースケース(クローズドソース SaaS での改変版配布など)向けに、別途商用ライセンスの提供を予定しています。
+
+**現時点では商用ライセンスはまだ提供しておりません。**  
+(雛形のみ [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL) に Draft として置いています)。  
+提供開始時期や条件に関するお問い合わせは **info@dixlase.org** までご連絡ください。
 
 ファイル全体の構成は [NOTICE.ja](./NOTICE.ja) にまとめています([English](./NOTICE))。
 
