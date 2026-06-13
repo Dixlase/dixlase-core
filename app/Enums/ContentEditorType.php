@@ -273,7 +273,34 @@ enum ContentEditorType: int
      */
     public static function radioCardOptions(?ContentStorageType $storageType = null, array $exclude = [], array $enabledByPlugin = []): array
     {
-        $types = $storageType ? self::availableFor($storageType) : self::cases();
+        // When a specific storage type is passed (e.g. the front-page editor
+        // pins to DATABASE), use its declared availability order verbatim so
+        // operators see exactly what is selectable for that storage.
+        //
+        // When no storage type is passed (e.g. the DixlasePages page editor
+        // lets the operator pick storage after the editor type), build the
+        // union of every storage type's availableFor() list — DATABASE first,
+        // then FILE — and dedup while preserving order. This keeps a single
+        // canonical sort across both call sites: a null-storage caller and
+        // a DATABASE-pinned caller see the GUI / HTML / Markdown prefix in
+        // the same order, and BLADE (FILE-only) trails the list. Falling
+        // back to self::cases() the way this used to do meant the enum
+        // declaration order leaked out as the visible card order, which
+        // re-ordered GUI / Markdown / HTML differently from every other
+        // entry point that already went through availableFor().
+        if ($storageType !== null) {
+            $types = self::availableFor($storageType);
+        } else {
+            $types = [];
+            foreach ([ContentStorageType::DATABASE, ContentStorageType::FILE] as $st) {
+                foreach (self::availableFor($st) as $t) {
+                    if (! in_array($t, $types, true)) {
+                        $types[] = $t;
+                    }
+                }
+            }
+        }
+
         $options = [];
 
         foreach ($types as $type) {
