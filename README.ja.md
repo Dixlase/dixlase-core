@@ -23,25 +23,18 @@
 
 ## 📦 セットアップ
 
-### 1. リポジトリをクローン
+Dixlase は本番 / ステージング環境向けに 2 つのインストーラを提供しています。
+環境に合わせて選択してください:
 
-```bash
-git clone https://github.com/Dixlase/dixlase-core.git
-cd dixlase-core/docker
-```
+- **[Docker インストーラ](https://github.com/Dixlase/dixlase-installer-docker)** — Docker 環境のホストで `docker compose` 経由で Dixlase を立ち上げます。
+- **[ワンライナーインストーラ](https://github.com/Dixlase/dixlase-oneliner-installer)** — クリーンな VPS / ベアメタル環境にワンコマンドでインストール。
 
-### 2. Docker コンテナを起動
+前提条件、対応 OS / PHP / MySQL のバージョン、手順は各リポジトリの README
+をご確認ください。
 
-```bash
-docker compose up -d
-```
-
-### 3. Laravel を準備
-
-```bash
-docker compose exec -T -w /var/www/html laravel.test composer install
-docker compose exec -T -w /var/www/html laravel.test php artisan key:generate
-```
+コア自体の開発(本リポジトリでの作業)を行う場合は、本リポジトリを clone
+して開発用 Docker スタックを起動してください — ローカル開発環境の
+セットアップは [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) を参照。
 
 ---
 
@@ -103,9 +96,19 @@ GitHub リリースには正本である英語ソースのみが含まれます�
 
 ## 🤝 コントリビュート
 
-1. Issue でバグ報告・機能提案
-2. Fork & Pull Request
-3. Discord コミュニティ（予定）
+> **現状**: Dixlase は初期開発期にあり、**外部からのコード Pull Request
+> は受け付けていません**。コントリビューターライセンス契約 (CLA) は
+> 現在 **正式法務レビュー中** で、確定後にコード Pull Request の受付を
+> 開始します。
+
+それまでも **GitHub Issues** でのバグ報告・機能提案、および
+**GitHub Discussions** での質問は歓迎します。現時点のコントリビューション
+スコープは [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) をご覧ください。
+
+CLA 確定後、コントリビューションは [コピーライトポリシー](./COPYRIGHT-POLICY.ja.md)
+と Dixlase CLA(全文は [CLA.ja.md](./CLA.ja.md) で公開)の対象となります。
+受付開始時には [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) を PR ベースの
+コントリビューションガイドへ全面差し替えます。
 
 ---
 
@@ -135,12 +138,6 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 ### ソースコードの提供(AGPL §13)
 
 Dixlase CMS をサーバーで運用し、ネットワーク経由でユーザーに提供する場合、AGPL §13 により、実行中のバージョンのソースコードをユーザーが取得できる必要があります。管理画面フッターの「Source」リンクがユーザーからアクセス可能であることをご確認ください。公開 URL は環境変数 `DIXLASE_SOURCE_URL` で指定できます。
-
-### コントリビューションのライセンス
-
-> **現状**: Dixlase は初期開発期にあり、**外部からの Pull Request は受け付けていません**。Issue でのバグ報告と Discussions での質問は歓迎します — [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) をご覧ください。コードコントリビューションの受付は、コントリビューターライセンス契約 (CLA) の正式法務レビュー完了後に開始予定です。
-
-Dixlase コアリポジトリへのコントリビューションは、コントリビューターライセンス契約 (CLA) — 個人・法人共通の 1 文書 — により規律される予定です。CLA は現在 **正式法務レビュー中（策定中）** であり、外部からのコードコントリビューション受付の開始時に [CLA.ja.md](./CLA.ja.md) で全文を公開します。ライセンス全体の文脈は [コピーライトポリシー](./COPYRIGHT-POLICY.ja.md) をご覧ください。受付開始時には [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md) を PR ベースのコントリビューションガイドへ全面差し替えます。
 
 ---
 
