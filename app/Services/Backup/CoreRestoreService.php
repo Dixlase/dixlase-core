@@ -436,21 +436,31 @@ class CoreRestoreService implements RestoreServiceInterface
     }
 
     /**
-     * Restore the core source tree from `core/<rel-path>/` entries in
-     * the backup ZIP. Mirror of CoreBackupService::addCoreSourceToZip()
-     * — iterates the same SOURCE_DIRECTORIES + SOURCE_FILES whitelist
-     * and restores whatever the backup actually captured (entries
-     * missing from the ZIP are skipped, which matches how the backup
-     * skipped missing live entries).
+     * Restore the core source tree from the backup ZIP. Mirror of
+     * CoreBackupService::addCoreSourceToZip() — iterates the same
+     * SOURCE_DIRECTORIES + SOURCE_FILES whitelist and restores whatever
+     * the backup actually captured (entries missing from the ZIP are
+     * skipped, which matches how the backup skipped missing live
+     * entries).
+     *
+     * Manifest v3 archives store each path at its core-relative
+     * location (app/…, artisan, …); v1/v2 archives wrapped them under
+     * `core/<rel>`. resolveNamespace() / the getFromName() fallback
+     * pick whichever layout the archive actually uses, so old backups
+     * stay restorable.
      */
     private function restoreCoreSource(\ZipArchive $zip): void
     {
         foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_DIRECTORIES as $rel) {
-            $this->restoreDirectory($zip, 'core/'.$rel, base_path($rel));
+            $namespace = $this->resolveNamespace($zip, $rel, 'core/'.$rel);
+            $this->restoreDirectory($zip, $namespace, base_path($rel));
         }
 
         foreach (\App\Services\Core\CoreSourceSnapshot::SOURCE_FILES as $rel) {
-            $contents = $zip->getFromName('core/'.$rel);
+            $contents = $zip->getFromName($rel);
+            if ($contents === false) {
+                $contents = $zip->getFromName('core/'.$rel);
+            }
             if ($contents === false) {
                 continue;
             }
