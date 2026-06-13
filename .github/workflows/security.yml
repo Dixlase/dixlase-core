@@ -87,8 +87,14 @@ jobs:
           path: npm-audit.json
           retention-days: 30
 
-      - name: NPM Audit (gate build on high severity)
-        run: npm audit --audit-level=high
+      # Gate only on production-dependency vulnerabilities. dev-only
+      # advisories (e.g. esbuild dev-server CVEs surfaced via vite) are
+      # still recorded in the capture step's artifact for visibility but
+      # do not block the build, because the production assets emitted by
+      # `vite build` do not embed esbuild and never expose the dev server.
+      # Real prod-dep regressions still fail the build immediately.
+      - name: NPM Audit (gate build on high severity, prod deps only)
+        run: npm audit --audit-level=high --omit=dev
 
   # ============================================
   # PHPStan Static Analysis
