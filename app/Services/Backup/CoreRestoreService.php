@@ -30,7 +30,10 @@ use App\Events\DixlaseEvents;
 use App\Facades\Audit;
 use App\Models\AuditLog;
 use App\Models\BackupRecord;
+use App\Models\Plugin;
 use App\Models\RestoreRecord;
+use App\Models\Theme;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -150,6 +153,10 @@ class CoreRestoreService implements RestoreServiceInterface
 
             if (in_array(BackupServiceInterface::TARGET_DATABASE, $targets, true)) {
                 $this->reinsertBookkeepingRows($bookkeepingBackupRows, $bookkeepingRestoreRows);
+            }
+
+            if (in_array(BackupServiceInterface::TARGET_CORE_SOURCE, $targets, true)) {
+                $this->relinkPublicAssets();
             }
 
             $duration = microtime(true) - $startTime;
@@ -304,6 +311,34 @@ class CoreRestoreService implements RestoreServiceInterface
 
         if ($restoreRows !== []) {
             RestoreRecord::query()->getQuery()->upsert($restoreRows, ['id']);
+        }
+    }
+
+    /**
+     * Recreate infrastructure symlinks after a core source restore.
+     *
+     * Backup archives cannot represent symlinks, so restoring
+     * core_source rebuilds public/ without the per-extension asset
+     * links under public/assets/themes and public/assets/plugins
+     * (and without public/storage if it was ever lost). Every theme
+     * and plugin asset then 404s and the front page renders
+     * unstyled, so regenerate the links the same way the installer
+     * does. The symlink commands are idempotent (no-op when the
+     * link already exists).
+     */
+    private function relinkPublicAssets(): void
+    {
+        $storageLink = public_path('storage');
+        if (! is_link($storageLink) && ! file_exists($storageLink)) {
+            Artisan::call('storage:link');
+        }
+
+        foreach (Theme::query()->whereNotNull('directory')->pluck('directory') as $directory) {
+            Artisan::call('dls:theme:symlink', ['action' => 'create', 'theme' => $directory]);
+        }
+
+        foreach (Plugin::query()->whereNotNull('directory')->pluck('directory') as $directory) {
+            Artisan::call('dls:plugin:symlink', ['action' => 'create', 'plugin' => $directory]);
         }
     }
 
