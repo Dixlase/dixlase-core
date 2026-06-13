@@ -49,6 +49,13 @@ class AdminSystemBackupController extends AdminLoggedInController
      */
     private const SETTING_DEFAULT_RETENTION_DAYS = 'backup.default_retention_days';
 
+    /**
+     * Settings keys: source-tree exclusion flags ('1'/'0', default excluded)
+     */
+    private const SETTING_EXCLUDE_NODE_MODULES = 'backup.exclude_node_modules';
+
+    private const SETTING_EXCLUDE_VENDOR = 'backup.exclude_vendor';
+
     public function __construct(
         protected BackupServiceInterface $backupService,
         protected RestoreServiceInterface $restoreService,
@@ -99,6 +106,8 @@ class AdminSystemBackupController extends AdminLoggedInController
         $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
         $this->viewParams['defaultTargets'] = $this->resolveDefaultTargets();
         $this->viewParams['defaultRetentionDays'] = $this->resolveDefaultRetentionDays();
+        $this->viewParams['excludeNodeModules'] = $this->resolveExclusionFlag(self::SETTING_EXCLUDE_NODE_MODULES);
+        $this->viewParams['excludeVendor'] = $this->resolveExclusionFlag(self::SETTING_EXCLUDE_VENDOR);
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.settings');
 
         return view('admin::settings.systems.backup.settings', $this->viewParams);
@@ -119,9 +128,23 @@ class AdminSystemBackupController extends AdminLoggedInController
             $retentionDays === null ? '' : (string) $retentionDays,
         );
 
+        // Unchecked toggles are absent from the request entirely
+        SiteSetting::setValue(self::SETTING_EXCLUDE_NODE_MODULES, $request->boolean('exclude_node_modules') ? '1' : '0');
+        SiteSetting::setValue(self::SETTING_EXCLUDE_VENDOR, $request->boolean('exclude_vendor') ? '1' : '0');
+
         return redirect()
             ->route('admin.settings.systems.backup.settings')
             ->with('success', __('admin/settings/systems/backup/settings.flash.update_success'));
+    }
+
+    /**
+     * Get a source-tree exclusion flag (excluded by default when unset)
+     */
+    private function resolveExclusionFlag(string $settingKey): bool
+    {
+        $stored = SiteSetting::getValue($settingKey);
+
+        return ! is_string($stored) || $stored === '' || $stored === '1';
     }
 
     /**

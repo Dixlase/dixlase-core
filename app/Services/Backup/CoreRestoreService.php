@@ -50,6 +50,19 @@ class CoreRestoreService implements RestoreServiceInterface
         '.backup-tmp',
     ];
 
+    /**
+     * Directory names always preserved at any depth when restoring the
+     * plugins/themes source-tree targets, regardless of what the
+     * archive contains. Restoring a stale .git over a live checkout
+     * corrupts the repository, so .git is never cleared nor extracted
+     * — even from archives created before the backup-side exclusion
+     * existed. The rest of the preserve set is read per-archive from
+     * manifest.json (`excluded_dir_names`): only what the backup
+     * actually skipped is protected, so an archive that does contain
+     * e.g. vendor/ restores it faithfully.
+     */
+    private const FORCED_SOURCE_TREE_PRESERVES = ['.git'];
+
     public function __construct(
         private FileVerificationServiceInterface $verifier,
         private BackupServiceInterface $backupService,
@@ -129,8 +142,10 @@ class CoreRestoreService implements RestoreServiceInterface
             ->get()->map(fn (RestoreRecord $row) => $row->getAttributes())->all();
 
         try {
+            $sourceTreePreserves = $this->archivePreservedDirNames($zip);
+
             foreach ($targets as $target) {
-                $this->restoreTarget($zip, $target);
+                $this->restoreTarget($zip, $target, $sourceTreePreserves);
             }
 
             if (in_array(BackupServiceInterface::TARGET_DATABASE, $targets, true)) {
@@ -294,8 +309,10 @@ class CoreRestoreService implements RestoreServiceInterface
 
     /**
      * Restore specified targets
+     *
+     * @param  string[]  $sourceTreePreserveDirNames  Directory names preserved at any depth for plugins/themes
      */
-    private function restoreTarget(\ZipArchive $zip, string $target): void
+    private function restoreTarget(\ZipArchive $zip, string $target, array $sourceTreePreserveDirNames = []): void
     {
         match ($target) {
             BackupServiceInterface::TARGET_DATABASE => $this->restoreDatabase($zip),
@@ -317,8 +334,18 @@ class CoreRestoreService implements RestoreServiceInterface
                 storage_path('logs'),
             ),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->restoreCoreSource($zip),
-            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->restoreDirectory($zip, 'plugins', base_path('plugins')),
-            BackupServiceInterface::TARGET_THEMES_ALL => $this->restoreDirectory($zip, 'themes', base_path('themes')),
+            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->restoreDirectory(
+                $zip,
+                'plugins',
+                base_path('plugins'),
+                preserveDirNames: $sourceTreePreserveDirNames,
+            ),
+            BackupServiceInterface::TARGET_THEMES_ALL => $this->restoreDirectory(
+                $zip,
+                'themes',
+                base_path('themes'),
+                preserveDirNames: $sourceTreePreserveDirNames,
+            ),
             default => throw new \InvalidArgumentException("Unknown restore target: {$target}"),
         };
     }
@@ -343,6 +370,34 @@ class CoreRestoreService implements RestoreServiceInterface
         }
 
         return $legacyNamespace;
+    }
+
+    /**
+     * Directory names to preserve when restoring plugins/themes:
+     * always .git, plus whatever the archive's manifest says was
+     * excluded at backup time. Only names absent from the archive are
+     * preserved — names the backup did capture are cleared and
+     * re-extracted so the restored tree stays internally consistent
+     * (e.g. a vendor/ included in the backup is restored at the exact
+     * version matching the restored source).
+     *
+     * @return string[]
+     */
+    private function archivePreservedDirNames(\ZipArchive $zip): array
+    {
+        $names = self::FORCED_SOURCE_TREE_PRESERVES;
+
+        $manifest = $zip->getFromName('manifest.json');
+        if ($manifest !== false) {
+            $decoded = json_decode($manifest, true);
+            foreach ((array) ($decoded['excluded_dir_names'] ?? []) as $name) {
+                if (is_string($name) && $name !== '') {
+                    $names[] = $name;
+                }
+            }
+        }
+
+        return array_values(array_unique($names));
     }
 
     /**
@@ -425,15 +480,21 @@ class CoreRestoreService implements RestoreServiceInterface
      * Restore directory (clear existing contents then extract from ZIP)
      *
      * @param  string[]  $preserveDirs  Subdirectories to protect from clearing
+     * @param  string[]  $preserveDirNames  Directory names to protect at any depth
      */
-    private function restoreDirectory(\ZipArchive $zip, string $namespace, string $destDir, array $preserveDirs = []): void
-    {
+    private function restoreDirectory(
+        \ZipArchive $zip,
+        string $namespace,
+        string $destDir,
+        array $preserveDirs = [],
+        array $preserveDirNames = [],
+    ): void {
         if (! is_dir($destDir)) {
             mkdir($destDir, 0755, true);
         }
 
-        // Clear existing contents (except preserveDirs)
-        $this->clearDirectory($destDir, $preserveDirs);
+        // Clear existing contents (except preserveDirs / preserveDirNames)
+        $this->clearDirectory($destDir, $preserveDirs, $preserveDirNames);
 
         // Extract entries for the corresponding namespace from ZIP
         $prefix = $namespace.'/';
@@ -447,6 +508,14 @@ class CoreRestoreService implements RestoreServiceInterface
 
             $relativePath = substr($entryName, strlen($prefix));
             if ($relativePath === '') {
+                continue;
+            }
+
+            // Never extract into preserved directories: archives created
+            // before the backup-side exclusion still contain entries such
+            // as plugins/<Name>/.git/..., and writing those stale copies
+            // over a live checkout would corrupt it.
+            if ($this->pathContainsDirName($relativePath, $preserveDirNames)) {
                 continue;
             }
 
@@ -489,8 +558,9 @@ class CoreRestoreService implements RestoreServiceInterface
      * content, so the safe move is to skip them entirely.
      *
      * @param  string[]  $preserveDirs
+     * @param  string[]  $preserveDirNames  Directory names preserved at any depth
      */
-    private function clearDirectory(string $dir, array $preserveDirs = []): void
+    private function clearDirectory(string $dir, array $preserveDirs = [], array $preserveDirNames = []): void
     {
         if (! is_dir($dir)) {
             return;
@@ -504,12 +574,12 @@ class CoreRestoreService implements RestoreServiceInterface
                 continue;
             }
             $name = $item->getFilename();
-            if ($item->isDir() && in_array($name, $preserveDirs, true)) {
+            if ($item->isDir() && (in_array($name, $preserveDirs, true) || in_array($name, $preserveDirNames, true))) {
                 continue;
             }
 
             if ($item->isDir()) {
-                $this->removeDirectory($item->getPathname());
+                $this->removeDirectory($item->getPathname(), $preserveDirNames);
             } else {
                 @unlink($item->getPathname());
             }
@@ -522,8 +592,15 @@ class CoreRestoreService implements RestoreServiceInterface
      * Symlinks are unlinked (the link itself), never recursed into:
      * isDir() follows links, so descending into a symlinked directory
      * would delete files outside the tree being removed.
+     *
+     * Directories whose name is in $preserveDirNames are skipped at
+     * any depth; the final rmdir then fails silently for every
+     * ancestor of a preserved directory, which is exactly what keeps
+     * the preserved subtree in place.
+     *
+     * @param  string[]  $preserveDirNames
      */
-    private function removeDirectory(string $dir): void
+    private function removeDirectory(string $dir, array $preserveDirNames = []): void
     {
         if (! is_dir($dir)) {
             return;
@@ -535,14 +612,48 @@ class CoreRestoreService implements RestoreServiceInterface
             }
             if ($item->isLink()) {
                 @unlink($item->getPathname());
+
                 continue;
             }
             if ($item->isDir()) {
-                $this->removeDirectory($item->getPathname());
+                if (in_array($item->getFilename(), $preserveDirNames, true)) {
+                    continue;
+                }
+                $this->removeDirectory($item->getPathname(), $preserveDirNames);
             } else {
                 @unlink($item->getPathname());
             }
         }
         @rmdir($dir);
+    }
+
+    /**
+     * Whether any directory segment of a ZIP-relative path matches one
+     * of the given names. The trailing segment of a file entry is its
+     * file name and is ignored, so a regular file that happens to be
+     * named e.g. "vendor" is not mistaken for a preserved directory.
+     *
+     * @param  string[]  $dirNames
+     */
+    private function pathContainsDirName(string $relativePath, array $dirNames): bool
+    {
+        if ($dirNames === []) {
+            return false;
+        }
+
+        $segments = explode('/', rtrim($relativePath, '/'));
+
+        // Keep the trailing segment only for directory entries
+        if (! str_ends_with($relativePath, '/')) {
+            array_pop($segments);
+        }
+
+        foreach ($segments as $segment) {
+            if (in_array($segment, $dirNames, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

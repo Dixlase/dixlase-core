@@ -69,6 +69,28 @@ class CoreBackupService implements BackupServiceInterface
     ];
 
     /**
+     * Directory names always excluded at any depth from the
+     * plugins/themes source-tree targets. VCS history must never be
+     * captured: restoring a stale .git over a live checkout corrupts
+     * the repository, so this is not operator-configurable.
+     */
+    private const FORCED_SOURCE_TREE_EXCLUDES = ['.git'];
+
+    /**
+     * Operator-configurable source-tree exclusions, keyed by the
+     * setting that controls them. Unconfigured ('' / null) means
+     * excluded — these are developer artifacts that bloat archives
+     * (~90% of the file count under plugins/), so including them in a
+     * backup is the explicit opt-in. The names actually excluded are
+     * recorded in manifest.json (`excluded_dir_names`) so the restore
+     * side preserves exactly what the archive does not contain.
+     */
+    private const OPTIONAL_SOURCE_TREE_EXCLUDES = [
+        'backup.exclude_node_modules' => 'node_modules',
+        'backup.exclude_vendor' => 'vendor',
+    ];
+
+    /**
      * Number of rows per batch for INSERT statements
      */
     private const DUMP_BATCH_SIZE = 100;
@@ -276,8 +298,10 @@ class CoreBackupService implements BackupServiceInterface
         }
 
         try {
+            $sourceTreeExcludes = $this->resolveSourceTreeExcludeDirNames();
+
             foreach ($targets as $target) {
-                $this->addTargetToZip($zip, $target, $tempDir);
+                $this->addTargetToZip($zip, $target, $tempDir, $sourceTreeExcludes);
             }
 
             // version 2: directory targets are stored under their
@@ -289,6 +313,10 @@ class CoreBackupService implements BackupServiceInterface
                 'php_version' => PHP_VERSION,
                 'created_at' => now()->toIso8601String(),
                 'targets' => $targets,
+                // Directory names excluded at any depth from the
+                // plugins/themes targets — the restore side preserves
+                // these on disk because the archive cannot rebuild them.
+                'excluded_dir_names' => $sourceTreeExcludes,
             ];
             $zip->addFromString('manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         } finally {
@@ -303,8 +331,10 @@ class CoreBackupService implements BackupServiceInterface
      * occupy in a live installation (e.g. storage/app/public, not a
      * flat media/ folder), so an extracted archive mirrors the core
      * directory layout. CoreRestoreService relies on these prefixes.
+     *
+     * @param  string[]  $sourceTreeExcludeDirNames  Directory names excluded at any depth from plugins/themes
      */
-    private function addTargetToZip(\ZipArchive $zip, string $target, string $tempDir): void
+    private function addTargetToZip(\ZipArchive $zip, string $target, string $tempDir, array $sourceTreeExcludeDirNames = []): void
     {
         match ($target) {
             BackupServiceInterface::TARGET_DATABASE => $this->addDatabaseToZip($zip, $tempDir),
@@ -318,10 +348,41 @@ class CoreBackupService implements BackupServiceInterface
             BackupServiceInterface::TARGET_CUSTOM => $this->addDirectoryToZip($zip, base_path('custom'), 'custom'),
             BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'storage/logs'),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->addCoreSourceToZip($zip),
-            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip($zip, base_path('plugins'), 'plugins'),
-            BackupServiceInterface::TARGET_THEMES_ALL => $this->addDirectoryToZip($zip, base_path('themes'), 'themes'),
+            BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip(
+                $zip,
+                base_path('plugins'),
+                'plugins',
+                excludeDirNames: $sourceTreeExcludeDirNames,
+            ),
+            BackupServiceInterface::TARGET_THEMES_ALL => $this->addDirectoryToZip(
+                $zip,
+                base_path('themes'),
+                'themes',
+                excludeDirNames: $sourceTreeExcludeDirNames,
+            ),
             default => throw new \InvalidArgumentException("Unknown backup target: {$target}"),
         };
+    }
+
+    /**
+     * Resolve the directory names to exclude from the plugins/themes
+     * targets: the forced set plus every optional exclusion whose
+     * setting is enabled or not yet configured (excluded by default).
+     *
+     * @return string[]
+     */
+    private function resolveSourceTreeExcludeDirNames(): array
+    {
+        $names = self::FORCED_SOURCE_TREE_EXCLUDES;
+
+        foreach (self::OPTIONAL_SOURCE_TREE_EXCLUDES as $settingKey => $dirName) {
+            $stored = \App\Models\SiteSetting::getValue($settingKey);
+            if (! is_string($stored) || $stored === '' || $stored === '1') {
+                $names[] = $dirName;
+            }
+        }
+
+        return array_values($names);
     }
 
     /**
@@ -593,9 +654,15 @@ class CoreBackupService implements BackupServiceInterface
      * Add directory to ZIP
      *
      * @param  string[]  $excludeDirs  Directory names to exclude directly under source
+     * @param  string[]  $excludeDirNames  Directory names to exclude at any depth
      */
-    private function addDirectoryToZip(\ZipArchive $zip, string $sourceDir, string $namespace, array $excludeDirs = []): void
-    {
+    private function addDirectoryToZip(
+        \ZipArchive $zip,
+        string $sourceDir,
+        string $namespace,
+        array $excludeDirs = [],
+        array $excludeDirNames = [],
+    ): void {
         if (! is_dir($sourceDir)) {
             return;
         }
@@ -606,9 +673,14 @@ class CoreBackupService implements BackupServiceInterface
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveCallbackFilterIterator(
                 new \RecursiveDirectoryIterator($sourceDir, \RecursiveDirectoryIterator::SKIP_DOTS),
-                function ($current, $key, $iterator) use ($sourceDir, $excludeDirs) {
-                    // Exclude directories directly under that match excludeDirs
+                function ($current, $key, $iterator) use ($sourceDir, $excludeDirs, $excludeDirNames) {
                     if ($current->isDir()) {
+                        // Exclude matching directory names at any depth
+                        if (in_array($current->getFilename(), $excludeDirNames, true)) {
+                            return false;
+                        }
+
+                        // Exclude directories directly under source that match excludeDirs
                         $relativePath = substr($current->getPathname(), strlen($sourceDir) + 1);
                         $topLevelName = explode(DIRECTORY_SEPARATOR, $relativePath)[0] ?? '';
                         if (in_array($topLevelName, $excludeDirs, true)) {

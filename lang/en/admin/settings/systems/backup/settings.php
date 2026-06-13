@@ -19,6 +19,12 @@ return [
     'form' => [
         'default_targets_label' => 'Default Backup Targets',
         'default_targets_help' => 'Targets selected here will be pre-checked when creating a new backup. The "Logs" target is optional because logs change frequently and can grow large.',
+        'exclusions_label' => 'Exclusions (plugins/themes targets)',
+        'exclude_node_modules_label' => 'Exclude node_modules',
+        'exclude_node_modules_help' => 'Package cache used only at build time; not needed for the site to run.',
+        'exclude_vendor_label' => 'Exclude vendor',
+        'exclude_vendor_help' => 'When excluded, a restore may leave plugin/theme sources and their dependency versions out of sync. Turn this off if you want fully self-contained restores.',
+        'exclusions_help' => 'Directories excluded from a backup are also protected (neither deleted nor overwritten) when that backup is restored. .git is always excluded and protected.',
         'default_retention_label' => 'Default Retention Period (days)',
         'default_retention_help' => 'After this period, backups become eligible for cleanup via the database management page. Leave blank to keep backups indefinitely by default.',
         'save_button' => 'Save Settings',

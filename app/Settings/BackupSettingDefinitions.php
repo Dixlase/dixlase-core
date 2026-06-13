@@ -82,5 +82,26 @@ class BackupSettingDefinitions
             default: null,
             type: 'string',
         ));
+
+        // Source-tree exclusion flags for the plugins/themes targets.
+        // Stored as '1'/'0'; null (not configured) means excluded —
+        // node_modules and vendor are developer artifacts that bloat
+        // archives, so opting them INTO a backup is the explicit
+        // choice. `.git` is not a setting: it is always excluded and
+        // always preserved on restore (CoreBackupService /
+        // CoreRestoreService hardcode it).
+        $registry->register(new SettingDefinition(
+            name: 'backup.exclude_node_modules',
+            scope: SettingScope::PerSite,
+            default: null,
+            type: 'string',
+        ));
+
+        $registry->register(new SettingDefinition(
+            name: 'backup.exclude_vendor',
+            scope: SettingScope::PerSite,
+            default: null,
+            type: 'string',
+        ));
     }
 }
