@@ -418,6 +418,23 @@ class ExtensionSourceManager
         $plugins = Plugin::query()->installed()->get();
 
         foreach ($plugins as $plugin) {
+            // Only extensions linked to a source are updatable. A
+            // bundled/unlinked plugin (source_id NULL) cannot be
+            // updated — dls:plugin:update refuses without a linked
+            // source — so do not advertise an update for it, and clear
+            // any stale flag a prior check may have left. Resolving a
+            // release from an arbitrary enabled source here would
+            // surface an "update available" the operator cannot act on.
+            if ($plugin->source_id === null) {
+                $plugin->update([
+                    'available_version' => null,
+                    'release_notes' => null,
+                    'last_version_check' => now(),
+                ]);
+
+                continue;
+            }
+
             $release = $this->getLatestReleaseForExtension($plugin->slug, 'plugin', $plugin->source_id);
             if ($release && version_compare($release->version, $plugin->version, '>')) {
                 $plugin->update([
@@ -450,6 +467,23 @@ class ExtensionSourceManager
         $themes = Theme::query()->installed()->get();
 
         foreach ($themes as $theme) {
+            // Only extensions linked to a source are updatable. A
+            // bundled/unlinked theme (source_id NULL) cannot be updated
+            // — dls:theme:update refuses without a linked source — so do
+            // not advertise an update for it, and clear any stale flag a
+            // prior check may have left. Resolving a release from an
+            // arbitrary enabled source here would surface an "update
+            // available" the operator cannot act on.
+            if ($theme->source_id === null) {
+                $theme->update([
+                    'available_version' => null,
+                    'release_notes' => null,
+                    'last_version_check' => now(),
+                ]);
+
+                continue;
+            }
+
             $release = $this->getLatestReleaseForExtension($theme->slug, 'theme', $theme->source_id);
             if ($release && version_compare($release->version, $theme->version, '>')) {
                 $theme->update([
@@ -472,32 +506,23 @@ class ExtensionSourceManager
     }
 
     /**
-     * Get the latest release for an extension from a specific source or all sources
+     * Get the latest release for an extension from its linked source.
+     *
+     * An extension is only updatable through the source it is linked
+     * to (source_id): dls:plugin:update / dls:theme:update both refuse
+     * to update an extension without a linked source. Resolving across
+     * every enabled source here would advertise "update available" for
+     * a bundled/unlinked extension the operator cannot then update, so
+     * release lookup is deliberately scoped to the one linked source.
      */
-    protected function getLatestReleaseForExtension(string $slug, string $extensionType, ?int $sourceId = null): ?ReleaseInfo
+    protected function getLatestReleaseForExtension(string $slug, string $extensionType, int $sourceId): ?ReleaseInfo
     {
-        if ($sourceId !== null) {
-            $source = ExtensionSource::query()->find($sourceId);
-            if ($source && $source->is_enabled) {
-                try {
-                    return $this->makeProvider($source)->getLatestRelease($slug, $extensionType);
-                } catch (\Throwable) {
-                    return null;
-                }
-            }
-
-            return null;
-        }
-
-        // Try all enabled sources in priority order
-        foreach ($this->getEnabledSources() as $source) {
+        $source = ExtensionSource::query()->find($sourceId);
+        if ($source && $source->is_enabled) {
             try {
-                $release = $this->makeProvider($source)->getLatestRelease($slug, $extensionType);
-                if ($release !== null) {
-                    return $release;
-                }
+                return $this->makeProvider($source)->getLatestRelease($slug, $extensionType);
             } catch (\Throwable) {
-                continue;
+                return null;
             }
         }
 
