@@ -41,7 +41,15 @@ curl -sS https://install.dixlase.net | php
 
 The script checks PHP version and required extensions, downloads the latest release, runs `composer install`, generates an application key, sets directory permissions, and prints the URL to the Web-based installation wizard.
 
-### Manual install (ZIP + Composer)
+### Composer create-project
+
+For Composer-friendly environments, scaffold a new install in one command:
+
+```bash
+composer create-project dixlase/dixlase-core dixlase
+```
+
+### Manual install (ZIP)
 
 Download the latest release ZIP from [GitHub Releases](https://github.com/Dixlase/dixlase-core/releases), then:
 
@@ -111,8 +119,7 @@ GitHub releases ship the canonical English source only; users (and the [Dixlase 
 
 ### Official Resources
 - [Project Site — dixlase.org](https://dixlase.org/)
-- [Plugin Marketplace (Planned)](https://market.dixlase.com)
-- [Developer Docs (WIP)](https://docs.dixlase.com)
+- Developer Docs (WIP)
 
 ### Development Guides
 - [Composer Local Setup](docs/composer-local-setup.md) - Managing custom plugins and packages
@@ -157,7 +164,7 @@ with the full PR-based contribution guide.
 Dixlase CMS is distributed under a **dual license**:
 
 - **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception (see [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS)).
-- **Commercial License**: For use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS), a separate commercial license is available — see [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL) (currently a draft) or contact **info@dixlase.org**.
+- **Commercial License**: A separate commercial license is planned for use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS). **It is not yet available** — only a draft of the eventual terms is present in [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL). For availability timing or other questions, contact **info@dixlase.org**.
 
 A short overview of how these files fit together is in [NOTICE](./NOTICE) ([日本語](./NOTICE.ja)).
 
