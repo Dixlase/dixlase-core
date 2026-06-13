@@ -323,16 +323,24 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 ->with('error', __('admin/settings/systems/updates.core.exec_disabled'));
         }
 
-        // Pre-update source backup (opt-in via the confirm modal). The
-        // DB backup that CoreUpdater::update() captures inside the
-        // detached subprocess covers the data side; this is the file
-        // side — a TARGET_CORE_SOURCE archive of the same whitelist
-        // CoreSourceSnapshot uses, persisted as a regular backup
-        // record so the operator can restore from it via the backup
-        // page even after the rollback snapshot has been discarded.
+        // Pre-update backup (opt-in via the confirm modal). A core
+        // update rewrites the source tree AND runs migrations, so the
+        // only way to return to the pre-update state is to restore
+        // both halves together — restoring source over a migrated
+        // schema (or vice versa) leaves the install inconsistent.
+        // Capture TARGET_CORE_SOURCE + TARGET_DATABASE as one record
+        // so a single restore rolls the whole update back, matching
+        // the plugin/theme apply path. (CoreUpdater::update() also
+        // takes its own DB-only snapshot inside the detached
+        // subprocess as a last-resort guard right before `migrate`;
+        // that one is best-effort and separate from this operator
+        // -requested, source-inclusive backup.)
         if ($request->input('backup_first') === '1') {
             $backupResult = $backupService->backup(
-                [BackupServiceInterface::TARGET_CORE_SOURCE],
+                [
+                    BackupServiceInterface::TARGET_CORE_SOURCE,
+                    BackupServiceInterface::TARGET_DATABASE,
+                ],
                 ['reason' => "pre-core-update backup v{$current} -> v{$state->available_version}"],
             );
             if (! $backupResult->success) {
