@@ -91,6 +91,16 @@ use Illuminate\Support\Facades\DB;
  * migrations.
  *
  * Default is a dry-run preview; pass --confirm to apply.
+ *
+ * **--prune** opts in to deleting the "skipped" rows whose migration
+ * file no longer exists on disk. Without this flag, skipped rows are
+ * preserved (the safe default — orphaned ledger entries are usually
+ * historical state worth keeping). With it, the same rows are reported
+ * as delete candidates and, under --confirm, removed within the same
+ * transaction as the realign UPDATEs. The DELETE is keyed on the
+ * row's primary key (with the scope's filter re-applied as belt-and-
+ * suspenders) so a future row whose name happens to collide with a
+ * pruned one cannot be removed by accident.
  */
 class MigrationResync extends Command
 {
@@ -111,6 +121,7 @@ class MigrationResync extends Command
      */
     protected $signature = 'dls:migration:resync
                             {--confirm : Apply the changes (default is a dry-run preview)}
+                            {--prune : Also delete "skipped" rows whose migration file is gone from disk (default is to leave them untouched)}
                             {--json : Output the result as JSON}
                             {--base-path= : Override the scan base path (testing only; production must not set this)}';
 
@@ -124,10 +135,14 @@ class MigrationResync extends Command
     public function handle(): int
     {
         $scopes = $this->collectScopeResults();
+        $prune  = (bool) $this->option('prune');
 
         $totalChanges = array_sum(array_map(fn (array $s) => count($s['changes']), $scopes));
+        $totalPrunes  = $prune
+            ? array_sum(array_map(fn (array $s) => count($s['skipped']), $scopes))
+            : 0;
 
-        if ($totalChanges === 0) {
+        if ($totalChanges === 0 && $totalPrunes === 0) {
             return $this->report($scopes, 'clean');
         }
 
@@ -135,7 +150,7 @@ class MigrationResync extends Command
             return $this->report($scopes, 'dry_run');
         }
 
-        DB::transaction(function () use ($scopes): void {
+        DB::transaction(function () use ($scopes, $prune): void {
             foreach ($scopes as $scope) {
                 foreach ($scope['changes'] as $change) {
                     $query = DB::table($scope['table'])->where('id', $change['id']);
@@ -145,6 +160,25 @@ class MigrationResync extends Command
                     }
 
                     $query->update(['migration' => $change['to']]);
+                }
+
+                if (! $prune) {
+                    continue;
+                }
+
+                // Delete by id (carried in the skipped entry) so a
+                // future row whose name collides with a deleted name
+                // cannot be removed by accident; the filter column is
+                // re-applied for the same belt-and-suspenders reason
+                // the rename branch above uses it.
+                foreach ($scope['skipped'] as $row) {
+                    $query = DB::table($scope['table'])->where('id', $row['id']);
+
+                    if ($scope['filter_column'] !== null) {
+                        $query->where($scope['filter_column'], $scope['filter_value']);
+                    }
+
+                    $query->delete();
                 }
             }
         });
@@ -157,6 +191,10 @@ class MigrationResync extends Command
      * a uniform shape regardless of whether it represents core,
      * a single plugin, or a single theme.
      *
+     * Skipped rows carry their id alongside the migration name so
+     * `--prune` can DELETE by primary key (safer than DELETE-by-name
+     * in the presence of historical name reuse).
+     *
      * @return list<array{
      *     scope: string,
      *     table: string,
@@ -164,7 +202,7 @@ class MigrationResync extends Command
      *     filter_value: ?string,
      *     present: bool,
      *     changes: list<array{id:int, suffix:string, from:string, to:string}>,
-     *     skipped: list<string>,
+     *     skipped: list<array{id:int, migration:string}>,
      *     pending: list<string>,
      *     collisions: array<string, list<string>>,
      * }>
@@ -220,7 +258,7 @@ class MigrationResync extends Command
      *     filter_value: ?string,
      *     present: bool,
      *     changes: list<array{id:int, suffix:string, from:string, to:string}>,
-     *     skipped: list<string>,
+     *     skipped: list<array{id:int, migration:string}>,
      *     pending: list<string>,
      *     collisions: array<string, list<string>>,
      * }
@@ -272,7 +310,7 @@ class MigrationResync extends Command
                 // No matching current file in this scope's directory
                 // (orphaned record from a deleted file, or a suffix
                 // dropped because of a within-scope collision).
-                $base['skipped'][] = $row->migration;
+                $base['skipped'][] = ['id' => (int) $row->id, 'migration' => $row->migration];
 
                 continue;
             }
@@ -286,7 +324,7 @@ class MigrationResync extends Command
             if (in_array($newName, $existingNames, true)) {
                 // The target name is already recorded — refuse to create
                 // a duplicate. Should not happen in a clean re-sort.
-                $base['skipped'][] = $row->migration;
+                $base['skipped'][] = ['id' => (int) $row->id, 'migration' => $row->migration];
 
                 continue;
             }
@@ -481,7 +519,7 @@ class MigrationResync extends Command
      *     filter_value: ?string,
      *     present: bool,
      *     changes: list<array{id:int, suffix:string, from:string, to:string}>,
-     *     skipped: list<string>,
+     *     skipped: list<array{id:int, migration:string}>,
      *     pending: list<string>,
      *     collisions: array<string, list<string>>,
      * }>  $scopes
@@ -489,19 +527,29 @@ class MigrationResync extends Command
     protected function report(array $scopes, string $status): int
     {
         $totalChanges = array_sum(array_map(fn (array $s) => count($s['changes']), $scopes));
+        $prune        = (bool) $this->option('prune');
+        $totalPrunes  = $prune
+            ? array_sum(array_map(fn (array $s) => count($s['skipped']), $scopes))
+            : 0;
 
         if ($this->option('json')) {
             $this->line(json_encode([
                 'action' => 'resync',
                 'status' => $status,
+                'prune' => $prune,
                 'total_changes' => $totalChanges,
+                'total_prunes' => $totalPrunes,
                 'scopes' => array_map(fn (array $s) => [
                     'scope' => $s['scope'],
                     'table' => $s['table'],
                     'present' => $s['present'],
                     'changes' => array_map(fn (array $c) => ['from' => $c['from'], 'to' => $c['to']], $s['changes']),
                     'change_count' => count($s['changes']),
-                    'skipped' => $s['skipped'],
+                    // Preserve the historical `skipped: list<string>` shape
+                    // for JSON consumers — the id is an implementation
+                    // detail of --prune, not part of the public contract.
+                    'skipped' => array_map(fn (array $r) => $r['migration'], $s['skipped']),
+                    'skipped_count' => count($s['skipped']),
                     'pending' => $s['pending'],
                     'collisions' => $s['collisions'],
                 ], $scopes),
@@ -526,11 +574,7 @@ class MigrationResync extends Command
             return Command::SUCCESS;
         }
 
-        $this->line(sprintf(
-            '%s %d migration record(s) to realign across all scopes:',
-            $status === 'applied' ? '<fg=green>Updated</>' : '<fg=yellow>[DRY-RUN]</> Would update',
-            $totalChanges,
-        ));
+        $this->line($this->buildHeadline($status, $totalChanges, $totalPrunes, $prune));
         $this->newLine();
 
         foreach ($scopes as $scope) {
@@ -548,9 +592,9 @@ class MigrationResync extends Command
             }
 
             if (! empty($scope['skipped'])) {
-                $this->line(sprintf('  <fg=gray>Skipped %d record(s) with no matching file (left untouched):</>', count($scope['skipped'])));
-                foreach ($scope['skipped'] as $name) {
-                    $this->line('    <fg=gray>·</> '.$name);
+                $this->line($this->buildSkippedSectionHeader(count($scope['skipped']), $status, $prune));
+                foreach ($scope['skipped'] as $row) {
+                    $this->line('    <fg=gray>·</> '.$row['migration']);
                 }
             }
 
@@ -561,12 +605,66 @@ class MigrationResync extends Command
         }
 
         if ($status === 'dry_run') {
-            $this->warn('Dry-run only. Re-run with --confirm to apply, then run `php artisan migrate` (and any extension install/update commands) to apply genuinely-new migrations.');
+            $hint = $prune
+                ? 'Dry-run only. Re-run with --prune --confirm to apply the prunes (and any renames), then run `php artisan migrate` (and any extension install/update commands) to apply genuinely-new migrations.'
+                : 'Dry-run only. Re-run with --confirm to apply, then run `php artisan migrate` (and any extension install/update commands) to apply genuinely-new migrations.';
+            $this->warn($hint);
         } else {
             $this->info('Done. Now run `php artisan migrate` and re-run extension install/update commands to apply genuinely-new migrations.');
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Build the top-of-report headline. Renders the action verb (Updated
+     * / Would update / Pruned / Would prune) plus, when --prune is on,
+     * a "+ N pruned" tail so the operator sees both counts in one line.
+     */
+    protected function buildHeadline(string $status, int $totalChanges, int $totalPrunes, bool $prune): string
+    {
+        $isApplied = $status === 'applied';
+
+        if ($totalChanges > 0 && (! $prune || $totalPrunes === 0)) {
+            return sprintf(
+                '%s %d migration record(s) to realign across all scopes:',
+                $isApplied ? '<fg=green>Updated</>' : '<fg=yellow>[DRY-RUN]</> Would update',
+                $totalChanges,
+            );
+        }
+
+        if ($totalChanges === 0 && $prune && $totalPrunes > 0) {
+            return sprintf(
+                '%s %d orphan ledger row(s) across all scopes:',
+                $isApplied ? '<fg=green>Pruned</>' : '<fg=yellow>[DRY-RUN]</> Would prune',
+                $totalPrunes,
+            );
+        }
+
+        return sprintf(
+            '%s %d migration record(s) and %s %d orphan ledger row(s) across all scopes:',
+            $isApplied ? '<fg=green>Updated</>' : '<fg=yellow>[DRY-RUN]</> Would update',
+            $totalChanges,
+            $isApplied ? '<fg=green>pruned</>' : 'would prune',
+            $totalPrunes,
+        );
+    }
+
+    /**
+     * Format the per-scope header for the "skipped" section. The header
+     * changes wording depending on whether the operator opted in to
+     * --prune (default leaves the rows in place; --prune treats them
+     * as delete candidates).
+     */
+    protected function buildSkippedSectionHeader(int $count, string $status, bool $prune): string
+    {
+        if (! $prune) {
+            return sprintf('  <fg=gray>Skipped %d record(s) with no matching file (left untouched):</>', $count);
+        }
+
+        $verb = $status === 'applied' ? '<fg=red>Pruned</>' : '<fg=yellow>Would prune</>';
+
+        return sprintf('  %s %d record(s) with no matching file:', $verb, $count);
     }
 
     /**
