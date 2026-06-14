@@ -152,7 +152,7 @@ class MigrationResyncTest extends TestCase
             ->exists();
     }
 
-    protected function runResync(bool $confirm = false, bool $json = false): int
+    protected function runResync(bool $confirm = false, bool $json = false, bool $prune = false): int
     {
         $params = ['--base-path' => $this->fixtureBasePath];
         if ($confirm) {
@@ -160,6 +160,9 @@ class MigrationResyncTest extends TestCase
         }
         if ($json) {
             $params['--json'] = true;
+        }
+        if ($prune) {
+            $params['--prune'] = true;
         }
 
         return Artisan::call('dls:migration:resync', $params);
@@ -425,6 +428,106 @@ class MigrationResyncTest extends TestCase
         $this->assertContains(
             '0001_01_01_000001_create_brand_new_plugin_table',
             $pluginScope['pending'],
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // --prune
+    // ------------------------------------------------------------------
+
+    public function test_prune_deletes_skipped_core_row_on_confirm(): void
+    {
+        // An orphaned core ledger row whose file is gone. Default
+        // behavior leaves it (covered by
+        // test_orphan_ledger_row_is_skipped_not_dropped). --prune
+        // promotes it to a delete candidate.
+        $this->seedCoreLedger('0001_01_01_000099_create_uninstalled_plugin_table');
+
+        $this->runResync(confirm: true, prune: true);
+
+        $this->assertFalse($this->coreContains('0001_01_01_000099_create_uninstalled_plugin_table'));
+    }
+
+    public function test_prune_dry_run_does_not_delete(): void
+    {
+        // --prune without --confirm previews the delete but does not
+        // execute it — mirrors the rename branch's dry-run semantics.
+        $this->seedCoreLedger('0001_01_01_000099_create_uninstalled_plugin_table');
+
+        $this->runResync(confirm: false, prune: true);
+
+        $this->assertTrue($this->coreContains('0001_01_01_000099_create_uninstalled_plugin_table'));
+    }
+
+    public function test_prune_respects_plugin_scope_filter(): void
+    {
+        // Two plugins each record the same migration name. PluginA has
+        // no matching file → orphan → prune candidate. PluginB has the
+        // file → not skipped, not pruned. The DELETE must be confined
+        // to PluginA's row even though the migration column value is
+        // identical across both rows.
+        $this->writePluginManifest('plugins/PluginA', 'plugin-a');
+        $this->writePluginManifest('plugins/PluginB', 'plugin-b');
+
+        $this->seedPluginLedger('plugin-a', '0001_01_01_000001_create_widget_table');
+        $this->seedPluginLedger('plugin-b', '0001_01_01_000001_create_widget_table');
+
+        // PluginA needs at least one migration file so discoverExtensions
+        // walks its directory — the file's suffix is unrelated to the
+        // orphan ledger row, so the row stays in 'skipped'.
+        $this->writeMigration('plugins/PluginA/database/migrations/0001_01_01_000002_create_unrelated_table.php');
+        // PluginB ships the file that matches its ledger row; not an orphan.
+        $this->writeMigration('plugins/PluginB/database/migrations/0001_01_01_000001_create_widget_table.php');
+
+        $this->runResync(confirm: true, prune: true);
+
+        $this->assertFalse(
+            $this->pluginContains('plugin-a', '0001_01_01_000001_create_widget_table'),
+            "PluginA's orphan row must be pruned",
+        );
+        $this->assertTrue(
+            $this->pluginContains('plugin-b', '0001_01_01_000001_create_widget_table'),
+            "PluginB's row must survive — its file is on disk",
+        );
+    }
+
+    public function test_prune_runs_alongside_renames_in_one_pass(): void
+    {
+        // Mix: one ledger row that gets realigned (file exists under
+        // the renumbered name), one orphan in the same table. Both
+        // mutations land within the same DB::transaction call.
+        $this->seedCoreLedger('0001_01_01_000050_create_signature_waivers_table');
+        $this->seedCoreLedger('0001_01_01_000099_create_uninstalled_plugin_table');
+        $this->writeMigration('database/migrations/0001_01_01_000039_create_signature_waivers_table.php');
+
+        $this->runResync(confirm: true, prune: true);
+
+        // Renamed
+        $this->assertFalse($this->coreContains('0001_01_01_000050_create_signature_waivers_table'));
+        $this->assertTrue($this->coreContains('0001_01_01_000039_create_signature_waivers_table'));
+        // Pruned
+        $this->assertFalse($this->coreContains('0001_01_01_000099_create_uninstalled_plugin_table'));
+    }
+
+    public function test_prune_json_output_reports_totals_and_preserves_skipped_shape(): void
+    {
+        // The JSON contract was `skipped: list<string>` before --prune
+        // existed; the id is an internal detail. Verify shape parity
+        // and that `total_prunes` / `prune` surface for tooling.
+        $this->seedCoreLedger('0001_01_01_000099_create_uninstalled_plugin_table');
+
+        $this->runResync(confirm: false, json: true, prune: true);
+        $json = $this->decodeJson();
+
+        $this->assertTrue($json['prune']);
+        $this->assertSame(1, $json['total_prunes']);
+
+        $coreScope = $this->findScope($json, 'core');
+        $this->assertNotNull($coreScope);
+        $this->assertSame(
+            ['0001_01_01_000099_create_uninstalled_plugin_table'],
+            $coreScope['skipped'],
+            'JSON skipped field must remain a list<string> for backward compatibility',
         );
     }
 }
