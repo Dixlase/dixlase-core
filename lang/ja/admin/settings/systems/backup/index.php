@@ -72,6 +72,15 @@ return [
         'themes_all' => 'テーマ',
     ],
 
+    // 更新／復元フローが自動取得するバックアップに付ける自動メモ。
+    // あとから手動で編集できる。
+    'auto_note' => [
+        'pre_extension_update' => 'アップデート前のバックアップ: :names',
+        'pre_core_update' => 'コアのアップデート前のバックアップ (v:current → v:available)',
+        'core_update_db' => 'コアアップデート適用前のデータベーススナップショット (v:current → v:version)',
+        'pre_restore' => 'バックアップ #:id の復元前に自動取得した安全スナップショット',
+    ],
+
     // タイプ
     'types' => [
         'full' => 'フル',
@@ -96,9 +105,31 @@ return [
 
     // アクションボタン
     'actions' => [
+        'detail' => '詳細',
         'download' => 'ダウンロード',
         'restore' => '復元',
         'delete' => '削除',
+    ],
+
+    // 詳細画面（メタデータ + 編集可能なメモ）
+    'detail' => [
+        'heading' => 'バックアップの詳細',
+        'back' => 'バックアップ一覧へ戻る',
+        'created_at' => '作成日時',
+        'status' => 'ステータス',
+        'targets' => '対象',
+        'size' => 'サイズ',
+        'file_name' => 'ファイル名',
+        'path' => '保存先パス',
+        'hash' => 'ハッシュ',
+        'retention' => '保持期限',
+        'retention_none' => '無期限で保持',
+        'duration' => '所要時間',
+        'file_missing' => 'このバックアップのアーカイブファイルはディスク上に存在しません。',
+        'note_label' => 'メモ',
+        'note_help' => 'このバックアップ用の自由記述メモです。更新時に取得したバックアップには自動でメモが入ります。ここで編集できます。',
+        'note_placeholder' => '例: トップページ編集前の手動バックアップ',
+        'note_save' => 'メモを保存',
     ],
 
     // フラッシュメッセージ
@@ -111,6 +142,7 @@ return [
         'restore_success' => '復元が完了しました（:duration 秒）。セーフティスナップショットが自動取得されています。',
         'restore_failed' => '復元に失敗しました: :error',
         'restore_unavailable' => 'このバックアップは復元できません。',
+        'note_updated' => 'バックアップのメモを更新しました。',
     ],
 
     // バリデーション

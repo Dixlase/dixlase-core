@@ -120,7 +120,10 @@ class CoreUpdater
             $log('Capturing database backup before applying core...');
             $backupResult = $this->backupService->backup(
                 [BackupServiceInterface::TARGET_DATABASE],
-                ['reason' => "core-update v{$current} -> v{$version}"],
+                ['note' => __('admin/settings/systems/backup/index.auto_note.core_update_db', [
+                    'current' => $current,
+                    'version' => $version,
+                ])],
             );
             if ($backupResult->success) {
                 $backupRecordId = $backupResult->backupRecordId;
