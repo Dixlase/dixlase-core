@@ -179,6 +179,26 @@ class CoreBackupServiceTest extends TestCase
         $this->assertTrue($record->retention_until->isFuture());
     }
 
+    public function test_backup_persists_note_option(): void
+    {
+        $result = $this->service->backup(
+            [BackupServiceInterface::TARGET_DATABASE],
+            ['note' => 'Pre-update backup before updating: Dixlase OnePage'],
+        );
+
+        $this->assertTrue($result->success);
+        $record = BackupRecord::find($result->backupRecordId);
+        $this->assertSame('Pre-update backup before updating: Dixlase OnePage', $record->note);
+    }
+
+    public function test_backup_note_defaults_to_null_when_not_provided(): void
+    {
+        $result = $this->service->backup([BackupServiceInterface::TARGET_DATABASE]);
+
+        $this->assertTrue($result->success);
+        $this->assertNull(BackupRecord::find($result->backupRecordId)->note);
+    }
+
     /**
      * カスタムディレクトリのバックアップ
      */

@@ -112,6 +112,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
                                 <div class="flex justify-end gap-3">
+                                    <a href="{{ route('admin.settings.systems.backup.show', $record) }}"
+                                       class="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
+                                       title="{{ __('admin/settings/systems/backup/index.actions.detail') }}">
+                                        <i class="fas fa-circle-info"></i>
+                                    </a>
                                     @if($record->status === 'completed')
                                         <a href="{{ route('admin.settings.systems.backup.download', $record) }}"
                                            class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
@@ -147,6 +152,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <span class="font-mono">{{ $record->file_name ?: '-' }}</span>
                                     </span>
                                 </div>
+                                @if($record->note)
+                                    <div class="mt-1 flex items-start gap-1">
+                                        <i class="fas fa-pen-to-square mt-0.5"></i>
+                                        <span>{{ \Illuminate\Support\Str::limit($record->note, 120) }}</span>
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
