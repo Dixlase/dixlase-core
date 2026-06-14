@@ -36,6 +36,7 @@
 namespace Database\Seeders;
 
 use App\Models\Theme;
+use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Database\Seeder;
 
 class ThemesTableSeeder extends Seeder
@@ -54,11 +55,21 @@ class ThemesTableSeeder extends Seeder
             // Get Japanese description (fallback: English)
             $description = $themeJson['description']['ja'] ?? $themeJson['description']['en'] ?? null;
 
+            $slug = $themeJson['slug'] ?? 'dixlase-onepage';
+
+            // Link the bundled theme to the official source so it is
+            // updatable from the start (its initial version is just the
+            // bundled one). ExtensionSourcesTableSeeder runs first, so
+            // the official source exists; officialLinkage() returns null
+            // only if it somehow does not, leaving the row unlinked.
+            $linkage = app(ExtensionSourceManager::class)
+                ->officialLinkage($slug, 'theme', $themeJson['package_name'] ?? null);
+
             Theme::create([
                 'name' => $themeJson['name'] ?? 'DixlaseOnePage',
                 'package_name' => $themeJson['package_name'] ?? null,
                 'directory' => 'DixlaseOnePage',
-                'slug' => $themeJson['slug'] ?? 'dixlase-onepage',
+                'slug' => $slug,
                 'namespace' => $themeJson['namespace'] ?? null,
                 'description' => $description,
                 'license' => $themeJson['license'] ?? null,
@@ -67,6 +78,10 @@ class ThemesTableSeeder extends Seeder
                 'url' => $themeJson['url'] ?? null,
                 'version' => $themeJson['version'] ?? '1.0.0',
                 'has_settings' => true,
+                'source_id' => $linkage['source_id'] ?? null,
+                'source_repo' => $linkage['source_repo'] ?? null,
+                'installed_from_url' => $linkage['installed_from_url'] ?? null,
+                'installation_method' => $linkage['installation_method'] ?? null,
                 'config' => [
                     'supports' => $themeJson['supports'] ?? [],
                     'customizable' => $themeJson['customizable'] ?? [],
