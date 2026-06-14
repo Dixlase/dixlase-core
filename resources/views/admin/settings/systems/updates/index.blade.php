@@ -600,7 +600,17 @@ file is governed by the AGPL terms below.
                 :dismissible="false"
                 :closeOnly="true"
             >
-                <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                {{-- Phase 1 of the two-phase progress UX: the backup
+                     runs synchronously in this request, then the update
+                     is spawned detached and the page redirects to the
+                     server-rendered "updating..." polling placeholder
+                     (phase 2). Which line shows depends on whether the
+                     operator asked for a pre-update backup. --}}
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-200 text-center">
+                    <span x-show="backupFirst">{{ __('admin/settings/systems/updates.in_progress.backup_phase') }}</span>
+                    <span x-show="!backupFirst">{{ __('admin/settings/systems/updates.in_progress.starting_phase') }}</span>
+                </p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 text-center">
                     {{ __('admin/settings/systems/updates.in_progress.description_line1') }}<br>
                     {{ __('admin/settings/systems/updates.in_progress.description_line2') }}
                 </p>
