@@ -666,6 +666,16 @@ Route::prefix($adminUrl)->name('admin.')
                     Route::delete('/{backup}', [Systems\AdminSystemBackupController::class, 'destroy'])
                         ->middleware('check.menu.edit:settings.systems.backup.index')
                         ->name('destroy');
+                    // whereNumber keeps these from shadowing the literal
+                    // /restores and /settings routes below.
+                    Route::get('/{backup}', [Systems\AdminSystemBackupController::class, 'show'])
+                        ->middleware('check.menu.access:settings.systems.backup.index')
+                        ->whereNumber('backup')
+                        ->name('show');
+                    Route::post('/{backup}/note', [Systems\AdminSystemBackupController::class, 'updateNote'])
+                        ->middleware('check.menu.edit:settings.systems.backup.index')
+                        ->whereNumber('backup')
+                        ->name('note.update');
                     Route::get('/restores', [Systems\AdminSystemBackupController::class, 'restores'])
                         ->middleware('check.menu.access:settings.systems.backup.restores')
                         ->name('restores');

@@ -32,6 +32,7 @@ use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -80,6 +81,34 @@ class AdminSystemBackupController extends AdminLoggedInController
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup');
 
         return view('admin::settings.systems.backup.index', $this->viewParams);
+    }
+
+    /**
+     * Backup detail screen (metadata + editable note)
+     */
+    public function show(BackupRecord $backup)
+    {
+        $this->viewParams['record'] = $backup;
+        $this->viewParams['fileExists'] = $backup->file_path && file_exists($backup->file_path);
+        $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup');
+
+        return view('admin::settings.systems.backup.show', $this->viewParams);
+    }
+
+    /**
+     * Update the free-form note on a backup record
+     */
+    public function updateNote(Request $request, BackupRecord $backup): RedirectResponse
+    {
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $backup->update(['note' => $validated['note'] ?? null]);
+
+        return redirect()
+            ->route('admin.settings.systems.backup.show', $backup)
+            ->with('success', __('admin/settings/systems/backup/index.flash.note_updated'));
     }
 
     /**

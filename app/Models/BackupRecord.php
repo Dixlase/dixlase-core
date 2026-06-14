@@ -97,6 +97,7 @@ class BackupRecord extends Model
         'last_verified_at',
         'retention_until',
         'metadata',
+        'note',
         'status',
     ];
 

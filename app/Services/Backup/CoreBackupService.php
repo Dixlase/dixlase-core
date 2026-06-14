@@ -772,6 +772,7 @@ class CoreBackupService implements BackupServiceInterface
             'metadata' => [
                 'duration_seconds' => $durationSeconds,
             ],
+            'note' => isset($options['note']) ? (string) $options['note'] : null,
         ]);
     }
 
