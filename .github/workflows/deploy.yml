@@ -101,7 +101,12 @@ jobs:
               cd "$BASE/$SITE"
 
               # 1. deploy ユーザーが git 操作できるよう所有権を戻す
-              docker exec compose-php-1 chown -R 1001:1001 /var/www/apps/$SITE
+              # `-h` (lchown) を付けて symlink 自身に chown する。symlink を
+              # 辿った結果リンク先が無い (broken symlink) と chown -R が
+              # "No such file or directory" で exit 1 する事故が起きるため。
+              # 過去のプラグイン install/uninstall の名残として database/
+              # migrations/ などに broken symlink が残っていてもこれで通る。
+              docker exec compose-php-1 chown -hR 1001:1001 /var/www/apps/$SITE
 
               # 1-b. 半壊 submodule pointer のクリーンアップ
               # plugins/*/.git や themes/*/.git の gitfile が残っているのに
@@ -170,9 +175,10 @@ jobs:
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
 
               # 6-b. public/ ディレクトリのグループを www-data に戻す
-              # 手順1の chown -R 1001:1001 で www-data グループ設定が消えるため、毎回再適用
+              # 手順1の chown -hR 1001:1001 で www-data グループ設定が消えるため、毎回再適用
               # deploy ユーザーは www-data グループのメンバーなので両者が書き込み可能
-              docker exec compose-php-1 chgrp -R www-data /var/www/apps/$SITE/public
+              # chgrp も `-h` 付きで symlink を辿らないようにする (broken symlink 対策)
+              docker exec compose-php-1 chgrp -hR www-data /var/www/apps/$SITE/public
               docker exec compose-php-1 chmod -R g+w /var/www/apps/$SITE/public
               docker exec compose-php-1 find /var/www/apps/$SITE/public -type d -exec chmod g+s {} +
 
