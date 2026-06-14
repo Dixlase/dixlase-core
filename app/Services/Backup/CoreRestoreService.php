@@ -121,6 +121,9 @@ class CoreRestoreService implements RestoreServiceInterface
         if (! ($options['skip_pre_restore_backup'] ?? false)) {
             $snapshot = $this->backupService->backup($targets, [
                 'retention_days' => $options['pre_restore_retention_days'] ?? 30,
+                'note' => __('admin/settings/systems/backup/index.auto_note.pre_restore', [
+                    'id' => $backup->id,
+                ]),
             ]);
             if ($snapshot->success) {
                 $preRestoreBackupId = $snapshot->backupRecordId;

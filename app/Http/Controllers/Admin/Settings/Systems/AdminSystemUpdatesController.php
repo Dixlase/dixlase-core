@@ -236,8 +236,17 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             if (! empty($themeIds)) {
                 $targets[] = BackupServiceInterface::TARGET_THEMES_ALL;
             }
+
+            // Auto-fill the backup note with the extensions being
+            // updated so the record is self-describing in the list.
+            $names = Plugin::query()->whereIn('id', $pluginIds)->pluck('name')
+                ->merge(Theme::query()->whereIn('id', $themeIds)->pluck('name'))
+                ->all();
+
             $backupResult = $backupService->backup($targets, [
-                'reason' => 'pre-update backup (admin updates page)',
+                'note' => __('admin/settings/systems/backup/index.auto_note.pre_extension_update', [
+                    'names' => implode(', ', $names),
+                ]),
             ]);
             if (! $backupResult->success) {
                 return redirect()->route('admin.settings.systems.updates.index')
@@ -341,7 +350,10 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                     BackupServiceInterface::TARGET_CORE_SOURCE,
                     BackupServiceInterface::TARGET_DATABASE,
                 ],
-                ['reason' => "pre-core-update backup v{$current} -> v{$state->available_version}"],
+                ['note' => __('admin/settings/systems/backup/index.auto_note.pre_core_update', [
+                    'current' => $current,
+                    'available' => $state->available_version,
+                ])],
             );
             if (! $backupResult->success) {
                 return redirect()->route('admin.settings.systems.updates.index')

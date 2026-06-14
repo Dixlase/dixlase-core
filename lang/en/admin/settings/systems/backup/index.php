@@ -72,6 +72,15 @@ return [
         'themes_all' => 'Themes',
     ],
 
+    // Auto-generated notes for backups taken automatically by the
+    // update / restore flows. Operators can edit them afterwards.
+    'auto_note' => [
+        'pre_extension_update' => 'Pre-update backup before updating: :names',
+        'pre_core_update' => 'Pre-update backup before updating the core (v:current → v:available)',
+        'core_update_db' => 'Database snapshot before applying the core update (v:current → v:version)',
+        'pre_restore' => 'Safety snapshot taken automatically before restoring backup #:id',
+    ],
+
     // タイプ
     'types' => [
         'full' => 'Full',
@@ -96,9 +105,31 @@ return [
 
     // アクションボタン
     'actions' => [
+        'detail' => 'Details',
         'download' => 'Download',
         'restore' => 'Restore',
         'delete' => 'Delete',
+    ],
+
+    // 詳細画面（メタデータ + 編集可能なメモ）
+    'detail' => [
+        'heading' => 'Backup Details',
+        'back' => 'Back to backups',
+        'created_at' => 'Created at',
+        'status' => 'Status',
+        'targets' => 'Targets',
+        'size' => 'Size',
+        'file_name' => 'File name',
+        'path' => 'Storage path',
+        'hash' => 'Hash',
+        'retention' => 'Retention until',
+        'retention_none' => 'Kept indefinitely',
+        'duration' => 'Duration',
+        'file_missing' => 'The archive file for this backup is no longer on disk.',
+        'note_label' => 'Note',
+        'note_help' => 'A free-form memo for this backup. Update-triggered backups are pre-filled automatically; you can edit it here.',
+        'note_placeholder' => 'e.g. Manual backup before editing the homepage',
+        'note_save' => 'Save Note',
     ],
 
     // フラッシュメッセージ
@@ -111,6 +142,7 @@ return [
         'restore_success' => 'Restore completed successfully (:duration s). A safety snapshot was taken automatically.',
         'restore_failed' => 'Restore failed: :error',
         'restore_unavailable' => 'This backup is not available for restore.',
+        'note_updated' => 'Backup note updated.',
     ],
 
     // バリデーション
