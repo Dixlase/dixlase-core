@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionSourceManager;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -211,11 +212,23 @@ class ThemeInstall extends Command
         $hasSettings = file_exists("{$themeDir}/app/Http/Controllers/Admin/Settings/Themes/ThemeSettingsController.php");
 
         // Register the theme
+        $slug = Str::kebab($themeName);
+
+        // Default an official-vendor theme to the official source so it
+        // is updatable out of the box. A theme installed from a
+        // configured source has its real source recorded afterwards via
+        // the sidecar (persistSupplyChainMetadata), which overrides this
+        // default; a third-party theme is left unlinked (officialLinkage
+        // returns null when the package_name is not under the official
+        // vendor).
+        $linkage = app(ExtensionSourceManager::class)
+            ->officialLinkage($slug, 'theme', $packageName);
+
         $theme = Theme::create([
             'name' => $displayName,
             'package_name' => $packageName,
             'directory' => $themeDirName,
-            'slug' => Str::kebab($themeName),
+            'slug' => $slug,
             'namespace' => $namespace,
             'description' => $description,
             'license' => $license,
@@ -224,6 +237,10 @@ class ThemeInstall extends Command
             'url' => $web,
             'version' => $version,
             'has_settings' => $hasSettings,
+            'source_id' => $linkage['source_id'] ?? null,
+            'source_repo' => $linkage['source_repo'] ?? null,
+            'installed_from_url' => $linkage['installed_from_url'] ?? null,
+            'installation_method' => $linkage['installation_method'] ?? null,
             'installed_at' => now(),
         ]);
 
