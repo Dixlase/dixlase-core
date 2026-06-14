@@ -131,7 +131,7 @@ class ExtensionSourceManager
         $sources = ExtensionSource::query()->enabled()->get();
 
         if ($sources->isEmpty()) {
-            $this->seedDefaultSources();
+            $this->ensureDefaultSources();
             $sources = ExtensionSource::query()->enabled()->get();
         }
 
@@ -139,9 +139,14 @@ class ExtensionSourceManager
     }
 
     /**
-     * Create default sources in DB from config presets
+     * Create default sources in DB from config presets.
+     *
+     * Public so the install pipeline can guarantee the official source
+     * exists before bundled extensions are seeded (they link to it).
+     * Idempotent: a source of a preset's type that already exists is
+     * left untouched.
      */
-    protected function seedDefaultSources(): void
+    public function ensureDefaultSources(): void
     {
         $presets = config('extension-sources.presets', []);
 
@@ -583,6 +588,50 @@ class ExtensionSourceManager
             'installation_method' => $source->type,
             'installed_from_url' => $url,
         ];
+    }
+
+    /**
+     * The enabled official source updates should default to, or null
+     * when none exists yet. Lowest priority wins, matching the order
+     * getEnabledSources() resolves releases in.
+     */
+    public function getOfficialSource(): ?ExtensionSource
+    {
+        return ExtensionSource::query()
+            ->official()
+            ->where('is_enabled', true)
+            ->orderBy('priority')
+            ->first();
+    }
+
+    /**
+     * Build source linkage to the official source for a bundled
+     * extension installed without going through the download-from-
+     * source flow (the seeder and dls:*:install paths).
+     *
+     * Returns null — leaving the extension unlinked — when there is no
+     * official source yet, or when the extension is not published
+     * under the official source's vendor. The vendor gate keeps a
+     * third-party or hand-copied extension from being mis-linked to
+     * the official source: only an extension whose package_name sits
+     * under the official owner (e.g. `dixlase/...` for owner Dixlase)
+     * is linked. An install from a configured source still records its
+     * real source separately, via the sidecar, which overrides this.
+     */
+    public function officialLinkage(string $slug, string $extensionType, ?string $packageName): ?array
+    {
+        $source = $this->getOfficialSource();
+        if ($source === null) {
+            return null;
+        }
+
+        $owner = $source->owner ?? config('extension-sources.github.default_owner', 'Dixlase');
+        $vendorPrefix = strtolower((string) $owner).'/';
+        if ($packageName === null || ! str_starts_with(strtolower($packageName), $vendorPrefix)) {
+            return null;
+        }
+
+        return $this->resolveSourceLinkage($source, $slug, $extensionType);
     }
 
     /**

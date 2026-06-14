@@ -35,29 +35,20 @@
 
 namespace Database\Seeders;
 
+use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+/**
+ * Seed the default extension sources (the official source preset).
+ *
+ * Must run before the bundled-extension seeders (e.g.
+ * ThemesTableSeeder): a bundled extension links to the official
+ * source at install time, so that source has to exist first.
+ */
+class ExtensionSourcesTableSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $this->call([
-            SitesSeeder::class,
-            ApiSettingsTableSeeder::class,
-            SiteSettingsTableSeeder::class,
-            FrontSettingsTableSeeder::class,
-            MediaTableSeeder::class,
-            MediaSettingsSeeder::class,
-            MembersSettingsSeeder::class,
-            SecuritySettingsTableSeeder::class,
-            ThemeSettingsTableSeeder::class,
-            // Must precede ThemesTableSeeder: the bundled theme links to
-            // the official source, so that source has to exist first.
-            ExtensionSourcesTableSeeder::class,
-            ThemesTableSeeder::class,
-        ]);
+        app(ExtensionSourceManager::class)->ensureDefaultSources();
     }
 }

@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\PluginManagementTrait;
+use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
@@ -173,6 +174,16 @@ class PluginInstall extends Command
             ));
         }
 
+        // Default an official-vendor plugin to the official source so it
+        // is updatable out of the box. A plugin installed from a
+        // configured source has its real source recorded afterwards via
+        // the sidecar (persistSupplyChainMetadata), which overrides this
+        // default; a third-party plugin is left unlinked (officialLinkage
+        // returns null when the package_name is not under the official
+        // vendor).
+        $linkage = app(ExtensionSourceManager::class)
+            ->officialLinkage($slug, 'plugin', $packageName);
+
         // Register in database
         DB::table('plugins')->updateOrInsert(
             ['name' => $pluginName],
@@ -187,6 +198,10 @@ class PluginInstall extends Command
                 'email' => $email,
                 'url' => $web,
                 'version' => $version, // Get from composer.json
+                'source_id' => $linkage['source_id'] ?? null,
+                'source_repo' => $linkage['source_repo'] ?? null,
+                'installed_from_url' => $linkage['installed_from_url'] ?? null,
+                'installation_method' => $linkage['installation_method'] ?? null,
                 'installed_at' => now(),
             ]
         );
