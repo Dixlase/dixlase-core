@@ -86,6 +86,13 @@ return [
         'no_selection' => 'No items selected for update.',
         'apply_summary' => ':succeeded of :total succeeded, :failed failed',
         'backup_failed' => 'Pre-update backup failed, so the update was not started. Error: :error',
+        'update_started' => 'The update has started. This page will refresh automatically until it completes.',
+    ],
+
+    // Polling placeholder shown while a detached plugin/theme update runs
+    'extension_in_progress' => [
+        'title' => 'Updating extensions...',
+        'message' => 'Applying :count update(s). A theme update rebuilds its front-end assets, which can take a few minutes.',
     ],
 
     // Pre-update backup recommendation
@@ -107,7 +114,9 @@ return [
     // the per-row single-update path opens the same modal so its
     // in-flight UX matches the bulk-apply path).
     'in_progress' => [
-        'title' => 'Applying updates...',
+        'title' => 'Preparing update...',
+        'backup_phase' => 'Taking a backup before the update...',
+        'starting_phase' => 'Starting the update...',
         'description_line1' => 'Please do not close this page.',
         'description_line2' => 'This may take a moment.',
     ],
