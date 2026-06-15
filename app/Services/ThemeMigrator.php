@@ -55,6 +55,10 @@ class ThemeMigrator
 
     protected ?string $themeSlug;
 
+    protected string $migrationTable;
+
+    protected ConnectionResolverInterface $resolver;
+
     /**
      * Constructor
      */
@@ -66,6 +70,8 @@ class ThemeMigrator
     ) {
         $this->files = $files;
         $this->themeSlug = $themeSlug;
+        $this->migrationTable = $migrationTable;
+        $this->resolver = $resolver;
 
         // Create repository for `theme_migrations` table
         $this->repository = new ThemeMigrationRepository($resolver, $migrationTable, $themeSlug);
@@ -112,6 +118,18 @@ class ThemeMigrator
             'count' => count($files),
             'files' => array_map('basename', $files),
         ]);
+
+        // Realign the ledger to the (possibly re-sorted) migration files
+        // before computing what is pending: a release that renumbered a
+        // migration must not have its CREATE re-run over the existing
+        // table. No-op when the names already match.
+        \App\Services\Migration\MigrationLedgerReconciler::reconcile(
+            $this->resolver->connection($this->resolver->getDefaultConnection()),
+            $this->migrationTable,
+            'theme',
+            $this->themeSlug,
+            $migrationPath,
+        );
 
         // Get migration files before execution
         $before = $this->repository->getRan();
