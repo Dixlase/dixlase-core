@@ -42,7 +42,6 @@ use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
@@ -96,6 +95,13 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // subprocess clears the flag.
         if (($inProgress = $this->readCoreUpdateInProgressFlag()) !== null) {
             return $this->coreUpdateInProgressResponse($inProgress);
+        }
+
+        // Same treatment while a web-triggered plugin/theme update runs
+        // in its detached subprocess: poll until ExtensionsUpdate clears
+        // the flag.
+        if (($extInProgress = $this->readExtensionUpdateInProgressFlag()) !== null) {
+            return $this->extensionUpdateInProgressResponse($extInProgress);
         }
 
         $forceCheck = $request->boolean('check');
@@ -256,44 +262,56 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             }
         }
 
-        $succeeded = 0;
-        $failed = 0;
+        // Resolve the slugs that actually have an update to apply.
+        $pluginSlugs = Plugin::query()->whereIn('id', $pluginIds)->get()
+            ->filter(fn (Plugin $p) => $p->hasUpdateAvailable())->pluck('slug')->all();
+        $themeSlugs = Theme::query()->whereIn('id', $themeIds)->get()
+            ->filter(fn (Theme $t) => $t->hasUpdateAvailable())->pluck('slug')->all();
 
-        // Plugin update (delegated to existing dls:plugin:update CLI)
-        foreach ($pluginIds as $id) {
-            $plugin = Plugin::query()->find($id);
-            if (! $plugin || ! $plugin->hasUpdateAvailable()) {
-                continue;
-            }
-            $code = Artisan::call('dls:plugin:update', [
-                'slug' => $plugin->slug,
-                '--force' => true,
-            ]);
-            $code === 0 ? $succeeded++ : $failed++;
+        if (empty($pluginSlugs) && empty($themeSlugs)) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('info', __('admin/settings/systems/updates.messages.no_selection'));
         }
 
-        // Theme update
-        foreach ($themeIds as $id) {
-            $theme = Theme::query()->find($id);
-            if (! $theme || ! $theme->hasUpdateAvailable()) {
-                continue;
-            }
-            $code = Artisan::call('dls:theme:update', [
-                'slug' => $theme->slug,
-                '--force' => true,
-            ]);
-            $code === 0 ? $succeeded++ : $failed++;
+        // A theme update runs an npm front-end build, which can take
+        // minutes — far longer than the web server timeout. Run the
+        // batch as a detached subprocess (like dls:core:update) so the
+        // request returns immediately and the updates page polls for
+        // completion, instead of blocking until a 504.
+        $phpBinary = (new PhpExecutableFinder())->find(false);
+        if (! $phpBinary) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('error', __('admin/settings/systems/updates.core.php_cli_not_found'));
         }
 
-        $total = $succeeded + $failed;
-        $summary = __('admin/settings/systems/updates.messages.apply_summary', [
-            'total' => $total,
-            'succeeded' => $succeeded,
-            'failed' => $failed,
+        // Raise the in-progress flag before spawning so the very next
+        // request lands on the polling placeholder. ExtensionsUpdate
+        // clears it in its finally block, on success or failure.
+        $this->writeExtensionUpdateInProgressFlag([
+            'started_at' => now()->timestamp,
+            'plugins' => $pluginSlugs,
+            'themes' => $themeSlugs,
         ]);
 
+        $args = '';
+        foreach ($pluginSlugs as $slug) {
+            $args .= ' --plugin='.escapeshellarg($slug);
+        }
+        foreach ($themeSlugs as $slug) {
+            $args .= ' --theme='.escapeshellarg($slug);
+        }
+
+        $command = sprintf(
+            'nohup %s %s dls:extensions:update%s --no-interaction > %s 2>&1 &',
+            escapeshellarg($phpBinary),
+            escapeshellarg(base_path('artisan')),
+            $args,
+            escapeshellarg(storage_path('logs/extension-update.log'))
+        );
+        exec($command);
+
         return redirect()->route('admin.settings.systems.updates.index')
-            ->with($failed === 0 ? 'success' : 'error', $summary);
+            ->with('success', __('admin/settings/systems/updates.messages.update_started'));
     }
 
     /**
@@ -454,6 +472,37 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
+     * Counterpart of readCoreUpdateInProgressFlag() for the detached
+     * plugin/theme batch update. Same stale-flag self-healing.
+     *
+     * @return array{started_at: int, plugins?: string[], themes?: string[]}|null
+     */
+    protected function readExtensionUpdateInProgressFlag(): ?array
+    {
+        $path = \App\Console\Commands\ExtensionsUpdate::inProgressFlagPath();
+        if (! is_file($path)) {
+            return null;
+        }
+
+        if (time() - filemtime($path) > self::IN_PROGRESS_STALE_THRESHOLD_SECONDS) {
+            @unlink($path);
+
+            return null;
+        }
+
+        $payload = json_decode((string) @file_get_contents($path), true);
+
+        return is_array($payload) ? $payload : null;
+    }
+
+    protected function writeExtensionUpdateInProgressFlag(array $info): void
+    {
+        $path = \App\Console\Commands\ExtensionsUpdate::inProgressFlagPath();
+        @mkdir(dirname($path), 0775, true);
+        @file_put_contents($path, json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
      * Render a minimal hardcoded HTML placeholder while a core update is
      * running. We deliberately do not go through Blade or the admin
      * layout here: the live tree under resources/views/ may be in the
@@ -479,6 +528,46 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         ]));
         $refreshNote = e(__('admin/settings/systems/updates.core.in_progress_refresh_note'));
 
+        return $this->inProgressHtmlResponse($title, $message, $elapsedLabel, $refreshNote);
+    }
+
+    /**
+     * Polling placeholder for a detached plugin/theme batch update.
+     * Mirrors the core placeholder; the admin index is safe to render
+     * during an extension update, but a self-contained auto-refreshing
+     * page keeps the two flows consistent and avoids a half-loaded list.
+     */
+    protected function extensionUpdateInProgressResponse(array $info): \Illuminate\Http\Response
+    {
+        $startedAt = (int) ($info['started_at'] ?? time());
+        $elapsedSec = max(0, time() - $startedAt);
+        $elapsedMin = (int) floor($elapsedSec / 60);
+        $elapsedRem = $elapsedSec % 60;
+
+        $count = count($info['plugins'] ?? []) + count($info['themes'] ?? []);
+
+        $title = e(__('admin/settings/systems/updates.extension_in_progress.title'));
+        $message = e(__('admin/settings/systems/updates.extension_in_progress.message', [
+            'count' => $count,
+        ]));
+        $elapsedLabel = e(__('admin/settings/systems/updates.core.in_progress_elapsed', [
+            'min' => $elapsedMin,
+            'sec' => $elapsedRem,
+        ]));
+        $refreshNote = e(__('admin/settings/systems/updates.core.in_progress_refresh_note'));
+
+        return $this->inProgressHtmlResponse($title, $message, $elapsedLabel, $refreshNote);
+    }
+
+    /**
+     * Self-contained auto-refreshing placeholder page shared by the core
+     * and extension update flows. Deliberately not rendered through Blade
+     * or the admin layout: during a core update the live tree under
+     * resources/views/ may be mid-replacement, and a view-not-found
+     * exception in that window would surface a 500 to the operator.
+     */
+    protected function inProgressHtmlResponse(string $title, string $message, string $elapsedLabel, string $refreshNote): \Illuminate\Http\Response
+    {
         $html = <<<HTML
 <!DOCTYPE html>
 <html lang="ja">
