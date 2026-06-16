@@ -203,7 +203,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $filename = "{$slug}-{$version}.zip";
         $filePath = "{$downloadPath}/{$filename}";
 
-        $response = $this->client()->withOptions(['sink' => $filePath])->get($downloadUrl);
+        $response = $this->downloadClient($downloadUrl)->withOptions(['sink' => $filePath])->get($downloadUrl);
 
         if ($response->failed()) {
             File::delete($filePath);
@@ -236,7 +236,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $filename = "core-{$version}.zip";
         $filePath = "{$downloadPath}/{$filename}";
 
-        $response = $this->client()->withOptions(['sink' => $filePath])->get($downloadUrl);
+        $response = $this->downloadClient($downloadUrl)->withOptions(['sink' => $filePath])->get($downloadUrl);
 
         if ($response->failed()) {
             File::delete($filePath);
@@ -268,8 +268,13 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 fn (array $asset) => str_ends_with($asset['name'] ?? '', '.zip')
             );
 
+            // Use the asset's API url, not browser_download_url: on a
+            // PRIVATE repo the browser URL 404s for a token-authenticated
+            // request — release assets must be fetched from the API
+            // endpoint with Accept: application/octet-stream (handled in
+            // downloadCoreRelease). zipball_url is already an API url.
             return [
-                'download_url' => $zipAsset['browser_download_url'] ?? $payload['zipball_url'] ?? null,
+                'download_url' => $zipAsset['url'] ?? $payload['zipball_url'] ?? null,
                 'tag_name' => $payload['tag_name'] ?? $tag,
             ];
         }
@@ -595,8 +600,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     fn (array $asset) => str_ends_with($asset['name'], '.zip')
                 );
 
+                // Asset API url (not browser_download_url): see
+                // findCoreRelease — the browser URL 404s for a
+                // token-authenticated request on a private repo.
                 return [
-                    'download_url' => $zipAsset['browser_download_url'] ?? $data['zipball_url'] ?? null,
+                    'download_url' => $zipAsset['url'] ?? $data['zipball_url'] ?? null,
                     'tag_name' => $data['tag_name'],
                 ];
             }
@@ -612,6 +620,35 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     {
         $client = Http::accept('application/vnd.github+json')
             ->timeout(30)
+            ->retry(2, 1000, throw: false);
+
+        if ($this->token) {
+            $client = $client->withToken($this->token);
+        }
+
+        return $client;
+    }
+
+    /**
+     * Client for downloading a release asset / zipball.
+     *
+     * The right Accept header depends on the endpoint:
+     *   - a release asset API url (/releases/assets/{id}) needs
+     *     application/octet-stream — required to fetch it from a PRIVATE
+     *     repo, where the API then redirects to a signed download
+     *     (browser_download_url would 404 for a token request);
+     *   - the zipball endpoint rejects octet-stream with HTTP 415, so it
+     *     keeps the github media type.
+     * A longer timeout covers larger archives.
+     */
+    protected function downloadClient(string $downloadUrl): PendingRequest
+    {
+        $accept = str_contains($downloadUrl, '/releases/assets/')
+            ? 'application/octet-stream'
+            : 'application/vnd.github+json';
+
+        $client = Http::accept($accept)
+            ->timeout(120)
             ->retry(2, 1000, throw: false);
 
         if ($this->token) {
