@@ -56,6 +56,10 @@ class PluginMigrator
 
     protected ?string $pluginSlug;
 
+    protected string $migrationTable;
+
+    protected ConnectionResolverInterface $resolver;
+
     /**
      * Constructor
      */
@@ -67,6 +71,8 @@ class PluginMigrator
     ) {
         $this->files = $files;
         $this->pluginSlug = $pluginSlug;
+        $this->migrationTable = $migrationTable;
+        $this->resolver = $resolver;
 
         // Create repository for `plugin_migrations` table
         $this->repository = new PluginMigrationRepository($resolver, $migrationTable, $pluginSlug);
@@ -144,6 +150,18 @@ class PluginMigrator
             'count' => count($files),
             'files' => array_map('basename', $files),
         ]);
+
+        // Realign the ledger to the (possibly re-sorted) migration files
+        // before computing what is pending, so a release that renumbered
+        // a migration does not re-run its CREATE over the existing table.
+        // No-op when the names already match.
+        \App\Services\Migration\MigrationLedgerReconciler::reconcile(
+            $this->resolver->connection($this->resolver->getDefaultConnection()),
+            $this->migrationTable,
+            'plugin',
+            $this->pluginSlug,
+            $migrationPath,
+        );
 
         // Get migration files before execution
         $before = $this->repository->getRan();
