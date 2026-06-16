@@ -241,6 +241,7 @@ class GitHubSourceProviderTest extends TestCase
     {
         $zipContent = 'PK'.str_repeat("\0", 100);
 
+        $assetApiUrl = 'https://api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/assets/999';
         Http::fake([
             'api.github.com/repos/TestOrg/plugin-dixlase-test-plugin/releases/tags/v1.0.0' => Http::response([
                 'tag_name' => 'v1.0.0',
@@ -248,11 +249,12 @@ class GitHubSourceProviderTest extends TestCase
                 'assets' => [
                     [
                         'name' => 'test-plugin-1.0.0.zip',
+                        'url' => $assetApiUrl,
                         'browser_download_url' => 'https://github.com/test/download.zip',
                     ],
                 ],
             ]),
-            'github.com/test/download.zip' => Http::response($zipContent, 200),
+            $assetApiUrl => Http::response($zipContent, 200),
         ]);
 
         $downloadPath = config('extension-sources.download_path');
@@ -297,5 +299,51 @@ class GitHubSourceProviderTest extends TestCase
         $this->assertNotNull($release);
         $this->assertEquals('1.0.0', $release->version);
         Http::assertSent(fn ($request) => str_contains($request->url(), 'theme-dixlase-my-theme'));
+    }
+
+    public function test_core_release_asset_is_fetched_from_the_api_url_with_octet_stream(): void
+    {
+        // A release with a .zip asset: the API url must be used (a private
+        // repo 404s the browser_download_url for a token request), fetched
+        // with Accept: application/octet-stream.
+        $assetApiUrl = 'https://api.github.com/repos/TestOrg/dixlase-core/releases/assets/123';
+        Http::fake([
+            'api.github.com/repos/TestOrg/dixlase-core/releases/tags/v0.2.4' => Http::response([
+                'tag_name' => 'v0.2.4',
+                'assets' => [[
+                    'name' => 'dixlase-core.zip',
+                    'url' => $assetApiUrl,
+                    'browser_download_url' => 'https://github.com/TestOrg/dixlase-core/releases/download/v0.2.4/dixlase-core.zip',
+                ]],
+            ]),
+            $assetApiUrl => Http::response('PK-zip-bytes'),
+        ]);
+
+        $path = $this->provider->downloadCoreRelease('0.2.4');
+
+        Http::assertSent(fn ($request) => $request->url() === $assetApiUrl
+            && $request->hasHeader('Accept', 'application/octet-stream'));
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'releases/download/'));
+
+        @unlink($path);
+    }
+
+    public function test_core_zipball_fallback_keeps_the_github_media_type(): void
+    {
+        // No release -> default-branch zipball. The zipball endpoint
+        // rejects application/octet-stream with HTTP 415, so it must keep
+        // the github media type.
+        Http::fake([
+            'api.github.com/repos/TestOrg/dixlase-core/releases/tags/*' => Http::response([], 404),
+            'api.github.com/repos/TestOrg/dixlase-core' => Http::response(['default_branch' => 'main']),
+            'api.github.com/repos/TestOrg/dixlase-core/zipball/main' => Http::response('PK-zip-bytes'),
+        ]);
+
+        $path = $this->provider->downloadCoreRelease('0.2.4');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/zipball/main')
+            && $request->hasHeader('Accept', 'application/vnd.github+json'));
+
+        @unlink($path);
     }
 }
