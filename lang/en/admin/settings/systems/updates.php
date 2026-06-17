@@ -109,6 +109,12 @@ return [
         'message' => 'Apply :count selected update(s) sequentially. Continue?',
     ],
 
+    // In-progress modal shown while the "Check Now" request runs
+    'checking' => [
+        'title' => 'Checking for updates...',
+        'message' => 'Contacting the update sources. Please do not close this page.',
+    ],
+
     // In-progress modal (shown while the bulk apply request is being
     // processed by the controller and the page has not yet redirected;
     // the per-row single-update path opens the same modal so its
