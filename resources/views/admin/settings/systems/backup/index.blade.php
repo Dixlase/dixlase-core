@@ -113,7 +113,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <td class="px-4 py-2 text-right whitespace-nowrap">
                                 <div class="flex justify-end gap-3">
                                     <a href="{{ route('admin.settings.systems.backup.show', $record) }}"
-                                       class="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
+                                       class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                                        title="{{ __('admin/settings/systems/backup/index.actions.detail') }}">
                                         <i class="fas fa-circle-info"></i>
                                     </a>

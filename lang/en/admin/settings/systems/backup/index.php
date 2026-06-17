@@ -78,7 +78,7 @@ return [
         'pre_extension_update' => 'Pre-update backup before updating: :names',
         'pre_core_update' => 'Pre-update backup before updating the core (v:current → v:available)',
         'core_update_db' => 'Database snapshot before applying the core update (v:current → v:version)',
-        'pre_restore' => 'Safety snapshot taken automatically before restoring backup #:id',
+        'pre_restore' => 'Safety snapshot taken automatically before restoring backup #:id. To undo that restore and return to the previous state, restore from this one.',
     ],
 
     // タイプ
