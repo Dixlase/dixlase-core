@@ -574,7 +574,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="15">
+<meta http-equiv="refresh" content="10">
 <title>{$title}</title>
 <style>
 *{box-sizing:border-box}
