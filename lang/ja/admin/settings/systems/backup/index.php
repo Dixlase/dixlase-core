@@ -78,7 +78,7 @@ return [
         'pre_extension_update' => 'アップデート前のバックアップ: :names',
         'pre_core_update' => 'コアのアップデート前のバックアップ (v:current → v:available)',
         'core_update_db' => 'コアアップデート適用前のデータベーススナップショット (v:current → v:version)',
-        'pre_restore' => 'バックアップ #:id の復元前に自動取得した安全スナップショット',
+        'pre_restore' => 'バックアップ #:id の復元前に自動取得した安全スナップショット。直前の復元を取り消して元の状態に戻す場合は、このバックアップから復元してください。',
     ],
 
     // タイプ
