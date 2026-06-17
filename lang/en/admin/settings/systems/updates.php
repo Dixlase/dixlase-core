@@ -51,7 +51,7 @@ return [
         'in_progress_title' => 'Core update in progress',
         'in_progress_message' => 'Upgrading to v:version. The admin UI will resume as soon as the update completes.',
         'in_progress_elapsed' => 'Elapsed: :min m :sec s',
-        'in_progress_refresh_note' => 'This page refreshes automatically every 15 seconds.',
+        'in_progress_refresh_note' => 'This page refreshes automatically every 10 seconds.',
         'cli_alternative_heading' => 'Or run from a terminal',
         'cli_alternative_intro' => 'You can also run the upgrade yourself from a terminal — useful if PHP exec() is disabled, or if you want to keep the long-running output in view.',
         'cli_required' => 'Core upgrades must be run from a terminal so the running app is not replaced mid-request. Copy the command below and execute it on the server.',

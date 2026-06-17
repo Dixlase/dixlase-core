@@ -51,7 +51,7 @@ return [
         'in_progress_title' => 'コアアップデート実行中',
         'in_progress_message' => 'v:version へアップグレード中です。完了次第、管理画面が再び利用可能になります。',
         'in_progress_elapsed' => '経過時間: :min 分 :sec 秒',
-        'in_progress_refresh_note' => 'このページは 15 秒ごとに自動更新されます。',
+        'in_progress_refresh_note' => 'このページは 10 秒ごとに自動更新されます。',
         'cli_alternative_heading' => 'ターミナルから実行する場合',
         'cli_alternative_intro' => 'Web UI からアップグレードを実行できない場合、または手動で実行・出力を確認したい場合は、下記のコマンドをコピーしてサーバ上で実行してください。',
         'cli_required' => 'コアのアップグレードは、リクエスト処理中に動作中のアプリを置き換えないようターミナルから実行する必要があります。下記コマンドをコピーしてサーバ上で実行してください。',
