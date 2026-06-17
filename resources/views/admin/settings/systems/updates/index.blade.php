@@ -81,7 +81,13 @@ file is governed by the AGPL terms below.
                 {{ __('admin/settings/systems/updates.never_checked') }}
             @endif
         </div>
-        <form method="POST" action="{{ route('admin.settings.systems.updates.check') }}">
+        {{-- Opening the modal on @submit (not @click) ensures it shows
+             only once the request is actually under way; the modal is
+             non-dismissible, so it blocks further operations until the
+             check completes and the controller's redirect reloads the
+             page. --}}
+        <form method="POST" action="{{ route('admin.settings.systems.updates.check') }}"
+              @submit="openModal('checkUpdatesInProgressModal')">
             @csrf
             <x-form-button
                 type="submit"
@@ -592,6 +598,28 @@ file is governed by the AGPL terms below.
                  in style and behaviour. Reused by the per-row single-
                  update flow below — both bulk and single paths open this
                  same modal so the in-flight UX is identical. --}}
+            {{-- Shown while the "Check Now" request runs. Non-dismissible
+                 so the operator cannot start another action mid-check;
+                 dismisses when the controller's redirect reloads the
+                 page. --}}
+            <x-ui-modal
+                id="checkUpdatesInProgressModal"
+                :title="__('admin/settings/systems/updates.checking.title')"
+                message=""
+                icon_type="info"
+                :dismissible="false"
+                :closeOnly="true"
+            >
+                <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                    {{ __('admin/settings/systems/updates.checking.message') }}
+                </p>
+                <x-slot:footer>
+                    <div class="flex items-center justify-center w-full py-1">
+                        <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                    </div>
+                </x-slot:footer>
+            </x-ui-modal>
+
             <x-ui-modal
                 id="updatesInProgressModal"
                 :title="__('admin/settings/systems/updates.in_progress.title')"
