@@ -80,24 +80,15 @@ custom/*
 !custom/README.ja.md
 
 # プラグインとテーマのディレクトリを除外
-# プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
+# プラグイン: 各プラグインは個別のリポジトリとして管理するため、Core の
+#   git では一切 tracking しない（テーマと同じ扱い）。管理画面から
+#   ダウンロード/インストールした runtime のプラグインも未追跡として
+#   表面化しない。
 # テーマ: DixlaseOnePage は composer/installers 経由で
 #   themes/DixlaseOnePage/ に展開される vendor 管理ディレクトリで、
 #   Core の git では tracking しない（b451bc75 で Submodule → Composer
 #   依存に移行）。
 plugins/*
-!plugins/DixlaseInquiry/
-!plugins/DixlaseLegal/
-!plugins/DixlaseMenus/
-!plugins/DixlaseOfficialDocs/
-!plugins/DixlasePages/
-!plugins/DixlaseRedirects/
-!plugins/DixlaseSEO/
-!plugins/DixlaseSigner/
-!plugins/DixlaseUsers/
-!plugins/DixlaseDevKit/
-!plugins/DixlaseCoreDevKit/
-!plugins/DixlasePublicKeys/
 themes/*
 
 license-info.json
