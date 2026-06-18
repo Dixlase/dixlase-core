@@ -77,10 +77,11 @@ class ExtensionCardPresenter
         $isInstalled = $isModel;
         $isEnabled = $isModel && $theme->id === $activeThemeId;
 
-        $thumbnailPath = "themes/{$directory}/thumbnail.png";
-        $thumbnailUrl = file_exists(base_path($thumbnailPath))
-            ? asset("assets/themes/{$directory}/thumbnail.png")
-            : asset('assets/images/theme-default.svg');
+        $thumbnailUrl = self::resolveExtensionThumbnailUrl(
+            'themes',
+            $directory,
+            'assets/images/theme-default.svg',
+        );
 
         $permissionSummary = $isModel
             ? ($theme->permission_summary ?? null)
@@ -252,10 +253,11 @@ class ExtensionCardPresenter
         $isInstalled = $isModel;
         $isEnabled = $isModel && $plugin->isEnabled();
 
-        $thumbnailPath = "plugins/{$directory}/thumbnail.png";
-        $thumbnailUrl = file_exists(base_path($thumbnailPath))
-            ? asset("assets/plugins/{$directory}/thumbnail.png")
-            : asset('assets/images/plugin-default.svg');
+        $thumbnailUrl = self::resolveExtensionThumbnailUrl(
+            'plugins',
+            $directory,
+            'assets/images/plugin-default.svg',
+        );
 
         $permissionSummary = $isModel
             ? ($plugin->permission_summary ?? null)
@@ -530,6 +532,38 @@ class ExtensionCardPresenter
         }
 
         return ['name' => $authorRaw];
+    }
+
+    /**
+     * Resolve the thumbnail URL for an installed extension by probing
+     * common image formats inside `{type}/{directory}/resources/assets/`.
+     * Falls back to the bundled default SVG when none of the candidates
+     * exist on disk.
+     *
+     * The probe sits in `resources/assets/` so the existing public symlink
+     * (`public/assets/{type}/{directory} -> resources/assets`) serves the
+     * file without exposing the plugin/theme root, where `plugin.json`,
+     * `composer.json`, `signature.sig`, and other sidecar files live.
+     *
+     * Extension priority — modern/small first so authors get the smaller
+     * download when they ship multiple formats:
+     *
+     *   webp > png > jpg > jpeg
+     *
+     * @param  string  $type       Extension kind directory: `plugins` or `themes`.
+     * @param  string  $directory  Extension folder name, e.g. `DixlaseSEO`.
+     * @param  string  $defaultSvg Asset path used when no thumbnail is found.
+     */
+    private static function resolveExtensionThumbnailUrl(string $type, string $directory, string $defaultSvg): string
+    {
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $extension) {
+            $relativePath = "{$type}/{$directory}/resources/assets/thumbnail.{$extension}";
+            if (file_exists(base_path($relativePath))) {
+                return asset("assets/{$type}/{$directory}/thumbnail.{$extension}");
+            }
+        }
+
+        return asset($defaultSvg);
     }
 
     /**
