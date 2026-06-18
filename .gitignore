@@ -46,8 +46,10 @@ AGENTS.md
 PLUGIN-API.md
 
 # Localized JA reference files (generated; primary repo content is English).
-# Templates inside plugins/**, themes/**, .claude/** are kept as sources for
-# the generators in DixlaseCoreDevKit (governance, readme, plugin-api).
+# Templates inside .claude/** are kept as sources for the generators in
+# DixlaseCoreDevKit (governance, readme, plugin-api). plugins/ and themes/
+# are individual repos and not tracked by Core, so they carry no exception
+# here.
 #
 # Exceptions tracked in both languages:
 #  - Legal documents (Copyright Policy, Contributor License Agreements) —
@@ -60,8 +62,6 @@ PLUGIN-API.md
 # LICENSE / LICENSE-ja / LICENSE-COMMERCIAL / LICENSE-COMMERCIAL.ja have no
 # .md suffix and are not matched by this pattern.
 *.ja.md
-!plugins/**/*.ja.md
-!themes/**/*.ja.md
 !.claude/**/*.ja.md
 !COPYRIGHT-POLICY.ja.md
 !CLA.ja.md
