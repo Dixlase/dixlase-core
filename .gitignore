@@ -5,7 +5,7 @@
 # Composer-managed theme (installed via composer/installers, see composer.json)
 /themes/DixlaseOnePage/
 
-# --- ビルド成果物（Vite出力）を除外 ---
+# --- Build artifacts (Vite output) ---
 /public/assets/build
 /public/assets/plugins
 /public/assets/themes
@@ -13,13 +13,13 @@
 /public/storage
 
 /public/assets/admin
-# ただし画像など手動管理アセットは残す
+# Keep manually-managed assets such as images
 !public/assets/images/
 
-# テスト用SQLiteデータベース
+# Test SQLite database
 database.sqlite
 
-# Laravel / PHP 関連
+# Laravel / PHP
 /storage/*.key
 /vendor
 .env
@@ -46,8 +46,10 @@ AGENTS.md
 PLUGIN-API.md
 
 # Localized JA reference files (generated; primary repo content is English).
-# Templates inside plugins/**, themes/**, .claude/** are kept as sources for
-# the generators in DixlaseCoreDevKit (governance, readme, plugin-api).
+# Templates inside .claude/** are kept as sources for the generators in
+# DixlaseCoreDevKit (governance, readme, plugin-api). plugins/ and themes/
+# are individual repos and not tracked by Core, so they carry no exception
+# here.
 #
 # Exceptions tracked in both languages:
 #  - Legal documents (Copyright Policy, Contributor License Agreements) —
@@ -60,8 +62,6 @@ PLUGIN-API.md
 # LICENSE / LICENSE-ja / LICENSE-COMMERCIAL / LICENSE-COMMERCIAL.ja have no
 # .md suffix and are not matched by this pattern.
 *.ja.md
-!plugins/**/*.ja.md
-!themes/**/*.ja.md
 !.claude/**/*.ja.md
 !COPYRIGHT-POLICY.ja.md
 !CLA.ja.md
@@ -70,8 +70,8 @@ PLUGIN-API.md
 !README.ja.md
 !SECURITY.ja.md
 
-# Dixlase カスタム
-# カスタムファイルを入れるディレクトリを除外
+# Dixlase custom
+# Directory for custom override files
 custom/*
 # Exceptions: documentation for the reserved layout / namespace
 # contract. Without these, a fresh clone never sees the explanation of
@@ -79,25 +79,15 @@ custom/*
 !custom/README.md
 !custom/README.ja.md
 
-# プラグインとテーマのディレクトリを除外
-# プラグイン: 個別のリポジトリとして管理（.git/info/excludeで追跡）
-# テーマ: DixlaseOnePage は composer/installers 経由で
-#   themes/DixlaseOnePage/ に展開される vendor 管理ディレクトリで、
-#   Core の git では tracking しない（b451bc75 で Submodule → Composer
-#   依存に移行）。
+# Plugin and theme directories
+# Plugins: each plugin is developed and shipped as its own repository, so
+#   Core never tracks plugin directories (same treatment as themes). A
+#   plugin downloaded/installed from the admin panel therefore does not
+#   surface as untracked files either.
+# Themes: DixlaseOnePage is a vendor-managed directory expanded into
+#   themes/DixlaseOnePage/ via composer/installers, so Core does not track
+#   it (migrated Submodule -> Composer dependency in b451bc75).
 plugins/*
-!plugins/DixlaseInquiry/
-!plugins/DixlaseLegal/
-!plugins/DixlaseMenus/
-!plugins/DixlaseOfficialDocs/
-!plugins/DixlasePages/
-!plugins/DixlaseRedirects/
-!plugins/DixlaseSEO/
-!plugins/DixlaseSigner/
-!plugins/DixlaseUsers/
-!plugins/DixlaseDevKit/
-!plugins/DixlaseCoreDevKit/
-!plugins/DixlasePublicKeys/
 themes/*
 
 license-info.json
