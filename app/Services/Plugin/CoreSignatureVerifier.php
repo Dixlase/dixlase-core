@@ -311,10 +311,12 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
     protected function collectFileHashes(string $pluginPath): array
     {
         $files = [];
+        $gitignore = $this->parseGitignore($pluginPath);
         $excludePatterns = array_unique(array_merge(
             self::DEFAULT_EXCLUDE_PATTERNS,
-            $this->parseGitignore($pluginPath),
+            $gitignore['exclude'],
         ));
+        $includePatterns = $gitignore['include'];
 
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($pluginPath, \FilesystemIterator::SKIP_DOTS),
@@ -330,11 +332,12 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
 
             // Same exclusion rules as PluginSigner side:
             //  - Exclude plugin.json itself from files[] (to avoid circular self-hashing)
-            //  - Exclude DEFAULT_EXCLUDE_PATTERNS and .gitignore paths
+            //  - Exclude DEFAULT_EXCLUDE_PATTERNS and .gitignore paths,
+            //    honoring `!`-prefixed re-include rules from .gitignore
             if ($relPath === 'plugin.json') {
                 continue;
             }
-            if ($this->matchesExcludePattern($relPath, $excludePatterns)) {
+            if ($this->shouldExclude($relPath, $excludePatterns, $includePatterns)) {
                 continue;
             }
 
@@ -347,33 +350,71 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
     }
 
     /**
-     * Simple parse of .gitignore (same logic as PluginSigner)
+     * Parse .gitignore into exclude / include pattern lists.
      *
-     * @return array<string>
+     * Mirrors PluginSigner's parser: a line beginning with `!` is a
+     * re-include that overrides a previously-matched exclude pattern,
+     * matching git's own semantics (e.g. `/resources/assets/*` followed
+     * by `!/resources/assets/thumbnail.*` re-includes the thumbnail).
+     *
+     * @return array{exclude: array<string>, include: array<string>}
      */
     protected function parseGitignore(string $pluginPath): array
     {
         $path = $pluginPath.'/.gitignore';
         if (! File::exists($path)) {
-            return [];
+            return ['exclude' => [], 'include' => []];
         }
 
-        $patterns = [];
+        $excludes = [];
+        $includes = [];
         foreach (explode("\n", File::get($path)) as $line) {
             $line = trim($line);
-            if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, '!')) {
+            if ($line === '' || str_starts_with($line, '#')) {
                 continue;
             }
-            $patterns[] = ltrim($line, '/');
+            if (str_starts_with($line, '!')) {
+                $includes[] = ltrim(substr($line, 1), '/');
+
+                continue;
+            }
+            $excludes[] = ltrim($line, '/');
         }
 
-        return $patterns;
+        return ['exclude' => $excludes, 'include' => $includes];
     }
 
     /**
-     * Check if matches .gitignore pattern
+     * Decide whether a path is excluded from signature verification.
+     *
+     * A path is excluded only when it matches one of the exclude
+     * patterns AND is not re-included by any `!`-prefixed gitignore
+     * pattern, mirroring how git resolves overlapping gitignore lines
+     * and how PluginSigner picks the files to hash. Diverging from
+     * PluginSigner here would re-introduce false "missing"/"extra"
+     * tampering verdicts.
+     *
+     * @param  array<string>  $excludes
+     * @param  array<string>  $includes
      */
-    protected function matchesExcludePattern(string $path, array $patterns): bool
+    protected function shouldExclude(string $path, array $excludes, array $includes): bool
+    {
+        if (! $this->matchesAny($path, $excludes)) {
+            return false;
+        }
+        if ($this->matchesAny($path, $includes)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Test a path against a list of patterns (wildcard `*` or substring).
+     *
+     * @param  array<string>  $patterns
+     */
+    protected function matchesAny(string $path, array $patterns): bool
     {
         foreach ($patterns as $pattern) {
             if (strpos($pattern, '*') !== false) {
