@@ -131,7 +131,7 @@ function renderMediaGrid(modalId, mediaItems) {
                              <i class="fas fa-file-alt text-4xl text-gray-400"></i>
                            </div>`
             }
-                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all"></div>
+                    <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-all"></div>
                     ${isSelected
                 ? `<div class="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                              <i class="fas fa-check text-white text-xs"></i>
