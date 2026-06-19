@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <!-- メディア選択モーダル -->
 <div id="{{ $id }}" 
-     class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900 bg-opacity-50 dark:bg-opacity-70"
+     class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900/50 dark:bg-gray-900/70"
      data-api-url="{{ route('admin.media.api') }}"
      data-error-message="{{ __('common.error_loading_media') }}"
      data-no-media-message="{{ __('common.no_media_found') }}"
