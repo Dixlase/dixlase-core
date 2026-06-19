@@ -100,7 +100,7 @@ $iconColorClass = $iconColorClasses[$iconType] ?? $iconColorClasses['info'];
     <div class="fixed inset-0 z-50 overflow-y-auto" wire:key="modal-{{ uniqid() }}">
         <!-- 背景オーバーレイ -->
         <div 
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+            class="fixed inset-0 bg-gray-500/75 transition-opacity"
             wire:click="$set('{{ $attributes->wire('model')->value() }}', false)"
         ></div>
 
