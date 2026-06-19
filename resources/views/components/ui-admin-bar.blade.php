@@ -226,7 +226,7 @@ Admin bar displayed only when administrator is logged in
     <div x-show="openSidebar || openUserMenu" 
          @click="openSidebar = false; openUserMenu = false" 
          x-cloak
-         class="fixed inset-0 bg-black bg-opacity-50 z-40" 
+         class="fixed inset-0 bg-black/50 z-40"
          aria-hidden="true"></div>
 
     {{-- Left slide-in sidebar (mobile) --}}
