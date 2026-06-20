@@ -86,15 +86,36 @@ Route::post('/locale/switch', LocaleSwitchController::class)
     ->middleware('web');
 
 // Front page custom JS/CSS external file delivery.
+//
+// These are stateless static-asset endpoints: no session, no CSRF, no
+// CSP processing. They're loaded as <link>/<script> subresources by
+// the admin theme-settings preview iframe AND by public-facing pages,
+// both contexts of which already issue their own session cookies.
+// Running StartSession here would route the request through the
+// guard-aware session handler against the *guest* `sessions` table
+// (because the URL doesn't start with the admin URL prefix), and a
+// missing row on that side caused Laravel to rotate the session id —
+// the next admin POST then saw a CSRF mismatch and returned 419 on
+// the theme settings save.
 Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'script'])
     ->name('front.custom-script')
     ->middleware('front.ip')
-    ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+    ->withoutMiddleware([
+        \App\Http\Middleware\ContentSecurityPolicy::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
 
 Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
     ->name('front.custom-style')
     ->middleware('front.ip')
-    ->withoutMiddleware([\App\Http\Middleware\ContentSecurityPolicy::class]);
+    ->withoutMiddleware([
+        \App\Http\Middleware\ContentSecurityPolicy::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
 
 // Front-end routes.
 //
