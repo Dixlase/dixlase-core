@@ -596,6 +596,20 @@ if (! function_exists('load_core_assets')) {
 
         if (is_vite_dev_server()) {
             $viteFiles = array_map(fn ($file) => "{$basePath}/{$file}", $files);
+
+            // Mirror the non-vite branch below: it always prepends
+            // `assets/build/css/common.css` (the bundled core Tailwind +
+            // commons) so utility classes are present even when this
+            // helper is invoked for a non-'common' type (e.g. 'front',
+            // 'admin'). The vite branch was omitting the equivalent
+            // source file, which caused the front page to render with no
+            // Tailwind utilities whenever Vite was running — i.e. hot
+            // file present in production env.
+            $commonTailwind = 'resources/src/common/css/tailwind.css';
+            if (! in_array($commonTailwind, $viteFiles, true)) {
+                array_unshift($viteFiles, $commonTailwind);
+            }
+
             $output .= render_vite_assets($viteFiles, false, false);
         } else {
             // Load built Core CSS
