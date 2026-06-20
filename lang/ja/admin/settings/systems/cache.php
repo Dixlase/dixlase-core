@@ -59,6 +59,7 @@ return [
     'clear_all_warning' => 'この操作により、一時的にアプリケーションの動作が遅くなる場合があります。',
     'clear_all_button' => '全てのキャッシュをクリア',
     'clear_all_confirm' => '全てのキャッシュをクリアしますか？この操作により一時的にパフォーマンスが低下する可能性があります。',
+    'clear_all_view_rebuild_note' => '※ クリア後、ビューキャッシュは即時再生成されます（クリア直後のページ遷移をスムーズにするため）',
     'rebuild' => '再生成',
     'rebuild_confirm' => ':nameを再生成しますか？',
     'rebuild_all_title' => '一括キャッシュ再生成',

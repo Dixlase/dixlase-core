@@ -111,6 +111,16 @@ class AdminSystemCacheController extends AdminLoggedInController
                     break;
                 case 'view':
                     Artisan::call('view:clear');
+                    // Re-compile every Blade right away so the next page
+                    // navigation does not trigger on-the-fly compilation.
+                    // In dev, Vite watches storage/framework/views/ and
+                    // emits a [vite] page reload signal when Laravel
+                    // writes a freshly compiled view there mid-request,
+                    // which cancels the navigation and re-loads the
+                    // current page — the "clicking a menu re-shows the
+                    // current page" symptom. In prod this is just an
+                    // immediate warm-up.
+                    Artisan::call('view:cache');
                     $message = __('admin/settings/systems/cache.success_view');
                     break;
                 case 'application':
@@ -122,6 +132,11 @@ class AdminSystemCacheController extends AdminLoggedInController
                     Artisan::call('route:clear');
                     Artisan::call('view:clear');
                     Artisan::call('cache:clear');
+                    // Same Vite-vs-navigation hazard as the 'view' case
+                    // above: 'all' includes view:clear, so pre-compile
+                    // every Blade right away to keep the next request
+                    // from triggering an on-the-fly compile.
+                    Artisan::call('view:cache');
                     $message = __('admin/settings/systems/cache.success_all');
                     break;
                 default:

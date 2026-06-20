@@ -94,6 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <h2>{{ __('admin/settings/systems/cache.clear_all_title') }}</h2>
                 <p>{{ __('admin/settings/systems/cache.clear_all_description') }}</p>
                 <p>{{ __('common.warning') }}: {{ __('admin/settings/systems/cache.clear_all_warning') }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/systems/cache.clear_all_view_rebuild_note') }}</p>
             </div>
 
             <div class="flex-shrink-0">
