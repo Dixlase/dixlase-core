@@ -20,6 +20,17 @@ export default defineConfig(({ command }) => ({
                 'resources/src/components/mail-server/js/dark-mode.js',
                 'resources/src/components/mail-server/js/verification-success.js',
                 'resources/src/components/mail-server/js/verification-error.js',
+                // ---- Theme: DixlaseOnePage (bundled default theme) ----
+                // The theme's head.blade.php loads these via @vite when
+                // hot file is present; without them in this input list,
+                // the core dev server can't resolve theme assets and the
+                // page renders with no Tailwind utilities. Prod build of
+                // theme assets is still handled by the theme's own
+                // vite.config.js (npm run build inside the theme dir),
+                // so this addition only affects the dev server.
+                'themes/DixlaseOnePage/resources/src/front/css/tailwind.css',
+                'themes/DixlaseOnePage/resources/src/front/scss/style.scss',
+                'themes/DixlaseOnePage/resources/src/front/js/app.js',
             ],
             refresh: [
                 // デフォルトのBladeテンプレート
