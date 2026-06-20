@@ -60,6 +60,7 @@ return [
     'clear_all_warning' => 'This operation may temporarily slow down the application.',
     'clear_all_button' => 'Clear All Caches',
     'clear_all_confirm' => 'Clear all caches? This operation may temporarily reduce performance.',
+    'clear_all_view_rebuild_note' => '* The view cache is rebuilt immediately after clearing (so the next page navigation is not interrupted).',
     'rebuild' => 'Rebuild',
     'rebuild_confirm' => 'Rebuild :name?',
     'rebuild_all_title' => 'Rebuild All Caches',
