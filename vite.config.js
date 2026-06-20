@@ -3,9 +3,18 @@ import path from 'path';
 import fs from 'fs';
 import laravel from 'laravel-vite-plugin';
 import liveReload from 'vite-plugin-live-reload'
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ command }) => ({
     plugins: [
+        // Tailwind v4 公式 Vite プラグイン。Dev mode で CSS Nesting を
+        // 適切に処理し、`.hidden` と `.lg\\:flex` のような対立する
+        // ユーティリティの specificity を production 同等に解決する。
+        // 未登録だと、dev サーバが nested @media を含む生 CSS を返し、
+        // Chrome の Nesting 処理で `.hidden` (display:none) が `.lg\\:flex`
+        // の nested `display:flex` を抑え込んで、lg+ ビューポートでも
+        // `class="hidden lg:flex"` の要素が非表示のままになる。
+        tailwindcss(),
         laravel({
             input: [
                 'resources/src/common/css/tailwind.css',
