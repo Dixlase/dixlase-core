@@ -73,6 +73,7 @@ class CoreUpdater
         protected ExtensionSourceManager $sourceManager,
         protected CoreSourceSnapshot $snapshotter,
         protected BackupServiceInterface $backupService,
+        protected CoreVendorManager $vendorManager,
     ) {}
 
     /**
@@ -133,7 +134,7 @@ class CoreUpdater
             // vendor/ that we swap in wholesale. When the lock is unchanged
             // we skip the (large, slow) vendor swap entirely and behave
             // exactly as before.
-            $dependencyUpdate = $this->dependencyLockChanged($payloadRoot);
+            $dependencyUpdate = $this->vendorManager->lockChanged($payloadRoot);
             if ($dependencyUpdate) {
                 if (! is_dir($payloadRoot.'/vendor')) {
                     throw new RuntimeException(
@@ -190,7 +191,7 @@ class CoreUpdater
 
             if ($dependencyUpdate) {
                 $log('Swapping vendor/ (prebuilt dependencies from the release)...');
-                $this->applyVendor($payloadRoot);
+                $this->vendorManager->swap($payloadRoot);
                 $vendorSwapped = true;
                 $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
             }
@@ -237,7 +238,7 @@ class CoreUpdater
                 $maintenanceOn = false;
             }
             if ($vendorSwapped) {
-                $this->cleanupOldVendor();
+                $this->vendorManager->discardPrevious();
                 $log('Discarded vendor.old (update succeeded).');
             }
 
@@ -293,7 +294,7 @@ class CoreUpdater
             // rolled-back source. This needs no network and no Composer.
             if ($vendorSwapped) {
                 try {
-                    $this->restoreOldVendor();
+                    $this->vendorManager->restorePrevious();
                     $log('vendor/ rolled back from vendor.old.');
                 } catch (\Throwable $vendorError) {
                     $log("VENDOR ROLLBACK FAILED: {$vendorError->getMessage()}");
@@ -430,107 +431,6 @@ class CoreUpdater
             $liveFile = $base.'/'.$relative;
             File::ensureDirectoryExists(dirname($liveFile));
             File::copy($stagedFile, $liveFile);
-        }
-    }
-
-    /**
-     * Decide whether the staged release changes PHP dependencies, by
-     * comparing its composer.lock against the installed one. A missing
-     * staged lock means the release does not pin dependencies, so there is
-     * nothing to swap (treated as "unchanged"). A missing live lock with a
-     * present staged lock counts as a change (first time the lock appears).
-     */
-    protected function dependencyLockChanged(string $payloadRoot, ?string $base = null): bool
-    {
-        $stagedLock = $payloadRoot.'/composer.lock';
-        if (! is_file($stagedLock)) {
-            return false;
-        }
-
-        $liveLock = ($base ?? base_path()).'/composer.lock';
-        if (! is_file($liveLock)) {
-            return true;
-        }
-
-        return ! hash_equals(
-            (string) hash_file('sha256', $liveLock),
-            (string) hash_file('sha256', $stagedLock),
-        );
-    }
-
-    /**
-     * Swap the live vendor/ for the staged one, retaining the previous
-     * vendor/ at vendor.old so a failed update can be rolled back locally
-     * (no Composer, no network). Called only inside the maintenance window
-     * of a dependency update.
-     *
-     * The staged tree shares the live filesystem (both under the project
-     * root), so the move is an atomic rename; if a deployment puts storage
-     * on a different mount the rename fails and we fall back to a copy.
-     * vendor.old is discarded on success and restored on failure.
-     */
-    protected function applyVendor(string $payloadRoot, ?string $base = null): void
-    {
-        $base ??= base_path();
-        $stagedVendor = $payloadRoot.'/vendor';
-        $liveVendor = $base.'/vendor';
-        $oldVendor = $base.'/vendor.old';
-
-        if (! is_dir($stagedVendor)) {
-            throw new RuntimeException("Staged vendor/ not found at {$stagedVendor}.");
-        }
-
-        // Clear any leftover vendor.old from a prior interrupted run.
-        if (is_dir($oldVendor)) {
-            File::deleteDirectory($oldVendor);
-        }
-
-        // Move the current vendor/ aside (atomic within the project root).
-        if (is_dir($liveVendor)) {
-            if (! @rename($liveVendor, $oldVendor)) {
-                throw new RuntimeException('Failed to move current vendor/ aside before swap.');
-            }
-        }
-
-        // Promote the staged vendor/ into place. Prefer an atomic rename;
-        // fall back to a copy across filesystem boundaries.
-        if (! @rename($stagedVendor, $liveVendor)) {
-            File::ensureDirectoryExists($liveVendor);
-            File::copyDirectory($stagedVendor, $liveVendor);
-        }
-    }
-
-    /**
-     * Restore vendor/ from the retained vendor.old (failure rollback).
-     */
-    protected function restoreOldVendor(?string $base = null): void
-    {
-        $base ??= base_path();
-        $liveVendor = $base.'/vendor';
-        $oldVendor = $base.'/vendor.old';
-
-        if (! is_dir($oldVendor)) {
-            throw new RuntimeException('No vendor.old to roll back from.');
-        }
-
-        if (is_dir($liveVendor)) {
-            File::deleteDirectory($liveVendor);
-        }
-        if (! @rename($oldVendor, $liveVendor)) {
-            File::ensureDirectoryExists($liveVendor);
-            File::copyDirectory($oldVendor, $liveVendor);
-            File::deleteDirectory($oldVendor);
-        }
-    }
-
-    /**
-     * Discard the retained vendor.old after a successful update.
-     */
-    protected function cleanupOldVendor(?string $base = null): void
-    {
-        $oldVendor = ($base ?? base_path()).'/vendor.old';
-        if (is_dir($oldVendor)) {
-            File::deleteDirectory($oldVendor);
         }
     }
 
