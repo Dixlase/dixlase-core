@@ -34,6 +34,7 @@
  */
 
 use App\Helpers\PluginHelper;
+use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
@@ -83,6 +84,21 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
 // routing is active so the multilingual plugin can wire it up later.
 Route::post('/locale/switch', LocaleSwitchController::class)
     ->name('locale.switch')
+    ->middleware('web');
+
+// Admin-bar logout endpoint mounted on the web side, used when the
+// admin bar is rendered on a front-end page. The standard admin-side
+// logout (`admin.logout`) lives under the admin URL prefix, where the
+// guard-aware session driver swaps in the `members_sessions` table.
+// The form on the front page is rendered with the web guard's CSRF
+// token (`sessions` table), so submitting against the admin-side route
+// always fails CSRF validation with 419. Posting to this web-side
+// endpoint keeps token issuance and validation on the same session
+// record. The controller handler additionally clears the parallel
+// `members_sessions` row to drop the member's auth state in the admin
+// guard's table as well.
+Route::post('/admin-bar/logout', [AdminLoginController::class, 'destroyFromAdminBar'])
+    ->name('admin-bar.logout')
     ->middleware('web');
 
 // Front page custom JS/CSS external file delivery.
