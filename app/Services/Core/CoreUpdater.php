@@ -56,13 +56,16 @@ use ZipArchive;
  *   3. Download the release ZIP from the recorded source
  *   4. Extract into a staging directory and validate it looks like a core
  *   5. Apply staging over the live tree (replaces source dirs only)
- *   6. Run migrations + clear caches
- *   7. Record a new core_version_history row + update core_releases
- *   8. On any failure, restore from snapshot and re-throw
+ *   6. For a dependency update (composer.lock changed), enter maintenance
+ *      mode and swap in the release's prebuilt vendor/ (production has no
+ *      guarantee of Composer/Node, so dependencies ship ready-to-run)
+ *   7. Run migrations + clear caches
+ *   8. Record a new core_version_history row + update core_releases
+ *   9. On any failure, restore source from snapshot, vendor/ from
+ *      vendor.old, lift maintenance, and re-throw
  *
  * This is intentionally CLI-driven — running it from a web request would
- * replace the running code mid-flight. UI integration (maintenance mode +
- * queue) is handled in B-2.
+ * replace the running code mid-flight.
  */
 class CoreUpdater
 {
@@ -100,6 +103,14 @@ class CoreUpdater
         $stagingPath = storage_path('app/private/core-update/staging/'.now()->format('YmdHis_').uniqid());
         $backupRecordId = null;
 
+        // Tracks whether this run swapped vendor/ (a "dependency update")
+        // and whether the site was put into maintenance mode, so the catch
+        // block can undo both precisely. A dependency update is detected by
+        // comparing the staged composer.lock against the live one.
+        $dependencyUpdate = false;
+        $vendorSwapped = false;
+        $maintenanceOn = false;
+
         try {
             $log("Downloading core v{$version}...");
             $zipPath = $this->sourceManager->downloadCore($version);
@@ -112,6 +123,28 @@ class CoreUpdater
             $log('Validating extracted payload...');
             $payloadRoot = $this->validateStagedPayload($stagingPath);
             $log("Validated payload at {$payloadRoot}");
+
+            // A "dependency update" is one whose composer.lock differs from
+            // the installed one — i.e. the release ships a different set of
+            // PHP packages (a Laravel major bump, a new dependency, a
+            // security patch). Production installs are not guaranteed to
+            // have Composer or Node available, so we never run `composer
+            // install`; instead the release ZIP ships a ready-to-run
+            // vendor/ that we swap in wholesale. When the lock is unchanged
+            // we skip the (large, slow) vendor swap entirely and behave
+            // exactly as before.
+            $dependencyUpdate = $this->dependencyLockChanged($payloadRoot);
+            if ($dependencyUpdate) {
+                if (! is_dir($payloadRoot.'/vendor')) {
+                    throw new RuntimeException(
+                        'composer.lock changed but the release ZIP ships no vendor/ directory; '.
+                        'refusing to apply a dependency update without prebuilt dependencies.'
+                    );
+                }
+                $log('Dependency change detected (composer.lock differs) — vendor/ will be swapped under maintenance mode.');
+            } else {
+                $log('No dependency change (composer.lock unchanged) — vendor/ left untouched.');
+            }
 
             // Capture a database backup before mutating the live tree. If
             // post-extraction migrations fail or the new code fails to boot,
@@ -133,9 +166,34 @@ class CoreUpdater
                 $log('Continuing without backup — manual rollback will not be possible if migrations fail.');
             }
 
+            // For a dependency update the live tree is briefly inconsistent
+            // (new source on disk while vendor/ is mid-swap), and any HTTP
+            // request landing in that window would fatal because the
+            // autoloader can't find classes. public/index.php checks for
+            // storage/framework/maintenance.php *before* booting the
+            // framework, so `down` keeps serving a static 503 even while
+            // vendor/ is incomplete. Non-dependency updates keep the old
+            // behaviour (no downtime) — the running workers tolerate a
+            // source-only swap because vendor/ stays intact.
+            if ($dependencyUpdate) {
+                $log('Entering maintenance mode...');
+                // --refresh makes the 503 page reload every 15s so the
+                // operator's browser returns to the site automatically once
+                // the swap finishes and maintenance is lifted.
+                Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+                $maintenanceOn = true;
+            }
+
             $log('Applying source over live tree...');
             $this->applyToLiveTree($payloadRoot);
             $log('Applied source.');
+
+            if ($dependencyUpdate) {
+                $log('Swapping vendor/ (prebuilt dependencies from the release)...');
+                $this->applyVendor($payloadRoot);
+                $vendorSwapped = true;
+                $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
+            }
 
             $log('Running migrations...');
             // Scope migrate to the core's own migration path. Plugin and
@@ -169,6 +227,19 @@ class CoreUpdater
             Artisan::call('view:clear');
             Artisan::call('cache:clear');
             $log('Caches cleared.');
+
+            // The new code is in place and migrations passed; lift the
+            // maintenance window before the (non-critical) bookkeeping
+            // below so the site comes back as soon as it is safe.
+            if ($maintenanceOn) {
+                $log('Lifting maintenance mode...');
+                Artisan::call('up');
+                $maintenanceOn = false;
+            }
+            if ($vendorSwapped) {
+                $this->cleanupOldVendor();
+                $log('Discarded vendor.old (update succeeded).');
+            }
 
             $log('Recording version history...');
             $history = CoreVersionHistory::create([
@@ -214,6 +285,32 @@ class CoreUpdater
             } catch (\Throwable $restoreError) {
                 $log("ROLLBACK FAILED: {$restoreError->getMessage()}");
                 $log("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+            }
+
+            // If we swapped vendor/, the snapshot above only restored
+            // source (vendor/ is excluded from snapshots by design). Move
+            // the retained vendor.old back so the live tree matches the
+            // rolled-back source. This needs no network and no Composer.
+            if ($vendorSwapped) {
+                try {
+                    $this->restoreOldVendor();
+                    $log('vendor/ rolled back from vendor.old.');
+                } catch (\Throwable $vendorError) {
+                    $log("VENDOR ROLLBACK FAILED: {$vendorError->getMessage()}");
+                    $log('Manual recovery required: restore vendor/ from the previous release ZIP.');
+                }
+            }
+
+            // Lift maintenance mode last, once the tree is consistent again.
+            if ($maintenanceOn) {
+                try {
+                    Artisan::call('up');
+                    $maintenanceOn = false;
+                    $log('Maintenance mode lifted after rollback.');
+                } catch (\Throwable $upError) {
+                    $log("Failed to lift maintenance mode: {$upError->getMessage()}");
+                    $log('Run `php artisan up` manually to restore access.');
+                }
             }
 
             if ($backupRecordId !== null) {
@@ -333,6 +430,107 @@ class CoreUpdater
             $liveFile = $base.'/'.$relative;
             File::ensureDirectoryExists(dirname($liveFile));
             File::copy($stagedFile, $liveFile);
+        }
+    }
+
+    /**
+     * Decide whether the staged release changes PHP dependencies, by
+     * comparing its composer.lock against the installed one. A missing
+     * staged lock means the release does not pin dependencies, so there is
+     * nothing to swap (treated as "unchanged"). A missing live lock with a
+     * present staged lock counts as a change (first time the lock appears).
+     */
+    protected function dependencyLockChanged(string $payloadRoot, ?string $base = null): bool
+    {
+        $stagedLock = $payloadRoot.'/composer.lock';
+        if (! is_file($stagedLock)) {
+            return false;
+        }
+
+        $liveLock = ($base ?? base_path()).'/composer.lock';
+        if (! is_file($liveLock)) {
+            return true;
+        }
+
+        return ! hash_equals(
+            (string) hash_file('sha256', $liveLock),
+            (string) hash_file('sha256', $stagedLock),
+        );
+    }
+
+    /**
+     * Swap the live vendor/ for the staged one, retaining the previous
+     * vendor/ at vendor.old so a failed update can be rolled back locally
+     * (no Composer, no network). Called only inside the maintenance window
+     * of a dependency update.
+     *
+     * The staged tree shares the live filesystem (both under the project
+     * root), so the move is an atomic rename; if a deployment puts storage
+     * on a different mount the rename fails and we fall back to a copy.
+     * vendor.old is discarded on success and restored on failure.
+     */
+    protected function applyVendor(string $payloadRoot, ?string $base = null): void
+    {
+        $base ??= base_path();
+        $stagedVendor = $payloadRoot.'/vendor';
+        $liveVendor = $base.'/vendor';
+        $oldVendor = $base.'/vendor.old';
+
+        if (! is_dir($stagedVendor)) {
+            throw new RuntimeException("Staged vendor/ not found at {$stagedVendor}.");
+        }
+
+        // Clear any leftover vendor.old from a prior interrupted run.
+        if (is_dir($oldVendor)) {
+            File::deleteDirectory($oldVendor);
+        }
+
+        // Move the current vendor/ aside (atomic within the project root).
+        if (is_dir($liveVendor)) {
+            if (! @rename($liveVendor, $oldVendor)) {
+                throw new RuntimeException('Failed to move current vendor/ aside before swap.');
+            }
+        }
+
+        // Promote the staged vendor/ into place. Prefer an atomic rename;
+        // fall back to a copy across filesystem boundaries.
+        if (! @rename($stagedVendor, $liveVendor)) {
+            File::ensureDirectoryExists($liveVendor);
+            File::copyDirectory($stagedVendor, $liveVendor);
+        }
+    }
+
+    /**
+     * Restore vendor/ from the retained vendor.old (failure rollback).
+     */
+    protected function restoreOldVendor(?string $base = null): void
+    {
+        $base ??= base_path();
+        $liveVendor = $base.'/vendor';
+        $oldVendor = $base.'/vendor.old';
+
+        if (! is_dir($oldVendor)) {
+            throw new RuntimeException('No vendor.old to roll back from.');
+        }
+
+        if (is_dir($liveVendor)) {
+            File::deleteDirectory($liveVendor);
+        }
+        if (! @rename($oldVendor, $liveVendor)) {
+            File::ensureDirectoryExists($liveVendor);
+            File::copyDirectory($oldVendor, $liveVendor);
+            File::deleteDirectory($oldVendor);
+        }
+    }
+
+    /**
+     * Discard the retained vendor.old after a successful update.
+     */
+    protected function cleanupOldVendor(?string $base = null): void
+    {
+        $oldVendor = ($base ?? base_path()).'/vendor.old';
+        if (is_dir($oldVendor)) {
+            File::deleteDirectory($oldVendor);
         }
     }
 
