@@ -36,7 +36,7 @@
     }
 
     &-container {
-        @apply relative top-20 mx-auto border dark:border-gray-700 w-[95vw] max-w-lg shadow-lg rounded-xl bg-white dark:bg-black z-10;
+        @apply relative top-20 mx-auto border border-gray-200 dark:border-gray-700 w-[95vw] max-w-lg shadow-lg rounded-xl bg-white dark:bg-black z-10;
         max-height: calc(100vh - 6rem);
         display: flex;
         flex-direction: column;
