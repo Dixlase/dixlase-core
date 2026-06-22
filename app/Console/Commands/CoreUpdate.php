@@ -118,21 +118,21 @@ class CoreUpdate extends Command
                 $this->line("  db backup:  record #{$result['backup_record_id']} (kept for manual restore)");
             }
 
-            // Rebuild front-end assets. Default mode is 'force' because a
-            // core update almost always changes resources/ and any
-            // previously built assets are stale; users can pass
-            // --skip-build to opt out.
-            $mode = $this->option('skip-build') ? 'skip' : 'force';
-            if ($this->option('build')) {
-                $mode = 'force';
-            }
+            // Front-end assets ship prebuilt in the release ZIP
+            // (public/assets/build is applied with the rest of public/),
+            // and production installs are not guaranteed to have Node. The
+            // default 'auto' mode therefore skips the build when prebuilt
+            // assets are already present (the release case) and only builds
+            // when they are absent (a source/dev install). --build forces a
+            // rebuild; --skip-build never builds.
             $this->newLine();
-            $this->buildExtensionAssets(base_path(), $mode);
+            $this->buildExtensionAssets(base_path(), $this->extensionAssetMode());
 
+            // PHP dependencies (vendor/) are applied automatically from the
+            // release on a dependency update — no `composer install` needed.
             $this->newLine();
-            $this->warn('Next steps (manual):');
-            $this->line('  - composer install --no-dev (if composer.json changed)');
-            $this->line('  - Restart PHP-FPM / queue workers');
+            $this->line('Dependencies and prebuilt assets were applied from the release.');
+            $this->line('If PHP opcache uses validate_timestamps=0, reload PHP-FPM to pick up the new vendor/.');
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
