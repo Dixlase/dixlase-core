@@ -22,29 +22,33 @@
 
 namespace Tests\Unit\Services\Core;
 
-use App\Services\Core\CoreUpdater;
+use App\Services\Core\CoreVendorManager;
 use Tests\TestCase;
 
 /**
- * Pins the vendor/-swap behaviour used by dependency-aware core updates.
+ * Pins the vendor/-swap behaviour shared by dependency-aware core updates
+ * (CoreUpdater) and the rollback path (CoreRestoreService).
  *
  * Production installs are not guaranteed to have Composer/Node, so a core
- * update that changes composer.lock swaps in the release's prebuilt
- * vendor/ wholesale, retaining the previous one at vendor.old so a failed
- * update can be rolled back locally. These tests exercise the decision gate
- * (dependencyLockChanged) and the swap / rollback / cleanup helpers against
- * a throw-away directory tree, never the real project root.
+ * operation that changes composer.lock swaps in a prebuilt vendor/
+ * wholesale, retaining the previous one at vendor.old for a local rollback.
+ * These tests exercise the detection gate (lockChanged / locksMatch) and
+ * the swap / rollback / cleanup helpers against a throw-away directory
+ * tree, never the real project root.
  */
-class CoreUpdaterVendorTest extends TestCase
+class CoreVendorManagerTest extends TestCase
 {
     private string $workDir;
+
+    private CoreVendorManager $manager;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->workDir = sys_get_temp_dir().'/core-updater-vendor-'.getmypid().'-'.uniqid();
+        $this->workDir = sys_get_temp_dir().'/core-vendor-manager-'.getmypid().'-'.uniqid();
         $this->deleteTree($this->workDir);
         mkdir($this->workDir, 0755, true);
+        $this->manager = app(CoreVendorManager::class);
     }
 
     protected function tearDown(): void
@@ -53,67 +57,82 @@ class CoreUpdaterVendorTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_dependency_lock_changed_is_false_when_locks_match(): void
+    public function test_lock_changed_is_false_when_locks_match(): void
     {
         $base = $this->makeDir('base');
         $staged = $this->makeDir('staged');
         file_put_contents($base.'/composer.lock', '{"content-hash":"abc"}');
         file_put_contents($staged.'/composer.lock', '{"content-hash":"abc"}');
 
-        $this->assertFalse($this->invoke('dependencyLockChanged', [$staged, $base]));
+        $this->assertFalse($this->manager->lockChanged($staged, $base));
     }
 
-    public function test_dependency_lock_changed_is_true_when_locks_differ(): void
+    public function test_lock_changed_is_true_when_locks_differ(): void
     {
         $base = $this->makeDir('base');
         $staged = $this->makeDir('staged');
         file_put_contents($base.'/composer.lock', '{"content-hash":"abc"}');
         file_put_contents($staged.'/composer.lock', '{"content-hash":"xyz"}');
 
-        $this->assertTrue($this->invoke('dependencyLockChanged', [$staged, $base]));
+        $this->assertTrue($this->manager->lockChanged($staged, $base));
     }
 
-    public function test_dependency_lock_changed_is_false_when_release_ships_no_lock(): void
+    public function test_lock_changed_is_false_when_release_ships_no_lock(): void
     {
         $base = $this->makeDir('base');
         $staged = $this->makeDir('staged');
         file_put_contents($base.'/composer.lock', '{"content-hash":"abc"}');
 
-        $this->assertFalse($this->invoke('dependencyLockChanged', [$staged, $base]));
+        $this->assertFalse($this->manager->lockChanged($staged, $base));
     }
 
-    public function test_dependency_lock_changed_is_true_when_live_has_no_lock(): void
+    public function test_lock_changed_is_true_when_live_has_no_lock(): void
     {
         $base = $this->makeDir('base');
         $staged = $this->makeDir('staged');
         file_put_contents($staged.'/composer.lock', '{"content-hash":"xyz"}');
 
-        $this->assertTrue($this->invoke('dependencyLockChanged', [$staged, $base]));
+        $this->assertTrue($this->manager->lockChanged($staged, $base));
     }
 
-    public function test_apply_vendor_swaps_in_staged_and_retains_old(): void
+    public function test_locks_match_compares_two_arbitrary_files(): void
+    {
+        $a = $this->workDir.'/a.lock';
+        $b = $this->workDir.'/b.lock';
+        $c = $this->workDir.'/c.lock';
+        file_put_contents($a, 'same');
+        file_put_contents($b, 'same');
+        file_put_contents($c, 'different');
+
+        $this->assertTrue($this->manager->locksMatch($a, $b));
+        $this->assertFalse($this->manager->locksMatch($a, $c));
+        $this->assertFalse($this->manager->locksMatch($a, $this->workDir.'/missing.lock'));
+        $this->assertTrue($this->manager->locksMatch(null, $this->workDir.'/missing.lock'));
+    }
+
+    public function test_swap_swaps_in_staged_and_retains_old(): void
     {
         $base = $this->makeDir('base');
         $payload = $this->makeDir('payload');
         $this->writeFile($base.'/vendor/marker.txt', 'OLD');
         $this->writeFile($payload.'/vendor/marker.txt', 'NEW');
 
-        $this->invoke('applyVendor', [$payload, $base]);
+        $this->manager->swap($payload, $base);
 
         $this->assertSame('NEW', file_get_contents($base.'/vendor/marker.txt'));
         $this->assertSame('OLD', file_get_contents($base.'/vendor.old/marker.txt'),
             'previous vendor/ must be retained at vendor.old for rollback');
     }
 
-    public function test_restore_old_vendor_rolls_back_a_swap(): void
+    public function test_restore_previous_rolls_back_a_swap(): void
     {
         $base = $this->makeDir('base');
         $payload = $this->makeDir('payload');
         $this->writeFile($base.'/vendor/marker.txt', 'OLD');
         $this->writeFile($payload.'/vendor/marker.txt', 'NEW');
 
-        $this->invoke('applyVendor', [$payload, $base]);
-        $this->invoke('restoreOldVendor', [$base]);
+        $this->manager->swap($payload, $base);
+        $this->manager->restorePrevious($base);
 
         $this->assertSame('OLD', file_get_contents($base.'/vendor/marker.txt'),
             'rollback must restore the previous vendor/');
@@ -121,36 +140,29 @@ class CoreUpdaterVendorTest extends TestCase
             'vendor.old must be consumed by the rollback');
     }
 
-    public function test_cleanup_old_vendor_discards_retained_copy(): void
+    public function test_discard_previous_drops_retained_copy(): void
     {
         $base = $this->makeDir('base');
         $payload = $this->makeDir('payload');
         $this->writeFile($base.'/vendor/marker.txt', 'OLD');
         $this->writeFile($payload.'/vendor/marker.txt', 'NEW');
 
-        $this->invoke('applyVendor', [$payload, $base]);
-        $this->invoke('cleanupOldVendor', [$base]);
+        $this->manager->swap($payload, $base);
+        $this->manager->discardPrevious($base);
 
         $this->assertSame('NEW', file_get_contents($base.'/vendor/marker.txt'));
         $this->assertDirectoryDoesNotExist($base.'/vendor.old',
-            'a successful update must discard vendor.old');
+            'a successful operation must discard vendor.old');
     }
 
-    public function test_apply_vendor_throws_when_staged_vendor_missing(): void
+    public function test_swap_throws_when_staged_vendor_missing(): void
     {
         $base = $this->makeDir('base');
         $payload = $this->makeDir('payload');
         $this->writeFile($base.'/vendor/marker.txt', 'OLD');
 
         $this->expectException(\RuntimeException::class);
-        $this->invoke('applyVendor', [$payload, $base]);
-    }
-
-    private function invoke(string $method, array $args): mixed
-    {
-        $reflection = new \ReflectionMethod(CoreUpdater::class, $method);
-
-        return $reflection->invokeArgs(app(CoreUpdater::class), $args);
+        $this->manager->swap($payload, $base);
     }
 
     private function makeDir(string $name): string
