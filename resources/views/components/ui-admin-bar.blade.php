@@ -33,10 +33,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- 
-Admin bar displayed only when administrator is logged in
-@props(['isAdminLayout' => false]) - true when in admin panel layout mode
+{{--
+Admin bar displayed only when administrator is logged in.
+Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
 --}}
+@props(['isAdminLayout' => false])
+
 @php
     // データベースが存在しない場合（アンインストール後など）は何も表示しない
     try {
@@ -44,10 +46,21 @@ Admin bar displayed only when administrator is logged in
     } catch (\Exception $e) {
         $isAuthenticated = false;
     }
+
+    // Pick a logout endpoint that matches the session table the current
+    // page was rendered against. Admin-layout pages run with the member
+    // guard's session (`members_sessions`), so the standard
+    // `admin.logout` route — which sits behind the admin URL prefix and
+    // therefore also resolves to the member guard — validates the
+    // form's CSRF token against the same session and works. Front-end
+    // pages run with the web guard's session (`sessions`), so the form
+    // must post to a web-mounted endpoint; otherwise the token rendered
+    // here and the token validated against `members_sessions` belong to
+    // different rows and every submit fails with 419.
+    $logoutAction = $isAdminLayout ? route('admin.logout') : route('admin-bar.logout');
 @endphp
 
 @if($isAuthenticated)
-@props(['isAdminLayout' => false])
 
 <div x-data="adminBar()"
      x-init="init()"
@@ -206,7 +219,7 @@ Admin bar displayed only when administrator is logged in
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700"></div>
                         <div class="bg-white dark:bg-black">
-                            <form method="POST" action="{{ route('admin.logout') }}">
+                            <form method="POST" action="{{ $logoutAction }}">
                                 @csrf
                                 <button type="submit" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                     <i class="fas fa-sign-out-alt w-5 text-center mr-2 text-gray-500 dark:text-gray-400"></i>
@@ -272,7 +285,7 @@ Admin bar displayed only when administrator is logged in
                 </a>
 
                 {{-- Logout --}}
-                <form method="POST" action="{{ route('admin.logout') }}">
+                <form method="POST" action="{{ $logoutAction }}">
                     @csrf
                     <button type="submit"
                             class="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition text-left">

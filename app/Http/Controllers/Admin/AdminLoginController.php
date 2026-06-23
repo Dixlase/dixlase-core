@@ -146,6 +146,42 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * Log out the administrator from an admin bar rendered on a front-end
+     * page (web guard context).
+     *
+     * The admin bar is shown on theme/front pages whenever a member is
+     * authenticated, but the page itself loads with the web guard's
+     * session (the `sessions` table under the guard-aware session
+     * driver). The standard `admin.logout` route lives under the admin
+     * URL prefix and runs with the member guard's session
+     * (`members_sessions`), so the CSRF token rendered into the front
+     * page's form does not match the token the admin-side endpoint
+     * validates against — every submit fails with 419.
+     *
+     * This endpoint is mounted on the web side instead, so the form's
+     * CSRF token and the validation context come from the same session
+     * record. We then explicitly remove the parallel row from
+     * `members_sessions` to drop the member's auth state from the admin
+     * guard's table as well, then invalidate the web session and rotate
+     * the token like any other logout.
+     */
+    public function destroyFromAdminBar(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $sessionId = $request->session()->getId();
+
+        \Illuminate\Support\Facades\Auth::guard($this->getGuardName())->logout();
+
+        \Illuminate\Support\Facades\DB::table('members_sessions')
+            ->where('id', $sessionId)
+            ->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+
+    /**
      * Get settings model class name
      */
     protected function getSettingModelClass(): string
