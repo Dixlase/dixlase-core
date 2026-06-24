@@ -63,14 +63,42 @@ use Illuminate\Support\Facades\Log;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
 {
+    /**
+     * Whitelist of `data-theme` values Cloudflare Turnstile accepts.
+     * Anything outside this set falls back to the safe default `auto`.
+     */
+    private const ALLOWED_THEMES = ['auto', 'light', 'dark'];
+
     private string $siteKey;
 
     private string $secretKey;
+
+    private string $theme;
 
     public function __construct(array $config = [])
     {
         $this->siteKey = $config['site_key'] ?? CaptchaHelper::getSiteKey();
         $this->secretKey = $config['secret_key'] ?? CaptchaHelper::getSecretKey();
+        $this->theme = self::normalizeTheme(
+            $config['theme'] ?? config('captcha.drivers.turnstile.theme', 'auto'),
+        );
+    }
+
+    /**
+     * Coerce arbitrary input to one of `auto` / `light` / `dark`, falling
+     * back to `auto` for anything else. Keeps the rendered widget from
+     * emitting an invalid `data-theme` attribute when an operator typos
+     * `TURNSTILE_THEME` in `.env`.
+     */
+    private static function normalizeTheme(mixed $value): string
+    {
+        if (! is_string($value)) {
+            return 'auto';
+        }
+
+        $value = strtolower(trim($value));
+
+        return in_array($value, self::ALLOWED_THEMES, true) ? $value : 'auto';
     }
 
     public function verify(Request $request): CaptchaResult
@@ -176,7 +204,7 @@ class TurnstileCaptchaDriver implements CaptchaDriver
         $defaultAttributes = [
             'class' => 'cf-turnstile',
             'data-sitekey' => $this->siteKey,
-            'data-theme' => 'auto',
+            'data-theme' => $this->theme,
             'data-size' => 'normal',
         ];
 

@@ -70,6 +70,19 @@ return [
             'class' => \App\Captcha\TurnstileCaptchaDriver::class,
             'site_key' => env('TURNSTILE_SITE_KEY'),
             'secret_key' => env('TURNSTILE_SECRET_KEY'),
+
+            /*
+            | Widget colour scheme. Cloudflare Turnstile renders the
+            | challenge widget with `data-theme="auto"` by default, which
+            | follows the visitor's OS `prefers-color-scheme` setting and
+            | therefore drifts away from the site theme on machines where
+            | the two disagree. Set this to `light` or `dark` to pin the
+            | widget to the site's actual theme; leave it as `auto` to
+            | keep the OS-following behaviour.
+            |
+            | Accepted: 'auto' | 'light' | 'dark'.
+            */
+            'theme' => env('TURNSTILE_THEME', 'auto'),
         ],
 
         // Future drivers can be added here
