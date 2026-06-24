@@ -31,9 +31,11 @@ use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupSettingsRequest;
 use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 use App\Models\SiteSetting;
+use App\Services\Backup\CoreRestoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
  * Backup management controller
@@ -261,12 +263,23 @@ class AdminSystemBackupController extends AdminLoggedInController
     /**
      * Restore from backup
      */
-    public function restore(BackupRecord $backup): RedirectResponse
+    public function restore(BackupRecord $backup, CoreRestoreService $coreRestore): RedirectResponse
     {
         if ($backup->status !== BackupRecord::STATUS_COMPLETED) {
             return redirect()
                 ->route('admin.settings.systems.backup.index')
                 ->with('error', __('admin/settings/systems/backup/index.flash.restore_unavailable'));
+        }
+
+        // Restoring a backup whose composer.lock differs from the installed
+        // one winds PHP dependencies back, so the matching vendor/ must be
+        // re-fetched from the old release (the backup excludes vendor/ by
+        // design). That is a heavy, network-bound, maintenance-mode
+        // operation — running it inside this web request would 504 and
+        // break concurrent traffic — so it is dispatched to a detached
+        // process, exactly like a core update.
+        if ($coreRestore->crossesDependencyBoundary($backup)) {
+            return $this->startDependencyRollback($backup);
         }
 
         $result = $this->restoreService->restore($backup);
@@ -282,6 +295,43 @@ class AdminSystemBackupController extends AdminLoggedInController
             ->with('success', __('admin/settings/systems/backup/index.flash.restore_success', [
                 'duration' => round($result->duration ?? 0, 2),
             ]));
+    }
+
+    /**
+     * Dispatch a dependency-crossing restore to a detached process that
+     * runs it under maintenance mode (restore source + DB, then re-fetch
+     * and swap the matching vendor/). The site serves the maintenance page
+     * — which auto-refreshes — until the rollback finishes.
+     */
+    private function startDependencyRollback(BackupRecord $backup): RedirectResponse
+    {
+        if (! function_exists('exec')) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.restore_exec_disabled'));
+        }
+
+        // Under PHP-FPM, PHP_BINARY points at the FPM binary; resolve the
+        // CLI php so the detached artisan command actually runs.
+        $phpBinary = (new PhpExecutableFinder())->find(false);
+        if (! $phpBinary) {
+            return redirect()
+                ->route('admin.settings.systems.backup.index')
+                ->with('error', __('admin/settings/systems/backup/index.flash.restore_php_cli_not_found'));
+        }
+
+        $command = sprintf(
+            'nohup %s %s dls:backup:restore %s --force --refetch-vendor > %s 2>&1 &',
+            escapeshellarg($phpBinary),
+            escapeshellarg(base_path('artisan')),
+            escapeshellarg((string) $backup->id),
+            escapeshellarg(storage_path('logs/backup-restore.log'))
+        );
+        exec($command);
+
+        return redirect()
+            ->route('admin.settings.systems.backup.restores')
+            ->with('success', __('admin/settings/systems/backup/index.flash.restore_dependency_started'));
     }
 
     /**
