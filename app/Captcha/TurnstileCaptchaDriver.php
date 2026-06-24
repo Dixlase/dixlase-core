@@ -55,6 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 namespace App\Captcha;
 
+use App\Contracts\Theme\SiteAppearanceProviderInterface;
 use App\Helpers\CaptchaHelper;
 use App\Services\CaptchaFailoverService;
 use Illuminate\Http\Request;
@@ -79,16 +80,59 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     {
         $this->siteKey = $config['site_key'] ?? CaptchaHelper::getSiteKey();
         $this->secretKey = $config['secret_key'] ?? CaptchaHelper::getSecretKey();
-        $this->theme = self::normalizeTheme(
-            $config['theme'] ?? config('captcha.drivers.turnstile.theme', 'auto'),
-        );
+        $this->theme = self::resolveTheme($config);
+    }
+
+    /**
+     * Three-tier resolution for the widget's `data-theme` attribute:
+     *
+     *   1. Explicit operator override via constructor `$config['theme']`
+     *      or the `captcha.drivers.turnstile.theme` config key (sourced
+     *      from `TURNSTILE_THEME` in `.env`). Wins when set.
+     *   2. The active theme's
+     *      {@see \App\Contracts\Theme\SiteAppearanceProviderInterface}
+     *      binding. Lets the widget track an in-theme light/dark/auto
+     *      setting automatically without an operator-level env var.
+     *   3. `auto` — Turnstile then follows the visitor's OS
+     *      `prefers-color-scheme` preference.
+     *
+     * The provider lookup is wrapped in a try/catch so a buggy or
+     * partially-installed theme can never bring down captcha rendering
+     * on the front end; on any failure we fall through to the safe
+     * `auto` default.
+     */
+    private static function resolveTheme(array $config): string
+    {
+        // 1. Explicit override — string or null. Empty strings count
+        //    as "unset" so an accidentally-blank .env entry does not
+        //    short-circuit the provider lookup.
+        $explicit = $config['theme'] ?? config('captcha.drivers.turnstile.theme');
+        if (is_string($explicit) && trim($explicit) !== '') {
+            return self::normalizeTheme($explicit);
+        }
+
+        // 2. Active theme's appearance provider, if one is bound.
+        if (app()->bound(SiteAppearanceProviderInterface::class)) {
+            try {
+                return self::normalizeTheme(
+                    app(SiteAppearanceProviderInterface::class)->getAppearanceMode(),
+                );
+            } catch (\Throwable) {
+                // Fall through to `auto` — never let theme bugs leak
+                // out as a 500 on the public form.
+            }
+        }
+
+        // 3. Safe default.
+        return 'auto';
     }
 
     /**
      * Coerce arbitrary input to one of `auto` / `light` / `dark`, falling
      * back to `auto` for anything else. Keeps the rendered widget from
      * emitting an invalid `data-theme` attribute when an operator typos
-     * `TURNSTILE_THEME` in `.env`.
+     * `TURNSTILE_THEME` in `.env`, or when a theme provider returns
+     * something outside the accepted set.
      */
     private static function normalizeTheme(mixed $value): string
     {
