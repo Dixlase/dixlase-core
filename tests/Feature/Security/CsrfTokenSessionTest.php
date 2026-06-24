@@ -377,4 +377,105 @@ class CsrfTokenSessionTest extends TestCase
 
         $this->assertNull($guard, 'ゲストパスが何らかのガードに振り分けられた');
     }
+
+    /**
+     * Paths whose first segment merely starts with the admin prefix
+     * (e.g. /admin-bar/logout under the default 'admin' prefix) must
+     * NOT be routed to the member guard. A substring `str_starts_with`
+     * match collapsed those routes onto `members_sessions`, while their
+     * forms were rendered on front-end pages against the `sessions`
+     * row, producing a CSRF token mismatch (419) on every submit. The
+     * matcher must compare path segments, not raw string prefixes.
+     *
+     * Regression covers the /admin-bar/logout endpoint introduced for
+     * the front-side admin bar logout flow.
+     */
+    public function test_guard_aware_handler_does_not_misroute_admin_prefix_lookalike_paths(): void
+    {
+        SiteSetting::setValue('admin_url', 'admin');
+        $this->resetGuardAwareCache();
+
+        $handler = new GuardAwareDatabaseSessionHandler(
+            app('db')->connection(),
+            'sessions',
+            120,
+            app()
+        );
+        $handler->setGuardTable('member', 'members_sessions');
+
+        $ref = new ReflectionClass($handler);
+        $getCurrentGuard = $ref->getMethod('getCurrentGuard');
+        $getCurrentGuard->setAccessible(true);
+
+        $lookalikePaths = [
+            '/admin-bar/logout',
+            '/administration',
+            '/admin2/dashboard',
+        ];
+
+        foreach ($lookalikePaths as $path) {
+            $request = \Illuminate\Http\Request::create($path, 'GET');
+            app()->instance('request', $request);
+
+            // Fresh handler instance per path so the per-instance
+            // `currentGuard` cache does not carry over.
+            $handler = new GuardAwareDatabaseSessionHandler(
+                app('db')->connection(),
+                'sessions',
+                120,
+                app()
+            );
+            $handler->setGuardTable('member', 'members_sessions');
+
+            $guard = $getCurrentGuard->invoke($handler);
+
+            $this->assertNull(
+                $guard,
+                "path {$path} must not route to the member guard (admin-prefix segment match regression)",
+            );
+        }
+    }
+
+    /**
+     * Mirror of the lookalike regression for a custom admin_url:
+     * setting `admin_url = 'manage'` must still match `/manage` and
+     * `/manage/...` but must not match `/management-app/...`.
+     */
+    public function test_guard_aware_handler_segment_matches_custom_admin_url(): void
+    {
+        SiteSetting::setValue('admin_url', 'manage');
+        $this->resetGuardAwareCache();
+
+        $ref = new ReflectionClass(GuardAwareDatabaseSessionHandler::class);
+        $getCurrentGuard = $ref->getMethod('getCurrentGuard');
+        $getCurrentGuard->setAccessible(true);
+
+        $cases = [
+            '/manage' => 'member',
+            '/manage/dashboard' => 'member',
+            '/management-app/dashboard' => null,
+            '/managed-account' => null,
+        ];
+
+        foreach ($cases as $path => $expected) {
+            $request = \Illuminate\Http\Request::create($path, 'GET');
+            app()->instance('request', $request);
+
+            $handler = new GuardAwareDatabaseSessionHandler(
+                app('db')->connection(),
+                'sessions',
+                120,
+                app()
+            );
+            $handler->setGuardTable('member', 'members_sessions');
+
+            $guard = $getCurrentGuard->invoke($handler);
+
+            $this->assertSame(
+                $expected,
+                $guard,
+                "path {$path} expected guard ".var_export($expected, true).", got ".var_export($guard, true),
+            );
+        }
+    }
 }
