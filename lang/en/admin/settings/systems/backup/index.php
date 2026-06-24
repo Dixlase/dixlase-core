@@ -142,6 +142,9 @@ return [
         'restore_success' => 'Restore completed successfully (:duration s). A safety snapshot was taken automatically.',
         'restore_failed' => 'Restore failed: :error',
         'restore_unavailable' => 'This backup is not available for restore.',
+        'restore_dependency_started' => 'This restore winds dependencies back, so the site is temporarily in maintenance while the matching dependencies are re-fetched. The page will return automatically when it finishes.',
+        'restore_exec_disabled' => 'This restore needs to run in the background, but PHP exec() is disabled on this server. Restore via CLI instead.',
+        'restore_php_cli_not_found' => 'This restore needs the PHP CLI binary, which could not be located on this server. Restore via CLI instead.',
         'note_updated' => 'Backup note updated.',
     ],
 

@@ -142,6 +142,9 @@ return [
         'restore_success' => '復元が完了しました（:duration 秒）。セーフティスナップショットが自動取得されています。',
         'restore_failed' => '復元に失敗しました: :error',
         'restore_unavailable' => 'このバックアップは復元できません。',
+        'restore_dependency_started' => 'この復元は依存関係を巻き戻すため、対応する依存関係を再取得する間、サイトは一時的にメンテナンスモードになります。完了すると自動的にページが戻ります。',
+        'restore_exec_disabled' => 'この復元はバックグラウンド実行が必要ですが、このサーバーでは PHP の exec() が無効です。CLI から復元してください。',
+        'restore_php_cli_not_found' => 'この復元には PHP CLI バイナリが必要ですが、このサーバーでは見つかりませんでした。CLI から復元してください。',
         'note_updated' => 'バックアップのメモを更新しました。',
     ],
 

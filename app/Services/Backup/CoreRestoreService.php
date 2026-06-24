@@ -69,7 +69,56 @@ class CoreRestoreService implements RestoreServiceInterface
     public function __construct(
         private FileVerificationServiceInterface $verifier,
         private BackupServiceInterface $backupService,
+        private \App\Services\Core\CoreVendorManager $vendorManager,
     ) {}
+
+    /**
+     * Decide whether restoring this backup would wind PHP dependencies
+     * back to a different set — i.e. its bundled composer.lock differs
+     * from the installed one. Only core_source backups carry source files
+     * (and thus composer.lock); for anything else there is no dependency
+     * boundary to cross.
+     *
+     * When true the caller must re-fetch the matching vendor/ from the
+     * backup's release after restoring (the pre-update backup excludes
+     * vendor/ by design), and should do so under maintenance mode in a
+     * detached process — the swap is heavy and would otherwise 504 a web
+     * request and break concurrent traffic.
+     */
+    public function crossesDependencyBoundary(BackupRecord $backup): bool
+    {
+        $targets = is_array($backup->targets) ? $backup->targets : [];
+        if (! in_array(BackupServiceInterface::TARGET_CORE_SOURCE, $targets, true)) {
+            return false;
+        }
+        if (! $backup->file_path || ! file_exists($backup->file_path)) {
+            return false;
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($backup->file_path) !== true) {
+            return false;
+        }
+
+        $lock = $zip->getFromName('composer.lock');
+        if ($lock === false) {
+            $lock = $zip->getFromName('core/composer.lock');
+        }
+        $zip->close();
+
+        if ($lock === false) {
+            return false;
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'dls_lock_');
+        try {
+            file_put_contents($tmp, $lock);
+
+            return ! $this->vendorManager->locksMatch($tmp, base_path('composer.lock'));
+        } finally {
+            @unlink($tmp);
+        }
+    }
 
     public function restore(BackupRecord $backup, array $targets = [], array $options = []): RestoreResultDTO
     {

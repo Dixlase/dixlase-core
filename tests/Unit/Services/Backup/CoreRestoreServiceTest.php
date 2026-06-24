@@ -27,7 +27,11 @@ class CoreRestoreServiceTest extends TestCase
 
         $verifier = new CoreFileVerificationService();
         $this->backupService = new CoreBackupService($verifier);
-        $this->restoreService = new CoreRestoreService($verifier, $this->backupService);
+        $this->restoreService = new CoreRestoreService(
+            $verifier,
+            $this->backupService,
+            app(\App\Services\Core\CoreVendorManager::class),
+        );
     }
 
     protected function tearDown(): void
