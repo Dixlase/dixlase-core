@@ -64,7 +64,7 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
 
 <div x-data="adminBar()"
      x-init="init()"
-     id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-sm text-gray-700 dark:text-white bg-white/75 dark:bg-gray-900/75 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
+     id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-md text-gray-700 dark:text-white bg-white/85 dark:bg-gray-900/85 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
             {{-- Left side: Site name and menu --}}
