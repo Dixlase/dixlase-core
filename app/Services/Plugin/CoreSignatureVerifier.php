@@ -120,7 +120,16 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      */
     public function verify(string $pluginSlug): SignatureVerificationResult
     {
-        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        // Resolve the directory name through Plugin::resolveDirectoryFromSlug
+        // instead of the historical `Str::studly(...)` shortcut: the studly
+        // conversion drops uppercase acronyms (`dixlase-seo` → `DixlaseSeo`,
+        // not the actual `DixlaseSEO`), and a wrong-case path blows up
+        // `RecursiveDirectoryIterator::__construct()` deeper in
+        // collectFileHashes() with `Failed to open directory`.
+        $pluginName = \App\Models\Plugin::resolveDirectoryFromSlug($pluginSlug);
+        if ($pluginName === null) {
+            return SignatureVerificationResult::unsigned(__('services/plugin/core_signature_verifier.plugin_json_not_found'));
+        }
         $pluginPath = base_path("plugins/{$pluginName}");
         $pluginJsonPath = "{$pluginPath}/plugin.json";
         $signaturePath = "{$pluginPath}/signature.sig";
