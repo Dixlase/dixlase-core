@@ -40,6 +40,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
  * Plugin metadata model
@@ -188,5 +189,75 @@ class Plugin extends Model
     public function isActivated(): bool
     {
         return $this->isEnabled();
+    }
+
+    /**
+     * Resolve the on-disk plugin directory name from a slug.
+     *
+     * Many call sites historically reconstructed the directory by piping
+     * the slug through `Str::studly(str_replace('-', '_', $slug))`. That
+     * conversion silently mangles plugins whose canonical name contains
+     * an uppercase acronym — e.g. the slug `dixlase-seo` becomes
+     * `DixlaseSeo`, which on a case-sensitive filesystem does not match
+     * the actual `DixlaseSEO` directory. The result is either a missing
+     * directory (no plugin found at all) or, on case-insensitive
+     * filesystems, a wrong-case path that PHP iterators
+     * (`RecursiveDirectoryIterator::__construct`) refuse to open.
+     *
+     * The lookup runs three lanes in order:
+     *
+     *   1. **DB**: look up the row by slug and use the stored
+     *      `directory` column as the source of truth. The on-disk index
+     *      is consulted so the returned name always matches the actual
+     *      filesystem casing.
+     *   2. **Studly heuristic**: for plugins whose name has no
+     *      acronyms, `Str::studly` still produces the right answer.
+     *      Used as a no-DB fast path (early boot, tests, etc.).
+     *   3. **Normalized fallback**: strip dashes and lowercase both
+     *      sides; matches `dixlase-seo` → `DixlaseSEO` without needing
+     *      the DB.
+     *
+     * Returns `null` when no on-disk directory matches.
+     */
+    public static function resolveDirectoryFromSlug(string $slug): ?string
+    {
+        if ($slug === '') {
+            return null;
+        }
+
+        $base = base_path('plugins');
+        $actualDirs = [];
+        foreach (glob("{$base}/*", GLOB_ONLYDIR) ?: [] as $dir) {
+            $name = basename($dir);
+            $actualDirs[strtolower($name)] = $name;
+        }
+
+        if (empty($actualDirs)) {
+            return null;
+        }
+
+        try {
+            $stored = self::where('slug', $slug)->value('directory');
+            if (is_string($stored) && $stored !== '') {
+                $key = strtolower($stored);
+                if (isset($actualDirs[$key])) {
+                    return $actualDirs[$key];
+                }
+            }
+        } catch (\Throwable $e) {
+            // DB may be unavailable during early boot or in unit tests.
+        }
+
+        $studly = Str::studly(str_replace('-', '_', $slug));
+        if (isset($actualDirs[strtolower($studly)])) {
+            return $actualDirs[strtolower($studly)];
+        }
+
+        $normalized = strtolower(str_replace('-', '', $slug));
+        if (isset($actualDirs[$normalized])) {
+            return $actualDirs[$normalized];
+        }
+
+        return null;
     }
 }
