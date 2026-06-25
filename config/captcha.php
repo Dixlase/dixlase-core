@@ -72,17 +72,22 @@ return [
             'secret_key' => env('TURNSTILE_SECRET_KEY'),
 
             /*
-            | Widget colour scheme. Cloudflare Turnstile renders the
-            | challenge widget with `data-theme="auto"` by default, which
-            | follows the visitor's OS `prefers-color-scheme` setting and
-            | therefore drifts away from the site theme on machines where
-            | the two disagree. Set this to `light` or `dark` to pin the
-            | widget to the site's actual theme; leave it as `auto` to
-            | keep the OS-following behaviour.
+            | Widget colour scheme. Three-tier resolution applied in
+            | the driver:
             |
-            | Accepted: 'auto' | 'light' | 'dark'.
+            |   1. `TURNSTILE_THEME` in `.env` (this value) — explicit
+            |      operator override. Wins when set.
+            |   2. The active theme's `SiteAppearanceProviderInterface`
+            |      binding, if any — lets the widget track an in-theme
+            |      light/dark/auto setting automatically.
+            |   3. `auto` — Cloudflare Turnstile then follows the
+            |      visitor's OS `prefers-color-scheme` setting.
+            |
+            | Leave this unset to let the active theme drive the widget.
+            | Set it to `light`, `dark`, or `auto` to pin the widget
+            | regardless of the theme's preference.
             */
-            'theme' => env('TURNSTILE_THEME', 'auto'),
+            'theme' => env('TURNSTILE_THEME'),
         ],
 
         // Future drivers can be added here
