@@ -125,21 +125,36 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
 
         // Path-based guard determination (higher priority)
 
-        // Use member guard for admin panel
-        // Since the admin URL can be customized by the user, match against the value dynamically resolved from the database
-        // Since config('admin.url.admin_url') only returns the default value 'admin',
-        // reference site_settings.admin_url from the database with static cache
-        // Without this, when admin_url is not "admin", sessions are written to the default sessions table,
-        // causing _token inconsistency between admin panel requests and resulting in 419 (CSRF mismatch)
+        // Use member guard for admin panel.
+        //
+        // The admin URL prefix can be customized per install. Resolve it
+        // dynamically from `site_settings` (with a static in-process
+        // cache) so the right table is picked even when the operator has
+        // changed the prefix away from the config default 'admin'.
+        // Without this, when admin_url is not "admin", sessions for the
+        // customized admin paths land in the default `sessions` table
+        // and admin-panel requests hit 419 from `_token` inconsistency.
+        //
+        // The match is a SEGMENT-level match (exact prefix or prefix
+        // followed by '/'). A naive `str_starts_with($path, $prefix)`
+        // would also rope in unrelated paths whose first segment merely
+        // *starts with* the prefix string — e.g. with the default
+        // prefix 'admin', `/admin-bar/logout` would be misrouted to the
+        // member guard. That misroute causes its own 419 because the
+        // form on the front page renders against the web guard's
+        // session row but validation runs against the member guard's
+        // row, with independently rotated `_token` values.
         $adminUrl = $this->resolveAdminUrl();
-        if (str_starts_with($path, 'admin') || ($adminUrl !== '' && str_starts_with($path, $adminUrl))) {
+        if (self::pathMatchesSegment($path, 'admin')
+            || ($adminUrl !== '' && self::pathMatchesSegment($path, $adminUrl))
+        ) {
             $this->currentGuard = 'member';
 
             return 'member';
         }
 
         // For Mypage, use user guard
-        if (str_starts_with($path, 'mypage')) {
+        if (self::pathMatchesSegment($path, 'mypage')) {
             $this->currentGuard = 'user';
 
             return 'user';
@@ -150,6 +165,28 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
         $this->currentGuard = null;
 
         return null;
+    }
+
+    /**
+     * Whether `$path` is exactly `$prefix` or sits directly under it as
+     * a path segment (i.e. `$prefix` followed by `/`).
+     *
+     * `request()->path()` returns the URI without a leading slash and
+     * without a trailing slash, so the matcher only needs to check the
+     * exact match and the `<prefix>/` case.
+     *
+     * Used by `getCurrentGuard()` to keep the path-based guard pick
+     * from collapsing onto unrelated routes whose first segment only
+     * *starts with* the prefix string (e.g. `/admin-bar/...` under the
+     * default `admin` prefix).
+     */
+    protected static function pathMatchesSegment(string $path, string $prefix): bool
+    {
+        if ($prefix === '') {
+            return false;
+        }
+
+        return $path === $prefix || str_starts_with($path, $prefix.'/');
     }
 
     /**
