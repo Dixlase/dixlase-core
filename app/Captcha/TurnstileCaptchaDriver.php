@@ -84,16 +84,23 @@ class TurnstileCaptchaDriver implements CaptchaDriver
     }
 
     /**
-     * Three-tier resolution for the widget's `data-theme` attribute:
+     * Four-tier resolution for the widget's `data-theme` attribute:
      *
      *   1. Explicit operator override via constructor `$config['theme']`
      *      or the `captcha.drivers.turnstile.theme` config key (sourced
      *      from `TURNSTILE_THEME` in `.env`). Wins when set.
-     *   2. The active theme's
+     *   2. Admin auth pages (admin URL prefix + no member logged in) —
+     *      forced to `auto`. The pre-login layout
+     *      (`layouts/auth.blade.php`) only consults the visitor's
+     *      `prefers-color-scheme`, so any theme-driven answer from the
+     *      provider would render a widget that mismatches its own
+     *      page. The member's personal appearance is also not yet
+     *      knowable here.
+     *   3. The active theme's
      *      {@see \App\Contracts\Theme\SiteAppearanceProviderInterface}
      *      binding. Lets the widget track an in-theme light/dark/auto
      *      setting automatically without an operator-level env var.
-     *   3. `auto` — Turnstile then follows the visitor's OS
+     *   4. `auto` — Turnstile then follows the visitor's OS
      *      `prefers-color-scheme` preference.
      *
      * The provider lookup is wrapped in a try/catch so a buggy or
@@ -111,7 +118,12 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             return self::normalizeTheme($explicit);
         }
 
-        // 2. Active theme's appearance provider, if one is bound.
+        // 2. Admin auth context follows the visitor's OS.
+        if (self::isAdminAuthContext()) {
+            return 'auto';
+        }
+
+        // 3. Active theme's appearance provider, if one is bound.
         if (app()->bound(SiteAppearanceProviderInterface::class)) {
             try {
                 return self::normalizeTheme(
@@ -123,8 +135,49 @@ class TurnstileCaptchaDriver implements CaptchaDriver
             }
         }
 
-        // 3. Safe default.
+        // 4. Safe default.
         return 'auto';
+    }
+
+    /**
+     * Whether the current request is rendered under the admin URL prefix
+     * without an authenticated member.
+     *
+     * Used to short-circuit `resolveTheme()` to `auto` on the admin
+     * login / 2FA / password-reset pages, which all extend
+     * `layouts/auth.blade.php` and follow the visitor's OS preference
+     * via `prefers-color-scheme` only — no theme/profile signal is
+     * available pre-login.
+     *
+     * Wrapped in a defensive try/catch because this runs during
+     * captcha rendering, which must never trip a 500: `request()` is
+     * unbound in CLI contexts, `AdminHelper::getAdminUrl()` reads from
+     * `site_settings` which may be unavailable during install, and the
+     * member guard can throw on a misconfigured auth provider. Any
+     * failure here returns `false`, falling back to the provider tier.
+     */
+    private static function isAdminAuthContext(): bool
+    {
+        try {
+            if (! app()->bound('request')) {
+                return false;
+            }
+
+            $request = app('request');
+            $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
+            if (! is_string($adminUrl) || $adminUrl === '') {
+                return false;
+            }
+
+            $onAdminPath = $request->is($adminUrl) || $request->is($adminUrl.'/*');
+            if (! $onAdminPath) {
+                return false;
+            }
+
+            return ! auth('member')->check();
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
