@@ -151,4 +151,24 @@ class CoreUpdate extends Command
             return self::FAILURE;
         }
     }
+
+    /**
+     * Resolve the asset-build mode from the CLI flags, matching the
+     * priority documented next to the buildExtensionAssets() call:
+     * --skip-build wins (never build), then --build (force a rebuild),
+     * otherwise 'auto' (skip when prebuilt assets are already present,
+     * which is the release-ZIP case on production).
+     */
+    private function extensionAssetMode(): string
+    {
+        if ($this->option('skip-build')) {
+            return 'skip';
+        }
+
+        if ($this->option('build')) {
+            return 'force';
+        }
+
+        return 'auto';
+    }
 }
