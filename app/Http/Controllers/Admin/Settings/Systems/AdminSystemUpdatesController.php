@@ -362,6 +362,11 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // subprocess as a last-resort guard right before `migrate`;
         // that one is best-effort and separate from this operator
         // -requested, source-inclusive backup.)
+        // Id of the source-inclusive pre-update backup, when the operator
+        // opted in. Passed to the detached updater so it reuses this single
+        // record as the DB restore point instead of taking a second,
+        // DB-only snapshot (which surfaced as a confusing duplicate entry).
+        $preBackupId = null;
         if ($request->input('backup_first') === '1') {
             $backupResult = $backupService->backup(
                 [
@@ -379,6 +384,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                         'error' => $backupResult->error ?? 'unknown error',
                     ]));
             }
+            $preBackupId = $backupResult->backupRecordId;
         }
 
         // Under PHP-FPM the PHP_BINARY constant points at the FPM binary
@@ -409,6 +415,12 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ? ' --applied-by='.escapeshellarg((string) $appliedById)
             : '';
 
+        // Hand the pre-update backup id to the updater so it reuses that one
+        // record instead of taking its own DB-only snapshot.
+        $dbBackupArg = $preBackupId !== null
+            ? ' --db-backup-id='.escapeshellarg((string) $preBackupId)
+            : '';
+
         // Raise the in-progress flag *before* spawning. The next admin
         // request lands on the placeholder instead of trying to render
         // the index view while resources/ is being replaced. The
@@ -421,10 +433,11 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         ]);
 
         $command = sprintf(
-            'nohup %s %s dls:core:update --force --no-interaction%s > %s 2>&1 &',
+            'nohup %s %s dls:core:update --force --no-interaction%s%s > %s 2>&1 &',
             escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
             $appliedByArg,
+            $dbBackupArg,
             escapeshellarg(storage_path('logs/core-update.log'))
         );
         exec($command);

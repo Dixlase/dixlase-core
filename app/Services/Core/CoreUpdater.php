@@ -80,7 +80,7 @@ class CoreUpdater
      * @param  ?Closure(string): void  $log  Optional sink for progress lines
      * @return array{from: ?string, to: string, snapshot: string, history_id: int, backup_record_id: ?int}
      */
-    public function update(?string $version = null, ?int $appliedById = null, ?Closure $log = null): array
+    public function update(?string $version = null, ?int $appliedById = null, ?int $existingDbBackupId = null, ?Closure $log = null): array
     {
         $log ??= fn (string $line) => null;
 
@@ -147,24 +147,37 @@ class CoreUpdater
                 $log('No dependency change (composer.lock unchanged) — vendor/ left untouched.');
             }
 
-            // Capture a database backup before mutating the live tree. If
-            // post-extraction migrations fail or the new code fails to boot,
-            // the operator can restore via dls:backup:restore and a manual
-            // file rollback from the snapshot.
-            $log('Capturing database backup before applying core...');
-            $backupResult = $this->backupService->backup(
-                [BackupServiceInterface::TARGET_DATABASE],
-                ['note' => __('admin/settings/systems/backup/index.auto_note.core_update_db', [
-                    'current' => $current,
-                    'version' => $version,
-                ])],
-            );
-            if ($backupResult->success) {
-                $backupRecordId = $backupResult->backupRecordId;
-                $log("Database backup captured (record id: {$backupRecordId}, file: {$backupResult->filePath})");
+            // Ensure there is a database restore point before mutating the
+            // live tree, so a failed migration / boot can be rolled back via
+            // dls:backup:restore plus the source snapshot above.
+            //
+            // When the web UI's applyCore() already captured a
+            // source-inclusive [core_source, database] backup synchronously,
+            // it passes that record's id here. That single record is both
+            // the operator's rollback point AND a database restore point, so
+            // we reuse it instead of taking a second, DB-only snapshot —
+            // which used to surface as a confusing duplicate entry in the
+            // backup list. Direct CLI runs (no id) still get the internal
+            // safety-net snapshot below.
+            if ($existingDbBackupId !== null) {
+                $backupRecordId = $existingDbBackupId;
+                $log("Reusing pre-update backup #{$backupRecordId} as the database restore point (skipping internal DB snapshot).");
             } else {
-                $log('WARNING: database backup failed: '.($backupResult->error ?? 'unknown error'));
-                $log('Continuing without backup — manual rollback will not be possible if migrations fail.');
+                $log('Capturing database backup before applying core...');
+                $backupResult = $this->backupService->backup(
+                    [BackupServiceInterface::TARGET_DATABASE],
+                    ['note' => __('admin/settings/systems/backup/index.auto_note.core_update_db', [
+                        'current' => $current,
+                        'version' => $version,
+                    ])],
+                );
+                if ($backupResult->success) {
+                    $backupRecordId = $backupResult->backupRecordId;
+                    $log("Database backup captured (record id: {$backupRecordId}, file: {$backupResult->filePath})");
+                } else {
+                    $log('WARNING: database backup failed: '.($backupResult->error ?? 'unknown error'));
+                    $log('Continuing without backup — manual rollback will not be possible if migrations fail.');
+                }
             }
 
             // For a dependency update the live tree is briefly inconsistent
