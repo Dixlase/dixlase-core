@@ -25,7 +25,7 @@ namespace Tests\Feature\Console;
 use App\Services\Core\CoreUpdater;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Mockery\MockInterface;
+use Mockery;
 use Tests\TestCase;
 
 /**
@@ -45,11 +45,13 @@ class CoreUpdateBackupReuseTest extends TestCase
 
     public function test_db_backup_id_option_is_passed_through_to_the_updater(): void
     {
-        $this->mock(CoreUpdater::class, function (MockInterface $mock) {
+        $result = $this->fakeUpdateResult();
+        $this->mock(CoreUpdater::class, function ($mock) use ($result) {
+            // update(version, appliedById, existingDbBackupId, log)
             $mock->shouldReceive('update')
                 ->once()
-                ->withArgs(fn ($version, $appliedById, $existingDbBackupId, $log) => $existingDbBackupId === 7)
-                ->andReturn($this->fakeUpdateResult());
+                ->with(Mockery::any(), Mockery::any(), 7, Mockery::any())
+                ->andReturn($result);
         });
 
         $exit = Artisan::call('dls:core:update', [
@@ -64,11 +66,12 @@ class CoreUpdateBackupReuseTest extends TestCase
 
     public function test_db_backup_id_defaults_to_null_for_direct_cli_runs(): void
     {
-        $this->mock(CoreUpdater::class, function (MockInterface $mock) {
+        $result = $this->fakeUpdateResult();
+        $this->mock(CoreUpdater::class, function ($mock) use ($result) {
             $mock->shouldReceive('update')
                 ->once()
-                ->withArgs(fn ($version, $appliedById, $existingDbBackupId, $log) => $existingDbBackupId === null)
-                ->andReturn($this->fakeUpdateResult());
+                ->with(Mockery::any(), Mockery::any(), null, Mockery::any())
+                ->andReturn($result);
         });
 
         $exit = Artisan::call('dls:core:update', [
