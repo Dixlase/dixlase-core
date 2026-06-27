@@ -95,23 +95,35 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
      */
     private function mergeNavigationItem(string $key, array $value): void
     {
+        $existingValue = config("admin.navigation.{$key}");
+
+        // When the section already exists (e.g. declared by another plugin),
+        // merge the new children into it and keep its established position and
+        // properties. `_insert_before` / `_insert_after` only position a
+        // section on its FIRST declaration, so they are ignored here:
+        // otherwise a second plugin's ordered insert would overwrite the
+        // existing section and drop the first plugin's children — which is
+        // exactly what happens when two plugins share a top-level section
+        // (e.g. DixlaseCookie's settings + DixlaseLegal's consent log under
+        // a shared "cookie" section).
+        if (is_array($existingValue)) {
+            if (isset($value['children']) && is_array($value['children'])) {
+                $existingChildren = $existingValue['children'] ?? [];
+                $existingValue['children'] = $this->mergeChildren($existingChildren, $value['children']);
+                config(["admin.navigation.{$key}" => $existingValue]);
+            }
+
+            return;
+        }
+
+        // First declaration of this section: honour the ordering hints.
         if (isset($value['_insert_before'])) {
             $this->insertOrdered('admin.navigation', $key, $value, $value['_insert_before'], 'before');
         } elseif (isset($value['_insert_after'])) {
             $this->insertOrdered('admin.navigation', $key, $value, $value['_insert_after'], 'after');
         } else {
-            $existingValue = config("admin.navigation.{$key}");
-            if ($existingValue !== null && is_array($existingValue)) {
-                // If existing settings exist, merge only children and preserve other properties
-                if (isset($value['children']) && is_array($value['children'])) {
-                    $existingChildren = $existingValue['children'] ?? [];
-                    $existingValue['children'] = $this->mergeChildren($existingChildren, $value['children']);
-                }
-                config(["admin.navigation.{$key}" => $existingValue]);
-            } else {
-                // Add new
-                config(["admin.navigation.{$key}" => $value]);
-            }
+            // Add new
+            config(["admin.navigation.{$key}" => $value]);
         }
     }
 
