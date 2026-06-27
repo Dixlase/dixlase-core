@@ -58,7 +58,8 @@ class CoreUpdate extends Command
         {--dry-run : Resolve target version and exit without changes}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
         {--skip-build : Skip the npm install / build step entirely}
-        {--applied-by= : Member id to record on core_version_history.applied_by_id (defaults to null for direct CLI runs)}';
+        {--applied-by= : Member id to record on core_version_history.applied_by_id (defaults to null for direct CLI runs)}
+        {--db-backup-id= : Id of a pre-update backup that already includes the database; when set, the internal DB-only snapshot is skipped and this record is reused as the restore point}';
 
     protected $description = 'Update the Dixlase Core to the latest available release';
 
@@ -103,10 +104,17 @@ class CoreUpdate extends Command
         $appliedBy = $this->option('applied-by');
         $appliedById = ($appliedBy !== null && $appliedBy !== '') ? (int) $appliedBy : null;
 
+        // The admin UI's applyCore() passes the id of the source-inclusive
+        // pre-update backup it already took, so the updater reuses it as the
+        // database restore point instead of taking a duplicate DB snapshot.
+        $dbBackupId = $this->option('db-backup-id');
+        $existingDbBackupId = ($dbBackupId !== null && $dbBackupId !== '') ? (int) $dbBackupId : null;
+
         try {
             $result = $updater->update(
                 version: $target,
                 appliedById: $appliedById,
+                existingDbBackupId: $existingDbBackupId,
                 log: fn (string $line) => $this->line('[core-update] '.$line),
             );
 
