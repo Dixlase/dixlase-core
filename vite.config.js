@@ -171,13 +171,25 @@ export default defineConfig(({ command }) => ({
             cert: fs.readFileSync('/etc/ssl/private/localhost.crt'),
         } : false,
         watch: {
-            usePolling: true,     // ポーリングでファイル変更を検知
-            interval: 100,        // ポーリングの間隔（お好みで調整）
+            usePolling: true,     // Poll to detect file changes
+            interval: 100,        // Polling interval (tune as needed)
             ignored: [
                 '**/node_modules/**',
                 '**/.git/**',
-                '**/.env',        // .envファイルの監視を無効化（インストール中の頻繁な更新でクラッシュ防止）
-                '**/storage/framework/cache/**', // キャッシュファイルの監視を無効化（リロードループ防止）
+                '**/.env',        // .env is rewritten frequently during install; watching it causes crashes
+                '**/storage/framework/cache/**', // Application file cache — watching triggers a reload loop
+                // Compiled Blade cache. Laravel writes here whenever it
+                // compiles a Blade on demand (view:clear + first visit,
+                // stale mtime, first-visit-of-that-page, `cache:clear`
+                // side effects). Watching it means every such write
+                // fires a `[vite] page reload` on the WebSocket, which
+                // cancels the in-flight navigation and re-loads the
+                // current page — the "first click after clearing cache
+                // stays on the same page, second click works" symptom.
+                // Source Blades are still watched for reloads via the
+                // laravel-vite-plugin `refresh: ['resources/views/**']`
+                // entry, so operator-driven edits still hot-reload.
+                '**/storage/framework/views/**',
             ],
         },
         // HMR settings.

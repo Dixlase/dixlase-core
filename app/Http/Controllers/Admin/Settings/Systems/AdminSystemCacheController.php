@@ -125,6 +125,20 @@ class AdminSystemCacheController extends AdminLoggedInController
                     break;
                 case 'application':
                     Artisan::call('cache:clear');
+                    // Safety net: pre-compile every Blade so the very
+                    // next admin navigation cannot trigger an
+                    // on-the-fly compile write into
+                    // storage/framework/views/. Even though `cache:clear`
+                    // itself does not touch the compiled view cache,
+                    // operators sometimes hit this button on a fresh
+                    // install / first-visit-of-that-page state where
+                    // compiled views for the target page are still
+                    // missing. Warming the cache here keeps that
+                    // subsequent request from racing Vite's file
+                    // watcher; the primary defence is the
+                    // `**/storage/framework/views/**` entry in
+                    // `vite.config.js` `server.watch.ignored`.
+                    Artisan::call('view:cache');
                     $message = __('admin/settings/systems/cache.success_application');
                     break;
                 case 'all':
