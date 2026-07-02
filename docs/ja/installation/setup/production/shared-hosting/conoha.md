@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # ConoHa WING
 
 高性能レンタルサーバー ConoHa WING に Dixlase をインストールします。

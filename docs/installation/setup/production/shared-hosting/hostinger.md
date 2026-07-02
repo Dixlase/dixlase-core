@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Hostinger
 
 Install Dixlase on Hostinger, one of the world's most popular hosting providers with hPanel.

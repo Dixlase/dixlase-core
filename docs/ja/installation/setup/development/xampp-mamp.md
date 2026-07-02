@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # XAMPP / MAMP
 
 XAMPP と MAMP は初心者向けの GUI ベースのローカルサーバーパッケージです。Apache、PHP、MySQL を一つのインストーラにまとめ、グラフィカルなコントロールパネルで管理できます。
