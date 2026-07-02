@@ -103,6 +103,12 @@ return [
         'checkbox_label' => 'Take a backup before updating',
     ],
 
+    // Subtle note shown under the "Take a backup before updating"
+    // checkbox on the core update confirmation modal, so the operator
+    // knows what the auto-backup captures without having to open the
+    // backup management page separately.
+    'core_confirm_backup_note' => 'Backup includes: database + core source + themes.',
+
     // Confirm modal (bulk apply)
     'confirm' => [
         'title' => 'Run Updates',
