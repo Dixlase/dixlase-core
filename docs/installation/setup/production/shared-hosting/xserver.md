@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Xserver
 
 Install Dixlase on Xserver, Japan's most popular shared hosting service.

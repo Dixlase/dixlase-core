@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Laravel Herd
 
 Laravel Herd provides a one-click PHP and Nginx setup for macOS and Windows. It is a lightweight alternative to Docker that requires no manual configuration.

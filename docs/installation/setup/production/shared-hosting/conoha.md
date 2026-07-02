@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # ConoHa WING
 
 Install Dixlase on ConoHa WING, a high-performance shared hosting service.

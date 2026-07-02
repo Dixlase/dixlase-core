@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # AWS（Amazon Web Services）
 
 AWS EC2 と RDS で Dixlase をデプロイします。

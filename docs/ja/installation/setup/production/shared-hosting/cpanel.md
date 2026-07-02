@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # cPanelホスティング
 
 cPanel を使用するホスティング会社に Dixlase をインストールします。
