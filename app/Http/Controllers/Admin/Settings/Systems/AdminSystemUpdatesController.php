@@ -35,8 +35,8 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
-use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Contracts\Backup\BackupServiceInterface;
+use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Plugin;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
@@ -355,13 +355,21 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // only way to return to the pre-update state is to restore
         // both halves together — restoring source over a migrated
         // schema (or vice versa) leaves the install inconsistent.
-        // Capture TARGET_CORE_SOURCE + TARGET_DATABASE as one record
-        // so a single restore rolls the whole update back, matching
-        // the plugin/theme apply path. (CoreUpdater::update() also
-        // takes its own DB-only snapshot inside the detached
-        // subprocess as a last-resort guard right before `migrate`;
-        // that one is best-effort and separate from this operator
-        // -requested, source-inclusive backup.)
+        // Capture TARGET_CORE_SOURCE + TARGET_DATABASE + TARGET_THEMES_ALL
+        // as one record so a single restore rolls the whole update
+        // back, matching the plugin/theme apply path. Themes are
+        // included unconditionally (rather than only when the release
+        // ZIP declares a bundled theme in .dixlase-release.json)
+        // because the availability signal is inside the release ZIP
+        // that has not been downloaded yet at this point — including
+        // themes is cheap (theme dirs are small next to core+DB) and
+        // guarantees that a rollback after a bundled-theme update
+        // restores the pre-update theme code even if the operator
+        // upgraded from a check that predated the bundling change.
+        // (CoreUpdater::update() also takes its own DB-only snapshot
+        // inside the detached subprocess as a last-resort guard right
+        // before `migrate`; that one is best-effort and separate from
+        // this operator-requested, source-inclusive backup.)
         // Id of the source-inclusive pre-update backup, when the operator
         // opted in. Passed to the detached updater so it reuses this single
         // record as the DB restore point instead of taking a second,
@@ -372,6 +380,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 [
                     BackupServiceInterface::TARGET_CORE_SOURCE,
                     BackupServiceInterface::TARGET_DATABASE,
+                    BackupServiceInterface::TARGET_THEMES_ALL,
                 ],
                 ['note' => __('admin/settings/systems/backup/index.auto_note.pre_core_update', [
                     'current' => $current,
