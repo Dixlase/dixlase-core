@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # AWS (Amazon Web Services)
 
 Deploy Dixlase on AWS EC2 with Nginx and RDS.

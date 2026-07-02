@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Laravel Valet
 
 Laravel Valet は macOS 向けの軽量な開発環境です。バックグラウンドで Nginx を実行し、DnsMasq を使用してローカルマシン上のサイトへのリクエストをプロキシします。

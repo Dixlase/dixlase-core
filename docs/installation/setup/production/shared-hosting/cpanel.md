@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # cPanel Hosting
 
 Install Dixlase on any hosting provider that uses cPanel.

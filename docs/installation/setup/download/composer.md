@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Composer Create-Project
 
 > **Coming Soon** — This installation method will be available when Dixlase is published to Packagist.

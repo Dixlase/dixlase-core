@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Sakura Internet
 
 Install Dixlase on Sakura Internet, a long-established Japanese hosting provider.
