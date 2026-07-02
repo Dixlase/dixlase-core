@@ -2,16 +2,16 @@
 
 For Japanese, see [README.ja.md](./README.ja.md).
 
-**Dixlase** is a next-generation CMS built on Laravel.
-From minimal landing pages to event management, reservations, and e-commerce, every feature is provided as an installable plugin.
-Our mission is to create **the world's most secure CMS**, released as open-source under the AGPL license.
+**Dixlase** is a Laravel-based open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
+Defenses are hardened in the core, while plugins and themes give you the freedom to grow — corporate sites, client projects, internal-only deployments, and personal sites alike. Every feature beyond the essentials, even pages and blogs, is provided as an installable plugin.
+Because the core handles security, operators and content creators are free to focus on creating and running content. Our mission is to build **the world's most secure CMS**, released as open source under the AGPL license.
 
 ---
 
 ## 🚀 Features
 
-- **Security First**
-  Two-factor authentication, login notifications, and strong password policies are supported by default.
+- **Hardened at the Core**
+  Two-factor authentication, login notifications, strong password policies, CSP, audit logs, and plugin signature verification are built in from day one.
 - **Minimal Core + Plugins**
   Core only provides front-page editing and admin login. Even blogs and pages are optional plugins.
 - **Highly Customizable**
@@ -20,6 +20,40 @@ Our mission is to create **the world's most secure CMS**, released as open-sourc
   Core is AGPL, while commercial plugins will be available under separate licenses.
 - **Docker-based Development**
   Laravel, MySQL, Redis, Nginx, Vite, phpMyAdmin, and more—ready with one command.
+
+---
+
+## 🧩 Official Plugins
+
+Dixlase ships a minimal core, and the following official plugins are maintained alongside it. Install only the features your site needs — directly from the plugin list in the admin panel, with no command-line steps or manual file placement.
+
+| Plugin | What it does |
+| --- | --- |
+| **Dixlase Pages** | Static pages and the essential content-creation features. Blog posts and custom post types are planned as separate plugins. |
+| **Dixlase Inquiry** | Contact form with auto-reply email, spam protection, and admin-side message management. |
+| **Dixlase Menus** | Visually edit header / footer / sidebar menu structures by drag and drop. |
+| **Dixlase SEO** | Manage meta tags, sitemaps, OGP, and structured data per page or site-wide. |
+| **Dixlase Cookie** | Cookie-consent display and recording, category-based consent, and conditional script firing. |
+
+More official plugins are on the way. The full lineup is also viewable on [GitHub](https://github.com/Dixlase).
+
+---
+
+## 🎨 Themes
+
+Themes shape a site's look and structure, and you can swap between them as needed.
+
+- **Dixlase OnePage** — the default theme, optimized for single-page layouts (hero, content builder, contact form, footer). Well suited to corporate sites and landing pages.
+
+More themes are planned for future releases.
+
+---
+
+## 🕹️ Live Demo
+
+No installation required — try Dixlase's admin panel and operational experience right in your browser. A disposable instance is generated for each visitor from a SQLite template and auto-discarded after a set period, so you can reset and try as many times as you like. Admin panel, content editing, plugin installation — everything feels exactly like production.
+
+See the [official site](https://dixlase.org/) for the live demo.
 
 ---
 
