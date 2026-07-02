@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas fa-heart-pulse mr-2"></i>{{ __('admin/dashboard.site_health') }}
     </h2>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach($siteHealth as $item)
             @if($item['is_clickable'])
                 <a href="{{ $item['url'] }}" class="flex items-start gap-3 p-4 rounded-lg border {{ $item['border_bg_class'] }} hover:shadow-md transition-shadow no-underline">
