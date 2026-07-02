@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # SiteGround
 
 SiteGround の Site Tools コントロールパネルを使って Dixlase をインストールします。

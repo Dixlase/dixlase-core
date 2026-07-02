@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Laravel Herd
 
 Laravel Herd は macOS および Windows 向けのワンクリック PHP・Nginx セットアップツールです。手動設定が不要な、Docker の軽量な代替手段です。

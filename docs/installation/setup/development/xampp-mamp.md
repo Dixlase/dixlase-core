@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # XAMPP / MAMP
 
 XAMPP and MAMP are classic GUI-based local server packages for beginners. They bundle Apache, PHP, and MySQL into a single installer with a graphical control panel.

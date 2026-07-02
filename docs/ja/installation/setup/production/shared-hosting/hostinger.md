@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Hostinger
 
 世界で最も人気のあるホスティングサービスの一つ Hostinger（hPanel）に Dixlase をインストールします。
