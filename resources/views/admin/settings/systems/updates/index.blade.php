@@ -584,6 +584,9 @@ file is governed by the AGPL terms below.
                         <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
                         <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
                     </label>
+                    <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('admin/settings/systems/updates.core_confirm_backup_note') }}
+                    </p>
                 </x-ui-modal>
             @endif
 
