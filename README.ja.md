@@ -23,32 +23,6 @@ For English, see [README.md](./README.md).
 
 ---
 
-## 🧩 公式プラグイン
-
-Dixlase はミニマルなコアを出荷し、以下の公式プラグインをコアと並行して保守しています。必要な機能だけを — 管理画面のプラグイン一覧から、コマンド操作や手動のファイル配置なしで — インストールできます。
-
-| プラグイン | 概要 |
-| --- | --- |
-| **Dixlase Pages** | 固定ページなど、コンテンツ作成の基本機能。ブログ投稿やカスタム投稿タイプは別プラグインとして提供予定。 |
-| **Dixlase Inquiry** | 自動返信メール・スパム対策・管理側メッセージ管理を備えたお問い合わせフォーム。 |
-| **Dixlase Menus** | ヘッダー / フッター / サイドバーのメニュー構造をドラッグ&ドロップで視覚的に編集。 |
-| **Dixlase SEO** | メタタグ・サイトマップ・OGP・構造化データをページ単位／サイト全体で管理。 |
-| **Dixlase Cookie** | Cookie 同意の表示・記録、カテゴリ別同意、同意状態に応じたスクリプト発火。 |
-
-公式プラグインは今後も拡充予定です。全ラインナップは [GitHub](https://github.com/Dixlase) でも確認できます。
-
----
-
-## 🎨 テーマ
-
-テーマはサイトの見た目と構造を決めるもので、必要に応じて切り替えられます。
-
-- **Dixlase OnePage** — シングルページ構成に最適化された既定テーマ(ヒーロー・コンテンツビルダー・お問い合わせフォーム・フッター)。コーポレートサイトやランディングページに好適。
-
-今後のリリースでテーマの拡充を予定しています。
-
----
-
 ## 🕹️ ライブデモ
 
 インストール不要 — Dixlase の管理画面と運用体験をブラウザ上でそのまま試せます。訪問者ごとに SQLite テンプレートから使い捨てインスタンスが生成され、一定時間で自動破棄されるため、何度でもリセットして試せます。管理画面・コンテンツ編集・プラグインインストールまで、すべて本番同様の操作感です。
@@ -101,58 +75,43 @@ composer install
 
 ---
 
-## 🤖 MCP サーバー (Laravel Boost)
+## 🧩 公式プラグイン
 
-Dixlase は AI コーディング支援ツール [Laravel Boost](https://laravel-news.com/supercharge-your-laravel-projects-real-ai-coding-with-laravel-boost) に対応しています。
-VSCode や Cursor から Laravel のコマンド実行やコンポーネント生成を直接利用可能です。
+Dixlase はミニマルなコアを出荷し、以下の公式プラグインをコアと並行して保守しています。必要な機能だけを — 管理画面のプラグイン一覧から、コマンド操作や手動のファイル配置なしで — インストールできます。
 
-### 有効化手順
+| プラグイン | 概要 |
+| --- | --- |
+| **Dixlase Pages** | 固定ページなど、コンテンツ作成の基本機能。ブログ投稿やカスタム投稿タイプは別プラグインとして提供予定。 |
+| **Dixlase Inquiry** | 自動返信メール・スパム対策・管理側メッセージ管理を備えたお問い合わせフォーム。 |
+| **Dixlase Menus** | ヘッダー / フッター / サイドバーのメニュー構造をドラッグ&ドロップで視覚的に編集。 |
+| **Dixlase SEO** | メタタグ・サイトマップ・OGP・構造化データをページ単位／サイト全体で管理。 |
+| **Dixlase Cookie** | Cookie 同意の表示・記録、カテゴリ別同意、同意状態に応じたスクリプト発火。 |
 
-1. サンプルをコピー
-   ```bash
-   cp mcp.example.json .mcp.json
-   ```
-
-2. `.mcp.json` を環境に合わせて編集
-   - `-p` → Docker プロジェクト名（例: dixlase）
-   - `-f` → `docker-compose.yml` の絶対パス
-   - サービス名 → 通常は `laravel.test`
-
-3. VSCode / Cursor で MCP を有効化すると、Laravel Boost が自動起動し、
-   Livewire コンポーネント生成やテスト実行など **16種類以上のツール** が利用できます。
+公式プラグインは今後も拡充予定です。全ラインナップは [GitHub](https://github.com/Dixlase) でも確認できます。
 
 ---
 
-## 🌐 コメントの言語
+## 🎨 公式テーマ
 
-Dixlase のソースは正本として英語コメント付きで配布されます。各言語のコメントアーカイブは `resources/comment-translations/{locale}/`（およびプラグイン/テーマ内の同パス）にあり、開発環境のソースに in-place で適用できます。
+テーマはサイトの見た目と構造を決めるもので、必要に応じて切り替えられます。
 
-```bash
-# すべてのソースコメントを日本語に変換（コア + プラグイン + テーマ）
-./convert-comments.sh ja
+- **Dixlase OnePage** — シングルページ構成に最適化された既定テーマ(ヒーロー・コンテンツビルダー・お問い合わせフォーム・フッター)。コーポレートサイトやランディングページに好適。
 
-# 英語に戻す
-./convert-comments.sh ja --reverse
-
-# 書き込まずにプレビュー
-./convert-comments.sh ja --dry-run
-
-# 利用可能な言語を一覧表示
-./convert-comments.sh --list
-```
-
-置換は AST 認識ベース — PHP のコメントトークンのみが書き換えられ、文字列リテラルは触りません — また冪等（既に変換済みのソースに再適用しても何も起きない）。
-
-辞書はソースと同じリポジトリでバージョン管理されているため、翻訳の改善は Pull Request として受け付けます。新しい言語（例: `zh`, `ko`）を追加するには、`resources/comment-translations/{locale}/_glossary.php` と各ファイルの辞書（英語キーを共有）を作成するだけです。
-
-GitHub リリースには正本である英語ソースのみが含まれます。ユーザーは（または [Dixlase Docker Installer](https://github.com/Dixlase/dixlase-installer-docker) のセットアップ時に）このスクリプトでインストール後に言語を切り替えます。
+今後のリリースでテーマの拡充を予定しています。
 
 ---
 
 ## 📚 ドキュメント
 
-- [プロジェクトサイト — dixlase.org](https://dixlase.org/)
-- 開発ドキュメント（準備中）
+- [プロジェクトサイト — dixlase.org](https://dixlase.org/) — 概要・ライブデモ・お知らせ
+- [ドキュメント](docs/ja/index.md) — インストール・運用・開発者ガイド
+- [開発ガイド](docs/ja/development/index.md) — アーキテクチャ・API リファレンス・コーディング規約
+
+### 開発者向けガイド
+
+- [Plugin API](./PLUGIN-API.ja.md) — プラグイン / テーマ API の境界定義
+- [ソースコメントのロケール切替](docs/ja/development/comment-translation.md) — `convert-comments.sh` でソースコメントの言語を切り替える
+- [MCP サーバー (Laravel Boost)](docs/ja/development/mcp-laravel-boost.md) — VSCode / Cursor 向け AI 開発支援のセットアップ
 
 ---
 
@@ -174,13 +133,12 @@ CLA 確定後、コントリビューションは [コピーライトポリシ�
 
 ---
 
-## 📖 プロジェクトドキュメント
+## 📖 ガバナンス・ポリシー
 
 - [コントリビューションガイド](./CONTRIBUTING.ja.md) — コントリビュート方法
 - [コピーライトポリシー](./COPYRIGHT-POLICY.ja.md) — デュアルライセンス方針と CLA モデルの概要
 - [コントリビューターライセンス契約](./CLA.ja.md) — 策定中。外部コントリビューション受付の再開時に全文を公開
 - [セキュリティポリシー](./SECURITY.ja.md) — 脆弱性の報告
-- [Plugin API](./PLUGIN-API.md) — Plugin API 境界定義
 
 ---
 
@@ -192,14 +150,14 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 - **商用ライセンス**: AGPL v3 の遵守が現実的でないユースケース(クローズドソース SaaS での改変版配布など)向けに、別途商用ライセンスの提供を予定しています。
 
 **現時点では商用ライセンスはまだ提供しておりません。**  
-(雛形のみ [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL) に Draft として置いています)。  
+(雛形のみ [LICENSE-COMMERCIAL.ja](./LICENSE-COMMERCIAL.ja) に Draft として置いています)。  
 提供開始時期や条件に関するお問い合わせは **info@dixlase.org** までご連絡ください。
 
 ファイル全体の構成は [NOTICE.ja](./NOTICE.ja) にまとめています([English](./NOTICE))。
 
 ### プラグイン・テーマについて
 
-[Plugin API](./PLUGIN-API.md) のみを通じて Dixlase CMS と連携するプラグイン・テーマは派生物とはみなされず、**プロプライエタリライセンスを含む任意のライセンスで配布可能**です。詳細は [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) をご確認ください。
+[Plugin API](./PLUGIN-API.ja.md) のみを通じて Dixlase CMS と連携するプラグイン・テーマは派生物とはみなされず、**プロプライエタリライセンスを含む任意のライセンスで配布可能**です。詳細は [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) をご確認ください。
 
 ### ソースコードの提供(AGPL §13)
 
