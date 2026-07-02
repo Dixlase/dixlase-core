@@ -23,32 +23,6 @@ Because the core handles security, operators and content creators are free to fo
 
 ---
 
-## 🧩 Official Plugins
-
-Dixlase ships a minimal core, and the following official plugins are maintained alongside it. Install only the features your site needs — directly from the plugin list in the admin panel, with no command-line steps or manual file placement.
-
-| Plugin | What it does |
-| --- | --- |
-| **Dixlase Pages** | Static pages and the essential content-creation features. Blog posts and custom post types are planned as separate plugins. |
-| **Dixlase Inquiry** | Contact form with auto-reply email, spam protection, and admin-side message management. |
-| **Dixlase Menus** | Visually edit header / footer / sidebar menu structures by drag and drop. |
-| **Dixlase SEO** | Manage meta tags, sitemaps, OGP, and structured data per page or site-wide. |
-| **Dixlase Cookie** | Cookie-consent display and recording, category-based consent, and conditional script firing. |
-
-More official plugins are on the way. The full lineup is also viewable on [GitHub](https://github.com/Dixlase).
-
----
-
-## 🎨 Themes
-
-Themes shape a site's look and structure, and you can swap between them as needed.
-
-- **Dixlase OnePage** — the default theme, optimized for single-page layouts (hero, content builder, contact form, footer). Well suited to corporate sites and landing pages.
-
-More themes are planned for future releases.
-
----
-
 ## 🕹️ Live Demo
 
 No installation required — try Dixlase's admin panel and operational experience right in your browser. A disposable instance is generated for each visitor from a SQLite template and auto-discarded after a set period, so you can reset and try as many times as you like. Admin panel, content editing, plugin installation — everything feels exactly like production.
@@ -101,65 +75,43 @@ For working on the Core itself (this repository), clone it and start the dev Doc
 
 ---
 
-## 🤖 MCP Server (Laravel Boost)
+## 🧩 Official Plugins
 
-Dixlase supports [Laravel Boost](https://laravel-news.com/supercharge-your-laravel-projects-real-ai-coding-with-laravel-boost) as an MCP server for AI-assisted development.
-This allows VSCode or Cursor to directly run Laravel commands and generate components.
+Dixlase ships a minimal core, and the following official plugins are maintained alongside it. Install only the features your site needs — directly from the plugin list in the admin panel, with no command-line steps or manual file placement.
 
-### How to enable
+| Plugin | What it does |
+| --- | --- |
+| **Dixlase Pages** | Static pages and the essential content-creation features. Blog posts and custom post types are planned as separate plugins. |
+| **Dixlase Inquiry** | Contact form with auto-reply email, spam protection, and admin-side message management. |
+| **Dixlase Menus** | Visually edit header / footer / sidebar menu structures by drag and drop. |
+| **Dixlase SEO** | Manage meta tags, sitemaps, OGP, and structured data per page or site-wide. |
+| **Dixlase Cookie** | Cookie-consent display and recording, category-based consent, and conditional script firing. |
 
-1. Copy the example config:
-   ```bash
-   cp mcp.example.json .mcp.json
-   ```
-
-2. Edit `.mcp.json` for your environment:
-   - `-p` → your Docker project name (e.g., `dixlase`)
-   - `-f` → absolute path to `docker-compose.yml`
-   - Service name → usually `laravel.test`
-
-3. Enable MCP in VSCode / Cursor.
-   Laravel Boost will start automatically, providing 16+ tools such as Livewire component scaffolding, running tests, and database migrations.
+More official plugins are on the way. The full lineup is also viewable on [GitHub](https://github.com/Dixlase).
 
 ---
 
-## 🌐 Comment Languages
+## 🎨 Official Themes
 
-The canonical Dixlase source ships with English comments. A per-locale comment archive lives at `resources/comment-translations/{locale}/` (and inside each plugin/theme) and can be applied to a development checkout in-place.
+Themes shape a site's look and structure, and you can swap between them as needed.
 
-```bash
-# Convert all source comments (core + plugins + themes) to Japanese
-./convert-comments.sh ja
+- **Dixlase OnePage** — the default theme, optimized for single-page layouts (hero, content builder, contact form, footer). Well suited to corporate sites and landing pages.
 
-# Revert back to English
-./convert-comments.sh ja --reverse
-
-# Preview without writing
-./convert-comments.sh ja --dry-run
-
-# List available locales
-./convert-comments.sh --list
-```
-
-Substitution is AST-aware — only PHP comment tokens are rewritten, never string literals — and the operation is idempotent (running it again on already-converted source is a safe no-op).
-
-The dictionary is versioned alongside the source, so translation improvements are accepted as pull requests. New locales (e.g. `zh`, `ko`) can be added by creating `resources/comment-translations/{locale}/_glossary.php` plus per-file dictionaries that share the same English keys.
-
-GitHub releases ship the canonical English source only; users (and the [Dixlase Docker Installer](https://github.com/Dixlase/dixlase-installer-docker) during setup) flip to a locale via this script after install.
+More themes are planned for future releases.
 
 ---
 
 ## 📚 Documentation
 
-### Official Resources
-- [Project Site — dixlase.org](https://dixlase.org/)
-- Developer Docs (WIP)
+- [Project Site — dixlase.org](https://dixlase.org/) — overview, live demo, and news
+- [Documentation](docs/index.md) — installation, operations, and developer guides
+- [Development Guide](docs/development/index.md) — architecture, API references, and coding conventions
 
-### Development Guides
-- [Composer Local Setup](docs/composer-local-setup.md) - Managing custom plugins and packages
-- [Git Exclude Auto Management](docs/git-exclude-auto-management.md) - Automatic .git/info/exclude management for plugins
-- [Password Dictionary Attack Protection](docs/password-dictionary-attack-protection-usage.md) - Have I Been Pwned API integration
-- [Two-Factor Authentication](docs/two-factor-authentication-usage.md) - 2FA implementation guide
+### Developer Guides
+
+- [Plugin API](./PLUGIN-API.md) — the plugin / theme API boundary definition
+- [Source Comment Localization](docs/development/comment-translation.md) — switch source comments between locales with `convert-comments.sh`
+- [MCP Server (Laravel Boost)](docs/development/mcp-laravel-boost.md) — AI-assisted development setup for VSCode / Cursor
 
 ---
 
@@ -183,13 +135,12 @@ with the full PR-based contribution guide.
 
 ---
 
-## 📖 Project Documents
+## 📖 Governance & Policies
 
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute
 - [Copyright Policy](./COPYRIGHT-POLICY.md) — Dual-license stance and CLA model overview
 - [Contributor License Agreement](./CLA.md) — In preparation; the full text will be published when external contributions reopen
 - [Security Policy](./SECURITY.md) — Reporting vulnerabilities
-- [Plugin API](./PLUGIN-API.md) — Plugin API boundary definition
 
 ---
 
