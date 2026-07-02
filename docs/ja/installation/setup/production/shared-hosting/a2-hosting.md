@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # A2 Hosting
 
 SSH と Composer をサポートする開発者向けホスティング A2 Hosting に Dixlase をインストールします。

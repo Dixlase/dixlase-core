@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Manual Setup
 
 Install PHP, Composer, and a database server individually on your machine. This approach gives you full control over each component and is suitable for developers who prefer custom configurations.

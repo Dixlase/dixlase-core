@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Xserver
 
 日本で最も人気のあるレンタルサーバー Xserver に Dixlase をインストールします。
