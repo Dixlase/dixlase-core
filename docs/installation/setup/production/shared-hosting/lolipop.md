@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Lolipop!
 
 Install Dixlase on Lolipop!, a budget-friendly shared hosting service.

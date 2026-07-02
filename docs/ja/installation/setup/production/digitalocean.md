@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # DigitalOcean
 
 DigitalOcean Droplet に Nginx、PHP-FPM、MariaDB で Dixlase をデプロイします。

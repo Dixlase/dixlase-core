@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # DigitalOcean
 
 Deploy Dixlase on a DigitalOcean Droplet with Nginx, PHP-FPM, and MariaDB.

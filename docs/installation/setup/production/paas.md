@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # PaaS Deployment
 
 Deploy Dixlase on managed platforms such as Laravel Forge or Ploi. These services handle server provisioning, deployment, SSL certificates, and monitoring, allowing you to focus on your application.

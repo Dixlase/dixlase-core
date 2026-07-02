@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # A2 Hosting
 
 Install Dixlase on A2 Hosting, a developer-friendly hosting provider with SSH and Composer support.
