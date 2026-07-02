@@ -25,6 +25,11 @@ on:
         description: 'Tag or ref to build (default: workflow run ref)'
         required: false
         default: ''
+      bundle_theme:
+        description: 'Bundle the official theme code + write .dixlase-release.json so the core updater applies themes/<slug>/ during update'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write   # required for softprops/action-gh-release to upload the asset
@@ -198,6 +203,87 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "wrapper=$WRAPPER" >> "$GITHUB_OUTPUT"
           echo "Staged: $(du -sh "$WRAPPER" | cut -f1)"
+
+      - name: Resolve theme bundling mode
+        # Off by default. Two opt-in switches drive it on:
+        #
+        #   * workflow_dispatch input bundle_theme=true — used by dev when
+        #     testing the theme-bundling path locally or building an
+        #     ad-hoc pre-release for a sandbox E2E.
+        #   * A `[bundle-theme]` marker anywhere in the release notes body
+        #     — used when the operator publishes a real GitHub Release
+        #     that must ship a matching theme update alongside core.
+        #
+        # When on, the next step writes .dixlase-release.json into the
+        # payload root; CoreUpdater reads it and applies each declared
+        # themes/<slug>/ during the update. Releases without the marker
+        # keep the pre-manifest behaviour (theme code preserved, admin
+        # panel still runs the standalone theme-update flow).
+        id: bundle
+        run: |
+          BUNDLE=false
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.bundle_theme }}" = "true" ]; then
+            BUNDLE=true
+            echo "Bundling requested via workflow_dispatch input."
+          fi
+
+          if [ "${{ github.event_name }}" = "release" ]; then
+            BODY=$(jq -r '.release.body // ""' "$GITHUB_EVENT_PATH")
+            if printf '%s' "$BODY" | grep -qF '[bundle-theme]'; then
+              BUNDLE=true
+              echo "Bundling requested via [bundle-theme] marker in release notes."
+            fi
+          fi
+
+          echo "bundle=$BUNDLE" >> "$GITHUB_OUTPUT"
+          echo "Bundle mode: $BUNDLE"
+
+      - name: Write .dixlase-release.json manifest
+        if: steps.bundle.outputs.bundle == 'true'
+        # Emits the manifest the core updater reads to decide which
+        # themes to apply alongside core. v1 supports exactly the
+        # official theme (DixlaseOnePage); ReleaseManifest validates
+        # the entry so a hostile ZIP cannot direct the updater at a
+        # path outside themes/<slug>/. Version comes from the theme's
+        # own theme.json so code, manifest and DB metadata line up.
+        run: |
+          set -e
+          WRAPPER="${{ steps.stage.outputs.wrapper }}"
+          THEME_JSON="$WRAPPER/themes/DixlaseOnePage/theme.json"
+
+          if [ ! -f "$THEME_JSON" ]; then
+            echo "::error::Bundle mode is on but $THEME_JSON does not exist. The theme must be installed during composer install; check that COMPOSER_AUTH grants access to the private theme repo."
+            exit 1
+          fi
+
+          THEME_VERSION=$(jq -r .version "$THEME_JSON")
+          if [ -z "$THEME_VERSION" ] || [ "$THEME_VERSION" = "null" ]; then
+            echo "::error::$THEME_JSON has no 'version' field; cannot bundle without a version."
+            exit 1
+          fi
+
+          RELEASE_TAG="${{ steps.stage.outputs.tag }}"
+          # Strip a leading 'v' so the manifest 'version' matches the
+          # semver form the updater compares against
+          # core_releases.available_version (also stored without 'v').
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+
+          MANIFEST="$WRAPPER/.dixlase-release.json"
+          cat > "$MANIFEST" <<EOF
+          {
+            "version": "$RELEASE_VERSION",
+            "bundled_themes": [
+              {
+                "slug": "DixlaseOnePage",
+                "version": "$THEME_VERSION",
+                "path": "themes/DixlaseOnePage"
+              }
+            ]
+          }
+          EOF
+          echo "Wrote manifest:"
+          cat "$MANIFEST"
 
       - name: Build ZIP
         id: zip

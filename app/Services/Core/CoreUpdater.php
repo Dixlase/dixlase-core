@@ -40,6 +40,7 @@ namespace App\Services\Core;
 use App\Contracts\Backup\BackupServiceInterface;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
+use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use Closure;
 use Illuminate\Support\Facades\Artisan;
@@ -111,6 +112,14 @@ class CoreUpdater
         $dependencyUpdate = false;
         $vendorSwapped = false;
         $maintenanceOn = false;
+
+        // Slug => absolute path of the retained pre-apply copy of each
+        // theme directory. Populated when a release ships bundled themes
+        // (the manifest declares them, see ReleaseManifest); an empty
+        // array on rollback means "no theme was touched, nothing to
+        // restore." On success the catch block discards each retained
+        // copy just like vendor.old.
+        $themeSnapshotPaths = [];
 
         try {
             $log("Downloading core v{$version}...");
@@ -209,6 +218,26 @@ class CoreUpdater
                 $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
             }
 
+            // A release ZIP MAY carry a manifest declaring theme
+            // directories the operator should update alongside core. The
+            // manifest is optional; a release without it is the normal
+            // "core only, themes preserved" path and this branch is a
+            // no-op. When present, the updater applies exactly the
+            // declared themes/<slug>/ directories over the live tree
+            // (never all of themes/ — operator-installed themes stay
+            // put) and refreshes the DB `Theme.version` for each so
+            // code, vendor autoload registration and DB metadata all
+            // line up on the release's version. See ReleaseManifest for
+            // the shape + validation rules the manifest goes through.
+            $manifest = ReleaseManifest::readFromPayload($payloadRoot);
+            if ($manifest !== null && $manifest->hasBundledThemes()) {
+                $themeSnapshotPaths = $this->applyBundledThemes(
+                    $payloadRoot,
+                    $manifest->bundledThemes,
+                    $log,
+                );
+            }
+
             $log('Running migrations...');
             // Scope migrate to the core's own migration path. Plugin and
             // theme ServiceProviders register their own database/migrations
@@ -254,6 +283,18 @@ class CoreUpdater
                 $this->vendorManager->discardPrevious();
                 $log('Discarded vendor.old (update succeeded).');
             }
+
+            // Mirror vendor.old cleanup: each bundled theme's pre-apply
+            // copy was retained under storage/ so a failure between the
+            // apply and this point could roll it back; the update has
+            // completed successfully, so we can drop them now.
+            foreach ($themeSnapshotPaths as $slug => $snapshotPath) {
+                if (is_dir($snapshotPath)) {
+                    File::deleteDirectory($snapshotPath);
+                }
+                $log("Discarded pre-apply snapshot of themes/{$slug} (update succeeded).");
+            }
+            $themeSnapshotPaths = [];
 
             $log('Recording version history...');
             $history = CoreVersionHistory::create([
@@ -312,6 +353,33 @@ class CoreUpdater
                 } catch (\Throwable $vendorError) {
                     $log("VENDOR ROLLBACK FAILED: {$vendorError->getMessage()}");
                     $log('Manual recovery required: restore vendor/ from the previous release ZIP.');
+                }
+            }
+
+            // Same pattern as the vendor rollback above, for any theme
+            // directory we replaced under the release manifest's
+            // instructions. Each entry in $themeSnapshotPaths is the
+            // pre-apply copy of themes/<slug>; the DB `Theme.version`
+            // row is refreshed to the pre-apply metadata so the admin
+            // panel stops showing the aborted upgrade as installed.
+            foreach ($themeSnapshotPaths as $slug => $snapshotPath) {
+                try {
+                    $livePath = base_path("themes/{$slug}");
+                    if (is_dir($livePath)) {
+                        File::deleteDirectory($livePath);
+                    }
+                    File::ensureDirectoryExists($livePath);
+                    // Move the retained copy back; fall back to copy if
+                    // the two happen to live on different filesystems.
+                    if (! @rename($snapshotPath, $livePath)) {
+                        File::copyDirectory($snapshotPath, $livePath);
+                        File::deleteDirectory($snapshotPath);
+                    }
+                    $this->restoreThemeDbVersion($slug, $livePath, $log);
+                    $log("Rolled back themes/{$slug} from pre-apply snapshot.");
+                } catch (\Throwable $themeError) {
+                    $log("THEME ROLLBACK FAILED for '{$slug}': {$themeError->getMessage()}");
+                    $log("Manual recovery required: restore themes/{$slug} from {$snapshotPath}");
                 }
             }
 
@@ -469,5 +537,98 @@ class CoreUpdater
         }
 
         return mb_substr($message, 0, 997).'...';
+    }
+
+    /**
+     * Apply the theme directories declared in a release manifest over
+     * the live tree. Each entry names exactly `themes/<slug>` — this
+     * has already been validated by ReleaseManifest — so the updater
+     * never touches operator-installed themes, plugins/ or custom/.
+     *
+     * For each declared theme the existing live directory is moved
+     * aside to a retained snapshot under storage/, then the staged
+     * copy is copied into place. The caller keeps the returned
+     * slug => snapshot-path map so the catch block can restore the
+     * old copies on rollback, and the success branch can discard them
+     * once the update has committed. The DB `Theme.version` row is
+     * refreshed for each applied theme so the admin panel's theme
+     * list reflects the release's version — code, vendor autoload
+     * registration and DB metadata all land on the same version in
+     * the same operation.
+     *
+     * @param  list<array{slug: string, version: string, path: string}>  $themes
+     * @param  Closure(string): void  $log
+     * @return array<string, string> slug => absolute path of retained pre-apply copy
+     */
+    protected function applyBundledThemes(string $payloadRoot, array $themes, Closure $log): array
+    {
+        $snapshots = [];
+        $snapshotRoot = storage_path('app/private/core-update/theme-snapshots/'.now()->format('YmdHis_').uniqid());
+        File::ensureDirectoryExists($snapshotRoot);
+
+        foreach ($themes as $entry) {
+            $slug = $entry['slug'];
+            $stagedPath = $payloadRoot.'/'.$entry['path'];
+            $livePath = base_path($entry['path']);
+
+            if (! is_dir($stagedPath)) {
+                throw new RuntimeException("Release declared bundled theme '{$slug}' but the staged payload contains no {$stagedPath}.");
+            }
+
+            $log("Applying bundled theme '{$slug}' (target v{$entry['version']})...");
+
+            // Snapshot the live copy so the catch block can restore it
+            // if any later step (this loop or migrations below) fails.
+            // A theme that isn't installed yet has nothing to snapshot,
+            // and the rollback path handles a missing entry gracefully.
+            if (is_dir($livePath)) {
+                $snapshotPath = $snapshotRoot.'/'.$slug;
+                if (! @rename($livePath, $snapshotPath)) {
+                    File::ensureDirectoryExists($snapshotPath);
+                    File::copyDirectory($livePath, $snapshotPath);
+                    File::deleteDirectory($livePath);
+                }
+                $snapshots[$slug] = $snapshotPath;
+            }
+
+            File::ensureDirectoryExists($livePath);
+            File::copyDirectory($stagedPath, $livePath);
+
+            // Refresh the DB row so the admin panel and the standalone
+            // theme-update flow see the release's version as installed.
+            // The affected-rows count may be zero when the operator has
+            // not activated the theme; that's fine — the code is still
+            // on disk, and the DB row is created on first activation.
+            Theme::where('directory', $slug)->update(['version' => $entry['version']]);
+
+            $log("Applied themes/{$slug} at v{$entry['version']}.");
+        }
+
+        return $snapshots;
+    }
+
+    /**
+     * Reset the DB `Theme.version` back to whatever the just-restored
+     * theme code itself declares in its `theme.json`. Called from the
+     * rollback path so the admin panel doesn't keep advertising the
+     * aborted upgrade as installed. Silently no-ops when the theme
+     * either isn't installed (no matching DB row) or its theme.json
+     * is unreadable — the code has already been rolled back, so this
+     * is best-effort metadata cleanup.
+     */
+    private function restoreThemeDbVersion(string $slug, string $livePath, Closure $log): void
+    {
+        $themeJson = $livePath.'/theme.json';
+        if (! is_file($themeJson)) {
+            return;
+        }
+
+        $decoded = json_decode((string) @file_get_contents($themeJson), true);
+        if (! is_array($decoded) || ! isset($decoded['version']) || ! is_string($decoded['version'])) {
+            return;
+        }
+
+        Theme::where('directory', $slug)->update(['version' => $decoded['version']]);
+        $log("Restored DB metadata for themes/{$slug} to v{$decoded['version']} (from theme.json).");
     }
 }
