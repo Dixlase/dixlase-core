@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\RelativeSymlink;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -201,7 +202,20 @@ class PluginSymlink extends Command
     }
 
     /**
-     * Create symlink for plugin assets
+     * Create symlink for plugin assets.
+     *
+     * Uses `File::relativeLink()` — not `File::link()` — so the recorded
+     * symlink target is a relative path, not an absolute one rooted at
+     * whatever `base_path()` returns in the container that ran this
+     * command. On split-container deployments (typical prod topology:
+     * one container serves PHP at `/var/www/html`, another serves
+     * nginx at `/var/www/apps/brand`), an absolute target baked with
+     * the PHP container's mount point does not resolve from nginx, so
+     * every `/assets/plugins/{Name}/…` request returns 404 even though
+     * the file exists. A relative symlink resolves correctly from
+     * whichever container walks it because the resolution is anchored
+     * to the symlink's own location, which is the same physical path
+     * in every mount.
      *
      * @return void
      */
@@ -212,7 +226,7 @@ class PluginSymlink extends Command
 
         if (File::exists($target) && ! File::exists($link)) {
             File::ensureDirectoryExists(dirname($link));
-            File::link($target, $link);
+            RelativeSymlink::create($target, $link);
         }
     }
 

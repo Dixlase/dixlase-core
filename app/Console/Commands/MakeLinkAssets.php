@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Models\Plugin;
 use App\Models\Theme;
+use App\Support\RelativeSymlink;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -112,7 +113,10 @@ class MakeLinkAssets extends Command
         }
 
         try {
-            File::link($target, $link);
+            // Relative symlink so the recorded target resolves from any
+            // container that shares the same physical path (nginx +
+            // php-fpm typically mount the app at different roots).
+            RelativeSymlink::create($target, $link);
             $this->info("Link created: {$link} -> {$target}");
         } catch (\Exception $e) {
             $this->error("Failed to create link: {$e->getMessage()}");

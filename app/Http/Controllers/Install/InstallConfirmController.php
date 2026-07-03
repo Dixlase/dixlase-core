@@ -415,7 +415,13 @@ class InstallConfirmController extends BaseInstallController
             // so the symlink is always valid.
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_started'));
             File::ensureDirectoryExists(storage_path('app/public'));
-            Artisan::call('storage:link');
+            // `--relative` so the recorded target is `../storage/app/public`
+            // rather than an absolute path anchored at the PHP container's
+            // mount point. On split-container topologies (nginx and php-fpm
+            // in different containers with different app-root mounts), the
+            // absolute form does not resolve from nginx and every
+            // `/storage/*` request 404s.
+            Artisan::call('storage:link', ['--relative' => true]);
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_completed'));
 
             // Create symbolic link for active theme
