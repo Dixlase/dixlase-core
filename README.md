@@ -3,8 +3,11 @@
 For Japanese, see [README.ja.md](./README.ja.md).
 
 **Dixlase** is a Laravel-based open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
-Defenses are hardened in the core, while plugins and themes give you the freedom to grow — corporate sites, client projects, internal-only deployments, and personal sites alike. Every feature beyond the essentials, even pages and blogs, is provided as an installable plugin.
-Because the core handles security, operators and content creators are free to focus on creating and running content. Our mission is to build **the world's most secure CMS**, released as open source under the AGPL license.
+Defenses are hardened in the core while expression grows freely through plugins and themes — security, tamper detection, permissions, and signature verification are the core's responsibility, leaving content creation and editing maximally free. Because the core handles security, operators and creators can focus on producing, editing, and running content — across corporate sites, internal deployments, client projects, and personal sites alike.
+
+The core sticks to security, front-page editing, user and permission management, and the plugin API; everything else ships as a plugin — and Dixlase's own built-in features run on the same API third-party plugins use.
+
+Rather than optimizing for a quick first setup, Dixlase favors a design built to last — stable data structures, backward compatibility, and explicit deprecation — and keeps room for AI, so structured logs and new integration protocols like MCP work without rebuilding the CMS itself.
 
 ---
 
@@ -163,6 +166,6 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 ## 🛡️ Vision
 
-> Based on **Safety, Fairness, and Transparency**,
-> cultivating **Extensibility** and **Sustainability**,
-> Dixlase aims to deliver a CMS that everyone can use with true freedom.
+> With **Safety, Fairness, Transparency, Extensibility, and Sustainability** as the foundation,
+> **true freedom** blooms on top of them all.
+> Dixlase aims to be a CMS everyone can use freely and with confidence.
