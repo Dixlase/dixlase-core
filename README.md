@@ -3,11 +3,12 @@
 For Japanese, see [README.ja.md](./README.ja.md).
 
 **Dixlase** is a Laravel-based open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
-Defenses are hardened in the core while expression grows freely through plugins and themes — security, tamper detection, permissions, and signature verification are the core's responsibility, leaving content creation and editing maximally free. Because the core handles security, operators and creators can focus on producing, editing, and running content — across corporate sites, internal deployments, client projects, and personal sites alike.
-
-The core sticks to security, front-page editing, user and permission management, and the plugin API; everything else ships as a plugin — and Dixlase's own built-in features run on the same API third-party plugins use.
-
-Rather than optimizing for a quick first setup, Dixlase favors a design built to last — stable data structures, backward compatibility, and explicit deprecation — and keeps room for AI, so structured logs and new integration protocols like MCP work without rebuilding the CMS itself.
+- Defense hardened in the core, expression free through plugins and themes
+  Security, tamper detection, permissions, and signature verification are the core's responsibility, leaving content creation and editing maximally free. Because the core handles security, operators and creators can focus on producing, editing, and running content — across corporate sites, internal deployments, client projects, and personal sites alike.
+- A minimal core, maximal extensibility through plugins
+  The core sticks to security, front-page editing, user and permission management, and the plugin API; everything else ships as a plugin — and Dixlase's own built-in features run on the same API third-party plugins use.
+- Built to last, and ready for AI
+  Rather than optimizing for a quick first setup, Dixlase favors a design built to last — stable data structures, backward compatibility, and explicit deprecation — and keeps room for AI, so structured logs and new integration protocols like MCP work without rebuilding the CMS itself.
 
 ---
 
@@ -105,14 +106,14 @@ More themes are planned for future releases.
 ## 📚 Documentation
 
 - [Project Site — dixlase.org](https://dixlase.org/) — overview, live demo, and news
-- [Documentation](docs/index.md) — installation, operations, and developer guides
-- [Development Guide](docs/development/index.md) — architecture, API references, and coding conventions
+- Documentation — installation, operations, and developer guides (in preparation)
+- Development Guide — architecture, API references, and coding conventions (in preparation)
 
 ### Developer Guides
 
-- [Plugin API](./PLUGIN-API.md) — the plugin / theme API boundary definition
-- [Source Comment Localization](docs/development/comment-translation.md) — switch source comments between locales with `convert-comments.sh`
-- [MCP Server (Laravel Boost)](docs/development/mcp-laravel-boost.md) — AI-assisted development setup for VSCode / Cursor
+- Plugin API — the plugin / theme API boundary definition (in preparation)
+- Source Comment Localization — comment locale switching with `convert-comments.sh` (in preparation)
+- MCP Server (Laravel Boost) — AI-assisted development setup for VSCode / Cursor (in preparation)
 
 ---
 
