@@ -3,31 +3,41 @@
 For Japanese, see [README.ja.md](./README.ja.md).
 
 **Dixlase** is a Laravel-based open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
-- Defense hardened in the core, expression free through plugins and themes
+- Defense hardened in the core, expression free through plugins and themes  
   Security, tamper detection, permissions, and signature verification are the core's responsibility, leaving content creation and editing maximally free. Because the core handles security, operators and creators can focus on producing, editing, and running content — across corporate sites, internal deployments, client projects, and personal sites alike.
-- A minimal core, maximal extensibility through plugins
+- A minimal core, maximal extensibility through plugins  
   The core sticks to security, front-page editing, user and permission management, and the plugin API; everything else ships as a plugin — and Dixlase's own built-in features run on the same API third-party plugins use.
-- Built to last, and ready for AI
+- Built to last, and ready for AI  
   Rather than optimizing for a quick first setup, Dixlase favors a design built to last — stable data structures, backward compatibility, and explicit deprecation — and keeps room for AI, so structured logs and new integration protocols like MCP work without rebuilding the CMS itself.
 
 ---
 
 ## 🚀 Features
 
-- **Multi-layered Security** — two-factor auth via passkeys / email codes, IP restrictions, login notifications, and role-based permissions out of the box.
-- **Plugin-based Architecture** — a minimal core; features are added as plugins, and much of the core itself runs on the same plugin API.
-- **On-Premise Ready** — your data on your server: shared hosting, VPS, or dedicated — wherever you like.
-- **Detailed Audit Logs** — every admin action recorded in a structured form for operational transparency and accountability.
-- **Site Health Check** — periodic diagnosis of security settings, configuration, and operational state, output in a machine-readable form.
-- **Reliable Setup** — an install wizard guides environment config, database connection, admin registration, and initial security.
-- **CSP Support** — a Content Security Policy header is sent by default, protecting visitors from XSS and content tampering.
-- **Plugin Safety** — permission declarations, static analysis, signature verification, and a health score catch risky or tampered plugins at install time.
+- **Multi-layered Security**  
+Two-factor auth via passkeys / email codes, IP restrictions, login notifications, and role-based permissions out of the box.
+- **Plugin-based Architecture**  
+A minimal core; features are added as plugins, and much of the core itself runs on the same plugin API.
+- **On-Premise Ready**  
+Your data on your server: shared hosting, VPS, or dedicated — wherever you like.
+- **Detailed Audit Logs**  
+Every admin action recorded in a structured form for operational transparency and accountability.
+- **Site Health Check**  
+Periodic diagnosis of security settings, configuration, and operational state, output in a machine-readable form.
+- **Reliable Setup**  
+An install wizard guides environment config, database connection, admin registration, and initial security.
+- **CSP Support**  
+A Content Security Policy header is sent by default, protecting visitors from XSS and content tampering.
+- **Plugin Safety**  
+Permission declarations, static analysis, signature verification, and a health score catch risky or tampered plugins at install time.
 
 ---
 
 ## 🕹️ Live Demo
 
-No installation required — try Dixlase's admin panel and operational experience right in your browser. A disposable instance is generated for each visitor from a SQLite template and auto-discarded after a set period, so you can reset and try as many times as you like. Admin panel, content editing, plugin installation — everything feels exactly like production.
+No installation required — try Dixlase's admin panel and operational experience right in your browser.  
+A disposable instance is generated for each visitor from a SQLite template and auto-discarded after a set period, so you can reset and try as many times as you like.  
+Admin panel, content editing, plugin installation — everything feels exactly like production.
 
 See the [official site](https://dixlase.org/) for the live demo.
 
@@ -73,7 +83,7 @@ composer create-project dixlase/dixlase-core dixlase
 
 ---
 
-To work on the Core itself, clone this repository and bring up the development Docker stack provided by the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker). Dedicated developer documentation is in preparation.
+To work on the Core itself, clone this repository; using the development Docker stack provided by the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker) is recommended. Dedicated developer documentation is in preparation.
 
 ---
 
@@ -167,6 +177,6 @@ If you run Dixlase CMS on a server and make it accessible to users over a networ
 
 ## 🛡️ Vision
 
-> With **Safety, Fairness, Transparency, Extensibility, and Sustainability** as the foundation,
-> **true freedom** blooms on top of them all.
-> Dixlase aims to be a CMS everyone can use freely and with confidence.
+With **Safety, Fairness, Transparency, Extensibility, and Sustainability** as the foundation,  
+**true freedom** blooms on top of them all.  
+Dixlase aims to be a CMS everyone can use freely and with confidence.
