@@ -159,16 +159,17 @@ class PluginUpdate extends Command
             $snapshotPath = null;
 
             // Rebuild front-end assets that ship with the plugin. Default mode
-            // is 'force' because update implies the source tree changed and any
-            // previously built assets are now stale; users can pass
-            // --skip-build to opt out.
-            $mode = $this->option('skip-build') ? 'skip' : 'force';
-            if ($this->option('build')) {
-                // Explicit --build is redundant here but kept for symmetry
-                // with install; treat it as the same forced rebuild.
-                $mode = 'force';
-            }
-            $this->buildExtensionAssets($livePath, $mode);
+            // is 'auto' so a release ZIP that already carries prebuilt
+            // resources/assets short-circuits the build — production hosts
+            // are not guaranteed to have Node, and the release-artifact
+            // contract on BuildsExtensionAssets requires build-pipeline
+            // extensions to bundle prebuilt output. The extract step above
+            // (extractZipReplacingDir) does a wholesale replace of the live
+            // tree, so what buildExtensionAssets sees under resources/assets
+            // is exactly what the ZIP shipped; if it is missing, the auto
+            // branch falls back to a build. --build still forces a rebuild
+            // for source / dev installs; --skip-build never builds.
+            $this->buildExtensionAssets($livePath, $this->resolveAssetBuildMode());
 
             // Regenerate the Tailwind plugin-source aggregator: the
             // updated plugin may have added, removed, or moved
