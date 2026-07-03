@@ -178,6 +178,73 @@ class CoreUpdaterBundledThemesTest extends TestCase
         ]);
     }
 
+    public function test_prune_removes_the_wrapper_dir_when_it_becomes_empty(): void
+    {
+        // Simulates the success-path cleanup sequence: applyBundledThemes()
+        // created a wrapper + per-slug snapshot; the update() loop then
+        // deleted each per-slug snapshot, leaving the wrapper empty; the
+        // pruner then drops the wrapper. Before this fix the wrapper stayed
+        // and every core update leaked one empty timestamp directory.
+        $wrapper = storage_path('app/private/core-update/theme-snapshots/TestPrune_'.uniqid());
+        File::ensureDirectoryExists($wrapper);
+        $slug = 'TestBundle_'.uniqid();
+        $snapshotPath = $wrapper.'/'.$slug;
+        File::ensureDirectoryExists($snapshotPath);
+        // Simulate the per-slug discard that runs before the pruner:
+        File::deleteDirectory($snapshotPath);
+
+        $this->invokePruner([$slug => $snapshotPath]);
+
+        $this->assertFalse(is_dir($wrapper), 'The empty wrapper directory should have been removed.');
+    }
+
+    public function test_prune_preserves_the_wrapper_dir_when_it_still_has_children(): void
+    {
+        // A concurrent write / another slug that failed to be cleaned up
+        // during the loop is enough — the pruner refuses to remove a
+        // non-empty wrapper so a stray file cannot be silently deleted.
+        $wrapper = storage_path('app/private/core-update/theme-snapshots/TestPrune_'.uniqid());
+        File::ensureDirectoryExists($wrapper);
+        $slug = 'TestBundle_'.uniqid();
+        $snapshotPath = $wrapper.'/'.$slug;
+        File::ensureDirectoryExists($snapshotPath);
+        // Simulate an unrelated leftover next to the snapshot:
+        file_put_contents($wrapper.'/unrelated.txt', 'still here');
+
+        $this->invokePruner([$slug => $snapshotPath]);
+
+        $this->assertTrue(is_dir($wrapper), 'The wrapper directory should have been preserved because a child remained.');
+        $this->assertFileExists($wrapper.'/unrelated.txt');
+
+        // House-keeping: this test intentionally left the wrapper on
+        // disk, so remove it before we leave.
+        File::deleteDirectory($wrapper);
+    }
+
+    public function test_prune_is_a_noop_for_an_empty_snapshot_map(): void
+    {
+        // The rollback / success paths always call the pruner even when
+        // the update did not touch any bundled theme; verify that the
+        // empty-map short-circuit doesn't throw or accidentally remove
+        // an ancestor.
+        $this->invokePruner([]);
+
+        // Purely a no-throw assertion — the important thing is that the
+        // call above returned without touching the filesystem.
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @param  array<string, string>  $snapshotPaths
+     */
+    private function invokePruner(array $snapshotPaths): void
+    {
+        $updater = app(CoreUpdater::class);
+        $method = (new ReflectionClass(CoreUpdater::class))->getMethod('pruneEmptyThemeSnapshotParent');
+        $method->setAccessible(true);
+        $method->invoke($updater, $snapshotPaths);
+    }
+
     /**
      * Register a slug for tearDown cleanup and return it. Prefix
      * guarantees the slug can never collide with a real theme

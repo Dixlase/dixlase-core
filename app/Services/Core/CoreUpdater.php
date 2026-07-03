@@ -294,6 +294,7 @@ class CoreUpdater
                 }
                 $log("Discarded pre-apply snapshot of themes/{$slug} (update succeeded).");
             }
+            $this->pruneEmptyThemeSnapshotParent($themeSnapshotPaths);
             $themeSnapshotPaths = [];
 
             $log('Recording version history...');
@@ -382,6 +383,7 @@ class CoreUpdater
                     $log("Manual recovery required: restore themes/{$slug} from {$snapshotPath}");
                 }
             }
+            $this->pruneEmptyThemeSnapshotParent($themeSnapshotPaths);
 
             // Lift maintenance mode last, once the tree is consistent again.
             if ($maintenanceOn) {
@@ -630,5 +632,47 @@ class CoreUpdater
 
         Theme::where('directory', $slug)->update(['version' => $decoded['version']]);
         $log("Restored DB metadata for themes/{$slug} to v{$decoded['version']} (from theme.json).");
+    }
+
+    /**
+     * Remove the empty per-update-run wrapper directory that
+     * applyBundledThemes() created under storage/ to group its
+     * per-slug snapshots. Both the success discard path and the
+     * rollback restore path leave the individual <slug>/ children
+     * gone; this drops the now-empty parent so an update never
+     * leaves behind an accumulating trail of orphan timestamp
+     * directories under storage/app/private/core-update/theme-snapshots/.
+     *
+     * Best-effort — if another process happened to write into the
+     * wrapper mid-flight, or if rmdir just fails, we do nothing.
+     * The remainder is harmless.
+     *
+     * @param  array<string, string>  $themeSnapshotPaths  slug => full snapshot path (as returned by applyBundledThemes)
+     */
+    private function pruneEmptyThemeSnapshotParent(array $themeSnapshotPaths): void
+    {
+        if ($themeSnapshotPaths === []) {
+            return;
+        }
+
+        // Every entry in the map lives under the same wrapper — the
+        // one applyBundledThemes() created for this run — so any
+        // path's dirname is the wrapper.
+        $wrapper = dirname((string) reset($themeSnapshotPaths));
+        if (! is_dir($wrapper)) {
+            return;
+        }
+
+        // FilesystemIterator skips . and .., so iterator_count == 0
+        // means "no children of any kind." Ignore a hostile write
+        // that races in — we only remove when unambiguously empty.
+        try {
+            $iterator = new \FilesystemIterator($wrapper);
+        } catch (\UnexpectedValueException) {
+            return;
+        }
+        if (iterator_count($iterator) === 0) {
+            @rmdir($wrapper);
+        }
     }
 }
