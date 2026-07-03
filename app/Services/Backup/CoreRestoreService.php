@@ -382,7 +382,9 @@ class CoreRestoreService implements RestoreServiceInterface
     {
         $storageLink = public_path('storage');
         if (! is_link($storageLink) && ! file_exists($storageLink)) {
-            Artisan::call('storage:link');
+            // `--relative` for cross-container symlink resolution: see
+            // the matching comment in InstallConfirmController.
+            Artisan::call('storage:link', ['--relative' => true]);
         }
 
         foreach (Theme::query()->whereNotNull('directory')->pluck('directory') as $directory) {

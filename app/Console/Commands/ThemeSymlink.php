@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\RelativeSymlink;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -201,7 +202,15 @@ class ThemeSymlink extends Command
     }
 
     /**
-     * Create symlink for theme assets
+     * Create symlink for theme assets.
+     *
+     * Uses `File::relativeLink()` — not `File::link()` — so the recorded
+     * symlink target is a relative path, not an absolute one rooted at
+     * whatever `base_path()` returns in the container that ran this
+     * command. Same rationale as the sibling {@see PluginSymlink}: on
+     * split-container prod topologies the PHP container's absolute
+     * path does not resolve from nginx, so an absolute symlink 404s
+     * every `/assets/themes/{Name}/…` request.
      *
      * @return void
      */
@@ -212,7 +221,7 @@ class ThemeSymlink extends Command
 
         if (File::exists($target) && ! File::exists($link)) {
             File::ensureDirectoryExists(dirname($link));
-            File::link($target, $link);
+            RelativeSymlink::create($target, $link);
         }
     }
 
