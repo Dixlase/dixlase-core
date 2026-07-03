@@ -36,6 +36,10 @@
 return [
     'description' => 'Manage theme asset symlinks',
     'invalid_action' => 'Invalid action. Use "create" or "remove".',
+    'theme_required' => 'Theme argument is required unless --all is passed.',
+    'theme_and_all_conflict' => 'Pass either a theme argument or --all, not both.',
     'created' => 'Symlink created for theme: :theme',
     'removed' => 'Symlink removed for theme: :theme',
+    'all_summary_create' => 'Theme symlinks reconciled — created: :created, skipped: :skipped (already linked or no resources/assets).',
+    'all_summary_remove' => 'Theme symlinks removed — total: :removed.',
 ];

@@ -36,6 +36,10 @@
 return [
     'description' => 'Manage plugin asset symlinks',
     'invalid_action' => 'Invalid action. Use "create" or "remove".',
+    'plugin_required' => 'Plugin argument is required unless --all is passed.',
+    'plugin_and_all_conflict' => 'Pass either a plugin argument or --all, not both.',
     'created' => 'Symlink created for plugin: :plugin',
     'removed' => 'Symlink removed for plugin: :plugin',
+    'all_summary_create' => 'Plugin symlinks reconciled — created: :created, skipped: :skipped (already linked or no resources/assets).',
+    'all_summary_remove' => 'Plugin symlinks removed — total: :removed.',
 ];
