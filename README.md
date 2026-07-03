@@ -10,16 +10,14 @@ Because the core handles security, operators and content creators are free to fo
 
 ## 🚀 Features
 
-- **Hardened at the Core**
-  Two-factor authentication, login notifications, strong password policies, CSP, audit logs, and plugin signature verification are built in from day one.
-- **Minimal Core + Plugins**
-  Core only provides front-page editing and admin login. Even blogs and pages are optional plugins.
-- **Highly Customizable**
-  `custom/` directory allows overrides and project-specific extensions.
-- **Dual Licensing**
-  Core is AGPL, while commercial plugins will be available under separate licenses.
-- **Docker-based Development**
-  Laravel, MySQL, Redis, Nginx, Vite, phpMyAdmin, and more—ready with one command.
+- **Multi-layered Security** — two-factor auth via passkeys / email codes, IP restrictions, login notifications, and role-based permissions out of the box.
+- **Plugin-based Architecture** — a minimal core; features are added as plugins, and much of the core itself runs on the same plugin API.
+- **On-Premise Ready** — your data on your server: shared hosting, VPS, or dedicated — wherever you like.
+- **Detailed Audit Logs** — every admin action recorded in a structured form for operational transparency and accountability.
+- **Site Health Check** — periodic diagnosis of security settings, configuration, and operational state, output in a machine-readable form.
+- **Reliable Setup** — an install wizard guides environment config, database connection, admin registration, and initial security.
+- **CSP Support** — a Content Security Policy header is sent by default, protecting visitors from XSS and content tampering.
+- **Plugin Safety** — permission declarations, static analysis, signature verification, and a health score catch risky or tampered plugins at install time.
 
 ---
 
@@ -35,28 +33,6 @@ See the [official site](https://dixlase.org/) for the live demo.
 
 Pick the method that matches your environment:
 
-### Docker installer
-
-For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker), which brings up Dixlase via `docker compose`. See the installer repository's README for prerequisites and step-by-step instructions.
-
-### Quick install script
-
-For fresh VPS / bare-metal hosts with PHP 8.2+ and Composer, install with a single command:
-
-```bash
-curl -sS https://install.dixlase.net | php
-```
-
-The script checks PHP version and required extensions, downloads the latest release, runs `composer install`, generates an application key, sets directory permissions, and prints the URL to the Web-based installation wizard.
-
-### Composer create-project
-
-For Composer-friendly environments, scaffold a new install in one command:
-
-```bash
-composer create-project dixlase/dixlase-core dixlase
-```
-
 ### Manual install (ZIP)
 
 Download the latest release ZIP from [GitHub Releases](https://github.com/Dixlase/dixlase-core/releases), then:
@@ -69,9 +45,31 @@ composer install
 
 After this, open the site URL in a browser — the installation wizard will guide you through database setup, the admin account, and initial settings.
 
+### Quick install script
+
+For fresh VPS / bare-metal hosts with PHP 8.2+ and Composer, install with a single command:
+
+```bash
+curl -sS https://install.dixlase.net | php
+```
+
+The script checks PHP version and required extensions, downloads the latest release, runs `composer install`, generates an application key, sets directory permissions, and prints the URL to the Web-based installation wizard.
+
+### Docker installer
+
+For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker), which brings up Dixlase via `docker compose`. See the installer repository's README for prerequisites and step-by-step instructions.
+
+### Composer create-project
+
+For Composer-friendly environments, scaffold a new install in one command:
+
+```bash
+composer create-project dixlase/dixlase-core dixlase
+```
+
 ---
 
-For working on the Core itself (this repository), clone it and start the dev Docker stack — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the local development environment.
+To work on the Core itself, clone this repository and bring up the development Docker stack provided by the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker). Dedicated developer documentation is in preparation.
 
 ---
 
