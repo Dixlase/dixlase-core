@@ -45,9 +45,10 @@ class ThemeSymlink extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:symlink 
+    protected $signature = 'dls:theme:symlink
                             {action : The action to perform (create|remove)}
-                            {theme : The directory name of the theme}';
+                            {theme? : The directory name of the theme (omit when using --all)}
+                            {--all : Apply the action to every theme directory on disk}';
 
     /**
      * Create a new command instance.
@@ -69,6 +70,7 @@ class ThemeSymlink extends Command
     {
         $action = $this->argument('action');
         $themeDirName = $this->argument('theme');
+        $all = (bool) $this->option('all');
 
         if (! in_array($action, ['create', 'remove'])) {
             $this->error(__('admin/command/theme-symlink.invalid_action'));
@@ -76,6 +78,32 @@ class ThemeSymlink extends Command
             return 1;
         }
 
+        if (! $all && ($themeDirName === null || $themeDirName === '')) {
+            $this->error(__('admin/command/theme-symlink.theme_required'));
+
+            return 1;
+        }
+
+        if ($all && ($themeDirName !== null && $themeDirName !== '')) {
+            $this->error(__('admin/command/theme-symlink.theme_and_all_conflict'));
+
+            return 1;
+        }
+
+        if ($all) {
+            return $this->handleAll($action);
+        }
+
+        return $this->handleSingle($action, $themeDirName);
+    }
+
+    /**
+     * Handle a single theme. Preserves the pre-`--all` behaviour: the
+     * internal create/remove helpers are idempotent, so re-running is
+     * always safe.
+     */
+    protected function handleSingle(string $action, string $themeDirName): int
+    {
         if ($action === 'create') {
             $this->createThemeSymlink($themeDirName);
             $this->info(__('admin/command/theme-symlink.created', ['theme' => $themeDirName]));
@@ -83,6 +111,91 @@ class ThemeSymlink extends Command
             $this->removeThemeSymlink($themeDirName);
             $this->info(__('admin/command/theme-symlink.removed', ['theme' => $themeDirName]));
         }
+
+        return 0;
+    }
+
+    /**
+     * Handle every theme on disk. Idempotent — safe to re-run against
+     * an already-consistent tree.
+     *
+     * On `create`: enumerate `themes/*` on disk and (re)link the ones
+     * that carry a `resources/assets/` directory. Directories without
+     * that layout are skipped silently (nothing to serve).
+     *
+     * On `remove`: enumerate `public/assets/themes/*` and unlink every
+     * existing symlink there. This intentionally covers stale links
+     * whose theme directory has already been deleted from disk.
+     */
+    protected function handleAll(string $action): int
+    {
+        if ($action === 'create') {
+            $themesRoot = base_path('themes');
+            if (! File::isDirectory($themesRoot)) {
+                $this->info(__('admin/command/theme-symlink.all_summary_create', [
+                    'created' => 0,
+                    'skipped' => 0,
+                ]));
+
+                return 0;
+            }
+
+            $created = 0;
+            $skipped = 0;
+            foreach (File::directories($themesRoot) as $themePath) {
+                $themeDirName = basename($themePath);
+                $target = "{$themePath}/resources/assets";
+                if (! File::isDirectory($target)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $link = public_path("assets/themes/{$themeDirName}");
+                if (File::exists($link) || is_link($link)) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $this->createThemeSymlink($themeDirName);
+                $created++;
+            }
+
+            $this->info(__('admin/command/theme-symlink.all_summary_create', [
+                'created' => $created,
+                'skipped' => $skipped,
+            ]));
+
+            return 0;
+        }
+
+        // remove --all
+        $linksRoot = public_path('assets/themes');
+        if (! File::isDirectory($linksRoot)) {
+            $this->info(__('admin/command/theme-symlink.all_summary_remove', [
+                'removed' => 0,
+            ]));
+
+            return 0;
+        }
+
+        $removed = 0;
+        foreach (scandir($linksRoot) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $link = "{$linksRoot}/{$entry}";
+            if (! is_link($link) && ! File::exists($link)) {
+                continue;
+            }
+            $this->removeThemeSymlink($entry);
+            $removed++;
+        }
+
+        $this->info(__('admin/command/theme-symlink.all_summary_remove', [
+            'removed' => $removed,
+        ]));
 
         return 0;
     }

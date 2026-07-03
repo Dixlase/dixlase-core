@@ -36,6 +36,10 @@
 return [
     'description' => 'テーマアセットのシンボリックリンクを管理します',
     'invalid_action' => '無効なアクションです。"create" または "remove" を使用してください。',
+    'theme_required' => 'テーマ引数は --all を指定しない場合は必須です。',
+    'theme_and_all_conflict' => 'テーマ引数と --all は同時に指定できません。どちらか一方を使用してください。',
     'created' => 'テーマのシンボリックリンクを作成しました: :theme',
     'removed' => 'テーマのシンボリックリンクを削除しました: :theme',
+    'all_summary_create' => 'テーマのシンボリックリンクを整理しました — 作成: :created 件、スキップ: :skipped 件（既にリンク済みまたは resources/assets なし）。',
+    'all_summary_remove' => 'テーマのシンボリックリンクを削除しました — 合計: :removed 件。',
 ];
