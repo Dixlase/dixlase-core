@@ -36,6 +36,10 @@
 return [
     'description' => 'プラグインアセットのシンボリックリンクを管理します',
     'invalid_action' => '無効なアクションです。"create" または "remove" を使用してください。',
+    'plugin_required' => 'プラグイン引数は --all を指定しない場合は必須です。',
+    'plugin_and_all_conflict' => 'プラグイン引数と --all は同時に指定できません。どちらか一方を使用してください。',
     'created' => 'プラグインのシンボリックリンクを作成しました: :plugin',
     'removed' => 'プラグインのシンボリックリンクを削除しました: :plugin',
+    'all_summary_create' => 'プラグインのシンボリックリンクを整理しました — 作成: :created 件、スキップ: :skipped 件（既にリンク済みまたは resources/assets なし）。',
+    'all_summary_remove' => 'プラグインのシンボリックリンクを削除しました — 合計: :removed 件。',
 ];
