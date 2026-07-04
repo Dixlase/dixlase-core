@@ -51,6 +51,33 @@ use Symfony\Component\Process\Process;
  * The trait is intentionally tolerant: if npm or the build script is
  * missing, the install does NOT fail — assets are best-effort because
  * extensions that ship no front-end pipeline are perfectly valid.
+ *
+ * # Release-artifact contract
+ *
+ * Production hosts are not guaranteed to have Node — the Docker
+ * installer image intentionally omits it — so install and update
+ * commands MUST NOT be forced to run npm on the operator's box.
+ * The release ZIP is the contract layer that keeps this true:
+ *
+ *   * Every build-pipeline extension release (any plugin or theme
+ *     whose repo carries a package.json + vite.config.*) MUST bundle
+ *     the built `resources/assets/*` output into its release ZIP.
+ *     The path is normally gitignored — the release workflow is the
+ *     authored source of the built output in the ZIP, adding it
+ *     explicitly at package time.
+ *   * Given (1), `dls:{plugin,theme}:{install,update}` all default
+ *     the asset-build mode to 'auto' — extensionAssetsAlreadyBuilt()
+ *     sees the ZIP-supplied output on disk and short-circuits the
+ *     build. Only source / dev installs (fresh clones, `--build`
+ *     override) reach npm.
+ *   * The install and update extract steps do a wholesale replace of
+ *     the live extension directory before this trait's methods run,
+ *     so what auto observes under `resources/assets` is exactly what
+ *     the ZIP shipped — never a stale leftover from a previous
+ *     install. No separate clear-before-check is needed.
+ *
+ * Extensions with no front-end pipeline (no package.json) are
+ * unaffected: buildExtensionAssets() returns immediately.
  */
 trait BuildsExtensionAssets
 {
@@ -138,6 +165,13 @@ trait BuildsExtensionAssets
      * an explicit "do not build" is the safer interpretation when the
      * operator passes both (e.g. a wrapper script that always adds
      * --build but tonight's run needs to skip).
+     *
+     * The **no-flag default is 'auto'** — this is the linchpin of the
+     * release-artifact contract documented on the trait: production
+     * updates and installs must NOT run npm when the release ZIP
+     * already carries prebuilt output. All four extension commands
+     * (Plugin/Theme × Install/Update) route through this helper so
+     * the operator-facing default is consistent across the surface.
      */
     protected function resolveAssetBuildMode(): string
     {

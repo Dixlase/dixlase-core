@@ -164,15 +164,18 @@ class ThemeUpdate extends Command
             }
 
             // Rebuild front-end assets that ship with the theme. Default mode
-            // is 'force' because update implies the source tree changed and any
-            // previously built assets are now stale; users can pass
-            // --skip-build to opt out.
-            $mode = $this->option('skip-build') ? 'skip' : 'force';
-            if ($this->option('build')) {
-                $mode = 'force';
-            }
+            // is 'auto' so a release ZIP that already carries prebuilt
+            // resources/assets short-circuits the build — production hosts
+            // are not guaranteed to have Node, and the release-artifact
+            // contract on BuildsExtensionAssets requires build-pipeline
+            // extensions to bundle prebuilt output. The extract step above
+            // (extractZipReplacingDir) does a wholesale replace of the live
+            // tree, so what buildExtensionAssets sees under resources/assets
+            // is exactly what the ZIP shipped; if it is missing, the auto
+            // branch falls back to a build. --build still forces a rebuild
+            // for source / dev installs; --skip-build never builds.
             if (is_dir($livePath)) {
-                $this->buildExtensionAssets($livePath, $mode);
+                $this->buildExtensionAssets($livePath, $this->resolveAssetBuildMode());
                 // Refresh the public symlink so the freshly built output is
                 // reachable from the web root (the symlink target is the
                 // resources/assets directory inside the theme).
