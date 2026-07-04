@@ -148,6 +148,17 @@ class AppServiceProvider extends ServiceProvider
         // once the marketplace begins selling paid extensions.
         $this->app->bind(LicenseVerifierInterface::class, CoreLicenseVerifier::class);
 
+        // Runtime-data protection registry — aggregates the `deploy`
+        // section of every installed plugin.json / theme.json so deploy
+        // tools (DixlaseDeploy today, others in the future) can query a
+        // single source of truth for tables and storage paths that must
+        // never be overwritten by cross-environment sync. Singleton so
+        // the plugins/themes tree walk happens at most once per request.
+        $this->app->singleton(
+            \App\Contracts\PluginIntegration\DeployProtectionRegistryInterface::class,
+            \App\Services\Deploy\DeployProtectionRegistry::class,
+        );
+
         // Register route slug registry as singleton
         $this->app->singleton(RouteSlugRegistry::class);
 
