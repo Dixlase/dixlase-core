@@ -38,6 +38,7 @@ composer.local.json
 /.fleet
 /.idea
 /.vscode
+/.windsurf
 /.zed
 .DS_Store
 CLAUDE.md
