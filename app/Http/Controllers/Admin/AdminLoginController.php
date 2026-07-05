@@ -146,6 +146,15 @@ class AdminLoginController extends AdminController
     }
 
     /**
+     * Free-text notice shown on the admin login screen. Configured under
+     * base settings › admin panel (empty = hidden).
+     */
+    protected function getLoginNotice(): string
+    {
+        return (string) $this->baseSettingRepository->get('admin_login_notice', '');
+    }
+
+    /**
      * Log out the administrator from an admin bar rendered on a front-end
      * page (web guard context).
      *

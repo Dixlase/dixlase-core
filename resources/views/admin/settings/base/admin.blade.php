@@ -100,6 +100,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             <p class="mt-2">{{ __('admin/settings/base/admin.force_ssl_help') }}</p>
         </fieldset>
+
+        <fieldset>
+            <x-form-textarea
+                name="admin_login_notice"
+                :label="__('admin/settings/base/admin.login_notice')"
+                :value="old('admin_login_notice', $settings['admin_login_notice'])"
+                rows="3"
+            />
+            <p class="mt-2">{{ __('admin/settings/base/admin.login_notice_help') }}</p>
+            <x-form-error field="admin_login_notice" />
+        </fieldset>
     </section>
 
     </fieldset>
