@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\Session;
 
 class AdminBaseAdminController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['admin_url', 'force_ssl'];
+    protected const SETTING_KEYS = ['admin_url', 'force_ssl', 'admin_login_notice'];
 
     protected SiteSettingRepositoryInterface $baseSettingRepository;
 
@@ -75,6 +75,7 @@ class AdminBaseAdminController extends AdminLoggedInController
             'admin_url_prefix' => $currentPrefix,
             'admin_url_suffix' => $currentSuffix,
             'force_ssl' => (bool) $this->baseSettingRepository->get('force_ssl', false),
+            'admin_login_notice' => (string) $this->baseSettingRepository->get('admin_login_notice', ''),
         ];
 
         $this->viewParams['settings'] = $settings;
@@ -103,6 +104,7 @@ class AdminBaseAdminController extends AdminLoggedInController
             writeCallback: function ($repo, $data) use ($forceSsl) {
                 $repo->set('admin_url', $data['admin_url']);
                 $repo->set('force_ssl', $forceSsl);
+                $repo->set('admin_login_notice', $data['admin_login_notice'] ?? '');
             },
         )->execute($actor, $validated);
 

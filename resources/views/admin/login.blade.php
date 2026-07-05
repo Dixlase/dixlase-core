@@ -37,6 +37,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('description', __('admin/auth.login.description'))
 
 @section('content')
+    {{-- Configurable login-screen notice (base settings › admin panel; empty = hidden) --}}
+    @if(! empty($loginNotice ?? null))
+        <x-ui-message type="info" :message="$loginNotice" />
+    @endif
+
     {{-- Email verification pending message --}}
     @if(session('email_verification_pending') || session('info'))
         <x-ui-message

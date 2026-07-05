@@ -87,6 +87,14 @@ class CoreSettingDefinitions
             type: 'bool',
         ));
 
+        // Free-text notice rendered on the admin login screen (empty = hidden).
+        $registry->register(new SettingDefinition(
+            name: 'admin_login_notice',
+            scope: SettingScope::Global,
+            default: '',
+            type: 'string',
+        ));
+
         // Email address that receives system-level notifications.
         $registry->register(new SettingDefinition(
             name: 'system_admin_email',
