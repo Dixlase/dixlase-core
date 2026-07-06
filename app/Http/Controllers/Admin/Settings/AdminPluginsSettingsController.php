@@ -88,6 +88,23 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // Detect uninstalled plugins first (to gather slugs for batch query)
         $uninstalledPlugins = $this->getUninstalledPlugins();
 
+        // Demo mode: restrict the plugin manager to a curated allowlist so that
+        // internal / infrastructure plugins (deploy, dev tooling, the demo
+        // orchestrator itself, etc.) are neither listed as installed nor offered
+        // for installation inside a demo tenant. The allowlist (plugin slugs) is
+        // populated at runtime by the demo orchestrator's tenant middleware;
+        // null (the default on normal sites) means no restriction.
+        $demoVisibleSlugs = config('demo.visible_plugin_slugs');
+        if (is_array($demoVisibleSlugs)) {
+            $plugins = $plugins
+                ->filter(fn ($p) => in_array($p->slug, $demoVisibleSlugs, true))
+                ->values();
+            $uninstalledPlugins = array_values(array_filter(
+                $uninstalledPlugins,
+                fn ($p) => in_array($p['slug'] ?? null, $demoVisibleSlugs, true)
+            ));
+        }
+
         // Fetch audit results for all plugins in 1 query (avoid N+1)
         $allSlugs = array_filter(array_merge(
             $plugins->pluck('slug')->all(),
