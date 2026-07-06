@@ -211,7 +211,19 @@ trait LoginTrait
         // Back link URL (fallback to / if welcome route is undefined)
         $viewParams['backUrl'] = \Illuminate\Support\Facades\Route::has('welcome') ? route('welcome') : url('/');
 
+        // Optional free-text notice rendered on the login screen (empty = hidden).
+        $viewParams['loginNotice'] = $this->getLoginNotice();
+
         return view($this->getLoginViewName(), $viewParams);
+    }
+
+    /**
+     * Free-text notice to show on the login screen (empty string hides it).
+     * Controllers that expose a configurable notice override this.
+     */
+    protected function getLoginNotice(): string
+    {
+        return '';
     }
 
     /**

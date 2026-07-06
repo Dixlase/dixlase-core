@@ -75,6 +75,7 @@ class AdminBaseAdminUpdateRequest extends FormRequest
             'admin_url_prefix' => ['required', 'string', Rule::in($prefixes)],
             'admin_url_suffix' => ['required', 'string', 'min:4', 'max:50', 'regex:/^[a-z0-9]+$/'],
             'admin_url' => ['required', 'string', 'max:100', UniqueRouteSlug::for('core:admin_url')],
+            'admin_login_notice' => ['nullable', 'string', 'max:500'],
         ];
     }
 

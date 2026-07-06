@@ -42,6 +42,8 @@ return [
     'admin_url_help' => 'Choose a prefix and enter a suffix to set the admin panel URL path.<br>The suffix must be at least 4 characters (lowercase letters and numbers only).<br>Warning: Changing the admin URL will log you out of the admin panel.',
     'force_ssl' => 'Force SSL',
     'force_ssl_help' => 'Force HTTPS access. Only enable if SSL certificate is configured.',
+    'login_notice' => 'Login screen notice',
+    'login_notice_help' => 'Optional message shown on the admin login screen (leave empty to hide).',
     'settings_updated' => 'Admin panel settings have been updated.',
     'admin_url_changed' => 'Admin URL has been changed. Please log in with the new URL.',
 ];
