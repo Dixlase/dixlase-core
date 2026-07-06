@@ -33,6 +33,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Demo sign-up form-action targets. A successful sign-up POSTs to the
+// orchestrator and then 302-redirects to the freshly provisioned tenant at
+// https://{id}.{demo_base}[:port]/... Browsers apply form-action across the
+// whole submission redirect chain, so the per-tenant SUBDOMAIN wildcard must be
+// allowed as well. Both are derived from the demo base domain and the
+// orchestrator's own public port so this works unchanged on production
+// (demo.dixlase.org, :443) and on a dev box (e.g. demo.localhost, :45443).
+$demoBase = (string) env('DEMO_BASE_DOMAIN', 'demo.dixlase.org');
+$demoPort = parse_url((string) config('app.url'), PHP_URL_PORT);
+$demoPortSuffix = ($demoPort && ! in_array((int) $demoPort, [80, 443], true)) ? ':'.$demoPort : '';
+$demoFormActions = [
+    'https://'.$demoBase.$demoPortSuffix,
+    'https://*.'.$demoBase.$demoPortSuffix,
+    config('app.url'),
+];
+
 return [
     'trusted_domains' => [
         // Google Fonts
@@ -98,7 +114,9 @@ return [
         // Allow the hosted demo sign-up form to submit to the demo
         // provisioning service. form-action is not covered by the
         // trusted_domains keyword detection, so it must be listed here.
-        'form-action' => ['https://demo.dixlase.org'],
+        // Allow the demo base domain, its per-tenant subdomain wildcard, and the
+        // orchestrator's own origin (see $demoFormActions above for the why).
+        'form-action' => array_values(array_unique(array_filter($demoFormActions))),
     ],
 
     /*
