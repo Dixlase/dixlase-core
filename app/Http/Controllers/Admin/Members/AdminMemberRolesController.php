@@ -252,10 +252,18 @@ class AdminMemberRolesController extends AdminLoggedInController
                 continue;
             }
 
-            // Get navigation info from admin.php (for icon and text)
-            $adminConfigPath = $pluginDir.'/config/admin.php';
+            // Get navigation info (icon + text labels) for the permission tree.
+            // New structure: config/admin/navigation.php returns the nav array
+            // directly. Legacy structure: config/admin.php with a 'nav' key.
+            // Mirror PluginLoaderTrait::loadPluginConfigs() priority so plugins
+            // that moved navigation out of admin.php still resolve their menu
+            // labels here (otherwise the tree falls back to raw menu keys).
             $adminNav = [];
-            if (file_exists($adminConfigPath)) {
+            $adminNavConfigPath = $pluginDir.'/config/admin/navigation.php';
+            $adminConfigPath = $pluginDir.'/config/admin.php';
+            if (file_exists($adminNavConfigPath)) {
+                $adminNav = require $adminNavConfigPath;
+            } elseif (file_exists($adminConfigPath)) {
                 $adminConfig = require $adminConfigPath;
                 $adminNav = $adminConfig['nav'] ?? [];
             }
