@@ -91,4 +91,24 @@ class PluginMigrationRepository extends DatabaseMigrationRepository
             'updated_at' => now(),
         ]);
     }
+
+    /**
+     * Highest batch number recorded for a plugin, or 0 when this plugin has
+     * no migrations applied yet.
+     *
+     * Overrides the parent's global max(batch) so that "the latest batch for
+     * plugin X" cannot be conflated with "the latest batch for any plugin".
+     * dls:{plugin,theme}:rollback uses this to record the pre-update batch
+     * on the backup sidecar and to compute the exact step count to reverse
+     * on rollback, so a schema-neutral update's rollback does not
+     * over-reverse an unrelated plugin's prior batch.
+     */
+    public function getLastBatchNumber($plugin = null)
+    {
+        $plugin = $plugin ?? $this->plugin;
+
+        return (int) ($this->table()
+            ->where('plugin', $plugin)
+            ->max('batch') ?? 0);
+    }
 }

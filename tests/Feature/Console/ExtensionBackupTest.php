@@ -59,6 +59,8 @@ class ExtensionBackupTest extends TestCase
                 resolveExtensionBackupPath as public resolve;
                 pruneExtensionBackups as public prune;
                 restoreExtensionBackupInto as public restoreInto;
+                extensionBackupMetadataPath as public metadataPath;
+                readBackupMetadata as public readMeta;
             }
         };
 
@@ -137,6 +139,79 @@ class ExtensionBackupTest extends TestCase
         // The backup itself is preserved (copied, not consumed) so --to can be reused.
         $this->assertDirectoryExists($backup);
         $this->assertSame('PREBUILT-V1', file_get_contents($backup.'/resources/assets/js/app.js'));
+    }
+
+    public function test_backup_writes_metadata_sidecar_when_metadata_supplied(): void
+    {
+        $backup = $this->subject->take('theme', $this->slug, $this->liveDir, [
+            'version' => '1.0.0',
+            'max_batch' => 7,
+        ]);
+
+        $sidecar = $this->subject->metadataPath($backup);
+        $this->assertFileExists($sidecar, 'Sidecar file must be written alongside the backup directory');
+        // Sidecar sits NEXT TO the backup dir, not inside it — so a subsequent
+        // restore's directory copy never leaks it into the live extension tree.
+        $this->assertSame(dirname($backup), dirname($sidecar));
+
+        $meta = $this->subject->readMeta($backup);
+        $this->assertIsArray($meta);
+        $this->assertSame('1.0.0', $meta['version']);
+        $this->assertSame(7, $meta['max_batch']);
+        $this->assertSame(basename($backup), $meta['timestamp']);
+    }
+
+    public function test_backup_writes_no_sidecar_when_metadata_is_empty(): void
+    {
+        // Default metadata=[]: no sidecar, no null-decode surprises for the
+        // rollback command — readBackupMetadata returns null, which callers
+        // handle as "pre-fix backup, fall back to whole-batch rollback".
+        $backup = $this->subject->take('theme', $this->slug, $this->liveDir);
+
+        $sidecar = $this->subject->metadataPath($backup);
+        $this->assertFileDoesNotExist($sidecar);
+        $this->assertNull($this->subject->readMeta($backup));
+    }
+
+    public function test_read_metadata_survives_multiple_backups_independently(): void
+    {
+        // Each backup gets its own sidecar keyed by timestamp; a second
+        // backup does not overwrite the first's metadata.
+        $b1 = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 3]);
+        $b2 = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 5]);
+
+        $this->assertNotSame($b1, $b2);
+        $this->assertSame(3, $this->subject->readMeta($b1)['max_batch']);
+        $this->assertSame(5, $this->subject->readMeta($b2)['max_batch']);
+    }
+
+    public function test_restore_does_not_leak_sidecar_into_live_tree(): void
+    {
+        // Regression guard for the "sidecar sibling, not child" invariant:
+        // restoring a backup that has a sidecar must NOT deposit a
+        // <ts>.meta.json inside the live extension tree.
+        $backup = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 2]);
+
+        $this->subject->restoreInto($backup, $this->liveDir);
+
+        $this->assertFileDoesNotExist($this->liveDir.'/'.basename($backup).'.meta.json');
+        $this->assertFileDoesNotExist($this->liveDir.'/.meta.json');
+    }
+
+    public function test_prune_removes_metadata_sidecar_alongside_backup(): void
+    {
+        // Take three backups, each with a sidecar; prune to keep the newest
+        // one. The two removed backups' sidecars must be cleaned up too, or
+        // stale sidecars pile up next to the extension backup root.
+        $b1 = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 1]);
+        $b2 = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 2]);
+        $b3 = $this->subject->take('theme', $this->slug, $this->liveDir, ['max_batch' => 3]);
+
+        $this->subject->prune('theme', $this->slug, 1);
+
+        $this->assertFileDoesNotExist($this->subject->metadataPath($b1));
+        $this->assertFileDoesNotExist($this->subject->metadataPath($b2));
+        $this->assertFileExists($this->subject->metadataPath($b3));
     }
 
     private function cleanup(): void
