@@ -38,7 +38,9 @@ namespace App\Console\Commands;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\ThemeMigrationRepository;
 use Illuminate\Console\Command;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
@@ -111,7 +113,7 @@ class ThemeRollback extends Command
 
             // Delegate the schema half so the operator does not have to run
             // a second command; best-effort, mirrors dls:theme:update.
-            Artisan::call('dls:theme:migrate:rollback', ['theme' => $dir, '--force' => true]);
+            $this->rollbackSchemaFromBackupMetadata($theme->slug, $dir, $backupPath);
 
             // Keep the recorded version in step with the restored theme.json.
             $this->syncThemeVersion($theme, $livePath);
@@ -127,6 +129,66 @@ class ThemeRollback extends Command
             $this->error("Rollback failed: {$e->getMessage()}");
 
             return self::FAILURE;
+        }
+    }
+
+    /**
+     * Reverse the schema changes introduced between the backup being
+     * restored and the current live state — exactly the schema half of
+     * the source rollback that just happened. See PluginRollback for the
+     * schema-neutral / over-rollback reasoning; same logic for themes.
+     */
+    private function rollbackSchemaFromBackupMetadata(?string $themeSlug, string $directoryName, string $backupPath): void
+    {
+        $backupMeta = $this->readBackupMetadata($backupPath);
+
+        if ($backupMeta === null) {
+            $this->warn(sprintf(
+                "Backup '%s' has no migration metadata (older format). Delegating a whole-batch schema rollback; verify dls_theme_migrations after the operation.",
+                basename($backupPath),
+            ));
+            Artisan::call('dls:theme:migrate:rollback', ['theme' => $directoryName, '--force' => true]);
+
+            return;
+        }
+
+        $backupBatch = (int) ($backupMeta['max_batch'] ?? 0);
+        $currentBatch = $this->currentThemeMigrationBatch($themeSlug);
+        $stepsBack = max(0, $currentBatch - $backupBatch);
+
+        if ($stepsBack === 0) {
+            $this->line('No schema rollback needed — backup was taken at the current migration batch.');
+
+            return;
+        }
+
+        Artisan::call('dls:theme:migrate:rollback', [
+            'theme' => $directoryName,
+            '--step' => $stepsBack,
+            '--force' => true,
+        ]);
+    }
+
+    /**
+     * Highest applied migration batch for this theme, or 0 when the
+     * theme_migrations table is missing or the theme has no rows.
+     */
+    private function currentThemeMigrationBatch(?string $slug): int
+    {
+        if ($slug === null || $slug === '') {
+            return 0;
+        }
+
+        try {
+            $repository = new ThemeMigrationRepository(
+                app(ConnectionResolverInterface::class),
+                'theme_migrations',
+                $slug,
+            );
+
+            return $repository->getLastBatchNumber();
+        } catch (\Throwable) {
+            return 0;
         }
     }
 

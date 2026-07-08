@@ -69,9 +69,21 @@ trait TakesExtensionBackup
 
     /**
      * Deep-copy the live extension tree into a fresh, timestamped backup
-     * directory (resources/assets included). Returns the absolute path.
+     * directory (resources/assets included) and, when given, write a
+     * `<timestamp>.meta.json` sidecar next to the backup dir. Returns the
+     * absolute path of the backup directory (not the sidecar).
+     *
+     * The sidecar is a sibling of the backup directory, not a file inside
+     * it, so restoreExtensionBackupInto()'s File::copyDirectory can never
+     * drag the metadata into the live extension tree. dls:{plugin,theme}:
+     * rollback reads it back via readBackupMetadata().
+     *
+     * @param  array<string, mixed>  $metadata  Optional snapshot of pre-backup
+     *                                          state — currently `version` (declared plugin.json/theme.json version)
+     *                                          and `max_batch` (highest applied migration batch), used by rollback
+     *                                          to compute an exact --step for the schema half.
      */
-    protected function takeExtensionBackup(string $kind, string $directoryName, string $livePath): string
+    protected function takeExtensionBackup(string $kind, string $directoryName, string $livePath, array $metadata = []): string
     {
         if (! is_dir($livePath)) {
             throw new RuntimeException("Cannot back up {$kind} '{$directoryName}': live path does not exist: {$livePath}");
@@ -82,7 +94,63 @@ trait TakesExtensionBackup
         File::ensureDirectoryExists(dirname($target));
         File::copyDirectory($livePath, $target);
 
+        if ($metadata !== []) {
+            $this->writeBackupMetadata($target, $metadata);
+        }
+
         return $target;
+    }
+
+    /**
+     * Absolute path of the metadata sidecar file for a given backup dir.
+     * Sidecar sits next to the backup dir so File::copyDirectory in
+     * restoreExtensionBackupInto never drags it into the live tree, and
+     * listExtensionBackups (which enumerates DIRECTORIES) never surfaces
+     * it as a false-positive backup.
+     */
+    protected function extensionBackupMetadataPath(string $backupPath): string
+    {
+        return $backupPath.'.meta.json';
+    }
+
+    /**
+     * Read the metadata sidecar for a backup. Returns null when the sidecar
+     * is missing (pre-fix backups taken before this file wrote metadata) or
+     * unreadable / malformed — callers must treat null as "unknown state"
+     * and fall back to the pre-fix delegated behaviour, not as an error.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function readBackupMetadata(string $backupPath): ?array
+    {
+        $sidecar = $this->extensionBackupMetadataPath($backupPath);
+        if (! is_file($sidecar)) {
+            return null;
+        }
+
+        $contents = @file_get_contents($sidecar);
+        if ($contents === false) {
+            return null;
+        }
+
+        $decoded = json_decode($contents, true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $metadata
+     */
+    private function writeBackupMetadata(string $backupPath, array $metadata): void
+    {
+        // Timestamp is folded into the payload so an operator inspecting the
+        // sidecar in isolation can still see when the backup was captured.
+        $metadata = array_merge(['timestamp' => basename($backupPath)], $metadata);
+        File::put(
+            $this->extensionBackupMetadataPath($backupPath),
+            json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                .PHP_EOL,
+        );
     }
 
     /**
@@ -134,8 +202,9 @@ trait TakesExtensionBackup
     }
 
     /**
-     * Keep the newest $keep backups, delete older ones. Aside copies are
-     * left untouched (recovery state, not part of the retained set).
+     * Keep the newest $keep backups, delete older ones AND their metadata
+     * sidecars. Aside copies (.pre-rollback-*) are left untouched (recovery
+     * state, not part of the retained set).
      */
     protected function pruneExtensionBackups(string $kind, string $directoryName, int $keep): void
     {
@@ -147,7 +216,12 @@ trait TakesExtensionBackup
         $root = $this->extensionBackupRoot($kind, $directoryName);
         $excess = array_slice($names, 0, max(0, count($names) - $keep));
         foreach ($excess as $old) {
-            File::deleteDirectory($root.'/'.$old);
+            $backupPath = $root.'/'.$old;
+            File::deleteDirectory($backupPath);
+            $sidecar = $this->extensionBackupMetadataPath($backupPath);
+            if (is_file($sidecar)) {
+                @unlink($sidecar);
+            }
         }
     }
 

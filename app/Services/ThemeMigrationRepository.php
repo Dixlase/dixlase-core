@@ -79,4 +79,18 @@ class ThemeMigrationRepository extends DatabaseMigrationRepository
             'updated_at' => now(),
         ]);
     }
+
+    /**
+     * Highest batch number recorded for a theme, or 0 when this theme has
+     * no migrations applied yet. See PluginMigrationRepository for the
+     * rollback-side rationale — same reasoning for themes.
+     */
+    public function getLastBatchNumber($theme = null)
+    {
+        $theme = $theme ?? $this->theme;
+
+        return (int) ($this->table()
+            ->where('theme', $theme)
+            ->max('batch') ?? 0);
+    }
 }
