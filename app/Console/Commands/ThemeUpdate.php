@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
@@ -50,12 +51,14 @@ use ZipArchive;
 class ThemeUpdate extends Command
 {
     use BuildsExtensionAssets;
+    use TakesExtensionBackup;
 
     protected $signature = 'dls:theme:update
         {slug : Theme slug to update}
         {--force : Skip confirmation}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
-        {--skip-build : Skip the npm install / build step entirely}';
+        {--skip-build : Skip the npm install / build step entirely}
+        {--skip-backup : Skip the automatic pre-update backup that dls:theme:rollback restores from}';
 
     protected $description = 'Update a theme to the latest version from its source';
 
@@ -79,6 +82,9 @@ class ThemeUpdate extends Command
         $this->info("Checking for updates for '{$slug}' (current: v{$theme->version})...");
 
         $snapshotPath = null;
+        // Persistent pre-update backup (kept for dls:theme:rollback); null
+        // when --skip-backup, in which case $snapshotPath guards this run.
+        $backupPath = null;
         // Whether we got far enough into the try block to invoke
         // ThemeMigrator::migrate(). Used by the catch handler to decide
         // whether to attempt ThemeMigrator::rollback() — without this
@@ -120,16 +126,28 @@ class ThemeUpdate extends Command
             $zipPath = $manager->download($slug, 'theme', $release->version, $theme->source_id);
             $this->info("Downloaded v{$release->version}");
 
-            // Capture a snapshot of the live theme tree so we can roll back
-            // a partially-extracted update on failure.
+            // Capture the pre-update state so a failed apply — or a later
+            // operator-run `dls:theme:rollback` — can restore it. By default
+            // this is a PERSISTENT backup (kept, retention-pruned, restores
+            // the prebuilt resources/assets without npm); --skip-backup falls
+            // back to a transient snapshot that only guards this run.
             $livePath = base_path("themes/{$theme->directory}");
             if (is_dir($livePath)) {
-                $snapshotPath = $snapshotter->capture(
-                    ExtensionSourceSnapshot::KIND_THEME,
-                    $theme->directory,
-                    $livePath,
-                );
-                $this->info("Snapshot captured at {$snapshotPath}");
+                if ($this->option('skip-backup')) {
+                    $snapshotPath = $snapshotter->capture(
+                        ExtensionSourceSnapshot::KIND_THEME,
+                        $theme->directory,
+                        $livePath,
+                    );
+                    $this->info("Snapshot captured at {$snapshotPath}");
+                } else {
+                    $backupPath = $this->takeExtensionBackup(
+                        ExtensionSourceSnapshot::KIND_THEME,
+                        $theme->directory,
+                        $livePath,
+                    );
+                    $this->info("Backup taken at {$backupPath}");
+                }
             }
 
             $this->extractUpdate($zipPath, $theme);
@@ -157,10 +175,19 @@ class ThemeUpdate extends Command
                 'update_failure_reason' => null,
             ]);
 
-            // Successful update — discard the snapshot to free disk space.
+            // Successful update — discard the transient snapshot, and prune
+            // the persistent backups down to the retention limit (keeping
+            // the one just taken so dls:theme:rollback can restore it).
             if ($snapshotPath !== null) {
                 $snapshotter->discard($snapshotPath);
                 $snapshotPath = null;
+            }
+            if ($backupPath !== null) {
+                $this->pruneExtensionBackups(
+                    ExtensionSourceSnapshot::KIND_THEME,
+                    $theme->directory,
+                    (int) config('extension_backups.retention', 3),
+                );
             }
 
             // Rebuild front-end assets that ship with the theme. Default mode
@@ -189,17 +216,24 @@ class ThemeUpdate extends Command
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
-            // Roll back the theme tree from the snapshot so the user is not
-            // stranded on a half-extracted directory.
-            if ($snapshotPath !== null) {
+            // Roll back the theme tree from the pre-update backup (or the
+            // transient snapshot when --skip-backup) so the user is not
+            // stranded on a half-extracted directory. The persistent backup
+            // is a plain directory copy, so ExtensionSourceSnapshot::restore
+            // handles it too; keep the backup afterwards so the operator
+            // still has a restore point.
+            $recoverSource = $backupPath ?? $snapshotPath;
+            if ($recoverSource !== null) {
                 try {
                     $livePath = base_path("themes/{$theme->directory}");
-                    $snapshotter->restore($snapshotPath, $livePath);
-                    $this->warn('Theme source rolled back from snapshot.');
-                    $snapshotter->discard($snapshotPath);
+                    $snapshotter->restore($recoverSource, $livePath);
+                    $this->warn('Theme source rolled back from the pre-update backup.');
+                    if ($snapshotPath !== null) {
+                        $snapshotter->discard($snapshotPath);
+                    }
                 } catch (\Throwable $restoreError) {
                     $this->error("ROLLBACK FAILED: {$restoreError->getMessage()}");
-                    $this->error("Manual recovery required. Snapshot retained at: {$snapshotPath}");
+                    $this->error("Manual recovery required. Backup retained at: {$recoverSource}");
                 }
             }
 
