@@ -40,6 +40,7 @@ use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\PluginMigrationRepository;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -140,10 +141,19 @@ class PluginUpdate extends Command
                     );
                     $this->info("Snapshot captured at {$snapshotPath}");
                 } else {
+                    // Record the pre-update version + migration batch on the
+                    // backup sidecar so dls:plugin:rollback can compute an
+                    // exact --step for the schema half instead of blindly
+                    // reverting the current latest batch (which would over-
+                    // rollback when the just-undone update was schema-neutral).
                     $backupPath = $this->takeExtensionBackup(
                         ExtensionSourceSnapshot::KIND_PLUGIN,
                         $plugin->directory,
                         $livePath,
+                        [
+                            'version' => (string) $plugin->version,
+                            'max_batch' => $this->currentPluginMigrationBatch($plugin->slug),
+                        ],
                     );
                     $this->info("Backup taken at {$backupPath}");
                 }
@@ -258,6 +268,28 @@ class PluginUpdate extends Command
             $this->error("Update failed: {$e->getMessage()}");
 
             return self::FAILURE;
+        }
+    }
+
+    /**
+     * Highest applied migration batch for this plugin, or 0 when the
+     * plugin_migrations table is missing (fresh install / test env) or the
+     * plugin has no migrations yet. Best-effort — a null answer is fine
+     * for the rollback path because it just means "same as current", i.e.
+     * step=0 and the delegated migrate:rollback call is skipped.
+     */
+    protected function currentPluginMigrationBatch(string $slug): int
+    {
+        try {
+            $repository = new PluginMigrationRepository(
+                app(ConnectionResolverInterface::class),
+                'plugin_migrations',
+                $slug,
+            );
+
+            return $repository->getLastBatchNumber();
+        } catch (\Throwable) {
+            return 0;
         }
     }
 

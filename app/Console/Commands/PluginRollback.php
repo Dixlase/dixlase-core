@@ -38,7 +38,9 @@ namespace App\Console\Commands;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\PluginMigrationRepository;
 use Illuminate\Console\Command;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
@@ -110,7 +112,7 @@ class PluginRollback extends Command
 
             // Delegate the schema half so the operator does not have to run
             // a second command; best-effort, mirrors dls:plugin:update.
-            Artisan::call('dls:plugin:migrate:rollback', ['plugin' => $dir, '--force' => true]);
+            $this->rollbackSchemaFromBackupMetadata($plugin->slug, $dir, $backupPath);
 
             // Keep the recorded version in step with the restored plugin.json.
             $this->syncPluginVersion($plugin, $livePath);
@@ -126,6 +128,78 @@ class PluginRollback extends Command
             $this->error("Rollback failed: {$e->getMessage()}");
 
             return self::FAILURE;
+        }
+    }
+
+    /**
+     * Reverse the schema changes introduced *between* the backup being
+     * restored and the current live state — exactly the schema half of the
+     * source rollback that just happened, no more.
+     *
+     * Reads `max_batch` from the backup's metadata sidecar, compares it to
+     * the current highest batch in dls_plugin_migrations, and passes the
+     * delta as --step to dls:plugin:migrate:rollback. When the delta is
+     * zero (the just-undone update was schema-neutral, so no batches were
+     * added), the delegated command is skipped entirely — reverting the
+     * current batch here would over-rollback into an *earlier* update's
+     * migrations and leave source@vN + schema@vN-1.
+     *
+     * When the sidecar is missing (pre-fix backups from before PR #123),
+     * falls back to the pre-fix behaviour with a loud warning so the
+     * operator knows to inspect plugin_migrations afterwards.
+     */
+    private function rollbackSchemaFromBackupMetadata(?string $pluginSlug, string $directoryName, string $backupPath): void
+    {
+        $backupMeta = $this->readBackupMetadata($backupPath);
+
+        if ($backupMeta === null) {
+            $this->warn(sprintf(
+                "Backup '%s' has no migration metadata (older format). Delegating a whole-batch schema rollback; verify dls_plugin_migrations after the operation.",
+                basename($backupPath),
+            ));
+            Artisan::call('dls:plugin:migrate:rollback', ['plugin' => $directoryName, '--force' => true]);
+
+            return;
+        }
+
+        $backupBatch = (int) ($backupMeta['max_batch'] ?? 0);
+        $currentBatch = $this->currentPluginMigrationBatch($pluginSlug);
+        $stepsBack = max(0, $currentBatch - $backupBatch);
+
+        if ($stepsBack === 0) {
+            $this->line('No schema rollback needed — backup was taken at the current migration batch.');
+
+            return;
+        }
+
+        Artisan::call('dls:plugin:migrate:rollback', [
+            'plugin' => $directoryName,
+            '--step' => $stepsBack,
+            '--force' => true,
+        ]);
+    }
+
+    /**
+     * Highest applied migration batch for this plugin, or 0 when the
+     * plugin_migrations table is missing or the plugin has no rows.
+     * Symmetrical with PluginUpdate::currentPluginMigrationBatch().
+     */
+    private function currentPluginMigrationBatch(?string $slug): int
+    {
+        if ($slug === null || $slug === '') {
+            return 0;
+        }
+
+        try {
+            $repository = new PluginMigrationRepository(
+                app(ConnectionResolverInterface::class),
+                'plugin_migrations',
+                $slug,
+            );
+
+            return $repository->getLastBatchNumber();
+        } catch (\Throwable) {
+            return 0;
         }
     }
 
