@@ -40,6 +40,7 @@ use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\ThemeMigrationRepository;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -141,10 +142,19 @@ class ThemeUpdate extends Command
                     );
                     $this->info("Snapshot captured at {$snapshotPath}");
                 } else {
+                    // Record pre-update version + migration batch on the
+                    // backup sidecar so dls:theme:rollback can compute an
+                    // exact --step for the schema half instead of blindly
+                    // reverting the current latest batch (which would over-
+                    // rollback when the just-undone update was schema-neutral).
                     $backupPath = $this->takeExtensionBackup(
                         ExtensionSourceSnapshot::KIND_THEME,
                         $theme->directory,
                         $livePath,
+                        [
+                            'version' => (string) $theme->version,
+                            'max_batch' => $this->currentThemeMigrationBatch($theme->slug),
+                        ],
                     );
                     $this->info("Backup taken at {$backupPath}");
                 }
@@ -263,6 +273,27 @@ class ThemeUpdate extends Command
             $this->error("Update failed: {$e->getMessage()}");
 
             return self::FAILURE;
+        }
+    }
+
+    /**
+     * Highest applied migration batch for this theme, or 0 when the
+     * theme_migrations table is missing (fresh install / test env) or the
+     * theme has no migrations yet. Best-effort — see PluginUpdate for the
+     * same rationale.
+     */
+    protected function currentThemeMigrationBatch(string $slug): int
+    {
+        try {
+            $repository = new ThemeMigrationRepository(
+                app(ConnectionResolverInterface::class),
+                'theme_migrations',
+                $slug,
+            );
+
+            return $repository->getLastBatchNumber();
+        } catch (\Throwable) {
+            return 0;
         }
     }
 
