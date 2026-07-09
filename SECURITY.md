@@ -235,7 +235,7 @@ HSTS is only emitted on responses Dixlase recognises as HTTPS. When deployed beh
 
 - The Dixlase CMS core (this repository)
 - Official Dixlase-maintained plugins and themes
-- Dixlase infrastructure (dixlase.com and related official domains)
+- Dixlase infrastructure (dixlase.org and related official domains)
 
 ### Out of Scope
 
@@ -277,7 +277,7 @@ To stay informed about security updates:
 For general security questions (non-vulnerability-related):
 
 - Email: security@dixlase.org
-- Website: https://dixlase.com/security *(planned)*
+- Website: https://dixlase.org/security *(planned)*
 
 ---
 

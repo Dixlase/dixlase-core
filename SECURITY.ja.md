@@ -235,7 +235,7 @@ HSTS は Dixlase が HTTPS と認識したレスポンスに対してのみ送�
 
 - Dixlase CMS コア(本リポジトリ)
 - exc-D inc. が公式にメンテナンスしているプラグインおよびテーマ
-- Dixlase インフラ(dixlase.com および関連する公式ドメイン)
+- Dixlase インフラ(dixlase.org および関連する公式ドメイン)
 
 ### 対象範囲外
 
@@ -277,7 +277,7 @@ Dixlase は善意のセキュリティ研究を支援します。以下を遵守
 一般的なセキュリティに関するご質問(脆弱性以外):
 
 - Email: security@dixlase.org
-- Website: https://dixlase.com/security *(予定)*
+- Website: https://dixlase.org/security *(予定)*
 
 ---
 
