@@ -51,6 +51,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'back_label' => __('common.back'),       // Back button text
 ])
 
+{{-- When the CheckMenuAccess middleware has shared menuEditable=false
+     for this request, the current user has view-only permission on
+     the menu and any save action would 403. Suppress the button (and
+     its confirmation modal) so the UI matches the actual permission.
+     Undefined / true → render as before (backwards compatible for any
+     view not behind CheckMenuAccess). --}}
+@if($menuEditable ?? true)
 <div class="flex justify-between items-center">
 
     @if($back_url)
@@ -87,3 +94,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :form="$form ?? null"
     />
 @endpush
+@endif
