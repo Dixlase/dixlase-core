@@ -332,6 +332,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                             @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                 <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                            @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key))
+                                                <span class="text-xs text-gray-400">(閲覧のみ)</span>
                                             @endif
                                         </a>
                                         @unless ($__isProtected)
