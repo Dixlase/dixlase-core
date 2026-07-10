@@ -43,7 +43,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'entityName' => null,
 ])
 
-<!-- 管理操作セクション -->
+{{-- View-only suppression: every action in the danger zone (unlock,
+     force logout, delete) is an edit-level operation, so the whole
+     section is hidden together. See save-button.blade for the shared
+     menuEditable contract set by CheckMenuAccess middleware. --}}
+@if($menuEditable ?? true)
+<!-- Management operations section -->
 <section>
     <h2>{{ __('common.management_operations') }}</h2>
 
@@ -147,11 +152,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endif
 
 @if($deleteRoute && $canDelete)
-    <form id="{{ $entityType }}-delete-form" 
-          action="{{ $deleteRoute }}" 
-          method="POST" 
+    <form id="{{ $entityType }}-delete-form"
+          action="{{ $deleteRoute }}"
+          method="POST"
           style="display: none;">
         @csrf
         @method('DELETE')
     </form>
 @endif
+@endif {{-- menuEditable ?? true --}}
