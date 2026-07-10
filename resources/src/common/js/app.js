@@ -21,6 +21,9 @@
 import '../scss/style.scss';
 import './bootstrap';
 import './appearance';
+// Dry-run release marker — remove after the current dry-run cycle
+// completes. See dryrun-marker.js for the sandbox verification recipe.
+import './dryrun-marker.js';
 import './livewire-notification';
 import '../../components/auth/js/account-verification';
 import '../../components/js/form-color';
