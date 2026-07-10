@@ -42,24 +42,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'cancel_label' => null,
 ])
 
-<!-- 削除ボタン -->
-<x-form-button
-    type="button"
-    variant="danger"
-    :label="$label ?? __('common.delete')"
-    icon="fas fa-trash-alt"
-    @click="openModal('{{ $id_confirmation }}')"
-    class="delete-button"
-/>
+{{-- Same view-only suppression as x-admin.save-button: when CheckMenuAccess
+     has shared menuEditable=false, the current user has view-only
+     permission on the menu and a delete would 403. See save-button.blade
+     for the shared-variable contract. --}}
+@if($menuEditable ?? true)
+    <!-- Delete button -->
+    <x-form-button
+        type="button"
+        variant="danger"
+        :label="$label ?? __('common.delete')"
+        icon="fas fa-trash-alt"
+        @click="openModal('{{ $id_confirmation }}')"
+        class="delete-button"
+    />
 
-<!-- 削除モーダル -->
-<x-ui-modal
-    :id="$id_confirmation"
-    :title="$title ?? __('common.delete_confirmation_title')"
-    :message="$message ?? __('common.delete_confirmation_message')"
-    :confirm_label="$label ?? __('common.delete')"
-    :cancel_label="$cancel_label ?? __('common.cancel')"
-    icon_type="danger"
-    confirm_color="red"
-    :form="$form ?? null"
-/>
+    <!-- Delete confirmation modal -->
+    <x-ui-modal
+        :id="$id_confirmation"
+        :title="$title ?? __('common.delete_confirmation_title')"
+        :message="$message ?? __('common.delete_confirmation_message')"
+        :confirm_label="$label ?? __('common.delete')"
+        :cancel_label="$cancel_label ?? __('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+        :form="$form ?? null"
+    />
+@endif

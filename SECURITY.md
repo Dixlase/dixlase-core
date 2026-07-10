@@ -43,6 +43,26 @@ For highly sensitive reports, you may encrypt your report using our PGP key:
 
 The PGP key will be published on this page once generated. Until then, **GitHub Private Vulnerability Reporting** is the recommended encrypted alternative — submissions are protected by HTTPS and accessible only to maintainers. Email encryption is also acceptable if supported by your mail provider.
 
+### Report Requirements
+
+To be triaged, a vulnerability report must include:
+
+- The **specific Dixlase version** (or commit hash) affected
+- A **working proof of concept, or concrete step-by-step reproduction instructions**, demonstrating the vulnerability against actual Dixlase code
+- The **impact**: what an attacker gains, and under what preconditions
+
+Reports describing theoretical weaknesses without a reproduction path, or vulnerabilities in code paths that do not exist in Dixlase as written, are closed as invalid.
+
+### Use of AI Tools in Security Reports
+
+- If AI tools were used to identify, analyze, or describe the vulnerability, **disclose this in the report**. Disclosure does not lower the priority of a valid report — undisclosed AI use in an invalid one does affect how we handle future reports from the same source.
+- **You must be able to answer follow-up questions about your report in your own words.** Reports whose authors cannot explain the vulnerability when asked are closed as invalid.
+- **Raw, unverified output from automated scanners or AI tools is not accepted** as a vulnerability report. A human must have verified the finding against Dixlase's actual code before reporting.
+
+### No Bug Bounty
+
+Dixlase does not currently operate a bug bounty program, and no monetary reward is offered for vulnerability reports. Valid reports are credited in release notes and security advisories (unless you prefer to remain anonymous). We deeply appreciate responsible disclosure — recognition is the form our gratitude currently takes.
+
 ## What to Expect
 
 We aim to acknowledge all security reports promptly and handle them responsibly.
@@ -215,7 +235,7 @@ HSTS is only emitted on responses Dixlase recognises as HTTPS. When deployed beh
 
 - The Dixlase CMS core (this repository)
 - Official Dixlase-maintained plugins and themes
-- Dixlase infrastructure (dixlase.com and related official domains)
+- Dixlase infrastructure (dixlase.org and related official domains)
 
 ### Out of Scope
 
@@ -257,7 +277,7 @@ To stay informed about security updates:
 For general security questions (non-vulnerability-related):
 
 - Email: security@dixlase.org
-- Website: https://dixlase.com/security *(planned)*
+- Website: https://dixlase.org/security *(planned)*
 
 ---
 
