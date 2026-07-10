@@ -40,6 +40,7 @@ use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class CheckMenuAccess
 {
@@ -64,6 +65,17 @@ class CheckMenuAccess
                     ->with('warning', __('http/middleware/check_menu_access.feature_unavailable_in_simple_mode'));
             }
         }
+
+        // Share view-only vs edit status with downstream admin views so the
+        // save / delete / danger-zone action components can hide themselves
+        // when the current user only has view permission. Server-side edit
+        // checks in CheckMenuEdit still guard the POST endpoints; this just
+        // stops the 403-guaranteed action buttons from being displayed in
+        // the first place. Blade cannot call \App\Helpers\* directly
+        // (resources/CLAUDE.md view-logic separation rule), so the flag
+        // must be routed through the middleware layer.
+        View::share('menuEditable', AdminHelper::canEditMenu($menuKey));
+        View::share('menuKey', $menuKey);
 
         return $next($request);
     }

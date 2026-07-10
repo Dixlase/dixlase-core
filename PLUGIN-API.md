@@ -1,8 +1,10 @@
 # Dixlase CMS Plugin API Boundary
 
+> **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
+
 **Version:** dev
-**Last Updated:** 2026-07-04
-**Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE)
+**Last Updated:** 2026-06-01
+**Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
 services, and configurations that plugins and themes are permitted to use without triggering
@@ -75,7 +77,7 @@ For new extensions, scaffolding via `dls:make:plugin` / `dls:make:theme` include
 
 Plugins and themes that interact with Dixlase CMS **exclusively through the interfaces listed in this document** are **not** considered derivative works of Dixlase CMS. You may distribute them under any license of your choice, including proprietary licenses.
 
-This right is granted by the **Dixlase Plugin and Theme Exception** (see the `LICENSE` file, Section "Additional permission under GNU AGPL version 3 section 7"). The exception applies when all of the following conditions are met:
+This right is granted by the **Dixlase Plugin and Theme Exception** (see the `LICENSE-EXCEPTIONS` file, which grants an additional permission under GNU AGPL version 3 section 7). The exception applies when all of the following conditions are met:
 
 1. Your plugin/theme communicates with Dixlase CMS only through the Plugin API defined in this document.
 2. Your plugin/theme does not modify, replace, or monkey-patch any core source file.
@@ -97,7 +99,6 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Admin\AdminNavigationManagerInterface` | Admin panel navigation manager interface |
 | `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
 | `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
-| `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor&#039;s cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
 | `App\Contracts\Encryption\FileEncryptionServiceInterface` | File encryption service interface |
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
@@ -114,7 +115,6 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
 | `App\Contracts\Security\RiskEvaluatorInterface` | Conditional-access risk scoring hook. |
 | `App\Contracts\Security\SecretProviderInterface` | Pluggable secret-store backend. |
-| `App\Contracts\Signature\SignatureWaiverServiceInterface` | first-party DixlaseDevKit (not subject to the AGPL exception). Add @api and |
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
@@ -136,7 +136,6 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\CaptchaFormProviderInterface` | Contract for plugins that provide CAPTCHA forms |
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | Contract for plugins that provide dashboard notifications |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | Contract for plugins that provide dashboard widgets |
-| `App\Contracts\PluginIntegration\DeployProtectionRegistryInterface` | Aggregated view of every &quot;protect from cross-environment sync |
 | `App\Contracts\PluginIntegration\LinkableInterface` | Minimal contract for linkable content |
 | `App\Contracts\PluginIntegration\LinkableProviderInterface` | Contract for plugins that provide linkable content |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
@@ -231,54 +230,49 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\Backup\BackupResultDTO`
 - `App\DTO\Backup\RestoreResultDTO`
 
-### 4.5 Core DTOs
-
-- `App\DTO\Core\CoreIntegrityResult`
-
-### 4.6 Editor DTOs
+### 4.5 Editor DTOs
 
 - `App\DTO\Editor\EditorInfo`
 
-### 4.7 Encryption DTOs
+### 4.6 Encryption DTOs
 
 - `App\DTO\Encryption\EncryptionResultDTO`
 
-### 4.8 Extension DTOs
+### 4.7 Extension DTOs
 
 - `App\DTO\Extension\CompatibilityResult`
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.9 File Integrity DTOs
+### 4.8 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.10 Licensing DTOs
+### 4.9 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.11 Logging DTOs
+### 4.10 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.12 Mail DTOs
+### 4.11 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.13 Plugin Integration DTOs
+### 4.12 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
 - `App\DTO\PluginIntegration\CaptchaFormDTO`
 - `App\DTO\PluginIntegration\DashboardNotificationDTO`
 - `App\DTO\PluginIntegration\DashboardWidgetDTO`
-- `App\DTO\PluginIntegration\DeployProtectionSource`
 - `App\DTO\PluginIntegration\LinkableDTO`
 - `App\DTO\PluginIntegration\MenuDTO`
 - `App\DTO\PluginIntegration\MenuItemDTO`
@@ -288,23 +282,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.14 Plugin Privacy DTOs
+### 4.13 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.15 Plugin DTOs
+### 4.14 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.16 RouteSlug DTOs
+### 4.15 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.17 Security DTOs
+### 4.16 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
@@ -319,7 +313,6 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\ActorType`
 - `App\Enums\AppearanceMode`
 - `App\Enums\AuthenticationMode`
-- `App\Enums\ConsentCategory`
 - `App\Enums\ContentEditorType`
 - `App\Enums\ContentStatus`
 - `App\Enums\ContentStorageType`
