@@ -38,7 +38,7 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
 --}}
 @if(config('dixlase.demo_mode'))
 <div id="admin-demo-banner" class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-3 shadow-md">
-    <div class="max-w-full mx-auto flex items-center justify-between">
+    <div class="max-w-full mx-auto flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center space-x-3">
             <i class="fas fa-flask text-xl"></i>
             <div>
@@ -49,6 +49,15 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
                     {{ __('admin/demo.banner_message') }}
                 </div>
             </div>
+        </div>
+        {{-- Access hints: how to sign in and where the tenant's own front page
+             and admin URL live. URLs resolve to the current (tenant) host. --}}
+        <div class="text-sm flex flex-wrap items-center gap-x-4 gap-y-1">
+            @if(config('dixlase.demo_account'))
+                <span><i class="fas fa-user mr-1" aria-hidden="true"></i>{{ __('admin/demo.account') }}: <strong>{{ config('dixlase.demo_account') }}</strong></span>
+            @endif
+            <a href="{{ url('/') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
+            <span class="whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}: {{ route('admin.login') }}</span>
         </div>
     </div>
 </div>
