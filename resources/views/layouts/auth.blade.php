@@ -51,6 +51,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {!! load_auth_assets() !!}
 </head>
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-300">
+    {{-- Demo-mode banner (account + front/admin URLs). Fixed to the top so it
+         does not disturb the vertically centred auth card. --}}
+    @if(config('dixlase.demo_mode'))
+        <div class="fixed top-0 inset-x-0 z-50">
+            <x-ui-admin-demo-banner />
+        </div>
+    @endif
     <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
 
         <!-- ロゴ -->

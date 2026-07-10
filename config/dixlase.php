@@ -89,4 +89,17 @@ return [
 
     'demo_mode' => filter_var(env('DIXLASE_DEMO_MODE', false), FILTER_VALIDATE_BOOLEAN),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Account Hint
+    |--------------------------------------------------------------------------
+    |
+    | Optional "username / password" string surfaced in the demo banner so a
+    | visitor knows how to sign in (e.g. "demo / demo1234"). Public by design;
+    | leave empty to hide the account line. Only shown when demo_mode is on.
+    |
+    */
+
+    'demo_account' => (string) env('DIXLASE_DEMO_ACCOUNT', ''),
+
 ];
