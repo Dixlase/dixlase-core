@@ -63,4 +63,14 @@ return [
         'not_scanned_message' => 'Not scanned yet. Press the Scan button to check the theme\'s permissions, signature, and compatibility.',
         'issues' => 'Detected issues',
     ],
+
+    'rollback' => [
+        'button' => 'Roll back',
+        'confirm_title' => 'Roll back this theme?',
+        'confirm_message' => 'Restore "{name}" to the state captured before its last update. The current theme files, prebuilt assets, and any schema changes from that update will be reverted. This does not run npm.',
+        'success' => 'Theme ":name" was rolled back to the state before its last update.',
+        'failed' => 'Rollback failed. Check the logs for details.',
+        'no_backup' => 'No pre-update backup exists for this theme, so there is nothing to roll back to.',
+        'not_found' => 'Theme not found.',
+    ],
 ];
