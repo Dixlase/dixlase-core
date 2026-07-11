@@ -45,6 +45,11 @@ return [
     'saved' => 'Saved',
     'update' => 'Update',
     'delete' => 'Delete',
+    // Tooltip on save / delete / danger-zone action buttons when the
+    // current user only has view permission on this menu. Shown via the
+    // button's native `title` attribute — the button also carries the
+    // HTML `disabled` state so the click never fires.
+    'view_only_action_disabled' => 'View-only permission — this action is disabled',
     'copy' => 'Copy',
     'copied' => 'Copied',
     'all' => 'All',

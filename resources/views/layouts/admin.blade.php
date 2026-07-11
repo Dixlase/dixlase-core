@@ -243,20 +243,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @yield('content')
                     </article>
 
-                    {{-- Sticky save footer: rendered only when the page
-                         declares a @section('save') AND the current user
-                         has edit permission on this menu. menuEditable is
-                         shared by CheckMenuAccess middleware. Defaulting
-                         to true keeps pre-refactor behaviour for any
-                         admin page not (yet) behind that middleware. --}}
+                    {{-- Sticky save footer: rendered whenever the page
+                         declares a @section('save'). The button inside
+                         is responsible for dimming / disabling itself
+                         when the current user has view-only permission
+                         (x-admin.save-button reads menuEditable), so
+                         the footer stripe is always shown and page
+                         height does not shift between menus. --}}
                     @hasSection('save')
-                        @if($menuEditable ?? true)
-                            <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 @if($transitionEnabled ?? false) transition-colors duration-[0ms] @endif">
-                                <div class="w-full mx-auto flex justify-center">
-                                    @yield('save')
-                                </div>
+                        <div class="sticky bottom-0 z-30 backdrop-blur-sm bg-white/75 dark:bg-gray-900/75 border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-3 @if($transitionEnabled ?? false) transition-colors duration-[0ms] @endif">
+                            <div class="w-full mx-auto flex justify-center">
+                                @yield('save')
                             </div>
-                        @endif
+                        </div>
                     @endif
 
                 {{-- Right sidebar overlay on mobile --}}
