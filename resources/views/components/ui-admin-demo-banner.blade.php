@@ -59,9 +59,27 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
             <a href="{{ url('/') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
             <span class="whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}: {{ route('admin.login') }}</span>
             @if(config('dixlase.demo_expires_at'))
-                <span class="whitespace-nowrap"><i class="fas fa-clock mr-1" aria-hidden="true"></i>{{ __('admin/demo.expires') }}: {{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->isoFormat('M/D HH:mm') }}</span>
+                {{-- Rendered as an ISO-8601 UTC timestamp; the script below
+                     rewrites it to each visitor's local time. The " UTC"
+                     fallback text is what shows if JavaScript is disabled. --}}
+                <span class="whitespace-nowrap"><i class="fas fa-clock mr-1" aria-hidden="true"></i>{{ __('admin/demo.expires') }}: <time data-demo-localtime datetime="{{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->isoFormat('M/D HH:mm') }} UTC</time></span>
             @endif
         </div>
     </div>
 </div>
+{{-- Localise the expiry <time> to the visitor's own timezone. Server time is
+     UTC; visitors are worldwide, so the correct wall-clock time is only known
+     client-side. Nonce'd per CSP; no-JS falls back to the UTC text above. --}}
+<script @cspNonce>
+    (function () {
+        document.querySelectorAll('time[data-demo-localtime]').forEach(function (el) {
+            var d = new Date(el.getAttribute('datetime'));
+            if (!isNaN(d.getTime())) {
+                el.textContent = d.toLocaleString([], {
+                    month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            }
+        });
+    })();
+</script>
 @endif
