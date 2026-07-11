@@ -31,6 +31,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+    // See plugins/partials/installed-actions.blade.php for the
+    // CheckMenuAccess contract. Server-side check.menu.edit still
+    // guards the install / delete POST routes.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 {{-- Install button --}}
 <form action="{{ route('admin.settings.themes.install') }}" method="POST" class="inline-block" id="installThemeForm-{{ $card['directory'] }}">
     @csrf
@@ -40,6 +48,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :label="__('common.install')"
         variant="success"
         size="xs"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         class="py-2 px-3"
         icon="fas fa-download"
         @click="openModal('installThemeModal-{{ $card['directory'] }}')"
@@ -103,6 +113,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :label="__('common.delete')"
         variant="danger"
         size="xs"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         class="py-2 px-3"
         icon="fas fa-trash"
         @click="openModal('deleteThemeModal-{{ $card['directory'] }}')"

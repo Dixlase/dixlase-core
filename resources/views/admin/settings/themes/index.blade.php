@@ -33,6 +33,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // Shared with every action button on this page + all included card /
+    // action partials. See plugins/partials/installed-actions.blade.php
+    // for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto">
     {{-- Page-level action bar: lives above the section so the section
@@ -57,6 +65,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('admin/settings/themes/index.audit.audit_all_button')"
                 variant="secondary"
                 icon="fas fa-search"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('bulkAuditThemesModal')"
             />
 

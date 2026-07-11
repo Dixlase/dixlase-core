@@ -31,6 +31,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+    // See installed-actions.blade.php for the CheckMenuAccess contract.
+    // Server-side check.menu.edit still guards every POST route below.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 {{-- Install button --}}
 <form action="{{ route('admin.settings.plugins.install') }}" method="POST" class="inline-block" id="installForm-{{ $card['directory'] }}">
     @csrf
@@ -42,6 +49,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         size="xs"
         class="py-2 px-3 two-stage-action-btn"
         icon="fas fa-download"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         data-action-type="install"
         data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
         data-plugin-slug="{{ $card['slug'] }}"
@@ -128,6 +137,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="submit"
                 :label="__('common.install')"
                 :variant="$card['installWarnings']['hasWarnings'] ? 'warning' : 'success'"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 form="installForm-{{ $card['directory'] }}"
                 class="mx-2"
             />
@@ -145,6 +156,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         variant="danger"
         size="xs"
         icon="fas fa-trash"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         class="py-2 px-3"
         @click="openModal('deleteModal-{{ $card['directory'] }}')"
     />
