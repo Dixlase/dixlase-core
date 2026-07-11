@@ -31,7 +31,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-{{-- Settings screen link --}}
+@php
+    // Shared by all modify-action buttons on this partial. See
+    // components/admin/save-button.blade.php for the CheckMenuAccess
+    // contract. Server-side check.menu.edit still guards every POST
+    // route these buttons submit to; this only handles the UI layer.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
+{{-- Settings screen link — stays enabled for view-only users because
+     the settings page is itself only view for them. --}}
 @if ($card['isEnabled'] && $card['settingsUrl'])
     <a href="{{ $card['settingsUrl'] }}" class="inline-block">
         <x-form-button
@@ -55,6 +65,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             variant="warning"
             size="xs"
             icon="fas fa-pause"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             @click="openModal('{{ $card['disableModalId'] }}')"
             class="py-2 px-3"
         />
@@ -84,6 +96,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 class="py-2 px-3 two-stage-action-btn"
                 data-action-type="enable"
                 data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
@@ -148,6 +162,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="submit"
                         :label="__('common.enable')"
                         variant="warning"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
                         form="enableForm-{{ $card['id'] }}"
                         class="mx-2"
                     />
@@ -160,6 +176,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 class="py-2 px-3 mx-2 two-stage-action-btn"
                 data-action-type="enable"
                 data-needs-scan="{{ $card['needsScan'] ? '1' : '0' }}"
@@ -183,6 +201,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             variant="danger"
             size="xs"
             icon="fas fa-trash"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             @click="openModal('uninstallModal-{{ $card['id'] }}')"
             class="py-2 px-3 mx-2"
         />

@@ -33,6 +33,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // Shared with every action button on this page + all included card /
+    // action partials. See installed-actions.blade.php for the
+    // CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto">
     {{-- Banner for activation immediately after installation --}}
@@ -51,6 +59,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="success"
                     size="xs"
                     icon="fas fa-play"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     class="two-stage-action-btn"
                     data-action-type="enable"
                     data-needs-scan="{{ $installedPluginCard['needsScan'] ? '1' : '0' }}"
@@ -89,6 +99,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('admin/settings/plugins/index.audit.audit_all_button')"
                 variant="secondary"
                 icon="fas fa-search"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('bulkAuditPluginsModal')"
             />
 
