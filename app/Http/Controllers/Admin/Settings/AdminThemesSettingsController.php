@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Console\Traits\TakesExtensionBackup;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
@@ -48,6 +49,7 @@ use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
+use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
@@ -60,6 +62,8 @@ use Illuminate\Support\Str;
 
 class AdminThemesSettingsController extends AdminLoggedInController
 {
+    use TakesExtensionBackup;
+
     //
 
     // Theme list
@@ -212,14 +216,74 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $card = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
             $rawData = $this->loadThemeJsonForShow($theme->directory);
             $isInstalled = true;
+
+            // Offer admin-panel rollback only when an automatic pre-update
+            // backup exists for this theme (dls:theme:update takes one unless
+            // --skip-backup). The button/modal are hidden otherwise.
+            $hasBackup = $this->latestExtensionBackupPath(
+                ExtensionSourceSnapshot::KIND_THEME,
+                $theme->directory,
+            ) !== null;
         }
 
         $this->viewParams['card'] = $card;
         $this->viewParams['rawData'] = $rawData;
         $this->viewParams['isInstalled'] = $isInstalled;
+        $this->viewParams['hasBackup'] = $hasBackup ?? false;
         $this->viewParams['heading'] = $card['name'] ?? $slug;
 
         return view('admin::settings.themes.show', $this->viewParams);
+    }
+
+    /**
+     * Roll an installed theme back to the state captured before its last
+     * update, from the admin panel. Delegates to dls:theme:rollback, which
+     * restores the source tree AND the prebuilt resources/assets from the
+     * automatic pre-update backup (no npm run) and reverses the schema half.
+     * Only reachable when a backup exists (the button is hidden otherwise).
+     */
+    public function rollbackTheme(int $id)
+    {
+        $theme = Theme::find($id);
+        if (! $theme) {
+            return redirect()
+                ->route('admin.settings.themes.index')
+                ->with('error', __('admin/settings/themes/show.rollback.not_found'));
+        }
+
+        $hasBackup = $this->latestExtensionBackupPath(
+            ExtensionSourceSnapshot::KIND_THEME,
+            $theme->directory,
+        ) !== null;
+
+        if (! $hasBackup) {
+            return redirect()
+                ->route('admin.settings.themes.show', $theme->slug)
+                ->with('error', __('admin/settings/themes/show.rollback.no_backup'));
+        }
+
+        $exitCode = Artisan::call('dls:theme:rollback', [
+            'slug' => $theme->slug,
+            '--force' => true,
+        ]);
+
+        if ($exitCode !== 0) {
+            Log::error('Admin theme rollback failed', [
+                'theme' => $theme->slug,
+                'exit_code' => $exitCode,
+                'output' => Artisan::output(),
+            ]);
+
+            return redirect()
+                ->route('admin.settings.themes.show', $theme->slug)
+                ->with('error', __('admin/settings/themes/show.rollback.failed'));
+        }
+
+        return redirect()
+            ->route('admin.settings.themes.show', $theme->slug)
+            ->with('success', __('admin/settings/themes/show.rollback.success', [
+                'name' => $theme->name ?? $theme->slug,
+            ]));
     }
 
     /**

@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Console\Traits\TakesExtensionBackup;
 use App\Enums\PluginEnableAction;
 use App\Facades\Audit;
 use App\Helpers\AdminHelper;
@@ -53,6 +54,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
@@ -70,6 +72,7 @@ use ZipArchive;
 class AdminPluginsSettingsController extends AdminLoggedInController
 {
     use PluginLoaderTrait;
+    use TakesExtensionBackup;
 
     public function __construct()
     {
@@ -661,6 +664,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $card = ExtensionCardPresenter::forPlugin($plugin);
             $rawData = $this->loadPluginJson($plugin->directory);
             $isInstalled = true;
+
+            // Offer admin-panel rollback only when an automatic pre-update
+            // backup exists for this plugin (dls:plugin:update takes one
+            // unless --skip-backup). The button/modal are hidden otherwise.
+            $hasBackup = $this->latestExtensionBackupPath(
+                ExtensionSourceSnapshot::KIND_PLUGIN,
+                $plugin->directory,
+            ) !== null;
         }
 
         // Map CSP status to translation key
@@ -675,6 +686,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['card'] = $card;
         $this->viewParams['rawData'] = $rawData;
         $this->viewParams['isInstalled'] = $isInstalled;
+        $this->viewParams['hasBackup'] = $hasBackup ?? false;
         $this->viewParams['scanRequired'] = self::isScanRequired();
         $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
         $this->viewParams['heading'] = $card['name'] ?? $slug;
@@ -682,6 +694,57 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['cspStatusLabelKey'] = $cspStatusLabelKey;
 
         return view('admin::settings.plugins.show', $this->viewParams);
+    }
+
+    /**
+     * Roll an installed plugin back to the state captured before its last
+     * update, from the admin panel. Delegates to dls:plugin:rollback, which
+     * restores the source tree AND the prebuilt resources/assets from the
+     * automatic pre-update backup (no npm run) and reverses the schema half.
+     * Only reachable when a backup exists (the button is hidden otherwise).
+     */
+    public function rollbackPlugin(int $id)
+    {
+        $plugin = Plugin::find($id);
+        if (! $plugin) {
+            return redirect()
+                ->route('admin.settings.plugins.index')
+                ->with('error', __('admin/settings/plugins/show.rollback.not_found'));
+        }
+
+        $hasBackup = $this->latestExtensionBackupPath(
+            ExtensionSourceSnapshot::KIND_PLUGIN,
+            $plugin->directory,
+        ) !== null;
+
+        if (! $hasBackup) {
+            return redirect()
+                ->route('admin.settings.plugins.show', $plugin->slug)
+                ->with('error', __('admin/settings/plugins/show.rollback.no_backup'));
+        }
+
+        $exitCode = Artisan::call('dls:plugin:rollback', [
+            'slug' => $plugin->slug,
+            '--force' => true,
+        ]);
+
+        if ($exitCode !== 0) {
+            Log::error('Admin plugin rollback failed', [
+                'plugin' => $plugin->slug,
+                'exit_code' => $exitCode,
+                'output' => Artisan::output(),
+            ]);
+
+            return redirect()
+                ->route('admin.settings.plugins.show', $plugin->slug)
+                ->with('error', __('admin/settings/plugins/show.rollback.failed'));
+        }
+
+        return redirect()
+            ->route('admin.settings.plugins.show', $plugin->slug)
+            ->with('success', __('admin/settings/plugins/show.rollback.success', [
+                'name' => $plugin->name ?? $plugin->slug,
+            ]));
     }
 
     /**
