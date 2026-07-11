@@ -56,6 +56,11 @@ return [
     'save' => '保存',
     'saved' => '保存しました',
     'delete' => '削除',
+    // Tooltip on save / delete / danger-zone action buttons when the
+    // current user only has view permission on this menu. Shown via the
+    // button's native `title` attribute — the button also carries the
+    // HTML `disabled` state so the click never fires.
+    'view_only_action_disabled' => '閲覧のみ権限のため操作できません',
     'copy' => 'コピー',
     'copied' => 'コピー済み',
     'all' => 'すべて',
