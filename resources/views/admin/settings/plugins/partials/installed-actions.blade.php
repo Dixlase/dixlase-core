@@ -232,6 +232,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :label="__('admin/settings/plugins/show.rollback.button')"
             variant="secondary"
             size="xs"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             class="py-2 px-3 mx-2"
             icon="fas fa-rotate-left"
             @click="openModal('rollbackPluginModal-{{ $card['id'] }}')"
