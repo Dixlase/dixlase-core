@@ -43,11 +43,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'entityName' => null,
 ])
 
-{{-- View-only suppression: every action in the danger zone (unlock,
-     force logout, delete) is an edit-level operation, so the whole
-     section is hidden together. See save-button.blade for the shared
-     menuEditable contract set by CheckMenuAccess middleware. --}}
-@if($menuEditable ?? true)
+{{-- View-only handling: every action in the danger zone (unlock,
+     force logout, delete) is an edit-level operation, so all three
+     buttons are dimmed together when the current menu is not
+     editable. The section stays in the layout so page geometry does
+     not shift between menus; buttons carry HTML `disabled` +
+     tooltip. Server-side CheckMenuEdit still rejects any accidental
+     POST. See save-button.blade for the shared menuEditable
+     contract set by CheckMenuAccess middleware. --}}
+@php
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 <!-- Management operations section -->
 <section>
     <h2>{{ __('common.management_operations') }}</h2>
@@ -60,11 +68,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="info"
                 icon="fas fa-unlock"
                 :label="__('components/admin/danger-zone.unlock_lockout_button')"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('unlockLockoutModal')"
             />
         </fieldset>
     @endif
-    
+
     @if($forceLogoutRoute)
         <fieldset>
             <legend>{{ __('components/admin/danger-zone.force_logout') }}</legend>
@@ -73,6 +83,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="warning"
                 icon="fas fa-sign-out-alt"
                 :label="__('components/admin/danger-zone.force_logout_button')"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('forceLogoutModal')"
             />
         </fieldset>
@@ -86,6 +98,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="danger"
                 icon="fas fa-trash"
                 :label="__('components/admin/danger-zone.delete_' . $entityType . '_button')"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('delete{{ ucfirst($entityType) }}Modal')"
             />
         </fieldset>
@@ -160,4 +174,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @method('DELETE')
     </form>
 @endif
-@endif {{-- menuEditable ?? true --}}
