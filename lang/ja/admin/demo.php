@@ -40,4 +40,5 @@ return [
     'account' => 'アカウント',
     'front_page' => 'フロントページ',
     'admin_url' => '管理画面URL',
+    'expires' => '有効期限',
 ];
