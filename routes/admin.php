@@ -254,13 +254,13 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('create');
                 Route::post('/', [Members\AdminMemberFormController::class, 'store'])
-                    ->middleware('check.menu.access:members.create_edit')
+                    ->middleware(['check.menu.access:members.create_edit', 'check.menu.edit:members.create_edit'])
                     ->name('store');
                 Route::get('/edit/{member}', [Members\AdminMemberFormController::class, 'edit'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('edit');
                 Route::post('/update/{member}', [Members\AdminMemberFormController::class, 'update'])
-                    ->middleware('check.menu.access:members.create_edit')
+                    ->middleware(['check.menu.access:members.create_edit', 'check.menu.edit:members.create_edit'])
                     ->name('update');
                 Route::delete('/destroy/{member}', [Members\AdminMemberFormController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
@@ -338,13 +338,13 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.base.mail')
                     ->name('mail.update');
                 Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])
-                    ->middleware('check.menu.access:settings.base.mail')
+                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
                     ->name('mail.test-mail');
                 Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])
-                    ->middleware('check.menu.access:settings.base.mail')
+                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
                     ->name('mail.test-connection');
                 Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])
-                    ->middleware('check.menu.access:settings.base.mail')
+                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
                     ->name('mail.clear-test-session');
                 Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])
                     ->middleware('check.menu.access:settings.base.mail')
@@ -433,10 +433,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.security.captcha')
                     ->name('captcha.update');
                 Route::post('/captcha/validate-widget', [Security\AdminSecurityCaptchaController::class, 'validateWidget'])
-                    ->middleware('check.menu.access:settings.security.captcha')
+                    ->middleware(['check.menu.access:settings.security.captcha', 'check.menu.edit:settings.security.captcha'])
                     ->name('captcha.validate-widget');
                 Route::post('/captcha/clear-test', [Security\AdminSecurityCaptchaController::class, 'clearTest'])
-                    ->middleware('check.menu.access:settings.security.captcha')
+                    ->middleware(['check.menu.access:settings.security.captcha', 'check.menu.edit:settings.security.captcha'])
                     ->name('captcha.clear-test');
 
                 // IP access control
