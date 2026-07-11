@@ -52,12 +52,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 {{-- When the CheckMenuAccess middleware has shared menuEditable=false
-     for this request, the current user has view-only permission on
-     the menu and any save action would 403. Suppress the button (and
-     its confirmation modal) so the UI matches the actual permission.
+     for this request, the current user has view-only permission and
+     any save would 403 server-side. The button stays in the layout
+     (so the sticky footer height does not shift between menus) but is
+     rendered as HTML-`disabled` + dimmed via the base x-form-button
+     `disabled:opacity-50 disabled:cursor-not-allowed` styles, and
+     carries a `title` tooltip explaining why. Disabled <button>s do
+     not fire click events, so the Alpine @click handler and the
+     confirmation modal below never trigger.
      Undefined / true → render as before (backwards compatible for any
      view not behind CheckMenuAccess). --}}
-@if($menuEditable ?? true)
+@php
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
 <div class="flex justify-between items-center">
 
     @if($back_url)
@@ -76,6 +84,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         variant="primary"
         :label="$label ?? __('common.save')"
         icon="fas fa-save"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         @click="openModal('{{ $id_confirmation }}')"
         class="save-button mx-2"
     />
@@ -94,4 +104,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :form="$form ?? null"
     />
 @endpush
-@endif
