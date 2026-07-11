@@ -31,8 +31,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+    // See plugins/partials/installed-actions.blade.php for the
+    // CheckMenuAccess contract. Server-side check.menu.edit still
+    // guards the theme switch / uninstall POST routes.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @if($card['isEnabled'])
-    {{-- Active theme: settings button only --}}
+    {{-- Active theme: settings button only — link, stays enabled for
+         view-only users because the settings page is view only for
+         them anyway. --}}
     @if($card['hasSettings'] && Route::has('admin.settings.themes.settings'))
         <a href="{{ route('admin.settings.themes.settings') }}" class="inline-block">
             <x-form-button
@@ -56,6 +66,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="success"
                 size="xs"
                 icon="fas fa-play"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('{{ $card['enableModalId'] }}')"
                 class="py-2 px-3"
             />
@@ -90,6 +102,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('common.enable')"
                 variant="success"
                 size="xs"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 class="py-2 px-3"
                 icon="fas fa-check"
             />
@@ -103,6 +117,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :label="__('common.uninstall')"
             variant="danger"
             size="xs"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             class="py-2 px-3"
             icon="fas fa-trash"
             @click="openModal('uninstallThemeModal-{{ $card['id'] }}')"

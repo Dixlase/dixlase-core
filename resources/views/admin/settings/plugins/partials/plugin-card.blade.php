@@ -31,6 +31,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+@php
+    // See installed-actions.blade.php for the CheckMenuAccess contract.
+    // Server-side check.menu.edit still guards the audit POST route.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 <div x-data class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col group">
     {{-- Thumbnail --}}
     <div class="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
@@ -270,7 +277,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         icon="fas fa-search"
                         class="audit-btn"
                         :data-slug="$card['slug']"
-                        :title="$card['auditedAt'] ? __('admin/settings/plugins/index.permissions.audit_last_scanned') . ': ' . $card['auditedAtFormatted'] : __('admin/settings/plugins/index.permissions.audit_not_scanned')"
+                        :disabled="$viewOnly"
+                        :title="$viewOnly
+                            ? $tooltipText
+                            : ($card['auditedAt']
+                                ? __('admin/settings/plugins/index.permissions.audit_last_scanned') . ': ' . $card['auditedAtFormatted']
+                                : __('admin/settings/plugins/index.permissions.audit_not_scanned'))"
                     />
                 </div>
             @endif
