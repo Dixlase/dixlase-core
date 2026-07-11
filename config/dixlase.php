@@ -102,4 +102,19 @@ return [
 
     'demo_account' => (string) env('DIXLASE_DEMO_ACCOUNT', ''),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Expiry
+    |--------------------------------------------------------------------------
+    |
+    | When set (a Carbon/timestamp), the demo banner shows when this sandbox
+    | expires. There is no static default: a demo provisioner (e.g. the
+    | orchestrator's ResolveDemoTenant middleware) sets it per request from the
+    | resolved tenant's expiry, so it stays null on non-tenant requests and the
+    | expiry line hides.
+    |
+    */
+
+    'demo_expires_at' => null,
+
 ];
