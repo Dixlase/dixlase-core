@@ -58,6 +58,9 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
             @endif
             <a href="{{ url('/') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
             <span class="whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}: {{ route('admin.login') }}</span>
+            @if(config('dixlase.demo_expires_at'))
+                <span class="whitespace-nowrap"><i class="fas fa-clock mr-1" aria-hidden="true"></i>{{ __('admin/demo.expires') }}: {{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->isoFormat('M/D HH:mm') }}</span>
+            @endif
         </div>
     </div>
 </div>

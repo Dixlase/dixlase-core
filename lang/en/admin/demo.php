@@ -40,4 +40,5 @@ return [
     'account' => 'Account',
     'front_page' => 'Front page',
     'admin_url' => 'Admin URL',
+    'expires' => 'Expires',
 ];
