@@ -102,9 +102,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
 
         <fieldset>
+            <legend>{{ __('admin/settings/base/admin.login_notice') }}</legend>
             <x-form-textarea
                 name="admin_login_notice"
-                :label="__('admin/settings/base/admin.login_notice')"
                 :value="old('admin_login_notice', $settings['admin_login_notice'])"
                 rows="3"
             />
