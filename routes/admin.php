@@ -546,6 +546,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/update/{id}', [AdminThemesSettingsController::class, 'updateTheme'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.update');
+                Route::post('/settings/themes/rollback/{id}', [AdminThemesSettingsController::class, 'rollbackTheme'])
+                    ->middleware('check.menu.edit:settings.themes')
+                    ->name('settings.themes.rollback');
                 Route::post('/settings/themes/update-all', [AdminThemesSettingsController::class, 'bulkUpdate'])
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.update-all');
@@ -592,6 +595,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/update/{id}', [AdminPluginsSettingsController::class, 'updatePlugin'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.update');
+                Route::post('/settings/plugins/rollback/{id}', [AdminPluginsSettingsController::class, 'rollbackPlugin'])
+                    ->middleware('check.menu.edit:settings.plugins')
+                    ->name('settings.plugins.rollback');
                 Route::post('/settings/plugins/update-all', [AdminPluginsSettingsController::class, 'bulkUpdate'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.update-all');

@@ -202,3 +202,30 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </form>
 @endif
+
+@if($hasBackup ?? false)
+    {{-- Rollback to the automatic pre-update backup (source + prebuilt assets + schema, no npm) --}}
+    <form action="{{ route('admin.settings.plugins.rollback', $card['id']) }}" method="POST" class="inline-block" id="rollbackPluginForm-{{ $card['id'] }}">
+        @csrf
+        <x-form-button
+            type="button"
+            :label="__('admin/settings/plugins/show.rollback.button')"
+            variant="secondary"
+            size="xs"
+            class="py-2 px-3 mx-2"
+            icon="fas fa-rotate-left"
+            @click="openModal('rollbackPluginModal-{{ $card['id'] }}')"
+        />
+
+        <x-ui-modal
+            id="rollbackPluginModal-{{ $card['id'] }}"
+            :title="__('admin/settings/plugins/show.rollback.confirm_title')"
+            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/show.rollback.confirm_message'))"
+            :confirm_label="__('admin/settings/plugins/show.rollback.button')"
+            :cancel_label="__('common.cancel')"
+            form="rollbackPluginForm-{{ $card['id'] }}"
+            icon_type="warning"
+            confirm_color="yellow"
+        />
+    </form>
+@endif

@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             {{-- Action buttons (uses same modal flow as list page) --}}
             @if($isInstalled)
-                @include('admin.settings.themes.partials.installed-actions', ['card' => $card])
+                @include('admin.settings.themes.partials.installed-actions', ['card' => $card, 'hasBackup' => $hasBackup ?? false])
             @else
                 @include('admin.settings.themes.partials.uninstalled-actions', ['card' => $card])
             @endif

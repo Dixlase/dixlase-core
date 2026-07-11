@@ -87,4 +87,14 @@ return [
         'delete' => 'Delete',
         'settings' => 'Settings',
     ],
+
+    'rollback' => [
+        'button' => 'Roll back',
+        'confirm_title' => 'Roll back this plugin?',
+        'confirm_message' => 'Restore "{name}" to the state captured before its last update. The current plugin files, prebuilt assets, and any schema changes from that update will be reverted. This does not run npm.',
+        'success' => 'Plugin ":name" was rolled back to the state before its last update.',
+        'failed' => 'Rollback failed. Check the logs for details.',
+        'no_backup' => 'No pre-update backup exists for this plugin, so there is nothing to roll back to.',
+        'not_found' => 'Plugin not found.',
+    ],
 ];
