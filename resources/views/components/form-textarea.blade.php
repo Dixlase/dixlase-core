@@ -42,11 +42,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'required' => false,
     'readonly' => false,
     'class' => '',
+    'label' => null,          // Pre-translated label text (nullable). Set to render a form-label tied to this textarea. Prior to this prop, callers that passed :label were silently dropping it.
     'xBindReadonly' => null,  // Alpine.jsのx-bind:readonly
     'xBindClass' => null,     // Alpine.jsのx-bind:class
     'xModel' => null,         // Alpine.jsのx-model
 ])
 
+@if($label)
+    <x-form-label :for="$id ?? $name" :text="$label" :required="$required" />
+@endif
 <textarea
     name="{{ $name }}"
     @if($id) id="{{ $id }}" @endif
