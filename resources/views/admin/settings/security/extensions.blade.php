@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto">
     @if($modeData['isReadOnly'] ?? false)
@@ -578,7 +584,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <div class="mt-3">
                         <button
                             type="button"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                            @if($viewOnly) disabled @endif
+                            @if($viewOnly) title="{{ $tooltipText }}" @endif
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             :disabled="testStatus === 'testing'"
                             @click="testConnection()"
                         >
