@@ -65,6 +65,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'translationPrefix' => 'admin/front/revisions',
 ])
 
+@php
+    // View-only dim for the protect / restore / note-save buttons. Same
+    // CheckMenuAccess contract as revision/list.blade.php.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @once
 @push('styles')
 <style>
@@ -101,7 +108,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <form action="{{ route($protectRouteName, [...$parentParams, $revision->id]) }}" method="POST">
                 @csrf
                 <button type="submit"
-                        class="inline-flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-medium {{ $revision->is_protected
+                        @if($viewOnly) disabled @endif
+                        @if($viewOnly) title="{{ $tooltipText }}" @endif
+                        class="inline-flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed {{ $revision->is_protected
                             ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800'
                             : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700' }}">
                     <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
@@ -110,8 +119,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </form>
             <form id="restore-form-{{ $revision->id }}" action="{{ route($restoreRouteName, [...$parentParams, $revision->id]) }}" method="POST">
                 @csrf
-                <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                        class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700">
+                <button type="button"
+                        @if($viewOnly) disabled @endif
+                        @if($viewOnly) title="{{ $tooltipText }}" @endif
+                        @click="openModal('restore-modal-{{ $revision->id }}')"
+                        class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-rotate-left"></i>
                     {{ __($translationPrefix.'.restore') }}
                 </button>
@@ -157,8 +169,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 />
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __($translationPrefix.'.note_help') }}</p>
             </div>
-            <button type="button" @click="openModal('note-modal-{{ $revision->id }}')"
-                    class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button type="button"
+                    @if($viewOnly) disabled @endif
+                    @if($viewOnly) title="{{ $tooltipText }}" @endif
+                    @click="openModal('note-modal-{{ $revision->id }}')"
+                    class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 {{ __($translationPrefix.'.note_save') }}
             </button>
         </form>

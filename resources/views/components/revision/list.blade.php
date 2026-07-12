@@ -65,6 +65,16 @@ Can be reused from plugin/theme by passing the following properties:
     'translationPrefix' => 'admin/front/revisions',
 ])
 
+@php
+    // View-only dim for the protect / restore row buttons. Same
+    // CheckMenuAccess contract as the admin action components (see
+    // resources/views/components/admin/save-button.blade.php). Server-
+    // side check.menu.edit still guards the POST routes these buttons
+    // submit to; this only handles the UI layer.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 <div class="mx-auto">
     <div class="mb-4 flex items-center justify-between gap-4">
         @if ($backRoute)
@@ -127,8 +137,9 @@ Can be reused from plugin/theme by passing the following properties:
                                 <form action="{{ route($protectRouteName, [...$parentParams, $revision->id]) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit"
-                                            class="{{ $revision->is_protected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400' }}"
-                                            title="{{ $revision->is_protected ? __($translationPrefix.'.protect_disable') : __($translationPrefix.'.protect_enable') }}">
+                                            @if($viewOnly) disabled @endif
+                                            class="{{ $revision->is_protected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400' }} disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ $viewOnly ? $tooltipText : ($revision->is_protected ? __($translationPrefix.'.protect_disable') : __($translationPrefix.'.protect_enable')) }}">
                                         <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
                                         <span class="sr-only">{{ $revision->is_protected ? __($translationPrefix.'.protect_label_on') : __($translationPrefix.'.protect_label_off') }}</span>
                                     </button>
@@ -143,9 +154,11 @@ Can be reused from plugin/theme by passing the following properties:
                                 </a>
                                 <form id="restore-form-{{ $revision->id }}" action="{{ route($restoreRouteName, [...$parentParams, $revision->id]) }}" method="POST" class="inline ml-3">
                                     @csrf
-                                    <button type="button" @click="openModal('restore-modal-{{ $revision->id }}')"
-                                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400"
-                                            title="{{ __($translationPrefix.'.restore') }}">
+                                    <button type="button"
+                                            @if($viewOnly) disabled @endif
+                                            @click="openModal('restore-modal-{{ $revision->id }}')"
+                                            class="text-amber-600 hover:text-amber-800 dark:text-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ $viewOnly ? $tooltipText : __($translationPrefix.'.restore') }}">
                                         <i class="fas fa-rotate-left"></i>
                                         <span class="sr-only">{{ __($translationPrefix.'.restore') }}</span>
                                     </button>
