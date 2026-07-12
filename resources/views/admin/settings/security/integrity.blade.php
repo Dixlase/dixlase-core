@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto">
 
@@ -47,6 +53,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="primary"
                     size="md"
                     icon="fas fa-sync-alt"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     x-click="openModal('regenerate-baseline-modal')"
                 >
                     {{ __('admin/settings/security/integrity.regenerate_baseline') }}
@@ -85,7 +93,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 
                 <form method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" class="mt-3">
                     @csrf
-                    <x-form-button type="submit">
+                    <x-form-button type="submit" :disabled="$viewOnly" :title="$tooltipText">
                         <i class="fas fa-plus mr-1"></i>{{ __('admin/settings/security/integrity.generate_baseline') }}
                     </x-form-button>
                 </form>
@@ -103,6 +111,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="button"
                     variant="primary"
                     icon="fas fa-search"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     x-click="openModal('scan-modal')"
                 >
                     {{ __('admin/settings/security/integrity.run_scan') }}
@@ -226,6 +236,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         variant="danger"
                         size="md"
                         icon="fas fa-trash"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
                         @click="document.getElementById('bulk-delete-days-input').value = bulkDeleteDays; openModal('bulk-delete-modal')"
                     >
                         {{ __('admin/settings/security/integrity.bulk_delete_audits') }}
@@ -295,9 +307,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <a href="{{ route('admin.settings.security.integrity.show', $audit) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
                                             <i class="fas fa-eye mr-1"></i>
                                         </a>
-                                        <button type="button" 
+                                        <button type="button"
+                                            @if($viewOnly) disabled @endif
+                                            @if($viewOnly) title="{{ $tooltipText }}" @endif
                                             @click="openModal('delete-audit-{{ $audit->id }}-modal')"
-                                            class="text-red-600 dark:text-red-400 hover:underline">
+                                            class="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
