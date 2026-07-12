@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto">
 <section>
@@ -96,6 +102,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('admin/settings/systems/database.cleanup_button')"
                     icon="fas fa-database"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     @click="openModal('cleanupModal{{ ucfirst($type) }}')"
                 />
             </div>
@@ -137,6 +145,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="danger"
                 :label="__('admin/settings/systems/database.all_cleanup_button')"
                 icon="fas fa-trash-alt"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('cleanupAllModal')"
             />
         </div>
@@ -182,6 +192,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             size="sm"
                             :label="__('admin/settings/systems/database.cleanup_button')"
                             icon="fas fa-trash"
+                            :disabled="$viewOnly"
+                            :title="$tooltipText"
                             @click="openModal('{{ $modalId }}')"
                         />
                     </div>

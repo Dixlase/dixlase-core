@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 
     <!-- Success/Error Messages -->
@@ -395,6 +401,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             variant="danger"
                             :label="__('admin/settings/systems/logs/index.cleanup_button')"
                             icon="fas fa-trash"
+                            :disabled="$viewOnly"
+                            :title="$tooltipText"
                             @click="openModal('cleanupConfirmModal')"
                         />
                     </div>
