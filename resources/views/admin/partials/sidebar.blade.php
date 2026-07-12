@@ -333,7 +333,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                 <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                             @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key))
-                                                <span class="text-xs text-gray-400">(閲覧のみ)</span>
+                                                <i class="fas fa-eye text-xs text-gray-400 ml-auto" title="{{ __('admin/navigation.view_only') }}" aria-label="{{ __('admin/navigation.view_only') }}"></i>
                                             @endif
                                         </a>
                                         @unless ($__isProtected)
@@ -439,7 +439,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                     @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                                         <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
                                                                     @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
-                                                                        <span class="text-xs text-gray-400">(閲覧のみ)</span>
+                                                                        <i class="fas fa-eye text-xs text-gray-400 ml-auto" title="{{ __('admin/navigation.view_only') }}" aria-label="{{ __('admin/navigation.view_only') }}"></i>
                                                                     @endif
                                                                 </a>
                                                                 <button x-show="editMode"
