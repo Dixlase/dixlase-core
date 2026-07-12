@@ -45,6 +45,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $context = $context ?? 'admin';
     $isInstall = $context === 'install';
     $showStatus = $showStatus ?? false;
+
+    // View-only dim for the admin context only. During install the user
+    // is anonymous (menuEditable is unset), so `? true` fallback keeps
+    // the buttons active. Server-side check.menu.edit:settings.base.mail
+    // was added by PR #135 as a second-line guard against curl posts.
+    $viewOnly = ! $isInstall && ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
 @endphp
 
 @if($showStatus && !$isInstall)
@@ -141,22 +148,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ __('mail-server/config.settings.mail_test_description_2') }}
     </p>
     <div class="flex flex-wrap gap-3">
-        <button type="button" id="test-connection-btn" 
-            class="bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+        <button type="button" id="test-connection-btn"
+            @if($viewOnly) disabled @endif
+            @if($viewOnly) title="{{ $tooltipText }}" @endif
+            class="bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             <i class="fas fa-plug mr-2"></i>{{ __('mail-server/config.settings.test_connection_button') }}
         </button>
-        <button 
+        <button
             type="button"
-            id="test-mail-btn" 
+            id="test-mail-btn"
+            @if($viewOnly) title="{{ $tooltipText }}" @endif
             class="
                 font-bold py-2 px-4 rounded transition-colors duration-200
+                disabled:opacity-50 disabled:cursor-not-allowed
                 @if(($isInstall && $testStatus['connection_tested']) || (!$isInstall && (!$showStatus || $testStatus['connection_tested'])))
                     bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white
                 @else
                     bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed
                 @endif
             "
-            @if(($isInstall && !$testStatus['connection_tested']) || (!$isInstall && $showStatus && !$testStatus['connection_tested'])) disabled @endif
+            @if($viewOnly || ($isInstall && !$testStatus['connection_tested']) || (!$isInstall && $showStatus && !$testStatus['connection_tested'])) disabled @endif
         >
             <i class="fas fa-envelope mr-2"></i>{{ __('mail-server/config.settings.test_mail_button') }}
         </button>
