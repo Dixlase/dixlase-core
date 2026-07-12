@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
     <div class="container mx-auto p-6">
         <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
@@ -103,8 +109,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <div class="flex justify-end">
-                    <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit"
+                            @if($viewOnly) disabled @endif
+                            @if($viewOnly) title="{{ $tooltipText }}" @endif
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-save mr-2"></i>{{ __('common.save') }}
                     </button>
                 </div>
@@ -137,7 +145,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <i class="fas fa-download"></i> {{ __('common.download') }}
                     </a>
 
-                    <button type="button" @click="openModal('deleteModal')" class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700">
+                    <button type="button"
+                            @if($viewOnly) disabled @endif
+                            @if($viewOnly) title="{{ $tooltipText }}" @endif
+                            @click="openModal('deleteModal')"
+                            class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
                     </button>
                 </div>
