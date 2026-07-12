@@ -20,6 +20,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <section>
     <h2>{{ __('admin/settings/systems/backup/settings.heading') }}</h2>
@@ -124,6 +130,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="primary"
                 :label="__('admin/settings/systems/backup/settings.form.save_button')"
                 icon="fas fa-save"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
             />
         </div>
     </form>

@@ -193,7 +193,9 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:media')
                     ->name('media.update');
                 // Media settings (simple mode: Partial — security items are auto-configured)
-                Route::get('/media/settings', [AdminMediaController::class, 'settings'])->name('media.settings');
+                Route::get('/media/settings', [AdminMediaController::class, 'settings'])
+                    ->middleware('check.menu.access:media.settings')
+                    ->name('media.settings');
                 Route::post('/media/settings', [AdminMediaController::class, 'update'])
                     ->middleware('check.menu.edit:media.settings')
                     ->name('media.settings.update');
@@ -290,7 +292,9 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('send-verification-email');
 
                 // Permission settings
-                Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])->name('roles');
+                Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])
+                    ->middleware('check.menu.access:members.roles')
+                    ->name('roles');
                 Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
                     ->middleware('check.menu.edit:members.roles')
                     ->name('roles.update');

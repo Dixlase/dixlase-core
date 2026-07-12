@@ -20,6 +20,12 @@ file is governed by the AGPL terms below.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 {{--
     Per-row single-item update wiring.
@@ -95,6 +101,8 @@ file is governed by the AGPL terms below.
                 variant="secondary"
                 size="sm"
                 icon="fas fa-sync-alt"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
             />
         </form>
     </div>
@@ -215,6 +223,8 @@ file is governed by the AGPL terms below.
                             variant="primary"
                             class="mr-4"
                             icon="fas fa-cloud-arrow-down"
+                            :disabled="$viewOnly"
+                            :title="$tooltipText"
                             xClick="openModal('confirmCoreUpdateModal')" />
                     </div>
 
@@ -399,6 +409,8 @@ file is governed by the AGPL terms below.
                                         variant="primary"
                                         icon="fas fa-cloud-arrow-down"
                                         :label="__('admin/settings/systems/updates.apply_one')"
+                                        :disabled="$viewOnly"
+                                        :title="$tooltipText"
                                         data-update-id="{{ $plugin['id'] }}"
                                         data-update-name="{{ $plugin['name'] }}"
                                         data-update-kind="plugin"
@@ -503,6 +515,8 @@ file is governed by the AGPL terms below.
                                         variant="primary"
                                         icon="fas fa-cloud-arrow-down"
                                         :label="__('admin/settings/systems/updates.apply_one')"
+                                        :disabled="$viewOnly"
+                                        :title="$tooltipText"
                                         data-update-id="{{ $theme['id'] }}"
                                         data-update-name="{{ $theme['name'] }}"
                                         data-update-kind="theme"
@@ -524,6 +538,8 @@ file is governed by the AGPL terms below.
                     :label="__('admin/settings/systems/updates.apply_selected')"
                     variant="primary"
                     icon="fas fa-cloud-arrow-down"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     x-bind:disabled="selectedCount === 0"
                     @click="if (selectedCount > 0) openModal('confirmSystemUpdatesModal')"
                 />
@@ -702,6 +718,8 @@ file is governed by the AGPL terms below.
                         variant="primary"
                         icon="fas fa-cloud-arrow-down"
                         :label="__('admin/settings/systems/updates.apply_one')"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
                         xDisabled="submitting"
                         xClick="closeModal('confirmSingleUpdateModal'); submitting = true; openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
                         class="mx-2"
