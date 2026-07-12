@@ -78,7 +78,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'font-semibold rounded-md shadow-sm',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         'transition-colors duration-200',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        // pointer-events-none stops a disabled <button> from reacting to hover
+        // (the variant hover:* colours otherwise still fire on a disabled
+        // element). Anchors have no :disabled state, so links are unaffected.
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
         $variantClasses[$variant] ?? $variantClasses['primary'],
         $sizeClasses[$size] ?? $sizeClasses['md'],
         $class

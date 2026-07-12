@@ -50,6 +50,7 @@ return [
     // button's native `title` attribute — the button also carries the
     // HTML `disabled` state so the click never fires.
     'view_only_action_disabled' => 'View-only permission — this action is disabled',
+    'view_only_page_notice' => 'This page is view-only. Changes cannot be saved.',
     'copy' => 'Copy',
     'copied' => 'Copied',
     'all' => 'All',

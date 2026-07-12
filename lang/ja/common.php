@@ -61,6 +61,7 @@ return [
     // button's native `title` attribute — the button also carries the
     // HTML `disabled` state so the click never fires.
     'view_only_action_disabled' => '閲覧のみ権限のため操作できません',
+    'view_only_page_notice' => 'このページは閲覧のみです。設定の変更・保存はできません。',
     'copy' => 'コピー',
     'copied' => 'コピー済み',
     'all' => 'すべて',
