@@ -33,6 +33,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // Shared with every modify button on this page. See
+    // components/admin/save-button.blade.php for the CheckMenuAccess
+    // contract. Server-side check.menu.edit still guards every POST
+    // route these buttons submit to; this only handles the UI layer.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 
     @if(session('error'))
@@ -68,6 +77,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('common.clear')"
                     icon="fas fa-trash"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     @click="openModal('clearCacheModal{{ ucfirst($type) }}')"
                 />
 
@@ -82,6 +93,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         variant="primary"
                         :label="__('admin/settings/systems/cache.rebuild')"
                         icon="fas fa-bolt"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
                         @click="openModal('rebuildCacheModal{{ ucfirst($type) }}')"
                     />
                 @endif
@@ -108,6 +121,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="danger"
                     :label="__('admin/settings/systems/cache.clear_all_button')"
                     icon="fas fa-trash-alt"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     @click="openModal('clearAllCacheModal')"
                 />
             </div>
@@ -132,6 +147,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     variant="primary"
                     :label="__('admin/settings/systems/cache.rebuild_all_button')"
                     icon="fas fa-bolt"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
                     @click="openModal('rebuildAllCacheModal')"
                 />
             </div>
