@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="mx-auto" x-data="apiSettings()">
 
@@ -109,6 +115,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="primary"
                 icon="fas fa-plus"
                 :label="__('admin/settings/systems/api.create_key')"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 @click="openModal('createKeyModal')"
                 xDisabled="apiEnabled !== '1'"
             />
@@ -188,14 +196,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 </button>
                                 <form id="regenerate-form-{{ $key->id }}" action="{{ route('admin.settings.systems.api.regenerate-key', $key->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="button" @click="openModal('regenerateModal{{ $key->id }}')" class="btn btn-sm btn-warning" title="{{ __('admin/settings/systems/api.regenerate') }}">
+                                    <button type="button"
+                                            @if($viewOnly) disabled @endif
+                                            @click="openModal('regenerateModal{{ $key->id }}')"
+                                            class="btn btn-sm btn-warning disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ $viewOnly ? $tooltipText : __('admin/settings/systems/api.regenerate') }}">
                                         <i class="fas fa-sync-alt"></i>
                                     </button>
                                 </form>
                                 <form id="revoke-form-{{ $key->id }}" action="{{ route('admin.settings.systems.api.revoke-key', $key->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" @click="openModal('revokeModal{{ $key->id }}')" class="btn btn-sm btn-danger" title="{{ __('common.delete') }}">
+                                    <button type="button"
+                                            @if($viewOnly) disabled @endif
+                                            @click="openModal('revokeModal{{ $key->id }}')"
+                                            class="btn btn-sm btn-danger disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ $viewOnly ? $tooltipText : __('common.delete') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -264,6 +280,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         type="button"
         :label="__('common.save')"
         class="button-save"
+        :disabled="$viewOnly"
+        :title="$tooltipText"
         @click="openModal('apiSettingsConfirmationModal')"
     />
 @endsection
@@ -378,6 +396,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 variant="primary"
                 icon="fas fa-key"
                 :label="__('admin/settings/systems/api.generate')"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
                 form="create-key-form"
                 class="mx-2"
             />
