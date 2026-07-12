@@ -34,6 +34,7 @@
  */
 
 return [
+    'view_only' => 'View only',
     'edit_menu' => 'Edit Menu',
     'done_editing' => 'Done',
     'reset_menu' => 'Reset',
