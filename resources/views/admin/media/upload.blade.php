@@ -33,13 +33,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess
+    // contract. The drop-zone is a plain div driven by Alpine's
+    // mediaUploader, so the "disabled" state is applied via `pointer-
+    // events-none` + opacity so click/dragover/drop all no-op. The
+    // server route (admin.media.store) has check.menu.edit:media as a
+    // second-line guard.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
     <div class="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800"
          x-data="mediaUploader('{{ route('admin.media.store') }}', '{{ csrf_token() }}', '{{ route('admin.media.index') }}')">
 
+        @if($viewOnly)
+            <div class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+                <i class="fas fa-lock mr-1"></i>{{ $tooltipText }}
+            </div>
+        @endif
+
         <div class="flex flex-col gap-2">
             <label class="font-medium">{{ __('admin/media/upload.select_file') }}</label>
-            <div class="relative border-2 border-dashed rounded-lg p-8 transition duration-300 cursor-pointer"
+            <div class="relative border-2 border-dashed rounded-lg p-8 transition duration-300 cursor-pointer @if($viewOnly) opacity-50 pointer-events-none cursor-not-allowed @endif"
+                 @if($viewOnly) title="{{ $tooltipText }}" @endif
                  :class="isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'"
                  @dragover.prevent="isDragging = true"
                  @dragleave.prevent="isDragging = false"

@@ -36,6 +36,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'mediaPath' => ''
 ])
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 <div class="media-card">
     <div class="media-card__preview">
         <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" aria-label="{{ __('admin/media/index.preview') }} {{ $file->name }}">
@@ -97,9 +103,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-eye" aria-hidden="true"></i>
             </a>
 
-            <button type="button" 
-                    class="action-btn action-btn--delete"
-                    title="{{ __('admin/media/index.delete') }}" 
+            <button type="button"
+                    @if($viewOnly) disabled @endif
+                    class="action-btn action-btn--delete disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="{{ $viewOnly ? $tooltipText : __('admin/media/index.delete') }}"
                     aria-label="{{ __('admin/media/index.delete') }} {{ $file->name }}"
                     @click="openDeleteModal({{ $file->id }}, '{{ addslashes($file->name) }}')">
                 <i class="fas fa-trash-alt" aria-hidden="true"></i>

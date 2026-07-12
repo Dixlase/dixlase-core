@@ -33,6 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See components/admin/save-button.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-4">
@@ -49,6 +55,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :label="__('admin/members/index.force_logout_all')"
             variant="warning"
             icon="fas fa-sign-out-alt"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             @click="openModal('forceLogoutAllModal')"
         />
     </div>
@@ -208,8 +216,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         size="sm"
                                         icon="fas fa-trash"
                                         class="!text-red-600 hover:!text-red-900 dark:!text-red-400 dark:hover:!text-red-300"
+                                        :disabled="$viewOnly"
                                         :xClick="'openModal(\'deleteModal-' . $member->id . '\')'"
-                                        title="{{ __('common.delete') }}"
+                                        :title="$viewOnly ? $tooltipText : __('common.delete')"
                                     />
                                     <x-ui-modal
                                         :id="'deleteModal-' . $member->id"
