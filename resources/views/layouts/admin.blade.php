@@ -240,6 +240,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <!-- Page Content -->
                     <article class="w-full px-6 lg:px-8 pb-8 mt-5">
                         <x-ui-flash-message />
+                        {{-- View-only notice: shown when the member may view but
+                             not edit this page. `menuEditable` is shared by
+                             CheckMenuAccess (core) or a plugin controller; the
+                             `?? true` default keeps ordinary pages unaffected. --}}
+                        @if(! ($menuEditable ?? true))
+                            <div class="mb-5">
+                                <x-ui-message type="info" :message="__('common.view_only_page_notice')" />
+                            </div>
+                        @endif
                         @yield('content')
                     </article>
 
