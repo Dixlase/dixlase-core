@@ -20,6 +20,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @extends('layouts.admin')
 
+@php
+    // See cache.blade.php for the CheckMenuAccess contract.
+    $viewOnly = ! ($menuEditable ?? true);
+    $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+@endphp
+
 @section('content')
 <section>
     <h2>{{ __('admin/settings/systems/backup/index.heading') }}</h2>
@@ -34,6 +40,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             variant="primary"
             :label="__('admin/settings/systems/backup/index.create_button')"
             icon="fas fa-plus"
+            :disabled="$viewOnly"
+            :title="$tooltipText"
             @click="openModal('createBackupModal')"
         />
     </div>
@@ -124,16 +132,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             <i class="fas fa-download"></i>
                                         </a>
                                         <button type="button"
+                                                @if($viewOnly) disabled @endif
                                                 @click="openModal('restoreBackupModal{{ $record->id }}')"
-                                                class="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
-                                                title="{{ __('admin/settings/systems/backup/index.actions.restore') }}">
+                                                class="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                title="{{ $viewOnly ? $tooltipText : __('admin/settings/systems/backup/index.actions.restore') }}">
                                             <i class="fas fa-rotate-left"></i>
                                         </button>
                                     @endif
                                     <button type="button"
+                                            @if($viewOnly) disabled @endif
                                             @click="openModal('deleteBackupModal{{ $record->id }}')"
-                                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                                            title="{{ __('admin/settings/systems/backup/index.actions.delete') }}">
+                                            class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="{{ $viewOnly ? $tooltipText : __('admin/settings/systems/backup/index.actions.delete') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
