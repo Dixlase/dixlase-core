@@ -44,6 +44,7 @@ use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use Closure;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 use ZipArchive;
@@ -101,6 +102,18 @@ class CoreUpdater
         $log('Capturing source snapshot...');
         $snapshotPath = $this->snapshotter->capture();
         $log("Snapshot captured at {$snapshotPath}");
+
+        // Hold the source snapshot path in a variable the bundled-theme
+        // loops below never reassign (they reuse $snapshotPath as their
+        // foreach value), so the rollback metadata is written against the
+        // real source snapshot regardless of whether the release ships
+        // bundled themes.
+        $sourceSnapshotPath = $snapshotPath;
+
+        // Highest core migration batch BEFORE this update's migrate step, so
+        // dls:core:rollback can step back exactly the migrations this update
+        // adds and no more. Captured up front (it only changes at migrate).
+        $preMigrateBatch = $this->currentMigrationBatch();
 
         $stagingPath = storage_path('app/private/core-update/staging/'.now()->format('YmdHis_').uniqid());
         $backupRecordId = null;
@@ -318,11 +331,26 @@ class CoreUpdater
                 'last_version_check' => now(),
             ])->save();
 
+            // Persist the rollback point: link this source snapshot to the
+            // versions, the DB restore record, and the pre-update migration
+            // batch, so dls:core:rollback can reverse exactly this update
+            // (source + optional vendor + only this update's schema) without
+            // re-deriving anything by heuristic. Mirrors the plugin/theme
+            // .meta.json convention (see TakesExtensionBackup).
+            $this->snapshotter->writeMetadata($sourceSnapshotPath, [
+                'from' => $current,
+                'to' => $version,
+                'history_id' => $history->id,
+                'backup_record_id' => $backupRecordId,
+                'max_batch' => $preMigrateBatch,
+                'dependency_update' => $dependencyUpdate,
+                'applied_at' => now()->toIso8601String(),
+            ]);
+
             $log("Update complete: v{$current} -> v{$version}");
 
-            // Best-effort cleanup of staging + snapshot. Snapshot is kept
-            // for one cycle in case a later issue surfaces, and tidied on
-            // the next successful upgrade.
+            // Best-effort cleanup of staging. The snapshot (and its rollback
+            // metadata sidecar) is retained as the dls:core:rollback point.
             $this->cleanupStaging($stagingPath);
 
             return [
@@ -422,6 +450,22 @@ class CoreUpdater
     }
 
     /**
+     * Highest applied migration batch in the core `migrations` table, or 0
+     * when the table is missing or empty. Recorded in the snapshot metadata
+     * before the update's migrate step so dls:core:rollback can compute the
+     * exact number of migrations to reverse — the same schema-only,
+     * data-preserving approach the plugin/theme rollbacks use.
+     */
+    private function currentMigrationBatch(): int
+    {
+        try {
+            return (int) (DB::table('migrations')->max('batch') ?? 0);
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    /**
      * Path to the on-disk flag the admin UI writes while a web-triggered
      * core update is in progress.
      *
@@ -514,6 +558,13 @@ class CoreUpdater
             $liveFile = $base.'/'.$relative;
             File::ensureDirectoryExists(dirname($liveFile));
             File::copy($stagedFile, $liveFile);
+        }
+
+        // ZipArchive extraction and File::copy drop the executable bit, so
+        // ensure the applied `artisan` stays runnable after an update.
+        $liveArtisan = $base.'/artisan';
+        if (is_file($liveArtisan)) {
+            @chmod($liveArtisan, 0755);
         }
     }
 
