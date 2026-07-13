@@ -186,6 +186,14 @@ class CoreSourceSnapshot
             File::ensureDirectoryExists(dirname($live));
             File::copy($snapshotEntry, $live);
         }
+
+        // File::copy preserves contents but not the executable bit, so a
+        // restored `artisan` comes back non-executable and `./artisan` stops
+        // working. Restore its canonical mode explicitly.
+        $liveArtisan = $this->basePath.'/artisan';
+        if (is_file($liveArtisan)) {
+            @chmod($liveArtisan, 0755);
+        }
     }
 
     /**
@@ -287,13 +295,18 @@ class CoreSourceSnapshot
     }
 
     /**
-     * Delete a snapshot directory and free disk space. Safe to call after a
-     * successful upgrade — failures are logged but never thrown.
+     * Delete a snapshot directory (and its metadata sidecar) to free disk
+     * space. Safe to call after a successful upgrade or rollback — failures
+     * are logged but never thrown.
      */
     public function discard(string $snapshotPath): void
     {
         if (is_dir($snapshotPath)) {
             File::deleteDirectory($snapshotPath);
+        }
+        $sidecar = $this->metadataPath($snapshotPath);
+        if (is_file($sidecar)) {
+            @unlink($sidecar);
         }
     }
 
@@ -303,5 +316,100 @@ class CoreSourceSnapshot
     public function snapshotRootPath(): string
     {
         return storage_path('app/private/core-update/snapshots');
+    }
+
+    /**
+     * Absolute path of the rollback-metadata sidecar for a snapshot dir.
+     *
+     * The sidecar sits NEXT TO the snapshot directory (not inside it) so
+     * restore()'s per-root copy never drags it into the live source tree,
+     * and listSnapshots() (which enumerates directories) never surfaces it
+     * as a false snapshot. Mirrors the `.meta.json` convention that
+     * {@see \App\Console\Traits\TakesExtensionBackup} uses for plugin/theme
+     * rollbacks.
+     */
+    public function metadataPath(string $snapshotPath): string
+    {
+        return $snapshotPath.'.meta.json';
+    }
+
+    /**
+     * Write the rollback-metadata sidecar for a snapshot. Records the from/to
+     * versions, the DB backup record, and the pre-update migration batch so
+     * dls:core:rollback can reverse exactly one update (source + optional
+     * vendor + only that update's schema) without re-deriving anything by
+     * heuristic.
+     *
+     * @param  array<string, mixed>  $metadata
+     */
+    public function writeMetadata(string $snapshotPath, array $metadata): void
+    {
+        File::put(
+            $this->metadataPath($snapshotPath),
+            json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).PHP_EOL,
+        );
+    }
+
+    /**
+     * Read a snapshot's rollback metadata, or null when the sidecar is
+     * missing (a snapshot captured before this metadata was written, or a
+     * bare pre-rollback safety snapshot) or unreadable / malformed. Callers
+     * must treat null as "unknown state" and degrade to a source-only
+     * rollback, not as an error.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function readMetadata(string $snapshotPath): ?array
+    {
+        $sidecar = $this->metadataPath($snapshotPath);
+        if (! is_file($sidecar)) {
+            return null;
+        }
+
+        $contents = @file_get_contents($sidecar);
+        if ($contents === false) {
+            return null;
+        }
+
+        $decoded = json_decode($contents, true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * All snapshot directories, newest first. Sidecar files and any other
+     * non-directory entries are excluded.
+     *
+     * @return list<string> absolute paths
+     */
+    public function listSnapshots(): array
+    {
+        $root = $this->snapshotRootPath();
+        if (! is_dir($root)) {
+            return [];
+        }
+
+        $dirs = File::directories($root);
+        // Names are "YmdHis_"-prefixed, so a reverse sort is newest-first.
+        rsort($dirs);
+
+        return array_values($dirs);
+    }
+
+    /**
+     * The newest snapshot that carries rollback metadata — i.e. the most
+     * recent recorded core update, the point dls:core:rollback winds back
+     * to. Bare safety snapshots (no sidecar) are skipped. Null when no
+     * rollback point exists.
+     */
+    public function latestSnapshotWithMetadata(): ?string
+    {
+        foreach ($this->listSnapshots() as $dir) {
+            if (is_file($this->metadataPath($dir))) {
+                return $dir;
+            }
+        }
+
+        return null;
     }
 }
