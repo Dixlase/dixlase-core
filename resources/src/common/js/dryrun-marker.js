@@ -31,13 +31,13 @@
  *
  * Also written to `window.__DIXLASE_CORE_DRYRUN_MARKER__` so a
  * console-inspection check in a live browser session works too:
- *   window.__DIXLASE_CORE_DRYRUN_MARKER__ === 'v0.2.9-dryrun-4'
+ *   window.__DIXLASE_CORE_DRYRUN_MARKER__ === 'v0.3.0-dryrun-5'
  *
  * The window write is what forces vite to keep the string constant
  * rather than tree-shaking it out. Remove this marker (source file +
  * app.js import) after the dry-run cycle finishes.
  */
-export const DIXLASE_CORE_DRYRUN_MARKER = 'v0.2.9-dryrun-4';
+export const DIXLASE_CORE_DRYRUN_MARKER = 'v0.3.0-dryrun-5';
 
 if (typeof window !== 'undefined') {
     window.__DIXLASE_CORE_DRYRUN_MARKER__ = DIXLASE_CORE_DRYRUN_MARKER;
