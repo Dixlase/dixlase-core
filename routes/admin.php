@@ -640,6 +640,9 @@ Route::prefix($adminUrl)->name('admin.')
                     Route::post('/apply-core', [Systems\AdminSystemUpdatesController::class, 'applyCore'])
                         ->middleware('check.menu.edit:settings.systems.updates')
                         ->name('apply-core');
+                    Route::post('/rollback-core', [Systems\AdminSystemUpdatesController::class, 'rollbackCore'])
+                        ->middleware('check.menu.edit:settings.systems.updates')
+                        ->name('rollback-core');
                 });
 
                 // Cache management (Easy mode: Full)
