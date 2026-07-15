@@ -35,10 +35,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{--
 Front-side sticky banner stack mirroring the admin layout's
-#admin-banner-stack: groups the maintenance banner, plugin-pushed
-front banners, and the admin bar into one sticky container that sits
-above the theme header, so system-level notices never get covered by
-theme navigation.
+#admin-banner-stack: groups the maintenance banner, the demo-mode
+banner, plugin-pushed front banners, and the admin bar into one sticky
+container that sits above the theme header, so system-level notices
+never get covered by theme navigation.
 
 Plugins inject notices via:
 
@@ -61,6 +61,7 @@ to compensate for its fixed admin bar.
 
 <div id="front-banner-stack" class="sticky top-0 z-[9999] flex flex-col">
     <x-ui-maintenance-banner />
+    <x-ui-admin-demo-banner />
     @stack('front-banners')
     <x-ui-admin-bar />
 </div>
