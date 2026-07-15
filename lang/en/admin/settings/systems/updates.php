@@ -59,6 +59,16 @@ return [
         'cli_followups' => 'After the update completes, run `composer install --no-dev` if composer.json changed and `npm install && npm run build` if assets changed, then restart PHP-FPM.',
         'execute_not_implemented' => 'Core update detection is now wired up, but executing core upgrades from the web UI is still being implemented. Use the CLI command shown above for now.',
         'not_implemented' => 'Core update functionality is being prepared in a separate task and will appear here once available.',
+        'rollback' => [
+            'heading' => 'Roll back the last update',
+            'description' => 'Restore the core to v:version — the state captured before the last update.',
+            'button' => 'Roll back core',
+            'confirm_title' => 'Roll back the core?',
+            'confirm_message' => 'This restores the core from v:from back to v:to — the source tree and prebuilt assets captured before the last update. It runs in the background and takes about a minute; reload this page to see the result.',
+            'confirm_note' => 'Only this update\'s schema changes are reversed; data created since the update is preserved. If a data migration must also be undone, restore the full database backup from the Backups page.',
+            'started' => 'Core rollback started. This runs in the background; reload this page to see the result.',
+            'none_to_apply' => 'There is no core rollback point available.',
+        ],
     ],
     'plugins' => [
         'heading' => 'Plugins',
