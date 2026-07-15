@@ -412,4 +412,25 @@ class CoreSourceSnapshot
 
         return null;
     }
+
+    /**
+     * Keep the newest $keep snapshots (each with its metadata sidecar) and
+     * delete the older ones. Called after a successful update so the retained
+     * rollback history stays bounded — each snapshot is a full copy of the
+     * core source tree. The newest snapshot (this update's rollback point) is
+     * always kept; pre-rollback safety snapshots count toward the total and
+     * are pruned by age like any other. Best-effort; never throws.
+     */
+    public function pruneSnapshots(int $keep): void
+    {
+        if ($keep < 1) {
+            $keep = 1;
+        }
+
+        // listSnapshots() is newest-first, so everything past the first $keep
+        // is older than the retained window.
+        foreach (array_slice($this->listSnapshots(), $keep) as $old) {
+            $this->discard($old);
+        }
+    }
 }
