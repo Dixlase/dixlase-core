@@ -126,6 +126,17 @@ class PluginUpdate extends Command
             $zipPath = $manager->download($slug, 'plugin', $release->version, $plugin->source_id);
             $this->info("Downloaded v{$release->version}");
 
+            // Foundation for future ZIP-signature verification: capture the
+            // SHA-256 of what we actually downloaded, so a later release
+            // that checks signatures can retro-audit against the
+            // authority's published hash for this (slug, version).
+            // Logged for the operator + carried into the backup sidecar
+            // via takeExtensionBackup()'s metadata array below.
+            $downloadedSha256 = hash_file('sha256', $zipPath) ?: null;
+            if ($downloadedSha256 !== null) {
+                $this->line("Downloaded SHA-256: {$downloadedSha256}");
+            }
+
             // Capture the pre-update state so a failed apply — or a later
             // operator-run `dls:plugin:rollback` — can restore it. By default
             // this is a PERSISTENT backup (kept, retention-pruned, restores
@@ -153,6 +164,11 @@ class PluginUpdate extends Command
                         [
                             'version' => (string) $plugin->version,
                             'max_batch' => $this->currentPluginMigrationBatch($plugin->slug),
+                            // Records the ZIP hash of the update being
+                            // applied on top of this backup; null-safe
+                            // because a corrupt / unreadable ZIP would
+                            // have failed the download step earlier.
+                            'downloaded_sha256' => $downloadedSha256,
                         ],
                     );
                     $this->info("Backup taken at {$backupPath}");
