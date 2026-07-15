@@ -139,6 +139,19 @@ class CoreUpdater
             $zipPath = $this->sourceManager->downloadCore($version);
             $log("Downloaded to {$zipPath}");
 
+            // Foundation for future update-integrity verification: record
+            // the SHA-256 of what was actually pulled off the network,
+            // BEFORE extract, so a later release that adds signature
+            // verification can retro-audit past updates against the
+            // authority's published hash. Storage happens in the history
+            // row further down; log it here so operators can copy it
+            // out of the `dls:core:update` transcript for immediate
+            // manual verification against a trusted source.
+            $downloadedSha256 = hash_file('sha256', $zipPath) ?: null;
+            if ($downloadedSha256 !== null) {
+                $log("Downloaded SHA-256: {$downloadedSha256}");
+            }
+
             $log('Extracting to staging directory...');
             $this->extractToStaging($zipPath, $stagingPath);
             $log("Extracted to {$stagingPath}");
@@ -317,6 +330,10 @@ class CoreUpdater
                 'installation_method' => CoreVersionHistory::METHOD_UPDATE,
                 'applied_by_id' => $appliedById,
                 'applied_at' => now(),
+                // Foundation-only for future ZIP signature verification.
+                // See the SHA-256 log line right after downloadCore()
+                // above for the operator-facing surface.
+                'downloaded_sha256' => $downloadedSha256,
             ]);
 
             // Clear the available_version on the singleton so the UI no

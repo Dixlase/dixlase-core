@@ -71,6 +71,7 @@ class CoreVersionHistory extends Model
         'author_id_changed',
         'installation_method',
         'installed_from_url',
+        'downloaded_sha256',
         'applied_by_id',
         'applied_at',
     ];
