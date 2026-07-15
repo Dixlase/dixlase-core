@@ -127,6 +127,15 @@ class ThemeUpdate extends Command
             $zipPath = $manager->download($slug, 'theme', $release->version, $theme->source_id);
             $this->info("Downloaded v{$release->version}");
 
+            // Foundation for future ZIP-signature verification: capture the
+            // SHA-256 of what we actually downloaded. See PluginUpdate for
+            // the rationale — this parallel path keeps theme + plugin
+            // update flows symmetric.
+            $downloadedSha256 = hash_file('sha256', $zipPath) ?: null;
+            if ($downloadedSha256 !== null) {
+                $this->line("Downloaded SHA-256: {$downloadedSha256}");
+            }
+
             // Capture the pre-update state so a failed apply — or a later
             // operator-run `dls:theme:rollback` — can restore it. By default
             // this is a PERSISTENT backup (kept, retention-pruned, restores
@@ -154,6 +163,9 @@ class ThemeUpdate extends Command
                         [
                             'version' => (string) $theme->version,
                             'max_batch' => $this->currentThemeMigrationBatch($theme->slug),
+                            // Same foundation-only recording as
+                            // PluginUpdate — see comment there.
+                            'downloaded_sha256' => $downloadedSha256,
                         ],
                     );
                     $this->info("Backup taken at {$backupPath}");
