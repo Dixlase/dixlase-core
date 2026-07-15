@@ -458,6 +458,68 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     }
 
     /**
+     * Roll the core back to the state captured before its last update, from
+     * the admin UI. Counterpart to applyCore(): a rollback also replaces the
+     * live source tree under app/, resources/, etc., so running it inline
+     * would tear down the PHP-FPM worker mid-response. We spawn
+     * dls:core:rollback as a detached subprocess and land the next request on
+     * the in-progress placeholder, exactly like applyCore(). Only reachable
+     * when a rollback point exists (the button is hidden otherwise).
+     */
+    public function rollbackCore(Request $request, \App\Services\Core\CoreSourceSnapshot $snapshotter)
+    {
+        if ($snapshotter->latestSnapshotWithMetadata() === null) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('warning', __('admin/settings/systems/updates.core.rollback.none_to_apply'));
+        }
+
+        if (! function_exists('exec')) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('error', __('admin/settings/systems/updates.core.exec_disabled'));
+        }
+
+        $phpBinary = (new PhpExecutableFinder())->find(false);
+        if (! $phpBinary) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('error', __('admin/settings/systems/updates.core.php_cli_not_found'));
+        }
+
+        // Clear any stale update-failure marker so a prior failed update's
+        // banner does not linger while the rollback runs.
+        \App\Models\CoreRelease::singleton()->forceFill([
+            'update_failed_at' => null,
+            'update_failure_reason' => null,
+        ])->save();
+
+        // Attribute the rollback history row to the admin who clicked.
+        $appliedById = \App\Helpers\AdminHelper::getMember()?->id;
+        $appliedByArg = $appliedById !== null
+            ? ' --applied-by='.escapeshellarg((string) $appliedById)
+            : '';
+
+        // Raise the in-progress flag before spawning so the next request
+        // lands on the polling placeholder (the rollback replaces resources/
+        // mid-flight). dls:core:rollback clears it in its finally block.
+        $this->writeCoreUpdateInProgressFlag([
+            'started_at' => now()->timestamp,
+            'operation' => 'rollback',
+            'started_by_id' => $appliedById,
+        ]);
+
+        $command = sprintf(
+            'nohup %s %s dls:core:rollback --force --no-interaction%s > %s 2>&1 &',
+            escapeshellarg($phpBinary),
+            escapeshellarg(base_path('artisan')),
+            $appliedByArg,
+            escapeshellarg(storage_path('logs/core-update.log'))
+        );
+        exec($command);
+
+        return redirect()->route('admin.settings.systems.updates.index')
+            ->with('success', __('admin/settings/systems/updates.core.rollback.started'));
+    }
+
+    /**
      * If a web-triggered core update is in progress, return its metadata
      * (`started_at`, `target_version`, `started_by_id`) for the
      * placeholder page. Returns null when no flag is present, or when
@@ -670,6 +732,13 @@ HTML;
         $available = $state->available_version !== null
             && version_compare($state->available_version, $current, '>');
 
+        // A core rollback point exists when the last update left a source
+        // snapshot with rollback metadata. Its 'from' version is what a
+        // rollback would restore to; 'to' is the update it undoes.
+        $snapshotter = app(\App\Services\Core\CoreSourceSnapshot::class);
+        $rollbackPoint = $snapshotter->latestSnapshotWithMetadata();
+        $rollbackMeta = $rollbackPoint !== null ? $snapshotter->readMetadata($rollbackPoint) : null;
+
         return [
             'available' => $available,
             'current_version' => $current,
@@ -681,6 +750,9 @@ HTML;
             'update_failed_at' => $state->update_failed_at,
             'update_failed_at_formatted' => $state->update_failed_at?->format('Y/m/d H:i'),
             'update_failure_reason' => $state->update_failure_reason,
+            'can_rollback' => $rollbackPoint !== null,
+            'rollback_to_version' => is_array($rollbackMeta) ? ($rollbackMeta['from'] ?? null) : null,
+            'rollback_from_version' => is_array($rollbackMeta) ? ($rollbackMeta['to'] ?? null) : null,
         ];
     }
 

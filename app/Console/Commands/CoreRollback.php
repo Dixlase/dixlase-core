@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Models\CoreVersionHistory;
 use App\Services\Core\CoreSourceSnapshot;
+use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -72,7 +73,8 @@ use Illuminate\Support\Facades\DB;
 class CoreRollback extends Command
 {
     protected $signature = 'dls:core:rollback
-        {--force : Skip the confirmation prompt}';
+        {--force : Skip the confirmation prompt}
+        {--applied-by= : Member id to record on the rollback history row (defaults to null for direct CLI runs)}';
 
     protected $description = 'Roll the Dixlase Core back to the state captured before its last update';
 
@@ -169,10 +171,12 @@ class CoreRollback extends Command
                 $maintenanceOn = false;
             }
 
+            $appliedBy = $this->option('applied-by');
             CoreVersionHistory::create([
                 'old_version' => $current !== '' ? $current : $to,
                 'new_version' => $from,
                 'installation_method' => CoreVersionHistory::METHOD_ROLLBACK,
+                'applied_by_id' => ($appliedBy !== null && $appliedBy !== '') ? (int) $appliedBy : null,
                 'applied_at' => now(),
             ]);
 
@@ -212,6 +216,13 @@ class CoreRollback extends Command
             }
 
             return self::FAILURE;
+        } finally {
+            // Clear the in-progress flag the admin UI raises before spawning
+            // a detached rollback, so the next page render leaves the polling
+            // placeholder. Reuses the core-update flag path (a rollback also
+            // replaces resources/ mid-flight). CLI runs never set it, so this
+            // is a no-op for them — mirrors CoreUpdater::update()'s finally.
+            @unlink(CoreUpdater::inProgressFlagPath());
         }
     }
 

@@ -127,6 +127,19 @@ file is governed by the AGPL terms below.
         <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
     </form>
 
+    {{-- Standalone core rollback form. Same nested-<form> reasoning as
+         #coreUpdateForm above — the core section's rollback button
+         references it by HTML5 form="coreRollbackForm". Posts to the
+         detached rollback endpoint; no backup checkbox because the retained
+         source snapshot IS the rollback point. --}}
+    <form id="coreRollbackForm"
+          method="POST"
+          action="{{ route('admin.settings.systems.updates.rollback-core') }}"
+          class="hidden"
+          @submit="closeModal('confirmCoreRollbackModal'); $nextTick(() => openModal('updatesInProgressModal'))">
+        @csrf
+    </form>
+
     {{-- Hidden mini-forms backing the per-row "更新" buttons. One per
          updatable plugin and one per updatable theme. Each carries a
          single-element `plugins[]` / `themes[]` array that the existing
@@ -305,6 +318,35 @@ file is governed by the AGPL terms below.
                 <p class="text-xs text-gray-500 dark:text-gray-500 italic">
                     <i class="fas fa-check-circle mr-1 text-green-500"></i>{{ __('admin/settings/systems/updates.core.up_to_date') }}
                 </p>
+            @endif
+
+            {{-- Rollback control. Rendered outside the available/up-to-date
+                 branch above because a rollback point exists after any
+                 successful update regardless of whether a newer update is
+                 now available — the last update cleared available_version.
+                 The button opens confirmCoreRollbackModal, whose confirm
+                 submits #coreRollbackForm (detached rollback). --}}
+            @if($core['can_rollback'])
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3 flex-wrap">
+                    <div class="text-sm">
+                        <p class="text-gray-700 dark:text-gray-300 font-medium">
+                            <i class="fas fa-rotate-left mr-1 text-gray-500 dark:text-gray-400"></i>{{ __('admin/settings/systems/updates.core.rollback.heading') }}
+                        </p>
+                        @if($core['rollback_to_version'])
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {{ __('admin/settings/systems/updates.core.rollback.description', ['version' => $core['rollback_to_version']]) }}
+                            </p>
+                        @endif
+                    </div>
+                    <x-form-button type="button"
+                        size="sm"
+                        :label="__('admin/settings/systems/updates.core.rollback.button')"
+                        variant="secondary"
+                        icon="fas fa-rotate-left"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
+                        xClick="openModal('confirmCoreRollbackModal')" />
+                </div>
             @endif
         </section>
 
@@ -602,6 +644,35 @@ file is governed by the AGPL terms below.
                     </label>
                     <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
                         {{ __('admin/settings/systems/updates.core_confirm_backup_note') }}
+                    </p>
+                </x-ui-modal>
+            @endif
+
+            {{-- Core rollback confirm modal. Like the update modal, the core
+                 rollback button opens this instead of submitting directly so
+                 an accidental click cannot revert the core. The confirm
+                 button carries form="coreRollbackForm", so the click submits
+                 that hidden form, whose @submit handler closes this modal and
+                 opens updatesInProgressModal. --}}
+            @if($core['can_rollback'])
+                <x-ui-modal
+                    id="confirmCoreRollbackModal"
+                    :title="__('admin/settings/systems/updates.core.rollback.confirm_title')"
+                    message=""
+                    icon_type="warning"
+                    confirm_color="yellow"
+                    :confirm_label="__('admin/settings/systems/updates.core.rollback.button')"
+                    :cancel_label="__('common.cancel')"
+                    form="coreRollbackForm"
+                >
+                    <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                        {{ __('admin/settings/systems/updates.core.rollback.confirm_message', [
+                            'from' => $core['rollback_from_version'] ?? $core['current_version'],
+                            'to' => $core['rollback_to_version'] ?? '',
+                        ]) }}
+                    </p>
+                    <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('admin/settings/systems/updates.core.rollback.confirm_note') }}
                     </p>
                 </x-ui-modal>
             @endif
