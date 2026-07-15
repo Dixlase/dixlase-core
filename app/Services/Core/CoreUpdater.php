@@ -353,6 +353,11 @@ class CoreUpdater
             // metadata sidecar) is retained as the dls:core:rollback point.
             $this->cleanupStaging($stagingPath);
 
+            // Bound the retained rollback history so snapshots (each a full
+            // core source copy) don't grow without limit. The newest — this
+            // update's rollback point — is always kept.
+            $this->snapshotter->pruneSnapshots((int) config('core_update.snapshot_retention', 5));
+
             return [
                 'from' => $current,
                 'to' => $version,
