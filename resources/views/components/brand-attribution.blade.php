@@ -65,13 +65,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     ===========================================================================
 --}}
 
-<div class="mt-8 text-center text-xs text-gray-500 dark:text-gray-500">
-    <a href="https://dixlase.org"
-       target="_blank"
-       rel="noopener noreferrer"
-       class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-        Powered by Dixlase
-    </a>
-    <span class="mx-2" aria-hidden="true">·</span>
-    <span>&copy; {{ date('Y') }} exc-D inc.</span>
+<div class="mt-8 flex items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-500">
+    {{-- Small brand mark to the left of the attribution lines. Inline
+         SVG via <x-brand-logo /> so it inherits the parent's
+         `currentColor` and stays legible on both light and dark
+         grounds. Sized similar to the favicon (~20px) so it reads
+         as an attribution glyph, not a hero mark. --}}
+    <x-brand-logo class="h-5 w-5 shrink-0" :aria-label="''" />
+
+    <div class="text-left leading-relaxed">
+        <div>
+            <a href="https://dixlase.org"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                Powered by Dixlase
+            </a>
+        </div>
+        <div>
+            &copy; {{ date('Y') }} Dixlase is developed and maintained by exc-D inc.
+        </div>
+    </div>
 </div>
