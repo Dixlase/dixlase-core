@@ -69,8 +69,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
     <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
 
-        <!-- ロゴ -->
-        <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ config('app.name') }}" class="w-32 h-auto mx-auto mb-4">
+        {{-- Site logo. Wrapped so the login card gets the current
+             theme's ink color via `text-gray-900 dark:text-white`,
+             which the inline SVG inside <x-application-logo /> reads
+             through `currentColor`. --}}
+        <div class="text-gray-900 dark:text-white mb-4">
+            <x-application-logo
+                size="w-32 h-auto"
+                class="mx-auto"
+                :site_name="config('app.name')"
+            />
+        </div>
 
         <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-12 w-full mb-4 transition-colors duration-300">
             @hasSection('icon')
