@@ -46,6 +46,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Favicon links. See layouts/auth.blade.php for the rationale;
+             kept in lockstep so the admin tab icon matches the login
+             page's. --}}
+        <link rel="icon" type="image/svg+xml" href="{{ asset('assets/images/favicon.svg') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/images/favicon-32.png') }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon-16.png') }}">
+
         {{-- Prevent FOUC: Apply dark mode class immediately before CSS and Alpine.js load --}}
         <script @cspNonce>
             (function(){
