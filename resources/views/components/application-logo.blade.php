@@ -37,8 +37,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'site_name' => '',
     'class' => '',
     'size' => 'h-6 w-6', // デフォルトサイズ
-    ])
+])
 
+{{--
+    Renders the SITE'S CURRENT LOGO (distinct from <x-brand-logo />,
+    which always renders the Dixlase mark). Beta 1 defaults to the
+    Dixlase mark inline via <x-brand-logo /> — a future release adds
+    a branch here: if the operator uploaded a custom logo via the
+    admin panel, use <img src="{custom path}" /> instead; otherwise
+    fall through to the Dixlase mark below. The callsites do not need
+    to change when that switch lands — the component boundary absorbs
+    the difference.
+
+    Inline SVG (via <x-brand-logo />) so `text-*` classes on the
+    surrounding wrapper drive `currentColor` in both light and dark
+    themes — the old `<img>` implementation could not inherit CSS
+    color, so the logo was invisible on dark grounds and had to
+    ship as a two-colour placeholder to compensate.
+--}}
 <div class="block {{ $size }} fill-current {{ $class }}">
-    <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ $site_name }}" class="h-full w-full object-contain">
+    <x-brand-logo
+        class="h-full w-full"
+        :aria-label="$site_name"
+    />
 </div>

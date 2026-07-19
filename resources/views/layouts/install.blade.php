@@ -62,9 +62,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen px-4">
     <div class="flex flex-col items-center w-full max-w-3xl my-10">
 
-        <!-- Site Logo -->
-        <div class="mb-4">
-            <img src="{{ asset('assets/images/logo.svg') }}" alt="{{ env('APP_NAME') }}" class="w-32 h-auto mx-auto">
+        {{-- Site logo. Same wrapper pattern as layouts/auth.blade.php
+             — inline SVG inherits the wrapper's text color via
+             `currentColor` so the mark reads on both light and dark
+             backgrounds without shipping two files. --}}
+        <div class="text-gray-900 dark:text-white mb-4">
+            <x-application-logo
+                size="w-32 h-auto"
+                class="mx-auto"
+                :site_name="env('APP_NAME')"
+            />
         </div>
 
         <!-- Main Installation Container -->
