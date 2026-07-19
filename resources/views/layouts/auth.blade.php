@@ -39,6 +39,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | {{ config('app.name') }}</title>
 
+    {{-- Favicon links. Ordered SVG-first so modern browsers pick the
+         vector; PNG fallbacks for browsers that ignore SVG icons. The
+         paths are stable across releases; only the image files at these
+         paths may change (e.g. when the operator swaps their favicon
+         in a future release that adds that feature). --}}
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/images/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/images/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon-16.png') }}">
+
     {{-- Prevent FOUC: Dark mode + Alpine.js x-cloak (executed synchronously) --}}
     <style>[x-cloak]{display:none!important;}</style>
     <script @cspNonce>
@@ -93,8 +102,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @yield('back_link')
             </div>
         @endif
+
+        {{-- PROTECTED REGION: Dixlase brand attribution. See
+             components/brand-attribution.blade.php for the license /
+             override policy. Do not remove without reading that file
+             first. --}}
+        <x-brand-attribution />
     </div>
-    
+
     @stack('scripts')
 
 </body>
