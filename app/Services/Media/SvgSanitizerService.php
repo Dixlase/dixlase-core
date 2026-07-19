@@ -61,6 +61,7 @@ class SvgSanitizerService
         'feMerge', 'feMergeNode', 'feMorphology', 'feOffset',
         'feSpecularLighting', 'feTile', 'feTurbulence',
         'marker', 'switch',
+        'style', // CSS content is filtered to a safe-property allowlist; see sanitizeStyleContent()
     ];
 
     /**
@@ -68,10 +69,38 @@ class SvgSanitizerService
      */
     protected array $forbiddenElements = [
         'script', 'foreignObject', 'iframe', 'object', 'embed',
-        'applet', 'meta', 'link', 'style', 'base',
+        'applet', 'meta', 'link', 'base',
         'form', 'input', 'button', 'select', 'textarea',
         'audio', 'video', 'source', 'track',
         'animate', 'animateMotion', 'animateTransform', 'set', // also remove animation elements
+    ];
+
+    /**
+     * CSS properties allowed inside <style>.
+     *
+     * Limited to the SVG "presentation attribute" set (SVG 1.1 §6.4 / SVG 2 §11).
+     * Every property listed here also has an equivalent XML attribute form, so
+     * nothing rendered here can express behaviour that couldn't already be
+     * expressed via attributes we allow.
+     */
+    protected array $allowedStyleProperties = [
+        'alignment-baseline', 'baseline-shift', 'clip-path', 'clip-rule',
+        'color', 'color-interpolation', 'color-interpolation-filters', 'color-rendering',
+        'cursor', 'direction', 'display', 'dominant-baseline',
+        'fill', 'fill-opacity', 'fill-rule',
+        'filter', 'flood-color', 'flood-opacity',
+        'font', 'font-family', 'font-size', 'font-size-adjust',
+        'font-stretch', 'font-style', 'font-variant', 'font-weight',
+        'glyph-orientation-horizontal', 'glyph-orientation-vertical',
+        'image-rendering', 'letter-spacing', 'lighting-color',
+        'marker', 'marker-end', 'marker-mid', 'marker-start', 'mask',
+        'opacity', 'overflow', 'paint-order', 'pointer-events',
+        'shape-rendering', 'stop-color', 'stop-opacity',
+        'stroke', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap',
+        'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke-width',
+        'text-anchor', 'text-decoration', 'text-overflow', 'text-rendering',
+        'transform', 'unicode-bidi', 'vector-effect', 'visibility',
+        'white-space', 'word-spacing', 'writing-mode',
     ];
 
     /**
@@ -174,6 +203,27 @@ class SvgSanitizerService
         // Sanitize attributes
         $this->sanitizeAttributes($node);
 
+        // Special case: <style> children are CSS text, not markup — filter to
+        // a safe-property allowlist instead of recursing. If nothing survives,
+        // drop the element entirely so we don't leave an empty <style> stub.
+        if ($nodeName === 'style') {
+            $safeCss = $this->sanitizeStyleContent($this->collectTextContent($node));
+
+            while ($node->firstChild) {
+                $node->removeChild($node->firstChild);
+            }
+
+            if ($safeCss === '') {
+                $node->parentNode?->removeChild($node);
+
+                return;
+            }
+
+            $node->appendChild($node->ownerDocument->createCDATASection($safeCss));
+
+            return;
+        }
+
         // Process child nodes in reverse order (prevent index shift on deletion)
         $children = [];
         foreach ($node->childNodes as $child) {
@@ -183,6 +233,104 @@ class SvgSanitizerService
         foreach (array_reverse($children) as $child) {
             $this->sanitizeNode($child);
         }
+    }
+
+    /**
+     * Concatenate the text/CDATA content of an element (shallow — direct children only).
+     */
+    protected function collectTextContent(\DOMElement $element): string
+    {
+        $text = '';
+        foreach ($element->childNodes as $child) {
+            if ($child->nodeType === XML_TEXT_NODE || $child->nodeType === XML_CDATA_SECTION_NODE) {
+                $text .= $child->nodeValue;
+            }
+        }
+
+        return $text;
+    }
+
+    /**
+     * Filter CSS inside <style> to declarations that use SVG presentation properties only.
+     *
+     * Guards applied, in order:
+     *   1. Strip CSS comments (/* ... *&#47;) up-front so nothing hides inside them.
+     *   2. Drop every at-rule (`@import`, `@font-face`, `@media`, `@keyframes`, …)
+     *      — none of them are needed for a static SVG and they are historic injection
+     *      vectors (`@import url("javascript:…")`, `@font-face src: url()`, etc.).
+     *   3. For each remaining ruleset:
+     *      - reject the whole ruleset if the selector contains `<`, `>`, `@`, or
+     *        one of the script-scheme keywords;
+     *      - keep declarations whose property is in the presentation-attribute
+     *        allowlist and whose value has no `javascript:` / `vbscript:` /
+     *        `expression()`, and whose `url(...)` reference (if any) points at
+     *        a same-document fragment (`url(#gradient1)`).
+     */
+    protected function sanitizeStyleContent(string $css): string
+    {
+        $css = preg_replace('#/\*.*?\*/#s', '', $css) ?? '';
+
+        // Peel off every at-rule. Handles both block form (`@x { … }`, possibly
+        // one level of nesting for `@media`) and statement form (`@import "…";`).
+        $prev = null;
+        while ($prev !== $css) {
+            $prev = $css;
+            $css = preg_replace(
+                '/@[^{;]+(?:\{(?:[^{}]|\{[^{}]*\})*\}|;)/i',
+                '',
+                $css
+            ) ?? '';
+        }
+
+        $safeRules = [];
+        if (preg_match_all('/([^{}]+)\{([^{}]*)\}/', $css, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $m) {
+                $selector = trim($m[1]);
+                $declarations = $m[2];
+
+                if ($selector === '') {
+                    continue;
+                }
+
+                if (preg_match('/[<>@]|expression\s*\(|javascript:|vbscript:/i', $selector)) {
+                    continue;
+                }
+
+                $safeDecls = [];
+                foreach (explode(';', $declarations) as $decl) {
+                    $decl = trim($decl);
+                    if ($decl === '' || strpos($decl, ':') === false) {
+                        continue;
+                    }
+
+                    [$prop, $value] = array_map('trim', explode(':', $decl, 2));
+                    $prop = strtolower($prop);
+
+                    if (! in_array($prop, $this->allowedStyleProperties, true)) {
+                        continue;
+                    }
+
+                    if (preg_match('/javascript:|vbscript:|expression\s*\(/i', $value)) {
+                        continue;
+                    }
+
+                    // Only same-document url(#id) references are permitted (needed for
+                    // fill: url(#gradient1) and mask: url(#clip1) patterns).
+                    if (preg_match('/url\s*\(/i', $value)
+                        && ! preg_match('/^[^)]*url\s*\(\s*["\']?#[^"\')]+["\']?\s*\)[^)]*$/i', $value)) {
+                        continue;
+                    }
+
+                    $safeDecls[] = $prop.': '.$value;
+                }
+
+                if ($safeDecls !== []) {
+                    $safeRules[] = $selector.' { '.implode('; ', $safeDecls).' }';
+                }
+            }
+        }
+
+        return implode("\n", $safeRules);
     }
 
     /**
@@ -354,6 +502,17 @@ class SvgSanitizerService
             }
         }
 
+        // <style> CSS content is validated by round-tripping through the
+        // sanitizer: if anything would be stripped the input is unsafe.
+        if ($nodeName === 'style') {
+            $original = $this->collectTextContent($node);
+            $sanitized = $this->sanitizeStyleContent($original);
+
+            if ($this->normaliseCssForCompare($original) !== $this->normaliseCssForCompare($sanitized)) {
+                return false;
+            }
+        }
+
         // Check child nodes
         foreach ($node->childNodes as $child) {
             if (! $this->checkNodeSafety($child)) {
@@ -362,5 +521,17 @@ class SvgSanitizerService
         }
 
         return true;
+    }
+
+    /**
+     * Collapse whitespace and trim trailing semicolons so that
+     * "  .st0 { fill: #fff; }  " and ".st0 { fill: #fff }" compare equal.
+     */
+    protected function normaliseCssForCompare(string $css): string
+    {
+        $css = preg_replace('/\s+/', ' ', $css) ?? '';
+        $css = preg_replace('/\s*;\s*}/', ' }', $css) ?? '';
+
+        return trim($css);
     }
 }
