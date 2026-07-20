@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :class="{ 'lg:mr-80': rightSidebarActive && !rightSidebarCollapsed }">
     <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
     v{{ $coreVersion ?? config('app.version', '1.0.0') }} &middot;
-    &copy; {{ date('Y') }} exc-D inc. &middot;
+    &copy; {{ date('Y') }} exc-D inc. and Dixlase contributors &middot;
     <a href="{{ config('dixlase.license_url', 'https://www.gnu.org/licenses/agpl-3.0.html') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300">
         {{ config('dixlase.license_label', 'AGPLv3') }}
     </a> &middot;

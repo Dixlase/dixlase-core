@@ -82,6 +82,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
     </div>
     <div>
-        &copy; {{ date('Y') }} Dixlase is developed and maintained by exc-D inc.
+        &copy; {{ date('Y') }} exc-D inc. and Dixlase contributors
     </div>
 </div>
