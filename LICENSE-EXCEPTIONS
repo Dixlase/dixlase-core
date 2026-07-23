@@ -19,9 +19,9 @@ As a special exception to the GNU Affero General Public License, the
 copyright holders of Dixlase grant you additional permission to
 convey plugins and themes that interact with Dixlase solely through
 the Plugin API (as defined in the file PLUGIN-API.md distributed with
-Dixlase) without those plugins or themes being considered derivative
-works of Dixlase, and therefore without being subject to the
-requirements of the GNU Affero General Public License.
+Dixlase) free of the requirements of the GNU Affero General Public
+License, regardless of whether those plugins or themes constitute
+derivative works of Dixlase.
 
 This exception applies only when ALL of the following conditions are met:
 
@@ -42,9 +42,9 @@ This exception applies only when ALL of the following conditions are met:
      loading mechanism (PluginLoaderTrait / ThemeLoaderTrait) and
      resides in the designated plugins/ or themes/ directory.
 
-If any of the above conditions are not met, the plugin or theme is
-considered a derivative work of Dixlase, and the full terms of the
-GNU Affero General Public License apply to it.
+If any of the above conditions are not met, the additional permission
+granted by this exception does not apply to the plugin or theme, and
+the full terms of the GNU Affero General Public License apply to it.
 
 For the avoidance of doubt:
 
@@ -82,26 +82,46 @@ For the avoidance of doubt:
     Dixlase, except as required for reasonable and customary use in
     describing the origin of the plugin or theme.
 
-Interpretive note on the scope of AGPL section 13:
+Delimitation of the scope of this exception with respect to AGPL
+section 13, and the copyright holder's view:
 
-For the purposes of AGPL section 13, the phrase "modified Program"
-includes any code that, by mechanism of dynamic loading through the
-Dixlase core, replaces or modifies the runtime behaviour of the
-Dixlase core itself — including by subclassing core classes, binding
-services in the container to override core implementations,
-overriding core Blade views via the namespace mechanism, or any
-equivalent mechanism. The fact that such code is loaded from a
-directory outside the core source tree (such as custom/) does not,
-on its own, exclude it from the scope of section 13.
+This section states (a) a declaration by the copyright holder
+delimiting the scope to which this exception (an additional
+permission under section 7 of the AGPL) does not apply, and (b) the
+copyright holder's interpretive view concerning the application of
+section 13 of the AGPL. This section does not modify or supplement
+the terms of the AGPL itself, and does not introduce any obligation
+beyond those already imposed by the AGPL.
 
-This note clarifies the existing application of section 13 to
-runtime modifications of the Dixlase core and does not introduce
-new obligations beyond those already imposed by the AGPL. The
-note does not extend section 13 to overrides that affect only the
-runtime behaviour of plugins or themes without modifying the
-Dixlase core itself; such overrides remain governed by the upstream
-license terms of the plugin or theme being overridden, consistent
-with the avoidance-of-doubt clause above.
+(Delimitation of scope) The additional permission granted by this
+exception does not apply to code that, by mechanism of dynamic
+loading through the Dixlase core, replaces or modifies the runtime
+behaviour of the Dixlase core itself — including, but not limited
+to, subclassing core classes, binding services in the container to
+override core implementations, and overriding core Blade views via
+the namespace mechanism — even where such code resides in a
+directory outside the core source tree (such as custom/). Such code
+is governed by the terms of the AGPL-3.0 itself, unmodified by this
+exception.
+
+(Copyright holder's view) The copyright holder considers that such
+code is not excluded from the scope of AGPL section 13 solely
+because it is loaded from outside the core source tree, and that it
+may constitute a "modified version" within the meaning of that
+section. Whether particular code constitutes a modification within
+the meaning of section 0 of the AGPL, or a modified version within
+the meaning of section 13, is ultimately determined by the
+definitions of the AGPL itself and by applicable law; the view
+stated in this section is provided for reference and neither
+pre-empts nor binds that determination. The outcome of that
+determination may differ between jurisdictions.
+
+(No extension) This section does not extend the application of
+section 13 to overrides that affect only the runtime behaviour of
+plugins or themes without modifying the Dixlase core itself. Such
+overrides remain governed by the upstream license terms of the
+plugin or theme being overridden, consistent with the
+avoidance-of-doubt clause above.
 
 If you modify Dixlase core and redistribute it, you may choose to
 remove this exception. If you do not remove the exception, the exception
