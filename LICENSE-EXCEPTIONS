@@ -2,7 +2,7 @@
 
     DIXLASE PLUGIN AND THEME EXCEPTION
 
-    Version 1.0, 2026
+    Version 1.1, 2026
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
@@ -42,9 +42,10 @@ This exception applies only when ALL of the following conditions are met:
      loading mechanism (PluginLoaderTrait / ThemeLoaderTrait) and
      resides in the designated plugins/ or themes/ directory.
 
-If any of the above conditions are not met, the additional permission
-granted by this exception does not apply to the plugin or theme, and
-the full terms of the GNU Affero General Public License apply to it.
+If any of the above conditions are not met, the additional
+permission granted by this exception does not apply to the plugin or
+theme, and its treatment is governed by the terms of the GNU Affero
+General Public License itself, unmodified by this exception.
 
 For the avoidance of doubt:
 

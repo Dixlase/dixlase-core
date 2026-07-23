@@ -2,7 +2,7 @@
 
     DIXLASE プラグイン・テーマ例外条項
 
-    バージョン 1.0, 2026
+    バージョン 1.1, 2026
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
@@ -16,9 +16,10 @@ GNU AGPL バージョン3 第7条に基づく追加許可:
 
 GNU Affero General Public License の特別例外として、Dixlase の著作権者は、
 Plugin API（Dixlase と共に配布される PLUGIN-API.md ファイルに定義）のみを
-通じて Dixlase と連携するプラグインおよびテーマを、それらが Dixlase の
-派生物に該当するか否かにかかわらず、GNU Affero General Public License の
-要件を適用することなく頒布できる追加許可を付与します。
+通じて Dixlase と連携するプラグインおよびテーマについて、それらが
+Dixlase の派生物(二次的著作物)に該当するか否かにかかわらず、
+GNU Affero General Public License の要件を適用することなく頒布できる
+追加許可を付与します。
 
 この例外は、以下の条件が全て満たされる場合にのみ適用されます:
 
@@ -39,9 +40,9 @@ Plugin API（Dixlase と共に配布される PLUGIN-API.md ファイルに定�
      （PluginLoaderTrait / ThemeLoaderTrait）を通じて読み込まれ、
      指定された plugins/ または themes/ ディレクトリに配置されていること。
 
-上記の条件のいずれかが満たされない場合、そのプラグインまたはテーマには
-本例外の追加許可は適用されず、GNU Affero General Public License の
-全条項が適用されます。
+上記の条件のいずれかが満たされない場合、当該プラグインまたはテーマには
+本例外の追加許可は適用されず、その取扱いは、本例外による修正を受けない
+GNU Affero General Public License 本文の条項によります。
 
 疑義を避けるために:
 
