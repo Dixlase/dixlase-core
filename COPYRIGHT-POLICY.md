@@ -24,9 +24,9 @@ It is not itself a contract. The contractual instruments are listed in Section 5
 
 The Dixlase core is distributed under two parallel licenses, and recipients choose one:
 
-  (a) the GNU Affero General Public License version 3 ("AGPL"), together with the Dixlase Plugin and Theme Exception, as set out in [`LICENSE`](./LICENSE); and
+(a) the GNU Affero General Public License version 3 ("AGPL", as set out in [`LICENSE`](./LICENSE)), together with the Dixlase Plugin and Theme Exception, as set out in [`LICENSE-EXCEPTIONS`](./LICENSE-EXCEPTIONS); and
 
-  (b) a separate commercial license offered by exc-D, as set out in [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL), for parties who do not wish to comply with the AGPL.
+(b) a separate commercial license offered by exc-D, as set out in [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL), for parties who do not wish to comply with the AGPL.
 
 Both licenses cover the same software; they differ only in obligations.
 
@@ -34,16 +34,16 @@ Both licenses cover the same software; they differ only in obligations.
 
 ## 3. Plugin and Theme Exception
 
-The Plugin and Theme Exception is defined in [`LICENSE`](./LICENSE) and bounded by [`PLUGIN-API.md`](./PLUGIN-API.md). Authors of plugins and themes that satisfy the four-condition test in the Exception retain full copyright in their plugin/theme code and may distribute it under any license of their choice, including proprietary licenses. The Exception is one-way: it does not allow modified core code to be re-characterized as a plugin to escape the AGPL.
+The Plugin and Theme Exception is defined in [`LICENSE-EXCEPTIONS`](./LICENSE-EXCEPTIONS) and bounded by [`PLUGIN-API.md`](./PLUGIN-API.md). Authors of plugins and themes that satisfy the four-condition test in the Exception retain full copyright in their plugin/theme code and may distribute it under any license of their choice, including proprietary licenses. The Exception is one-way: it does not allow modified core code to be re-characterized as a plugin to escape the AGPL.
 
 ## 4. Contribution Model
 
 Contributions to the Dixlase **core repository** at https://github.com/Dixlase/dixlase-core are governed by a Contributor License Agreement ("CLA") model:
 
-| Contributor type | Agreement |
-|---|---|
-| Individual person | [`CLA.md`](./CLA.md) (signing capacity: individual) — in preparation |
-| Organization (covering its employees) | [`CLA.md`](./CLA.md) (signing capacity: entity; complete Schedules A and B) — in preparation |
+| Contributor type                      | Agreement                                                                   |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| Individual person                     | [`CLA.md`](./CLA.md) (signing capacity: individual)                         |
+| Organization (covering its employees) | [`CLA.md`](./CLA.md) (signing capacity: entity; complete Schedules A and B) |
 
 Under the CLA model:
 
@@ -54,18 +54,18 @@ Under the CLA model:
 
 This Policy applies to contributions to the **core repository**. Plugins and themes distributed separately are outside its scope (see Section 3).
 
-> **Current operating policy.** Dixlase is **not currently accepting external pull requests**. The CLA framework above will be activated when the formal legal review is complete and external code contributions are reopened. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the contributions currently being welcomed (Issue-based bug reports, Discussions, etc.).
+> **Current operating policy.** Dixlase is **not currently accepting external pull requests**. The CLA framework above will be activated when external code contributions open. The timing of opening will be decided, with a finalized CLA as a prerequisite, based on the stability of the core API and operational experience after the initial release. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the contributions currently being welcomed (Issue-based bug reports, Discussions, etc.).
 
 ## 5. Operative Legal Instruments
 
 The legally operative documents are:
 
-| Layer | Document |
-|---|---|
-| Open-source license (downstream recipients) | [`LICENSE`](./LICENSE) — AGPL v3 + Plugin and Theme Exception |
-| Commercial license (downstream recipients) | [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) |
-| Contributor agreement (individual and corporate) | [`CLA.md`](./CLA.md) — in preparation |
-| Plugin API boundary | [`PLUGIN-API.md`](./PLUGIN-API.md) |
+| Layer                                            | Document                                                                                                     |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Open-source license (downstream recipients)      | [`LICENSE`](./LICENSE) (AGPL v3) + [`LICENSE-EXCEPTIONS`](./LICENSE-EXCEPTIONS) (Plugin and Theme Exception) |
+| Commercial license (downstream recipients)       | [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL)                                                                 |
+| Contributor agreement (individual and corporate) | [`CLA.md`](./CLA.md)                                                                                         |
+| Plugin API boundary                              | [`PLUGIN-API.md`](./PLUGIN-API.md)                                                                           |
 
 This Policy is a stance summary, not a contract. Where its summary statements differ from an operative document, the operative document controls.
 
