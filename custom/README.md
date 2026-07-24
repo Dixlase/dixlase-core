@@ -14,9 +14,25 @@ The signer (`dls:signer:sign --force`) only hashes files inside
 
 | Surface | View override | Logic override (PHP) | Config / lang override |
 |---|---|---|---|
-| **Core** | ✅ `custom/resources/views/...` | ✅ `custom/app/...` via `Custom\App\` | ✅ `custom/lang/`, `custom/config/` |
+| **Core** | ⚠️ specific view namespaces only (see below) | ✅ `custom/app/...` via `Custom\App\` | ❌ deferred (loader exists but currently disabled) |
 | **Plugin** | ✅ `custom/plugins/{Plugin}/resources/views/` | ❌ deferred (see backlog) | ✅ `custom/plugins/{Plugin}/{config,lang}/` |
-| **Theme** | ✅ `custom/themes/{Theme}/resources/views/` | ❌ deferred (see backlog) | partial |
+| **Theme** | ✅ `custom/themes/{Theme}/resources/views/` | ❌ deferred (see backlog) | ✅ `custom/themes/{Theme}/{config,lang}/` |
+
+**Core view override scope in v0.1.0:** only the four `View::addNamespace`
+slots that `AppServiceProvider::boot` prepends — `admin::`,
+`components::`, `layouts::`, and `themes::` — accept a custom-path
+prepend and load your Blade file first. Generic non-namespaced views
+(e.g. `View::make('welcome')` returning `resources/views/welcome.blade.php`)
+are **not** overridable through `custom/resources/views/` yet; that
+dispatch path uses the loader entry that is currently disabled.
+
+**Core lang / config override:** the loader methods
+(`loadCustomLang`, `loadCustomConfigs`) exist in
+`app/Traits/CustomFilesLoaderTrait.php` but sit inside a `/* ... */`
+block and are not called. Wiring them up is a straightforward
+uncomment-and-register step but was left disabled for v0.1.0 pending
+a decision on the merge-vs-replace semantics; the intent is to enable
+these in a later release.
 
 Plugin / theme **logic** (PHP class) override is on the roadmap — see
 `.backlog/custom-overrides-plugin-theme.md` for the design and rollout
@@ -39,19 +55,19 @@ custom/
 ├── lang/{locale}/                # core translation overrides
 ├── config/                       # core config overrides
 ├── database/
-│   ├── factories/                # custom factories
-│   ├── migrations/               # custom migrations
-│   └── seeders/                  # custom seeders
+│   ├── factories/                # custom factories (autoloaded)
+│   ├── migrations/               # ⚠️ reserved; NOT registered with Laravel's migrator in v0.1.0
+│   └── seeders/                  # custom seeders (autoloaded)
 ├── plugins/{Plugin}/             # per-plugin overrides
-│   ├── app/                      # ← reserved for v0.2 logic override
+│   ├── app/                      # ← reserved for future logic override (autoload registered)
 │   ├── resources/views/          # plugin view overrides (works today)
-│   ├── lang/{locale}/            # plugin translation overrides
-│   └── config/                   # plugin config merge
+│   ├── lang/{locale}/            # plugin translation overrides (works today)
+│   └── config/                   # plugin config merge (works today)
 ├── themes/{Theme}/               # per-theme overrides
-│   ├── app/                      # ← reserved for v0.2 logic override
+│   ├── app/                      # ← reserved for future logic override (autoload registered)
 │   ├── resources/views/          # theme view overrides (works today)
-│   ├── lang/{locale}/            # theme translation overrides
-│   └── config/                   # theme config merge
+│   ├── lang/{locale}/            # theme translation overrides (works today)
+│   └── config/                   # theme config merge (works today)
 └── tests/                        # custom test suites
 ```
 
@@ -95,13 +111,36 @@ override.
 ## Plugin / theme overrides
 
 Plugin and theme **view** overrides work today: put a Blade file under
-the matching path and the namespaced view loader picks it up first.
+the matching path and the namespaced view loader picks it up first
+(`PluginLoaderTrait::loadPluginViews`, `ThemeLoaderTrait::loadThemeViews`).
 
-Plugin and theme **logic** overrides (PHP classes) are not wired yet,
-but the namespace and path are reserved. Code written now under
-`Custom\Plugins\{Plugin}\App\…` will autoload; it just will not yet be
-container-bound to the original plugin class. See the backlog file
-for status.
+Plugin and theme **config / lang** overrides also work today —
+`PluginLoaderTrait::loadPluginConfigs` / `loadPluginTranslations` and
+`ThemeLoaderTrait::loadThemeConfig` / `loadThemeTranslations` prepend
+the `custom/{plugins,themes}/{Name}/{config,lang}/` paths before the
+originals, so your values merge over the originals for both languages
+and config keys.
+
+Plugin and theme **logic** overrides (PHP classes) are on the roadmap
+but not yet wired in v0.1.0. The design mirrors the Core pattern
+(subclass + service-container bind): a class placed under
+`Custom\Plugins\{Plugin}\App\…` will be able to subclass the original
+plugin class, and a container binding will route future
+`app()->make(...)` lookups and controller dispatch to the custom
+subclass. The namespace and path are **already reserved** —
+`composer.local.json` registers `Custom\Plugins\{P}\App\` and
+`Custom\Themes\{T}\App\` for every detected plugin / theme, so code
+you write today will autoload immediately and will switch on
+automatically when the loader lands. No rename or migration required.
+See `.backlog/custom-overrides-plugin-theme.md` for the design and
+rollout plan.
+
+Plugin and theme **migrations** are intentionally out of scope for
+`custom/`. Plugin and theme migrations flow through `PluginMigrator` /
+`ThemeMigrator` (invoked by the plugin/theme install commands) and
+are tracked in the dedicated `dls_plugin_migrations` /
+`dls_theme_migrations` ledgers. Placing files under
+`custom/plugins/{Plugin}/database/migrations/` will not do anything.
 
 ## License considerations
 
