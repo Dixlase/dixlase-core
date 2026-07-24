@@ -1,8 +1,11 @@
 # Dixlase Contributor License Agreement (In Preparation)
 
-The Dixlase Contributor License Agreement (CLA) is currently being finalized and is
-undergoing formal legal review. The full agreement text will be published in this file
-when external code contributions open.
+The Dixlase Contributor License Agreement (CLA) has been through legal review and its
+terms are close to final. Opening external code contributions, however, is not
+conditioned on the CLA alone: we will open contributions after assessing the stability
+of the core API and how the project operates after the initial release, including
+community feedback (no date is set). The full agreement text will be published in this
+file when contributions open.
 
 Until then:
 

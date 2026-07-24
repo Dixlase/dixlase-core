@@ -4,7 +4,7 @@ Thank you for your interest in Dixlase.
 
 ## Current Status (v0.x)
 
-Dixlase is in early development. **External pull requests are not currently accepted** — code contributions will open once the formal legal review of the Contributor License Agreement ([CLA](./CLA.md), in preparation) is complete. This document will be replaced with the full PR-based contribution guide at that time.
+Dixlase is in early development. **External pull requests are not currently accepted** — code contributions will open once the Contributor License Agreement ([CLA](./CLA.md)) is finalized and, additionally, once we have assessed the stability of the core API and how the project operates after the initial release (no date is set). This document will be replaced with the full PR-based contribution guide at that time.
 
 **Welcome now (via [Issues](https://github.com/Dixlase/dixlase-core/issues) / [Discussions](https://github.com/Dixlase/dixlase-core/discussions)):**
 
@@ -15,7 +15,7 @@ Dixlase is in early development. **External pull requests are not currently acce
 
 **Not accepted yet:** pull requests of any kind (code, documentation, translations). External PRs opened while this policy is in effect are **closed automatically, without code review** — if your PR addresses a real problem, please re-file it as an Issue, and a maintainer will independently implement a fix.
 
-> Code snippets included in bug reports are treated as **reference information only**; a maintainer will independently re-implement any fix. This is required by Dixlase's dual-license model until the CLA review is complete.
+> Code snippets included in bug reports are treated as **reference information only**; a maintainer will independently re-implement any fix. This is required by Dixlase's dual-license model until code PRs open.
 
 ## Use of AI Tools
 

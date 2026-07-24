@@ -131,8 +131,9 @@ More themes are planned for future releases.
 
 > **Currently:** Dixlase is in early development and **does not yet
 > accept external code contributions**. The Contributor License
-> Agreement (CLA) is under formal legal review; code Pull Requests
-> will open once it is finalized.
+> Agreement (CLA) is close to final following legal review; code Pull
+> Requests will open once we have assessed core API stability and how
+> the project operates after the initial release (no date is set).
 
 Bug reports and feature proposals via **GitHub Issues** are welcome
 in the meantime, as are questions via **GitHub Discussions**. See
