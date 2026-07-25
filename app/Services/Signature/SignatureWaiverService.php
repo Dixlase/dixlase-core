@@ -3,7 +3,7 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2026 exc-D inc.
+ * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
  *
  * @internal Core use only. The mutating CLI lives in first-party DixlaseDevKit
