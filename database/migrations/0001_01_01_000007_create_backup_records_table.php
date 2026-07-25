@@ -86,6 +86,12 @@ return new class extends Migration
             // Metadata: duration, table_count, file_count, db_size etc.
             $table->json('metadata')->nullable();
 
+            // Free-form operator note. Update-triggered backups are
+            // auto-filled with a description (e.g. "pre-update backup before
+            // updating core to v0.2.4"); operators can edit it from the
+            // backup detail screen.
+            $table->text('note')->nullable();
+
             // Status: completed, failed, expired, deleted
             $table->string('status', 20)->default('completed')->index();
 
