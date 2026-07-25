@@ -40,6 +40,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Plugin;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -102,6 +103,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // the flag.
         if (($extInProgress = $this->readExtensionUpdateInProgressFlag()) !== null) {
             return $this->extensionUpdateInProgressResponse($extInProgress);
+        }
+
+        // A web-triggered update just finished: its detached subprocess
+        // recorded the outcome once the in-progress flag cleared. Surface a
+        // one-shot "update complete" flash on this render, then it is
+        // consumed and gone.
+        if (($updateResult = SystemUpdateFlash::consume()) !== null) {
+            session()->now('success', $this->buildUpdateCompleteFlash($updateResult));
         }
 
         $forceCheck = $request->boolean('check');
@@ -725,6 +734,29 @@ HTML;
      * @param  array{type: ?string, slug: ?string}  $target
      * @return array{available: bool, current_version: ?string, available_version: ?string, available_version_published_at: ?\Illuminate\Support\Carbon, release_url: ?string, release_notes: ?string, preselected: bool}
      */
+    /**
+     * Build the "update complete" flash text from a consumed
+     * {@see SystemUpdateFlash} result (core or extension).
+     *
+     * @param  array<string, mixed>  $result
+     */
+    protected function buildUpdateCompleteFlash(array $result): string
+    {
+        if (($result['kind'] ?? '') === 'core') {
+            return __('admin/settings/systems/updates.messages.core_update_complete', [
+                'from' => (string) ($result['from'] ?? ''),
+                'to' => (string) ($result['to'] ?? ''),
+            ]);
+        }
+
+        $updated = is_array($result['updated'] ?? null) ? $result['updated'] : [];
+
+        return __('admin/settings/systems/updates.messages.extension_update_complete', [
+            'count' => count($updated),
+            'names' => implode(', ', $updated),
+        ]);
+    }
+
     protected function buildCoreSection(array $target): array
     {
         $state = \App\Models\CoreRelease::singleton();

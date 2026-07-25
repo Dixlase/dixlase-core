@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Console\Command;
 
 /**
@@ -73,22 +74,45 @@ class ExtensionsUpdate extends Command
         $themeSlugs = array_values(array_filter((array) $this->option('theme')));
 
         $failed = 0;
+        $updated = [];
 
         try {
             foreach ($pluginSlugs as $slug) {
                 $this->line("[extensions-update] updating plugin {$slug}...");
                 $code = $this->call('dls:plugin:update', ['slug' => $slug, '--force' => true]);
-                $code === 0 ? $this->line("[extensions-update] plugin {$slug} done")
-                    : $failed++;
+                if ($code === 0) {
+                    $this->line("[extensions-update] plugin {$slug} done");
+                    $updated[] = $slug;
+                } else {
+                    $failed++;
+                }
             }
 
             foreach ($themeSlugs as $slug) {
                 $this->line("[extensions-update] updating theme {$slug}...");
                 $code = $this->call('dls:theme:update', ['slug' => $slug, '--force' => true]);
-                $code === 0 ? $this->line("[extensions-update] theme {$slug} done")
-                    : $failed++;
+                if ($code === 0) {
+                    $this->line("[extensions-update] theme {$slug} done");
+                    $updated[] = $slug;
+                } else {
+                    $failed++;
+                }
             }
         } finally {
+            // Record the completion for the System Updates page's one-shot
+            // "update complete" flash. Written BEFORE the flag is cleared so
+            // index() finds it once the polling UI is released. Only when
+            // something actually updated — a fully-failed run leaves the
+            // per-row failure surfaces to explain what happened.
+            if ($updated !== []) {
+                SystemUpdateFlash::record([
+                    'status' => 'success',
+                    'kind' => 'extension',
+                    'updated' => $updated,
+                    'failed_count' => $failed,
+                ]);
+            }
+
             // Release the polling UI regardless of outcome.
             @unlink(self::inProgressFlagPath());
         }

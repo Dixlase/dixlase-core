@@ -42,6 +42,7 @@ use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Update\SystemUpdateFlash;
 use Closure;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -374,6 +375,18 @@ class CoreUpdater
             // core source copy) don't grow without limit. The newest — this
             // update's rollback point — is always kept.
             $this->snapshotter->pruneSnapshots((int) config('core_update.snapshot_retention', 5));
+
+            // Record completion for the System Updates page's one-shot
+            // "update complete" flash. The web UI runs this update detached
+            // and cannot flash directly; this is written before the finally
+            // block clears the in-progress flag, so index() finds it as soon
+            // as the flag is gone.
+            SystemUpdateFlash::record([
+                'status' => 'success',
+                'kind' => 'core',
+                'from' => $current,
+                'to' => $version,
+            ]);
 
             return [
                 'from' => $current,
