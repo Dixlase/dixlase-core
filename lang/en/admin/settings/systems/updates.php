@@ -97,6 +97,8 @@ return [
         'apply_summary' => ':succeeded of :total succeeded, :failed failed',
         'backup_failed' => 'Pre-update backup failed, so the update was not started. Error: :error',
         'update_started' => 'The update has started. This page will refresh automatically until it completes.',
+        'core_update_complete' => 'Core update complete: v:from → v:to.',
+        'extension_update_complete' => 'Update complete: :count extension(s) updated (:names).',
     ],
 
     // Polling placeholder shown while a detached plugin/theme update runs
