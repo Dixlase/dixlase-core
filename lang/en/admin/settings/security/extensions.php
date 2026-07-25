@@ -69,6 +69,8 @@ return [
         'audit_max_age_days' => 'Audit Scan Expiry (Days)',
         'audit_max_age_days_help' => 'Plugins/themes whose last scan is older than this many days will display a "Scan Expired" badge. Enter a value between 1 and 365 days.',
         'audit_max_age_days_unit' => 'days',
+        'auto_scan_after_update' => 'Auto-scan after update',
+        'auto_scan_after_update_help' => 'Automatically re-scan a plugin/theme right after it is updated, so its health, permissions, and CSP status reflect the new version and the "rescan recommended" warning clears. Runs in the background and does not block the update. Turn off to scan manually.',
         'current_setting' => 'Current Setting',
         'health_level' => [
             'healthy' => 'Healthy',

@@ -443,6 +443,13 @@ class SecuritySettingsRegistry
                 'default' => 30,
                 'description' => __('services/security_settings_registry.audit_scan_expiration_days'),
             ],
+            'extension_auto_scan_after_update' => [
+                'category' => self::CATEGORY_EXTENSION,
+                'source' => 'security_settings',
+                'type' => 'bool',
+                'default' => true,
+                'description' => __('services/security_settings_registry.auto_scan_after_update'),
+            ],
             'extension_allow_logic_themes' => [
                 'category' => self::CATEGORY_EXTENSION,
                 'source' => 'security_settings',
