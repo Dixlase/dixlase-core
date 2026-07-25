@@ -60,6 +60,11 @@ return new class extends Migration
             $table->boolean('author_id_changed')->default(false)->index();
             $table->string('installation_method'); // install/update/rollback
             $table->string('installed_from_url')->nullable();
+            // SHA-256 of the release ZIP that this update actually downloaded.
+            // Foundation for future update-integrity verification: a later
+            // release that adds ZIP signature verification can retro-audit
+            // past updates against the authority's published hash.
+            $table->char('downloaded_sha256', 64)->nullable();
             $table->unsignedBigInteger('applied_by_id')->nullable()->index();
             $table->timestamp('applied_at');
             $table->timestamps();
