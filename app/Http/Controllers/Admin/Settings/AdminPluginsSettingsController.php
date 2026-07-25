@@ -151,7 +151,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // Pre-calculate card data
         $pluginCards = [];
         foreach ($plugins as $plugin) {
-            $pluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
+            $card = ExtensionCardPresenter::forPlugin($plugin);
+            // Drives the list-page rollback button, same as the detail page:
+            // shown only when an automatic pre-update backup exists.
+            $card['hasBackup'] = $this->latestExtensionBackupPath(
+                ExtensionSourceSnapshot::KIND_PLUGIN,
+                $plugin->directory,
+            ) !== null;
+            $pluginCards[] = $card;
         }
         $uninstalledPluginCards = [];
         foreach ($uninstalledPlugins as $plugin) {
