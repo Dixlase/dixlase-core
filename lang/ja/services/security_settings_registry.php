@@ -45,6 +45,7 @@ return [
     'api_signature_required' => 'API署名を必須にするか',
     'api_timestamp_tolerance_seconds' => 'APIタイムスタンプ許容範囲（秒）',
     'audit_scan_expiration_days' => '監査スキャン期限日数（これを超えると「期限切れ」バッジが表示される）',
+    'auto_scan_after_update' => 'アップデート後に拡張機能を自動スキャンするか',
     'captcha_driver' => 'CAPTCHAドライバー',
     'captcha_secret_key' => 'CAPTCHAシークレットキー',
     'captcha_site_key' => 'CAPTCHAサイトキー',

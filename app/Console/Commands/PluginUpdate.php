@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Plugin;
@@ -50,6 +51,7 @@ use ZipArchive;
 
 class PluginUpdate extends Command
 {
+    use AutoScansExtensionAfterUpdate;
     use BuildsExtensionAssets;
     use TakesExtensionBackup;
 
@@ -234,6 +236,12 @@ class PluginUpdate extends Command
             app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
+
+            // Refresh the audit so health / permissions / CSP reflect the new
+            // version and the "rescan recommended" warning clears. Best-effort:
+            // never fails the (already-committed) update. Gated by the
+            // extension_auto_scan_after_update security setting.
+            $this->autoScanAfterUpdate('plugin', $slug);
 
             return self::SUCCESS;
         } catch (\Throwable $e) {

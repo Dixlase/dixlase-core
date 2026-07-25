@@ -49,6 +49,7 @@ use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
+use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
@@ -314,20 +315,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
      */
     protected function getThemeAuditResult(string $themeSlug): array
     {
-        $audit = ThemeAudit::getBySlug($themeSlug);
-
-        if ($audit) {
-            return $audit->toAuditArray();
-        }
-
-        // Return empty result if no audit results exist
-        return [
-            'has_mismatches' => false,
-            'mismatches' => [],
-            'matches_count' => 0,
-            'total_checked' => 0,
-            'audited_at' => null,
-        ];
+        return app(ExtensionRescanService::class)->getThemeAuditResult($themeSlug);
     }
 
     /**
@@ -394,116 +382,8 @@ class AdminThemesSettingsController extends AdminLoggedInController
      */
     protected function runThemeAudit(string $themeSlug): array
     {
-        try {
-            Log::info('Theme audit starting', ['theme' => $themeSlug]);
-
-            Artisan::call('dls:theme:audit', [
-                'theme' => $themeSlug,
-                '--json' => true,
-            ]);
-
-            $output = trim(Artisan::output());
-
-            Log::info('Theme audit output', [
-                'theme' => $themeSlug,
-                'output_length' => strlen($output),
-                'output_preview' => substr($output, 0, 500),
-            ]);
-
-            $result = json_decode($output, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::warning('Theme audit JSON parse error', [
-                    'theme' => $themeSlug,
-                    'error' => json_last_error_msg(),
-                    'output' => $output,
-                ]);
-            }
-
-            if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
-                // Limit evidence for mismatches (reduce DB size)
-                $mismatches = $result['mismatches'] ?? [];
-                foreach ($mismatches as &$mismatch) {
-                    if (isset($mismatch['evidence']) && is_array($mismatch['evidence'])) {
-                        // Evidence is limited to a maximum of 3 items
-                        $mismatch['evidence'] = array_slice($mismatch['evidence'], 0, 3);
-                    }
-                }
-                unset($mismatch);
-
-                // Get signature information
-                $permissionService = app(ThemePermissionService::class);
-                $summary = $permissionService->getSummary($themeSlug);
-                $signature = $summary['signature'] ?? [];
-
-                // Verify CSP compliance with code scan
-                $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
-                $cspCompatibility = $cspScanner->scanTheme($themeSlug);
-
-                // File hash + owned_tables (auto-detected from migrations)
-                $healthScorer = app(\App\Services\Theme\ThemeHealthScorer::class);
-                $filesHash = $healthScorer->computeFilesHash($themeSlug);
-                $extensionDir = base_path("themes/{$themeSlug}");
-                $tableInspection = app(\App\Services\Plugin\PluginTableInspector::class)->inspect($extensionDir);
-
-                $auditData = [
-                    'has_mismatches' => ! empty($mismatches),
-                    'mismatches' => $mismatches,
-                    'matches_count' => count($result['matches'] ?? []),
-                    'total_checked' => $result['total_checked'] ?? 0,
-                    'risk_level' => $result['risk_level'] ?? null,
-                    'risk_reasons' => $result['risk_reasons'] ?? [],
-                    'signature_status' => $signature['status'] ?? 'unsigned',
-                    'signature_signer' => $signature['signer'] ?? null,
-                    'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
-                    'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
-                    'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
-                    'csp_violations' => $cspCompatibility['violations'] ?? [],
-                    'csp_summary' => $cspCompatibility['summary'] ?? [],
-                    'files_hash' => $filesHash,
-                    'owned_tables' => $tableInspection['tables'],
-                ];
-
-                Log::info('Theme audit data prepared', ['theme' => $themeSlug, 'mismatches_count' => count($mismatches)]);
-
-                // Save to DB (base data before health score calculation)
-                $audit = ThemeAudit::saveAuditResult($themeSlug, $auditData);
-
-                // Persist health score and issue list afterward
-                try {
-                    $healthResult = $healthScorer->calculate($themeSlug);
-                    $audit->update([
-                        'health_score' => $healthResult->score,
-                        'health_status' => $healthResult->status->value,
-                        'health_issues' => array_map(fn ($issue) => $issue->jsonSerialize(), $healthResult->issues),
-                    ]);
-                    $audit->refresh();
-                } catch (\Exception $e) {
-                    Log::warning('Theme health score persist failed during audit', [
-                        'theme' => $themeSlug,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-
-                Log::info('Theme audit saved', ['theme' => $themeSlug, 'audit_id' => $audit->id]);
-
-                return $audit->toAuditArray();
-            }
-        } catch (\Exception $e) {
-            Log::error('Theme audit failed', [
-                'theme' => $themeSlug,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-        }
-
-        return [
-            'has_mismatches' => false,
-            'mismatches' => [],
-            'matches_count' => 0,
-            'total_checked' => 0,
-            'audited_at' => null,
-        ];
+        // Full rescan lives in the shared service (see rescanPlugin note).
+        return app(ExtensionRescanService::class)->rescanTheme($themeSlug);
     }
 
     /**
