@@ -749,12 +749,40 @@ HTML;
             ]);
         }
 
-        $updated = is_array($result['updated'] ?? null) ? $result['updated'] : [];
+        $plugins = is_array($result['updated_plugins'] ?? null) ? $result['updated_plugins'] : [];
+        $themes = is_array($result['updated_themes'] ?? null) ? $result['updated_themes'] : [];
 
-        return __('admin/settings/systems/updates.messages.extension_update_complete', [
-            'count' => count($updated),
-            'names' => implode(', ', $updated),
+        // e.g. ja: プラグイン「A」「B」・テーマ「X」 / en: plugins A, B and themes X
+        $segments = [];
+        if ($plugins !== []) {
+            $segments[] = __('admin/settings/systems/updates.messages.update_complete_plugins', [
+                'names' => $this->quoteExtensionNames($plugins),
+            ]);
+        }
+        if ($themes !== []) {
+            $segments[] = __('admin/settings/systems/updates.messages.update_complete_themes', [
+                'names' => $this->quoteExtensionNames($themes),
+            ]);
+        }
+
+        return __('admin/settings/systems/updates.messages.update_complete_frame', [
+            'subject' => implode(__('admin/settings/systems/updates.messages.update_complete_join'), $segments),
         ]);
+    }
+
+    /**
+     * Join extension display names for the completion flash: each name wrapped
+     * in 「」 with no separator for Japanese, comma-separated otherwise.
+     *
+     * @param  list<string>  $names
+     */
+    protected function quoteExtensionNames(array $names): string
+    {
+        if (app()->getLocale() === 'ja') {
+            return implode('', array_map(static fn (string $n): string => '「'.$n.'」', $names));
+        }
+
+        return implode(', ', $names);
     }
 
     protected function buildCoreSection(array $target): array

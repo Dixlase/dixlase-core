@@ -35,6 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Plugin;
+use App\Models\Theme;
 use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Console\Command;
 
@@ -74,7 +76,10 @@ class ExtensionsUpdate extends Command
         $themeSlugs = array_values(array_filter((array) $this->option('theme')));
 
         $failed = 0;
-        $updated = [];
+        // Display names (not slugs) of what actually updated, kept split by
+        // kind so the completion flash can read "プラグイン「A」・テーマ「X」".
+        $updatedPlugins = [];
+        $updatedThemes = [];
 
         try {
             foreach ($pluginSlugs as $slug) {
@@ -82,7 +87,7 @@ class ExtensionsUpdate extends Command
                 $code = $this->call('dls:plugin:update', ['slug' => $slug, '--force' => true]);
                 if ($code === 0) {
                     $this->line("[extensions-update] plugin {$slug} done");
-                    $updated[] = $slug;
+                    $updatedPlugins[] = Plugin::where('slug', $slug)->value('name') ?: $slug;
                 } else {
                     $failed++;
                 }
@@ -93,7 +98,7 @@ class ExtensionsUpdate extends Command
                 $code = $this->call('dls:theme:update', ['slug' => $slug, '--force' => true]);
                 if ($code === 0) {
                     $this->line("[extensions-update] theme {$slug} done");
-                    $updated[] = $slug;
+                    $updatedThemes[] = Theme::where('slug', $slug)->value('name') ?: $slug;
                 } else {
                     $failed++;
                 }
@@ -104,11 +109,12 @@ class ExtensionsUpdate extends Command
             // index() finds it once the polling UI is released. Only when
             // something actually updated — a fully-failed run leaves the
             // per-row failure surfaces to explain what happened.
-            if ($updated !== []) {
+            if ($updatedPlugins !== [] || $updatedThemes !== []) {
                 SystemUpdateFlash::record([
                     'status' => 'success',
                     'kind' => 'extension',
-                    'updated' => $updated,
+                    'updated_plugins' => $updatedPlugins,
+                    'updated_themes' => $updatedThemes,
                     'failed_count' => $failed,
                 ]);
             }
