@@ -35,8 +35,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Plugin;
-use App\Models\Theme;
+use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Console\Command;
 
@@ -87,7 +86,7 @@ class ExtensionsUpdate extends Command
                 $code = $this->call('dls:plugin:update', ['slug' => $slug, '--force' => true]);
                 if ($code === 0) {
                     $this->line("[extensions-update] plugin {$slug} done");
-                    $updatedPlugins[] = Plugin::where('slug', $slug)->value('name') ?: $slug;
+                    $updatedPlugins[] = ExtensionDisplayName::for('plugin', $slug);
                 } else {
                     $failed++;
                 }
@@ -98,7 +97,7 @@ class ExtensionsUpdate extends Command
                 $code = $this->call('dls:theme:update', ['slug' => $slug, '--force' => true]);
                 if ($code === 0) {
                     $this->line("[extensions-update] theme {$slug} done");
-                    $updatedThemes[] = Theme::where('slug', $slug)->value('name') ?: $slug;
+                    $updatedThemes[] = ExtensionDisplayName::for('theme', $slug);
                 } else {
                     $failed++;
                 }
