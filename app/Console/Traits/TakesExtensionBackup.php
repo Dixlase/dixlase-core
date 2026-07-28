@@ -38,6 +38,7 @@
 namespace App\Console\Traits;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -237,6 +238,19 @@ trait TakesExtensionBackup
     {
         if (is_dir($backupPath)) {
             File::deleteDirectory($backupPath);
+
+            // A silent failure here (e.g. a permission problem on a file the
+            // current process does not own) would leave the restore point on
+            // disk and the admin rollback button stuck on with no explanation.
+            // clearstatcache so the re-check reflects the deletion just made.
+            clearstatcache(true, $backupPath);
+            if (is_dir($backupPath)) {
+                Log::warning('Extension backup consume failed: directory still present after delete', [
+                    'backup_path' => $backupPath,
+                    'owner' => function_exists('fileowner') ? @fileowner($backupPath) : null,
+                    'process_uid' => function_exists('posix_geteuid') ? @posix_geteuid() : null,
+                ]);
+            }
         }
         $sidecar = $this->extensionBackupMetadataPath($backupPath);
         if (is_file($sidecar)) {
