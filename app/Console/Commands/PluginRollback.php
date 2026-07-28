@@ -130,6 +130,12 @@ class PluginRollback extends Command
             // warning clears. Best-effort; gated by extension_auto_scan_after_update.
             $this->autoScanAfterUpdate('plugin', $slug);
 
+            // Consume the restore point now it has been applied, mirroring
+            // dls:core:rollback. Once the newest backup is gone the admin
+            // rollback button hides (unless an older backup remains to step
+            // back to); the next update creates a fresh backup and it returns.
+            $this->discardExtensionBackup($backupPath);
+
             return self::SUCCESS;
         } catch (\Throwable $e) {
             $this->error("Rollback failed: {$e->getMessage()}");
