@@ -226,6 +226,25 @@ trait TakesExtensionBackup
     }
 
     /**
+     * Delete a single backup dir AND its metadata sidecar. Used to consume
+     * the restore point after a successful rollback (mirrors dls:core:rollback,
+     * which discards the snapshot it restores from) so the "rollback available"
+     * affordance clears once the operator has stepped back through it. Aside
+     * copies (.pre-rollback-*) are left untouched — they are the undo path for
+     * the rollback itself, not part of the retained backup set.
+     */
+    protected function discardExtensionBackup(string $backupPath): void
+    {
+        if (is_dir($backupPath)) {
+            File::deleteDirectory($backupPath);
+        }
+        $sidecar = $this->extensionBackupMetadataPath($backupPath);
+        if (is_file($sidecar)) {
+            @unlink($sidecar);
+        }
+    }
+
+    /**
      * Restore a backup into the live path. The current live tree is moved
      * aside first (recoverable if the restore itself fails), and the backup
      * is copied — not consumed — so --to can be reused and the audit trail
