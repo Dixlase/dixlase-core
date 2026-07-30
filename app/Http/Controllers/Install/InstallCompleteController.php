@@ -183,50 +183,13 @@ class InstallCompleteController extends BaseInstallController
 
         // Record a baseline `core_version_history` row so subsequent
         // `dls:core:update` runs record `from: <real version>` instead of
-        // `from: 0.0.0` (issue #171 Finding D). Without this the very
-        // first update after a clean install lands with a bogus baseline,
-        // which makes `dls:core:rollback` try to re-fetch `vendor/`
-        // from release `v0.0.0` and 404 (Finding B).
-        //
-        // Only runs when BOTH conditions hold:
-        //   1. The VERSION file exists at the repo root (installs of
-        //      pre-VERSION-file releases stay at NULL — backward compat).
-        //   2. The ledger is empty (guarded so a re-run of finalize()
-        //      after an install does not double-insert; the check
-        //      cannot mask a genuine upgrade because a fresh install
-        //      starts with an empty core_version_history).
-        try {
-            $onDiskVersion = CoreUpdater::readVersionFromDisk();
-            $ledgerEmpty = CoreVersionHistory::query()->doesntExist();
-            if ($onDiskVersion !== null && $ledgerEmpty) {
-                CoreVersionHistory::create([
-                    'old_version' => null,
-                    'new_version' => $onDiskVersion,
-                    'files_changed_count' => 0,
-                    'lines_added' => 0,
-                    'lines_removed' => 0,
-                    'signing_key_changed' => false,
-                    'author_id_changed' => false,
-                    'installation_method' => 'install',
-                    'installed_from_url' => null,
-                    'downloaded_sha256' => null,
-                    'applied_by_id' => null,
-                    'applied_at' => now(),
-                ]);
-                Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
-                Log::channel('install')->info("Recorded baseline core_version_history row: v{$onDiskVersion} (installation_method=install)");
-            } else {
-                Log::channel('install')->info('Baseline core_version_history row NOT recorded', [
-                    'on_disk_version' => $onDiskVersion,
-                    'ledger_empty' => $ledgerEmpty,
-                ]);
-            }
-        } catch (\Throwable $e) {
-            // Never fail the install over a bookkeeping row — log and
-            // continue. The operator can `dls:core:reconcile --confirm`
-            // manually if it turns out to matter.
-            Log::channel('install')->warning('Failed to record baseline core_version_history row (non-fatal): '.$e->getMessage());
-        }
+        // `from: 0.0.0` (issue #171 Finding D). Extracted into its own
+        // method so tests can exercise the ledger-write branch without
+        // going through updateEnv() — which writes to .env and would
+        // leave the test environment in an INSTALLED=true state that
+        // breaks the rest of the install test suite (issue #171-D
+        // follow-up).
+        $this->recordBaselineVersionHistoryIfNeeded();
 
         // Get redirect destination
         $redirectTo = $request->input('redirect_to');
@@ -251,6 +214,72 @@ class InstallCompleteController extends BaseInstallController
         }
 
         Log::channel('install')->info('=== InstallCompleteController::finalize() end ===');
+    }
+
+    /**
+     * Insert a baseline `core_version_history` row when both:
+     *   1. `VERSION` file exists at the repo root
+     *      (`CoreUpdater::readVersionFromDisk()` returns non-null)
+     *   2. The ledger is currently empty
+     *
+     * This is the fix for issue #171 Finding D: without a baseline row,
+     * the first `dls:core:update` after a clean install records
+     * `from: 0.0.0`, which subsequently breaks `dls:core:rollback`
+     * (Finding B — rollback re-fetches vendor from GitHub release
+     * `v0.0.0`, which does not exist).
+     *
+     * Wrapped in try/catch so a bookkeeping failure never fails the
+     * install — the operator can `dls:core:reconcile --confirm` after
+     * the fact if this ever misfires.
+     *
+     * `protected` (not `private`) so tests can exercise this method in
+     * isolation, without invoking `finalize()` which mutates `.env` and
+     * therefore leaks state across the install test suite.
+     *
+     * Returns the created row for callers who want to log it, or null
+     * when the guard skipped the write (either condition failed) or
+     * an exception was swallowed.
+     */
+    protected function recordBaselineVersionHistoryIfNeeded(): ?CoreVersionHistory
+    {
+        try {
+            $onDiskVersion = CoreUpdater::readVersionFromDisk();
+            $ledgerEmpty = CoreVersionHistory::query()->doesntExist();
+
+            if ($onDiskVersion === null || ! $ledgerEmpty) {
+                Log::channel('install')->info('Baseline core_version_history row NOT recorded', [
+                    'on_disk_version' => $onDiskVersion,
+                    'ledger_empty' => $ledgerEmpty,
+                ]);
+
+                return null;
+            }
+
+            $row = CoreVersionHistory::create([
+                'old_version' => null,
+                'new_version' => $onDiskVersion,
+                'files_changed_count' => 0,
+                'lines_added' => 0,
+                'lines_removed' => 0,
+                'signing_key_changed' => false,
+                'author_id_changed' => false,
+                'installation_method' => 'install',
+                'installed_from_url' => null,
+                'downloaded_sha256' => null,
+                'applied_by_id' => null,
+                'applied_at' => now(),
+            ]);
+
+            Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
+            Log::channel('install')->info("Recorded baseline core_version_history row: v{$onDiskVersion} (installation_method=install)");
+
+            return $row;
+        } catch (\Throwable $e) {
+            // Never fail the install over a bookkeeping row — log and continue.
+            Log::channel('install')->warning('Failed to record baseline core_version_history row (non-fatal): '.$e->getMessage());
+
+            return null;
+        }
     }
 
     /**
