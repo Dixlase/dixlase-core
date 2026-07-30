@@ -648,7 +648,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             : 'application/vnd.github+json';
 
         $client = Http::accept($accept)
-            ->timeout(120)
+            ->timeout((int) config('extension-sources.download_timeout', 600))
             ->retry(2, 1000, throw: false);
 
         if ($this->token) {
