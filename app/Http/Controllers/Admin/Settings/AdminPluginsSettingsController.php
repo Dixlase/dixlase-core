@@ -53,6 +53,7 @@ use App\Models\PluginVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
+use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
@@ -151,7 +152,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // Pre-calculate card data
         $pluginCards = [];
         foreach ($plugins as $plugin) {
-            $pluginCards[] = ExtensionCardPresenter::forPlugin($plugin);
+            $card = ExtensionCardPresenter::forPlugin($plugin);
+            // Drives the list-page rollback button, same as the detail page:
+            // shown only when an automatic pre-update backup exists.
+            $card['hasBackup'] = $this->latestExtensionBackupPath(
+                ExtensionSourceSnapshot::KIND_PLUGIN,
+                $plugin->directory,
+            ) !== null;
+            $pluginCards[] = $card;
         }
         $uninstalledPluginCards = [];
         foreach ($uninstalledPlugins as $plugin) {
@@ -743,7 +751,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         return redirect()
             ->route('admin.settings.plugins.show', $plugin->slug)
             ->with('success', __('admin/settings/plugins/show.rollback.success', [
-                'name' => $plugin->name ?? $plugin->slug,
+                'name' => ExtensionDisplayName::for('plugin', $plugin->slug),
             ]));
     }
 
