@@ -98,7 +98,10 @@ return [
         'backup_failed' => '更新前のバックアップに失敗したため、アップデートを中止しました。エラー: :error',
         'update_started' => 'アップデートを開始しました。完了するまでこのページは自動で再読み込みされます。',
         'core_update_complete' => 'コアのアップデートが完了しました: v:from → v:to',
-        'extension_update_complete' => 'アップデートが完了しました: :count 件の拡張を更新しました（:names）',
+        'update_complete_frame' => ':subjectをアップデートしました。',
+        'update_complete_plugins' => 'プラグイン:names',
+        'update_complete_themes' => 'テーマ:names',
+        'update_complete_join' => '・',
     ],
 
     // デタッチ実行中のプラグイン／テーマ更新を待つポーリング用プレースホルダ
