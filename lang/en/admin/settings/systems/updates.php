@@ -98,7 +98,10 @@ return [
         'backup_failed' => 'Pre-update backup failed, so the update was not started. Error: :error',
         'update_started' => 'The update has started. This page will refresh automatically until it completes.',
         'core_update_complete' => 'Core update complete: v:from → v:to.',
-        'extension_update_complete' => 'Update complete: :count extension(s) updated (:names).',
+        'update_complete_frame' => 'Updated :subject.',
+        'update_complete_plugins' => 'plugin(s) :names',
+        'update_complete_themes' => 'theme(s) :names',
+        'update_complete_join' => ' and ',
     ],
 
     // Polling placeholder shown while a detached plugin/theme update runs
