@@ -55,6 +55,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
         </div>
     @else
+        <x-ui-pagination-controls
+            :paginator="$records"
+            :perPageOptions="$perPageOptions"
+            :currentPerPage="$currentPerPage"
+        />
+
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm border-collapse" aria-label="{{ __('admin/settings/systems/backup/index.table.caption') }}">
                 <caption class="sr-only">{{ __('admin/settings/systems/backup/index.table.caption') }}</caption>
@@ -174,6 +180,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </tbody>
             </table>
         </div>
+
+        <x-ui-pagination
+            :pagination="[
+                'current_page' => $records->currentPage(),
+                'last_page' => $records->lastPage(),
+                'per_page' => $records->perPage(),
+                'total' => $records->total(),
+                'from' => $records->firstItem(),
+                'to' => $records->lastItem(),
+                'has_more_pages' => $records->hasMorePages(),
+                'prev_page' => $records->currentPage() > 1 ? $records->currentPage() - 1 : null,
+                'next_page' => $records->hasMorePages() ? $records->currentPage() + 1 : null,
+            ]"
+            route="admin.settings.systems.backup.index"
+            :routeParams="request()->except(['page'])"
+            :mobilePageRange="0"
+            :desktopPageRange="2"
+        />
     @endif
 </section>
 @endsection
