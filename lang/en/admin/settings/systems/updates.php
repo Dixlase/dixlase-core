@@ -115,6 +115,18 @@ return [
         'checkbox_label' => 'Take a backup before updating',
     ],
 
+    // Version-drift banner (VersionDriftService). Shown when the on-disk
+    // VERSION file at the repo root disagrees with what the ledger's
+    // currentVersion() returns — typically caused by advancing the
+    // checkout via `git` instead of `dls:core:update`.
+    'drift' => [
+        'title' => 'Version drift detected between the ledger and the on-disk code.',
+        'body' => 'The core_version_history ledger says the running version is v:ledger, but the VERSION file on disk says v:on_disk. The "available updates" listed below are computed against the ledger, so they may be misleading until the two agree.',
+        'kind_ahead' => 'The on-disk code is NEWER than the ledger. This usually means the checkout was advanced via git rather than through dls:core:update, so no history row was recorded. An "available update" older than the on-disk code would be a downgrade — CoreUpdater refuses it, but the safest fix is to reconcile the ledger first.',
+        'kind_behind' => 'The on-disk code is OLDER than the ledger. This is unusual; it can happen after a rollback that did not clean up, or a hand-edited VERSION file. Applying any update from this state may not do what the UI implies.',
+        'fix_instruction' => 'To reconcile the ledger to the on-disk VERSION, run:',
+    ],
+
     // Subtle note shown under the "Take a backup before updating"
     // checkbox on the core update confirmation modal, so the operator
     // knows what the auto-backup captures without having to open the
