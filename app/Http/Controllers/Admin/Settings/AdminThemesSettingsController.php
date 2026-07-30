@@ -130,7 +130,14 @@ class AdminThemesSettingsController extends AdminLoggedInController
         // Pre-calculate card data
         $themeCards = [];
         foreach ($themes as $theme) {
-            $themeCards[] = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
+            $card = ExtensionCardPresenter::forTheme($theme, $activeThemeId);
+            // Drives the list-page rollback button, same as the detail page:
+            // shown only when an automatic pre-update backup exists.
+            $card['hasBackup'] = $this->latestExtensionBackupPath(
+                ExtensionSourceSnapshot::KIND_THEME,
+                $theme->directory,
+            ) !== null;
+            $themeCards[] = $card;
         }
         $uninstalledThemeCards = [];
         foreach ($uninstalledThemes as $theme) {

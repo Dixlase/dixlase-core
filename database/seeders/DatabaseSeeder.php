@@ -49,6 +49,10 @@ class DatabaseSeeder extends Seeder
             ApiSettingsTableSeeder::class,
             SiteSettingsTableSeeder::class,
             FrontSettingsTableSeeder::class,
+            // Must follow SitesSeeder (needs the primary site row) and
+            // sits alongside FrontSettingsTableSeeder so the front-side
+            // is fully bootstrapped in one group.
+            FrontPagesTableSeeder::class,
             MediaTableSeeder::class,
             MediaSettingsSeeder::class,
             MembersSettingsSeeder::class,
