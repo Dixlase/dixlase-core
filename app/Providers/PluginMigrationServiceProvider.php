@@ -35,6 +35,7 @@
 
 namespace App\Providers;
 
+use App\Services\CoreMigrator;
 use App\Services\PluginMigrator;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
@@ -57,6 +58,49 @@ class PluginMigrationServiceProvider extends ServiceProvider
                 $app['db'], // ConnectionResolverInterface
                 'plugin_migrations' // Migration table name
             );
+        });
+
+        $this->registerCoreMigrator();
+    }
+
+    /**
+     * Swap Laravel's stock migrator for one that ignores plugin / theme
+     * migration paths.
+     *
+     * Extension migrations belong to PluginMigrator / ThemeMigrator and
+     * their own ledgers; handing them to the stock migrator makes a bare
+     * `php artisan migrate` try to re-create tables the installer already
+     * created (SQLSTATE 42S01). See CoreMigrator for the full rationale.
+     *
+     * This must be an extend() rather than a fresh singleton() binding:
+     * `migrator` is registered by a deferred provider, so a plain
+     * re-binding is clobbered when Laravel resolves and registers it.
+     * Extenders survive that re-registration and are applied before the
+     * afterResolving callbacks that loadMigrationsFrom() relies on, so
+     * every extension path arrives at CoreMigrator regardless of the
+     * order in which providers happen to boot.
+     */
+    protected function registerCoreMigrator(): void
+    {
+        $this->app->extend('migrator', function ($migrator, $app) {
+            if ($migrator instanceof CoreMigrator) {
+                return $migrator;
+            }
+
+            $coreMigrator = new CoreMigrator(
+                $app['migration.repository'],
+                $app['db'],
+                $app['files'],
+                $app['events'],
+            );
+
+            // Carry over anything registered before this extender ran, so
+            // the swap cannot silently drop a legitimate core path.
+            foreach ($migrator->paths() as $path) {
+                $coreMigrator->path($path);
+            }
+
+            return $coreMigrator;
         });
     }
 
