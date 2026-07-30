@@ -40,6 +40,12 @@ return [
     // Directory for temporary extension downloads
     'download_path' => storage_path('app/extension-downloads'),
 
+    // Total timeout (seconds) for the HTTP client that fetches a release
+    // archive. Core archives can be tens of MB, so this ceiling is generous
+    // and env-tunable — a slow connection needs more than the default before
+    // cURL aborts a partial download with error 28.
+    'download_timeout' => (int) env('EXTENSION_DOWNLOAD_TIMEOUT', 600),
+
     // Provider type registry
     'providers' => [
         'github' => \App\Services\Extension\GitHubSourceProvider::class,
