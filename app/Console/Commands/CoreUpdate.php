@@ -59,7 +59,8 @@ class CoreUpdate extends Command
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
         {--skip-build : Skip the npm install / build step entirely}
         {--applied-by= : Member id to record on core_version_history.applied_by_id (defaults to null for direct CLI runs)}
-        {--db-backup-id= : Id of a pre-update backup that already includes the database; when set, the internal DB-only snapshot is skipped and this record is reused as the restore point}';
+        {--db-backup-id= : Id of a pre-update backup that already includes the database; when set, the internal DB-only snapshot is skipped and this record is reused as the restore point}
+        {--allow-downgrade : Allow the target to be older than the on-disk VERSION file. Default is to refuse (Finding #1 guard); set only for deliberate rollback scenarios where you accept the destructive-downgrade risk described in .backlog/core-update-rollback-hardening}';
 
     protected $description = 'Update the Dixlase Core to the latest available release';
 
@@ -116,6 +117,7 @@ class CoreUpdate extends Command
                 appliedById: $appliedById,
                 existingDbBackupId: $existingDbBackupId,
                 log: fn (string $line) => $this->line('[core-update] '.$line),
+                allowDowngrade: (bool) $this->option('allow-downgrade'),
             );
 
             $this->newLine();
