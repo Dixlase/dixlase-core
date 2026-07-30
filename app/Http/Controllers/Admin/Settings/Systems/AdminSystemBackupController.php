@@ -67,16 +67,29 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
+     * Allowed "per page" options for the backup list (first is the default).
+     */
+    private const PER_PAGE_OPTIONS = [25, 50, 100, 200];
+
+    /**
      * Backup list/creation screen
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = (int) $request->input('per_page', self::PER_PAGE_OPTIONS[0]);
+        if (! in_array($perPage, self::PER_PAGE_OPTIONS, true)) {
+            $perPage = self::PER_PAGE_OPTIONS[0];
+        }
+
         $records = BackupRecord::query()
             ->whereNotIn('status', [BackupRecord::STATUS_DELETED])
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         $this->viewParams['records'] = $records;
+        $this->viewParams['perPageOptions'] = self::PER_PAGE_OPTIONS;
+        $this->viewParams['currentPerPage'] = $perPage;
         $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
         $this->viewParams['defaultTargets'] = $this->resolveDefaultTargets();
         $this->viewParams['defaultRetentionDays'] = $this->resolveDefaultRetentionDays();
