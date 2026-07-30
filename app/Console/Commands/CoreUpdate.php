@@ -77,6 +77,16 @@ class CoreUpdate extends Command
             return self::SUCCESS;
         }
 
+        // Normalise a leading `v` on the user-supplied target so `--to=v0.3.2-dryrun-7`
+        // resolves to the same version string the release ledger stores
+        // (`0.3.2-dryrun-7`). Without this, `version_compare` sees a `v`-prefixed
+        // string and mis-orders it against the DB's un-prefixed value, and the
+        // error message shows a doubled `v` ("target vv0.3.2-dryrun-7 is not
+        // newer"). Git tags carry the `v` prefix by convention; ledger rows
+        // do not — normalising here keeps both callers correct. Sandbox
+        // verification 2026-07-31 (issue #171 Finding C).
+        $target = ltrim((string) $target, 'v');
+
         if (version_compare($target, $current, '<=')) {
             $this->info("Already at v{$current} (target v{$target} is not newer).");
 
