@@ -87,7 +87,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * - Force recheck with query ?check=1
      * - Pre-select target with query ?target=plugin:slug or theme:slug
      */
-    public function index(Request $request, ExtensionSourceManager $manager)
+    public function index(Request $request, ExtensionSourceManager $manager, \App\Services\Core\VersionDriftService $driftService)
     {
         // Short-circuit while a web-triggered core update is in flight:
         // the live tree under resources/ may be mid-replacement and the
@@ -180,6 +180,15 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $this->viewParams['lastCheckedAt'] = $lastCheckedAt;
         $this->viewParams['lastCheckedAtFormatted'] = $lastCheckedAt?->format('Y/m/d H:i');
         $this->viewParams['totalCount'] = count($plugins) + count($themes) + ($core['available'] ? 1 : 0);
+
+        // Version drift banner (Finding #5). When the on-disk VERSION file and
+        // the ledger's `currentVersion()` disagree, the "available updates"
+        // above are computed against a stale reference — surface a warning
+        // banner so the operator sees it BEFORE clicking Apply, plus a
+        // pointer to `dls:core:reconcile` for a one-command fix. When drift
+        // is not detectable (either side null) or absent (both agree), the
+        // view suppresses the banner entirely.
+        $this->viewParams['versionDrift'] = $driftService->detect();
         // Drives the visibility of the "ターミナルから実行する場合" CLI
         // alternative block in the core section. Operators on the
         // simple-mode admin do not need the docker exec command — they
