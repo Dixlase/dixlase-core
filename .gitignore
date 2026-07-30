@@ -41,7 +41,13 @@ composer.local.json
 /.windsurf
 /.zed
 .DS_Store
-CLAUDE.md
+# CLAUDE.md is generated but deliberately tracked: it is the only place the
+# project's non-obvious conventions (migration policy, CSP rules, plugin API
+# boundaries) reach a contributor who cloned the repo and never ran
+# dls:claude:setup. Tracking it also makes rule changes reviewable as diffs —
+# a wrong rule once propagated to 13 plugins unnoticed because it was not.
+# .claude/ and .mcp.json stay ignored: they carry symlinks and machine paths.
+# CLAUDE.ja.md is covered by the *.ja.md rule below.
 CLAUDE.local.md
 AGENTS.md
 PLUGIN-API.md
