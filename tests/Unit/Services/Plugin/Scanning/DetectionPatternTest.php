@@ -27,6 +27,7 @@ use App\Services\Plugin\Scanning\DatabaseDetectionPattern;
 use App\Services\Plugin\Scanning\MailDetectionPattern;
 use App\Services\Plugin\Scanning\MemberDetectionPattern;
 use App\Services\Plugin\Scanning\MiddlewareDetectionPattern;
+use App\Services\Plugin\Scanning\MigrationDetectionPattern;
 use App\Services\Plugin\Scanning\SettingsDetectionPattern;
 use App\Services\Plugin\Scanning\StorageDetectionPattern;
 use App\Services\Plugin\Scanning\SystemDetectionPattern;
@@ -35,6 +36,63 @@ use Tests\TestCase;
 
 class DetectionPatternTest extends TestCase
 {
+    /**
+     * MigrationDetectionPattern: every call form the ecosystem actually
+     * uses must be detected. The 13 plugins and 1 theme that carried this
+     * pattern wrote it three different ways, so a literal-string match
+     * would have missed most of them.
+     */
+    public function test_migrations_stock_migrator_detects_every_call_form(): void
+    {
+        $pattern = new MigrationDetectionPattern('stock_migrator');
+
+        $forms = [
+            'single quotes' => "        \$this->loadMigrationsFrom(__DIR__.'/../../database/migrations');",
+            'spaced double quotes' => '        $this->loadMigrationsFrom(__DIR__ . "/../../database/migrations");',
+            'property base path' => "        \$this->loadMigrationsFrom(\$this->basePath.'/database/migrations');",
+        ];
+
+        foreach ($forms as $label => $call) {
+            $content = "<?php\n\nclass Provider\n{\n    public function boot(): void\n    {\n{$call}\n    }\n}\n";
+
+            $this->assertNotEmpty(
+                $pattern->scan($content, 'app/Providers/Provider.php'),
+                "loadMigrationsFrom() written with {$label} must be detected.",
+            );
+        }
+    }
+
+    /**
+     * MigrationDetectionPattern: the remediation for this finding is to
+     * delete the call and leave a comment explaining why it must not come
+     * back — and those comments name loadMigrationsFrom() verbatim. If the
+     * pattern matched inside comments, every correctly fixed extension
+     * would keep being flagged, which would train authors to ignore the
+     * finding.
+     */
+    public function test_migrations_stock_migrator_ignores_the_remediation_comment(): void
+    {
+        $pattern = new MigrationDetectionPattern('stock_migrator');
+
+        $content = <<<'PHP'
+<?php
+
+class Provider
+{
+    public function boot(): void
+    {
+        // Do NOT call $this->loadMigrationsFrom() here. Extension migrations
+        // are applied by PluginMigrator and recorded in their own ledger.
+    }
+}
+PHP;
+
+        $this->assertEmpty(
+            $pattern->scan($content, 'app/Providers/Provider.php'),
+            'A commented-out mention of loadMigrationsFrom() is the documented fix, not a violation.',
+        );
+    }
+
     /**
      * DatabaseDetectionPattern: `use App\Models\<core-class>;` IS treated as
      * evidence of core_tables_read. PHP requires explicit imports, so the
