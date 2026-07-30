@@ -245,6 +245,8 @@ return [
         'category_settings' => 'Settings',
         'category_assets' => 'Assets',
         'category_system' => 'System',
+        'category_migrations' => 'Migrations',
+        'perm_stock_migrator' => 'Registered With Stock Migrator',
         'perm_own_tables' => 'Own Tables',
         'perm_core_tables_read' => 'Core Tables (Read)',
         'perm_core_tables_write' => 'Core Tables (Write)',
