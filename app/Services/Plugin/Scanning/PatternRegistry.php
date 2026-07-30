@@ -94,6 +94,10 @@ class PatternRegistry
         $registry->register(new SystemDetectionPattern('register_blade_directives'));
         $registry->register(new SystemDetectionPattern('modify_routes'));
 
+        // Migration registration (never a legitimate declaration —
+        // extension migrations belong to PluginMigrator / ThemeMigrator)
+        $registry->register(new MigrationDetectionPattern('stock_migrator'));
+
         // Dangerous API
         $registry->register(new DangerousApiPattern('exec'));
         $registry->register(new DangerousApiPattern('env_access'));

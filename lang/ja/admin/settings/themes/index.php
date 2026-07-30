@@ -245,6 +245,8 @@ return [
         'category_settings' => '設定',
         'category_assets' => 'アセット',
         'category_system' => 'システム',
+        'category_migrations' => 'マイグレーション',
+        'perm_stock_migrator' => '標準 migrator への登録',
         'perm_own_tables' => '専用テーブル',
         'perm_core_tables_read' => 'コアテーブル（読取）',
         'perm_core_tables_write' => 'コアテーブル（書込）',
