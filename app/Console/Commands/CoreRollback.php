@@ -106,6 +106,31 @@ class CoreRollback extends Command
             return self::FAILURE;
         }
 
+        // Finding B guard (issue #171): refuse when the recorded
+        // from-version is `0.0.0` — the placeholder the pre-Finding-D
+        // install path used to leave in metadata when
+        // `CoreVersionHistory::currentVersion()` returned NULL. A
+        // rollback with from='0.0.0' would either:
+        //   - re-fetch vendor from GitHub release `v0.0.0` (which does
+        //     not exist) → 404 → rollback fails mid-way with `vendor/`
+        //     left in an interim broken state (dependencyUpdate=true),
+        //   - or write `new_version='0.0.0'` into the history row →
+        //     `currentVersion()` reads 0.0.0 forever after (all paths).
+        // Refuse before touching anything and point the operator at the
+        // supported recovery path.
+        if ($from === '0.0.0') {
+            $this->error("Rollback target v{$from} is not a resolvable release tag.");
+            $this->line('The recorded from-version is 0.0.0 — usually left over from a fresh install that predated the VERSION file / a baseline history row.');
+            $this->line('Rollback needs to re-fetch vendor/ from the from-version\'s release ZIP (`v0.0.0` does not exist on GitHub), and would also write `0.0.0` back into the ledger.');
+            $this->newLine();
+            $this->line('Fix:');
+            $this->line('  1. Run `php artisan dls:core:reconcile --confirm` so the ledger records the on-disk VERSION.');
+            $this->line('  2. Apply the next update; that update\'s snapshot will carry a real from-version, and subsequent rollbacks will work normally.');
+            $this->line('Alternatively, restore manually from a full backup captured before the last update.');
+
+            return self::FAILURE;
+        }
+
         $this->warn('Rollback is a DESTRUCTIVE operation that replaces the current core source tree.');
         $this->line("Core now:      v{$current}");
         $this->line("Roll back to:  v{$from}  (undoing the update v{$from} -> v{$to})");
