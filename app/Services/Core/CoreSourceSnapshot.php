@@ -91,6 +91,16 @@ class CoreSourceSnapshot
         'package-lock.json',
         'vite.config.js',
         'postcss.config.js',
+        // Committed at the repo root; carries the semver-ish on-disk
+        // version that CoreUpdater::readVersionFromDisk() feeds to the
+        // downgrade guard (Finding #1) and VersionDriftService compares
+        // against the ledger (Finding #5). Must be captured in the
+        // snapshot AND copied by applyToLiveTree(); without this entry,
+        // an update overwrites live source but never writes the release's
+        // VERSION → drift service permanently reports "unknown" post-
+        // update and the on-disk guard never fires. Sandbox verification
+        // 2026-07-31 (issue #171 Finding A) confirmed the omission.
+        'VERSION',
     ];
 
     /**
