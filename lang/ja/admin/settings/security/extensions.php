@@ -70,6 +70,8 @@ return [
         'audit_max_age_days' => '監査スキャンの期限日数',
         'audit_max_age_days_help' => '前回スキャンからこの日数を超えたプラグイン/テーマには「スキャン期限切れ」バッジが表示されます。1〜365 日で指定してください。',
         'audit_max_age_days_unit' => '日',
+        'auto_scan_after_update' => 'アップデート後に自動スキャン',
+        'auto_scan_after_update_help' => 'プラグイン/テーマのアップデート直後に自動で再スキャンし、ヘルス・権限・CSP 状態を新バージョンに合わせて更新し「再スキャン推奨」の表示を解消します。バックグラウンドで実行され、アップデートをブロックしません。手動でスキャンしたい場合はオフにします。',
         'current_setting' => '現在の設定',
         'health_level' => [
             'healthy' => '良好（Healthy）',
