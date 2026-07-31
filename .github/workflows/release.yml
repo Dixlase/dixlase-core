@@ -301,6 +301,21 @@ jobs:
           echo "latest_alias=$LATEST_ALIAS" >> "$GITHUB_OUTPUT"
           ls -lh "$ZIP_NAME" "$LATEST_ALIAS"
 
+      - name: Verify bundled vendor/ retained critical framework assets
+        # Regression pin for Round 4 Finding A: an overly broad `dist/`
+        # exclude used to strip framework assets that the exception-page
+        # renderer needs at runtime, so any error during update/rollback
+        # rendered as a file_get_contents fatal instead of the real cause.
+        # If a future exclude change re-introduces the strip we want the
+        # release build to fail here rather than ship a broken ZIP.
+        run: |
+          CRITICAL="dixlase-${{ steps.stage.outputs.tag }}/vendor/laravel/framework/src/Illuminate/Foundation/resources/exceptions/renderer/dist/styles.css"
+          if ! unzip -l "${{ steps.zip.outputs.name }}" | grep -qF "$CRITICAL"; then
+            echo "::error::Release ZIP is missing $CRITICAL. This means the exception-page renderer cannot render at runtime — any error during an install / update / rollback will surface as a file_get_contents fatal that hides the real cause. Check .github/release-dist-exclude.txt for an overly broad exclude pattern (see Round 4 Finding A)."
+            exit 1
+          fi
+          echo "vendor/ retains the framework's exception-renderer dist/ assets."
+
       - name: Attach to GitHub release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
