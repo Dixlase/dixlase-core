@@ -70,6 +70,12 @@ class CoreVendorManager
      * staged lock means the release does not pin dependencies, so there is
      * nothing to swap (treated as "unchanged"). A missing live lock with a
      * present staged lock counts as a change (first time the lock appears).
+     *
+     * Comparison uses a fingerprint of the deterministic dependency-set
+     * subset (packages+versions and platform constraints) rather than a
+     * raw byte hash, so cosmetic lock-file churn (content-hash reshuffle,
+     * plugin-api-version drift, key ordering) does not misclassify as a
+     * real dependency change and force an unnecessary vendor swap.
      */
     public function lockChanged(string $payloadRoot, ?string $base = null): bool
     {
@@ -83,10 +89,7 @@ class CoreVendorManager
             return true;
         }
 
-        return ! hash_equals(
-            (string) hash_file('sha256', $liveLock),
-            (string) hash_file('sha256', $stagedLock),
-        );
+        return $this->lockFingerprint($stagedLock) !== $this->lockFingerprint($liveLock);
     }
 
     /**
@@ -94,13 +97,98 @@ class CoreVendorManager
      * file as "no lock"). Used to detect that a restore crossed a
      * dependency boundary, where one side is read straight out of a backup
      * archive rather than from a staged release tree.
+     *
+     * Uses the same dependency-set fingerprint as {@see lockChanged} so
+     * backup metadata churn does not trigger a needless refetch of the
+     * old release ZIP.
      */
     public function locksMatch(?string $lockA, ?string $lockB): bool
     {
-        $hashA = ($lockA !== null && is_file($lockA)) ? hash_file('sha256', $lockA) : null;
-        $hashB = ($lockB !== null && is_file($lockB)) ? hash_file('sha256', $lockB) : null;
+        $fingerprintA = ($lockA !== null && is_file($lockA)) ? $this->lockFingerprint($lockA) : null;
+        $fingerprintB = ($lockB !== null && is_file($lockB)) ? $this->lockFingerprint($lockB) : null;
 
-        return $hashA === $hashB;
+        return $fingerprintA === $fingerprintB;
+    }
+
+    /**
+     * Reduce a composer.lock to a fingerprint over just the pieces that
+     * mean "the dependency set changed": each installed and dev package's
+     * name+version and the platform constraints. Everything else in the
+     * lock (content-hash, plugin-api-version, readme, key order) is
+     * ignored so cosmetic churn does not misclassify as a dependency
+     * change.
+     *
+     * If the lock cannot be parsed as JSON (corrupt file, non-lock bytes
+     * from an old backup) the fingerprint falls back to a raw file hash
+     * so the comparison still has a defined answer; two invalid files
+     * with identical bytes stay equal, two different invalid files
+     * differ, matching the pre-refactor byte-hash semantics.
+     */
+    private function lockFingerprint(string $lockPath): string
+    {
+        $raw = @file_get_contents($lockPath);
+        if ($raw === false) {
+            return 'missing';
+        }
+
+        $decoded = json_decode($raw, true);
+        if (! is_array($decoded)) {
+            return 'raw:'.hash('sha256', $raw);
+        }
+
+        $subset = [
+            'packages' => $this->extractPackageIdentities($decoded['packages'] ?? []),
+            'packages-dev' => $this->extractPackageIdentities($decoded['packages-dev'] ?? []),
+            'platform' => $this->normalizeAssoc($decoded['platform'] ?? []),
+            'platform-dev' => $this->normalizeAssoc($decoded['platform-dev'] ?? []),
+        ];
+
+        return 'json:'.hash('sha256', (string) json_encode($subset));
+    }
+
+    /**
+     * From an array of composer package entries, extract each package's
+     * name and version and return them sorted by name so key ordering in
+     * the source lock does not affect the fingerprint.
+     */
+    private function extractPackageIdentities(mixed $packages): array
+    {
+        if (! is_array($packages)) {
+            return [];
+        }
+
+        $identities = [];
+        foreach ($packages as $package) {
+            if (! is_array($package)) {
+                continue;
+            }
+            $name = isset($package['name']) && is_string($package['name']) ? $package['name'] : null;
+            $version = isset($package['version']) && is_string($package['version']) ? $package['version'] : null;
+            if ($name === null || $version === null) {
+                continue;
+            }
+            $identities[] = ['name' => $name, 'version' => $version];
+        }
+
+        usort($identities, static fn (array $a, array $b) => strcmp($a['name'], $b['name']));
+
+        return $identities;
+    }
+
+    /**
+     * Return the input as an associative array with keys sorted, so a
+     * platform block written as {"php":"^8.2","ext-json":"*"} produces
+     * the same fingerprint as {"ext-json":"*","php":"^8.2"}.
+     */
+    private function normalizeAssoc(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        ksort($value);
+
+        return $value;
     }
 
     /**
