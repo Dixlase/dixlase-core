@@ -202,6 +202,9 @@ class CoreVendorManager
             $this->extract($zipPath, $stagingPath);
             $payloadRoot = $this->locateVendorPayload($stagingPath);
 
+            $log('Verifying extracted vendor/ integrity...');
+            $this->verifyExtractedVendorCount($zipPath, $payloadRoot.'/vendor');
+
             $log('Swapping vendor/ from the re-fetched release...');
             $this->swap($payloadRoot, $base);
             $log('vendor/ re-fetched and swapped.');
@@ -249,5 +252,82 @@ class CoreVendorManager
         }
 
         throw new RuntimeException("Extracted release contains no vendor/ directory under {$stagingPath}.");
+    }
+
+    /**
+     * Guard against a silently truncated ZIP extract: the ZIP records how
+     * many vendor/ file entries it holds, and after extracting we count
+     * what actually landed on disk. A mismatch means files were dropped
+     * (partial write, out-of-space, interrupted extract) and the swap must
+     * abort before a broken vendor/ replaces the live one.
+     */
+    protected function verifyExtractedVendorCount(string $zipPath, string $extractedVendorDir): void
+    {
+        $expected = $this->countZipVendorFileEntries($zipPath);
+        $actual = $this->countExtractedFiles($extractedVendorDir);
+
+        if ($expected !== $actual) {
+            throw new RuntimeException(sprintf(
+                'Extracted vendor/ is incomplete: expected %d file entries from ZIP, found %d on disk. Refusing to swap.',
+                $expected,
+                $actual,
+            ));
+        }
+    }
+
+    /**
+     * Count the vendor/ file entries recorded in a release ZIP. Handles
+     * both flat (`vendor/...`) and nested (`dixlase-vX/vendor/...`) layouts
+     * and skips directory entries so that empty-dir markers do not inflate
+     * the count.
+     */
+    protected function countZipVendorFileEntries(string $zipPath): int
+    {
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            throw new RuntimeException("Failed to open release ZIP for verification: {$zipPath}");
+        }
+
+        try {
+            $count = 0;
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+                if ($name === false) {
+                    continue;
+                }
+                if (str_ends_with($name, '/')) {
+                    continue;
+                }
+                if (preg_match('#(^|/)vendor/#', $name) === 1) {
+                    $count++;
+                }
+            }
+
+            return $count;
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * Recursively count regular files under a directory.
+     */
+    protected function countExtractedFiles(string $dir): int
+    {
+        if (! is_dir($dir)) {
+            return 0;
+        }
+
+        $count = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $count++;
+            }
+        }
+
+        return $count;
     }
 }
