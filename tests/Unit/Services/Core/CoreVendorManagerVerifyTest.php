@@ -169,14 +169,12 @@ class CoreVendorManagerVerifyTest extends TestCase
     private function invokeVerify(string $zipPath, string $extractedVendorDir): void
     {
         $method = new ReflectionMethod(CoreVendorManager::class, 'verifyExtractedVendorCount');
-        $method->setAccessible(true);
         $method->invoke($this->manager, $zipPath, $extractedVendorDir);
     }
 
     private function invokeCountZip(string $zipPath): int
     {
         $method = new ReflectionMethod(CoreVendorManager::class, 'countZipVendorFileEntries');
-        $method->setAccessible(true);
 
         return (int) $method->invoke($this->manager, $zipPath);
     }
