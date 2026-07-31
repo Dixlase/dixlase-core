@@ -58,6 +58,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
         'extension_plugin_max_health_level',
         'extension_theme_max_health_level',
         'extension_audit_max_age_days',
+        'extension_auto_scan_after_update',
         'extension_allow_logic_themes',
         'extension_permission_mismatch_action',
         'extension_notify_on_install',
@@ -90,6 +91,7 @@ class AdminSecurityExtensionsController extends AdminLoggedInController
             'extension_plugin_max_health_level' => (int) $this->securitySettingRepository->get('extension_plugin_max_health_level', ExtensionSecurityLevel::Warning->value),
             'extension_theme_max_health_level' => (int) $this->securitySettingRepository->get('extension_theme_max_health_level', ExtensionSecurityLevel::NeedsAttention->value),
             'extension_audit_max_age_days' => (int) $this->securitySettingRepository->get('extension_audit_max_age_days', 30),
+            'extension_auto_scan_after_update' => filter_var($this->securitySettingRepository->get('extension_auto_scan_after_update', true), FILTER_VALIDATE_BOOLEAN),
             'extension_allow_logic_themes' => filter_var($this->securitySettingRepository->get('extension_allow_logic_themes', true), FILTER_VALIDATE_BOOLEAN),
             'extension_permission_mismatch_action' => $this->securitySettingRepository->get('extension_permission_mismatch_action', SecurityAction::default()->toString()),
             // Extension notification settings

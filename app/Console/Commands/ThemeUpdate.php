@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
@@ -51,6 +52,7 @@ use ZipArchive;
 
 class ThemeUpdate extends Command
 {
+    use AutoScansExtensionAfterUpdate;
     use BuildsExtensionAssets;
     use TakesExtensionBackup;
 
@@ -235,6 +237,12 @@ class ThemeUpdate extends Command
             }
 
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");
+
+            // Refresh the audit so health / permissions / CSP reflect the new
+            // version and the "rescan recommended" warning clears. Best-effort:
+            // never fails the (already-committed) update. Gated by the
+            // extension_auto_scan_after_update security setting.
+            $this->autoScanAfterUpdate('theme', $slug);
 
             return self::SUCCESS;
         } catch (\Throwable $e) {

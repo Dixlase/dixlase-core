@@ -312,7 +312,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
         <div class="flex flex-wrap gap-2 justify-center">
             @if($card['isInstalled'])
-                @include('admin.settings.plugins.partials.installed-actions', ['card' => $card])
+                @include('admin.settings.plugins.partials.installed-actions', ['card' => $card, 'hasBackup' => $card['hasBackup'] ?? false])
             @else
                 @include('admin.settings.plugins.partials.uninstalled-actions', ['card' => $card])
             @endif
