@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceSnapshot;
@@ -55,6 +56,7 @@ use Illuminate\Support\Facades\File;
  */
 class ThemeRollback extends Command
 {
+    use AutoScansExtensionAfterUpdate;
     use TakesExtensionBackup;
 
     protected $signature = 'dls:theme:rollback
@@ -123,6 +125,17 @@ class ThemeRollback extends Command
             $this->info("Theme '{$slug}' rolled back to backup ".basename($backupPath).'.');
             $this->line("Previous (pre-rollback) tree kept at: {$asidePath}");
             $this->line('To undo this rollback, move that directory back into place.');
+
+            // A rollback changes files just like an update — re-scan so the
+            // audit reflects the restored version and the "rescan recommended"
+            // warning clears. Best-effort; gated by extension_auto_scan_after_update.
+            $this->autoScanAfterUpdate('theme', $slug);
+
+            // Consume the restore point now it has been applied, mirroring
+            // dls:core:rollback. Once the newest backup is gone the admin
+            // rollback button hides (unless an older backup remains to step
+            // back to); the next update creates a fresh backup and it returns.
+            $this->discardExtensionBackup($backupPath);
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
