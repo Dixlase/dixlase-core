@@ -67,6 +67,24 @@ class DemoGuard
      * stay editable for visitors exploring the demo.
      */
     protected const BLOCKED_ROUTE_NAMES = [
+        // Profile self-service authentication changes. These routes carry
+        // no check.menu.* gate (a member may always edit their own
+        // account), so this guard is the ONLY barrier: without it a visitor
+        // could change the shared demo account's password / email / 2FA and
+        // lock every other visitor out. Cosmetic profile routes
+        // (appearance, notifications, sidebar, passkey prompt) stay editable
+        // so the profile screens remain explorable.
+        'admin.profile.basic.update',
+        'admin.profile.password.update',
+        'admin.profile.two-fa.update',
+        'admin.profile.passkey.register-options',
+        'admin.profile.passkey.register',
+        'admin.profile.passkey.revoke',
+        'admin.profile.passkey.revoke-all',
+        'admin.profile.recovery-codes.generate',
+        'admin.profile.recovery-codes.regenerate',
+        'admin.profile.recovery-codes.clear-session',
+
         // Plugin lifecycle on shared plugins/
         'admin.settings.plugins.upload',
         'admin.settings.plugins.download-from-source',
@@ -95,11 +113,13 @@ class DemoGuard
 
         // Security settings — password policy, login policy, session
         // config, captcha, IP allowlist, extension sources, CSP,
-        // environment vars, integrity baseline, API keys, error
+        // environment vars, integrity baseline, two-factor policy, error
         // notifications (the notifications target is operator-supplied,
         // so unrestricted edits would let a visitor redirect outbound
-        // alerts to an attacker-controlled endpoint).
+        // alerts to an attacker-controlled endpoint). API-key management
+        // lives under systems/, blocked in the systems block below.
         'admin.settings.security.password.update',
+        'admin.settings.security.two-fa.update',
         'admin.settings.security.notifications.update',
         'admin.settings.security.login.update',
         'admin.settings.security.session.update',
@@ -111,13 +131,10 @@ class DemoGuard
         'admin.settings.security.csp.confirm',
         'admin.settings.security.csp.rollback',
         'admin.settings.security.environment.update',
+        'admin.settings.security.integrity.scan',
         'admin.settings.security.integrity.destroy',
         'admin.settings.security.integrity.bulk-delete',
         'admin.settings.security.integrity.regenerate-baseline',
-        'admin.settings.security.api.update',
-        'admin.settings.security.api.generate-key',
-        'admin.settings.security.api.revoke-key',
-        'admin.settings.security.api.regenerate-key',
 
         // Backup / restore touches shared storage
         'admin.settings.systems.backup.*',
@@ -128,6 +145,26 @@ class DemoGuard
         'admin.settings.systems.database.cleanup',
         'admin.settings.systems.cache.clear',
         'admin.settings.systems.cache.rebuild',
+
+        // API-key management lives under systems/ (not security/): issuing,
+        // revoking or regenerating keys on the shared install would let a
+        // visitor mint credentials against every tenant.
+        'admin.settings.systems.api.update',
+        'admin.settings.systems.api.generate-key',
+        'admin.settings.systems.api.revoke-key',
+        'admin.settings.systems.api.regenerate-key',
+
+        // Integrated updater — checking/applying/rolling back core (or
+        // plugin/theme) versions mutates the shared install for every tenant.
+        'admin.settings.systems.updates.check',
+        'admin.settings.systems.updates.apply',
+        'admin.settings.systems.updates.apply-core',
+        'admin.settings.systems.updates.rollback-core',
+
+        // Log + audit-trail destruction — clearing log files or purging the
+        // audit log would let a visitor erase evidence of demo activity.
+        'admin.settings.systems.logs.clear',
+        'admin.settings.systems.logs.audit.cleanup',
 
         // Safe-mode toggle — disabling it could unmask plugins the
         // tenant had not noticed were unsafe in the current session
@@ -150,9 +187,9 @@ class DemoGuard
         // Super admins (the maintainer running the demo deployment)
         // bypass the guard so they can still operate the host without
         // toggling DIXLASE_DEMO_MODE off in .env. Demo visitors get a
-        // lower-privilege role (admin or below) by design, and any
-        // route that could promote them to super_admin is itself blocked
-        // by the role-management entries on the blocklist.
+        // lower-privilege role (admin or below) by design; member and role
+        // management is kept read-only for them through per-site
+        // role_permission_overrides, not through this blocklist.
         $user = $request->user();
         if ($user !== null
             && $user->role instanceof MemberRole
