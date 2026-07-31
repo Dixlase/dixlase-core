@@ -47,10 +47,10 @@ class CoreUpdateBackupReuseTest extends TestCase
     {
         $result = $this->fakeUpdateResult();
         $this->mock(CoreUpdater::class, function ($mock) use ($result) {
-            // update(version, appliedById, existingDbBackupId, log)
+            // update(version, appliedById, existingDbBackupId, log, allowDowngrade)
             $mock->shouldReceive('update')
                 ->once()
-                ->with(Mockery::any(), Mockery::any(), 7, Mockery::any())
+                ->with(Mockery::any(), Mockery::any(), 7, Mockery::any(), Mockery::any())
                 ->andReturn($result);
         });
 
@@ -70,7 +70,7 @@ class CoreUpdateBackupReuseTest extends TestCase
         $this->mock(CoreUpdater::class, function ($mock) use ($result) {
             $mock->shouldReceive('update')
                 ->once()
-                ->with(Mockery::any(), Mockery::any(), null, Mockery::any())
+                ->with(Mockery::any(), Mockery::any(), null, Mockery::any(), Mockery::any())
                 ->andReturn($result);
         });
 

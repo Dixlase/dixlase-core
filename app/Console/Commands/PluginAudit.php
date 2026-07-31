@@ -303,6 +303,23 @@ class PluginAudit extends Command
     }
 
     /**
+     * Remediation text for a permission that was detected in code but not
+     * declared in the manifest.
+     *
+     * Most detections are resolved by declaring the permission. A few are
+     * policy violations that must never be declared — for those the
+     * generic "set it to true" advice points the author in exactly the
+     * wrong direction, so they carry their own text.
+     */
+    protected function undeclaredRecommendation(string $permission): string
+    {
+        return match ($permission) {
+            'migrations.stock_migrator' => 'Remove the loadMigrationsFrom() call from the service provider. Extension migrations are applied by PluginMigrator / ThemeMigrator and recorded in their own ledgers; registering them with the stock migrator breaks a bare `php artisan migrate`.',
+            default => "Set '{$permission}' to true",
+        };
+    }
+
+    /**
      * Compare declared permissions with detected permissions
      */
     protected function comparePermissions(array $declared, array $detected): array
@@ -334,7 +351,7 @@ class PluginAudit extends Command
                     'detected' => $isDetected,
                     'type' => 'undeclared_usage',
                     'evidence' => $evidence[$permission] ?? [],
-                    'recommendation' => "Set '{$permission}' to true",
+                    'recommendation' => $this->undeclaredRecommendation($permission),
                 ];
             } elseif (! $isDetected && $isDeclared) {
                 $mismatches[] = [

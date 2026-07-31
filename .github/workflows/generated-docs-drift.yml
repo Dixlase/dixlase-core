@@ -1,0 +1,159 @@
+name: Generated Docs Drift Check
+
+# ============================================
+# Generated Docs Drift Check
+#
+# NOTICE, LICENSE-EXCEPTIONS, LICENSE-COMMERCIAL, README and PLUGIN-API.md
+# are generated from templates in DixlaseCoreDevKit, but they are also the
+# documents people edit directly — LICENSE-EXCEPTIONS is synced from an
+# external legal-materials repository, README gets rewritten by hand.
+#
+# When such an edit is not carried back into the template, the file and its
+# generator disagree, and the next `dls:claude:setup core` silently reverts
+# the document. That happened: the Plugin and Theme Exception was one
+# regeneration away from dropping back to v1.0 — losing the custom/
+# exclusion clause, the AGPL section 13 delimitation, and the
+# lawyer-reviewed restatement of the grant. Nothing detected it, because a
+# generated file that nobody regenerates never produces a diff.
+#
+# This job regenerates every such document and fails if the result differs
+# from what is committed. Either the template or the document is stale;
+# the diff says which way.
+#
+# Known annual false positive: the license templates stamp {{year}} from
+# the current date (config core-dev.license.year = null). On 1 January this
+# job fails until the license files are regenerated and committed. That is
+# a correct signal — the copyright year really is out of date — but it is
+# not a code defect.
+#
+# CLAUDE.md is deliberately out of scope. It is produced by
+# `dls:claude:setup`, which runs boost:install and rewrites .claude/ and
+# .ai/guidelines/ as a side effect; reproducing that faithfully in CI is a
+# much larger surface than the documents this job protects.
+# ============================================
+
+on:
+  push:
+    branches:
+      - main
+      - v0.1.0
+      - 'feature/**'
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+      - v0.1.0
+    paths-ignore:
+      - 'docs/**'
+
+# Cancel older runs on the same ref when a new one starts.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# GitHub OAuth token for composer to clone private dependencies.
+env:
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
+jobs:
+  drift-check:
+    name: Regenerate and compare
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_PAT }}
+
+      # DixlaseCoreDevKit provides dls:license:generate, dls:readme:generate
+      # and dls:plugin-api:generate, so the generators have to be on disk
+      # before artisan can see them.
+      - name: Fetch integration plugins
+        env:
+          SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
+        run: |
+          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          .github/scripts/fetch-integration-plugins.sh
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo_mysql, fileinfo, ctype, curl, dom, json, openssl, tokenizer, xml, bcmath
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-8.2-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-8.2-
+
+      - name: Generate plugin autoload mappings
+        run: php scripts/sync-local-autoload.php
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Regenerate the generated documents
+        run: |
+          php artisan dls:license:generate --lang=en
+          php artisan dls:license:generate --lang=ja
+          php artisan dls:readme:generate --lang=en
+          php artisan dls:readme:generate --lang=ja
+          php artisan dls:plugin-api:generate --lang=en
+
+      - name: Compare against the committed documents
+        run: |
+          # Scoped to the generated set. Composer install and key:generate
+          # touch other paths, so a bare `git diff --exit-code` would be noise.
+          # LICENSE-ja is absent on purpose: config core-dev names it as the
+          # Japanese output, but the AGPL is only distributed verbatim in
+          # English, so no such file is produced or tracked.
+          TARGETS=(
+            LICENSE
+            LICENSE-EXCEPTIONS
+            LICENSE-EXCEPTIONS.ja
+            LICENSE-COMMERCIAL
+            LICENSE-COMMERCIAL.ja
+            NOTICE
+            NOTICE.ja
+            README.md
+            README.ja.md
+            README.laravel.md
+            PLUGIN-API.md
+          )
+
+          if git diff --quiet -- "${TARGETS[@]}"; then
+            echo "No drift: every generated document matches its template."
+            exit 0
+          fi
+
+          echo "::error::Generated documents differ from their templates."
+          echo
+          echo "A document was edited without carrying the change back into its"
+          echo "template in plugins/DixlaseCoreDevKit/resources/, or a template"
+          echo "was changed without regenerating. Read the diff to see which."
+          echo
+          echo "  - Document is right, template is stale -> back-port the text"
+          echo "    into resources/license/<lang>/*.txt, resources/readme/"
+          echo "    template-<lang>.md, or resources/ai/plugin-api/"
+          echo "    template-<lang>.blade.php, restoring config values to"
+          echo "    their {{placeholders}}."
+          echo "  - Template is right -> run the generators locally and commit"
+          echo "    the regenerated documents."
+          echo
+          git diff -- "${TARGETS[@]}"
+          exit 1

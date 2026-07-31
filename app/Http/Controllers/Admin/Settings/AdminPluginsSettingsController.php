@@ -53,6 +53,7 @@ use App\Models\PluginVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
+use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
@@ -628,7 +629,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         return redirect()
             ->route('admin.settings.plugins.show', $plugin->slug)
             ->with('success', __('admin/settings/plugins/show.rollback.success', [
-                'name' => $plugin->name ?? $plugin->slug,
+                'name' => ExtensionDisplayName::for('plugin', $plugin->slug),
             ]));
     }
 

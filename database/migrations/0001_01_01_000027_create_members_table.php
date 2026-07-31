@@ -51,6 +51,12 @@ return new class extends Migration
             $table->string('account_name'); // Account name for login (alphanumeric)
             $table->string('display_name')->nullable(); // Display name (shown in admin bar, etc.)
             $table->string('description')->nullable();
+            // Profile icon: the stored filename only, kept under its own avatars
+            // directory outside the media library. Deliberately not a media.id
+            // foreign key — media is site-scoped (site_id + BelongsToSite) while
+            // members are shared across the whole network. See
+            // .backlog/avatar-profile-icons-deferred.md for the full rationale.
+            $table->string('avatar_path')->nullable()->comment('Stored filename of the profile icon; null falls back to the default icon');
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable(); // Email verification timestamp
             $table->string('pending_email')->nullable(); // New email address pending verification

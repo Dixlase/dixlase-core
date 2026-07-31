@@ -49,6 +49,7 @@ use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
+use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
@@ -290,7 +291,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         return redirect()
             ->route('admin.settings.themes.show', $theme->slug)
             ->with('success', __('admin/settings/themes/show.rollback.success', [
-                'name' => $theme->name ?? $theme->slug,
+                'name' => ExtensionDisplayName::for('theme', $theme->slug),
             ]));
     }
 

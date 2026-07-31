@@ -47,6 +47,9 @@ class PatternRegistryTest extends TestCase
         $this->assertArrayHasKey('system.register_middleware', $all);
         $this->assertArrayHasKey('dangerous_api.exec', $all);
         $this->assertArrayHasKey('assets.custom_css', $all);
+        // Policy detection: extensions must not hand their migrations to
+        // Laravel's stock migrator (see MigrationDetectionPattern).
+        $this->assertArrayHasKey('migrations.stock_migrator', $all);
     }
 
     /**
