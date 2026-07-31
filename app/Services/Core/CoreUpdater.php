@@ -403,6 +403,13 @@ class CoreUpdater
             // update's rollback point — is always kept.
             $this->snapshotter->pruneSnapshots((int) config('core_update.snapshot_retention', 5));
 
+            // Drop any stale `from:0.0.0` placeholder snapshots left over
+            // from a pre-baseline update — they cannot be rolled back to
+            // (the release does not exist) and would become the offered
+            // rollback point once this update's own snapshot is consumed.
+            // See Round 4 Finding B / CoreSourceSnapshot::pruneUnresolvableSnapshots.
+            $this->snapshotter->pruneUnresolvableSnapshots();
+
             // Record completion for the System Updates page's one-shot
             // "update complete" flash. The web UI runs this update detached
             // and cannot flash directly; this is written before the finally
