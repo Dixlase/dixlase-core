@@ -81,9 +81,12 @@ class CoreUpdater
 
     /**
      * @param  ?Closure(string): void  $log  Optional sink for progress lines
+     * @param  bool  $allowDowngrade  Override the on-disk version guard (Finding #1). Reserved for
+     *                                deliberate rollback scenarios; the default `false` refuses any
+     *                                target older than the code actually on disk.
      * @return array{from: ?string, to: string, snapshot: string, history_id: int, backup_record_id: ?int}
      */
-    public function update(?string $version = null, ?int $appliedById = null, ?int $existingDbBackupId = null, ?Closure $log = null): array
+    public function update(?string $version = null, ?int $appliedById = null, ?int $existingDbBackupId = null, ?Closure $log = null, bool $allowDowngrade = false): array
     {
         $log ??= fn (string $line) => null;
 
@@ -98,6 +101,30 @@ class CoreUpdater
 
         if (version_compare($version, $current, '<=')) {
             throw new RuntimeException("Target v{$version} is not newer than current v{$current}.");
+        }
+
+        // On-disk version guard (Finding #1 from the 2026-07-27 sandbox
+        // incident). The DB-side pointer above (CoreVersionHistory) can go
+        // stale when a checkout is advanced via `git` rather than through
+        // dls:core:update — the DB then reads e.g. `0.2.4` while the actual
+        // running code is `0.3.1+`. The DB check therefore lets a
+        // destructive downgrade pass ("v0.2.5 > v0.2.4, proceed") and the
+        // updater deletes classes it is still executing against, aborting
+        // mid-apply. Cross-check the target against a VERSION file
+        // committed at the repo root; when the file is present and the
+        // target would move backwards, refuse unless the caller explicitly
+        // opts in via $allowDowngrade. When the file is absent (very early
+        // installs before this landed, or a stripped release), the guard
+        // no-ops so backward compatibility is preserved.
+        $onDisk = static::readVersionFromDisk();
+        if ($onDisk !== null && version_compare($version, $onDisk, '<')) {
+            if (! $allowDowngrade) {
+                throw new RuntimeException(
+                    "Refusing to apply v{$version}: on-disk code is v{$onDisk} which is newer. "
+                    .'This would be a downgrade; pass --allow-downgrade to override.'
+                );
+            }
+            $log("WARNING: applying downgrade v{$onDisk} -> v{$version} (--allow-downgrade set).");
         }
 
         $log('Capturing source snapshot...');
@@ -514,6 +541,41 @@ class CoreUpdater
     public static function inProgressFlagPath(): string
     {
         return storage_path('app/private/core-update/.in-progress');
+    }
+
+    /**
+     * Read the on-disk running version from the committed VERSION file
+     * at the repo root. Returns null when the file is absent (very early
+     * installs, a stripped release ZIP) — callers should treat null as
+     * "unknown; skip any check that depended on it" for backward
+     * compatibility.
+     *
+     * Static so tests can stub the base path without instantiating the
+     * whole updater graph; production callers get the real base_path().
+     *
+     * The file is a single line containing a semver-ish version
+     * (e.g. `0.3.1`, `0.3.1-dryrun-6`) with optional trailing whitespace
+     * / newline. Whitespace is stripped; an empty file is treated as
+     * absent (returns null) rather than an empty version string that
+     * would collate lower than every real version.
+     */
+    public static function readVersionFromDisk(?string $basePath = null): ?string
+    {
+        $basePath ??= base_path();
+        $path = $basePath.DIRECTORY_SEPARATOR.'VERSION';
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        if ($raw === false) {
+            return null;
+        }
+
+        $trimmed = trim($raw);
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 
     /**

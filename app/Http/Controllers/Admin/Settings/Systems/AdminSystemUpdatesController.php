@@ -87,7 +87,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * - Force recheck with query ?check=1
      * - Pre-select target with query ?target=plugin:slug or theme:slug
      */
-    public function index(Request $request, ExtensionSourceManager $manager)
+    public function index(Request $request, ExtensionSourceManager $manager, \App\Services\Core\VersionDriftService $driftService)
     {
         // Short-circuit while a web-triggered core update is in flight:
         // the live tree under resources/ may be mid-replacement and the
@@ -180,6 +180,15 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $this->viewParams['lastCheckedAt'] = $lastCheckedAt;
         $this->viewParams['lastCheckedAtFormatted'] = $lastCheckedAt?->format('Y/m/d H:i');
         $this->viewParams['totalCount'] = count($plugins) + count($themes) + ($core['available'] ? 1 : 0);
+
+        // Version drift banner (Finding #5). When the on-disk VERSION file and
+        // the ledger's `currentVersion()` disagree, the "available updates"
+        // above are computed against a stale reference — surface a warning
+        // banner so the operator sees it BEFORE clicking Apply, plus a
+        // pointer to `dls:core:reconcile` for a one-command fix. When drift
+        // is not detectable (either side null) or absent (both agree), the
+        // view suppresses the banner entirely.
+        $this->viewParams['versionDrift'] = $driftService->detect();
         // Drives the visibility of the "ターミナルから実行する場合" CLI
         // alternative block in the core section. Operators on the
         // simple-mode admin do not need the docker exec command — they
@@ -749,12 +758,40 @@ HTML;
             ]);
         }
 
-        $updated = is_array($result['updated'] ?? null) ? $result['updated'] : [];
+        $plugins = is_array($result['updated_plugins'] ?? null) ? $result['updated_plugins'] : [];
+        $themes = is_array($result['updated_themes'] ?? null) ? $result['updated_themes'] : [];
 
-        return __('admin/settings/systems/updates.messages.extension_update_complete', [
-            'count' => count($updated),
-            'names' => implode(', ', $updated),
+        // e.g. ja: プラグイン「A」「B」・テーマ「X」 / en: plugins A, B and themes X
+        $segments = [];
+        if ($plugins !== []) {
+            $segments[] = __('admin/settings/systems/updates.messages.update_complete_plugins', [
+                'names' => $this->quoteExtensionNames($plugins),
+            ]);
+        }
+        if ($themes !== []) {
+            $segments[] = __('admin/settings/systems/updates.messages.update_complete_themes', [
+                'names' => $this->quoteExtensionNames($themes),
+            ]);
+        }
+
+        return __('admin/settings/systems/updates.messages.update_complete_frame', [
+            'subject' => implode(__('admin/settings/systems/updates.messages.update_complete_join'), $segments),
         ]);
+    }
+
+    /**
+     * Join extension display names for the completion flash: each name wrapped
+     * in 「」 with no separator for Japanese, comma-separated otherwise.
+     *
+     * @param  list<string>  $names
+     */
+    protected function quoteExtensionNames(array $names): string
+    {
+        if (app()->getLocale() === 'ja') {
+            return implode('', array_map(static fn (string $n): string => '「'.$n.'」', $names));
+        }
+
+        return implode(', ', $names);
     }
 
     protected function buildCoreSection(array $target): array

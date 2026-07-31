@@ -78,6 +78,38 @@ file is governed by the AGPL terms below.
         </div>
     </div>
 
+    {{-- Version-drift banner. Rendered only when the VERSION file at
+         the repo root and the CoreVersionHistory ledger disagree — the
+         "available updates" listed below are then computed against a
+         stale reference, and any Apply click would either be refused
+         by the CoreUpdater guard (Finding #1) or, in the reverse-drift
+         case, silently apply the wrong direction. The two counts
+         `on_disk` / `ledger` come from VersionDriftService::detect()
+         with `kind` in {'ahead','behind'}. The banner is suppressed
+         when known=false (either side null) or drifted=false (both
+         agree) so a normal install shows nothing extra. --}}
+    @if(($versionDrift['drifted'] ?? false) === true)
+        <div class="flex items-start gap-3 mb-6 rounded-lg border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 p-4">
+            <i class="fas fa-triangle-exclamation text-orange-600 dark:text-orange-400 mt-0.5"></i>
+            <div class="text-sm text-orange-900 dark:text-orange-100 space-y-1 flex-1">
+                <p class="font-medium">{{ __('admin/settings/systems/updates.drift.title') }}</p>
+                <p class="text-xs text-orange-800 dark:text-orange-200">
+                    {{ __('admin/settings/systems/updates.drift.body', [
+                        'on_disk' => $versionDrift['on_disk'],
+                        'ledger' => $versionDrift['ledger'],
+                    ]) }}
+                </p>
+                <p class="text-xs text-orange-800 dark:text-orange-200">
+                    {{ __('admin/settings/systems/updates.drift.kind_' . $versionDrift['kind']) }}
+                </p>
+                <p class="text-xs text-orange-800 dark:text-orange-200">
+                    {{ __('admin/settings/systems/updates.drift.fix_instruction') }}
+                    <code class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-800 text-orange-900 dark:text-orange-100 font-mono">php artisan dls:core:reconcile --confirm</code>
+                </p>
+            </div>
+        </div>
+    @endif
+
     {{-- Header: Last check time and recheck button --}}
     <div class="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         <div class="text-sm text-gray-600 dark:text-gray-400">
