@@ -67,12 +67,22 @@ class CoreVendorManagerTest extends TestCase
         $this->assertFalse($this->manager->lockChanged($staged, $base));
     }
 
-    public function test_lock_changed_is_true_when_locks_differ(): void
+    public function test_lock_changed_is_true_when_package_set_differs(): void
     {
         $base = $this->makeDir('base');
         $staged = $this->makeDir('staged');
-        file_put_contents($base.'/composer.lock', '{"content-hash":"abc"}');
-        file_put_contents($staged.'/composer.lock', '{"content-hash":"xyz"}');
+        // Same shape, different package version — a real dependency
+        // change that must trigger a vendor swap.
+        file_put_contents($base.'/composer.lock', json_encode([
+            'packages' => [['name' => 'vendor/pkg', 'version' => '1.0.0']],
+            'packages-dev' => [],
+            'platform' => ['php' => '^8.2'],
+        ]));
+        file_put_contents($staged.'/composer.lock', json_encode([
+            'packages' => [['name' => 'vendor/pkg', 'version' => '2.0.0']],
+            'packages-dev' => [],
+            'platform' => ['php' => '^8.2'],
+        ]));
 
         $this->assertTrue($this->manager->lockChanged($staged, $base));
     }

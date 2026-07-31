@@ -62,7 +62,7 @@ class CoreRestoreDependencyBoundaryTest extends TestCase
 
     public function test_true_when_backup_lock_differs_from_installed(): void
     {
-        $zip = $this->makeBackupZip(['composer.lock' => '{"content-hash":"DIFFERENT-FROM-LIVE"}']);
+        $zip = $this->makeBackupZip(['composer.lock' => '{"packages":[{"name":"vendor/legacy-only","version":"1.0.0"}],"packages-dev":[],"platform":{"php":"^8.2"},"platform-dev":[]}']);
         $backup = $this->backupRecord([BackupServiceInterface::TARGET_CORE_SOURCE, BackupServiceInterface::TARGET_DATABASE], $zip);
 
         $this->assertTrue($this->service->crossesDependencyBoundary($backup));
@@ -81,7 +81,7 @@ class CoreRestoreDependencyBoundaryTest extends TestCase
 
     public function test_false_when_core_source_not_a_target(): void
     {
-        $zip = $this->makeBackupZip(['composer.lock' => '{"content-hash":"DIFFERENT-FROM-LIVE"}']);
+        $zip = $this->makeBackupZip(['composer.lock' => '{"packages":[{"name":"vendor/legacy-only","version":"1.0.0"}],"packages-dev":[],"platform":{"php":"^8.2"},"platform-dev":[]}']);
         $backup = $this->backupRecord([BackupServiceInterface::TARGET_DATABASE], $zip);
 
         $this->assertFalse($this->service->crossesDependencyBoundary($backup));
@@ -97,7 +97,7 @@ class CoreRestoreDependencyBoundaryTest extends TestCase
 
     public function test_reads_core_prefixed_lock_entry(): void
     {
-        $zip = $this->makeBackupZip(['core/composer.lock' => '{"content-hash":"DIFFERENT-FROM-LIVE"}']);
+        $zip = $this->makeBackupZip(['core/composer.lock' => '{"packages":[{"name":"vendor/legacy-only","version":"1.0.0"}],"packages-dev":[],"platform":{"php":"^8.2"},"platform-dev":[]}']);
         $backup = $this->backupRecord([BackupServiceInterface::TARGET_CORE_SOURCE], $zip);
 
         $this->assertTrue($this->service->crossesDependencyBoundary($backup));
