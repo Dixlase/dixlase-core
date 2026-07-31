@@ -303,10 +303,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </div>
                 </fieldset>
 
+                <!-- Auto-scan after update -->
+                <fieldset>
+                    <legend>{{ __('admin/settings/security/extensions.security.auto_scan_after_update') }}</legend>
+
+                    <x-form-toggle
+                        :label="__('admin/settings/security/extensions.security.auto_scan_after_update')"
+                        id="extension_auto_scan_after_update"
+                        name="extension_auto_scan_after_update"
+                        :checked="old('extension_auto_scan_after_update', $settings['extension_auto_scan_after_update'] ?? true)"
+                    />
+                    <p>{{ __('admin/settings/security/extensions.security.auto_scan_after_update_help') }}</p>
+                </fieldset>
+
                 <!-- ロジックを含むテーマ -->
                 <fieldset>
                     <legend>{{ __('admin/settings/security/extensions.security.logic_themes') }}</legend>
-                    
+
                     <x-form-toggle
                         :label="__('admin/settings/security/extensions.security.allow_logic_themes')"
                         id="extension_allow_logic_themes"
