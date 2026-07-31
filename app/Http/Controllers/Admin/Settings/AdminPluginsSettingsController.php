@@ -54,6 +54,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionDisplayName;
+use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
@@ -228,20 +229,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     protected function getPluginAuditResult(string $pluginSlug): array
     {
-        $audit = PluginAudit::getBySlug($pluginSlug);
-
-        if ($audit) {
-            return $this->filterOptionalMismatches($pluginSlug, $audit->toAuditArray());
-        }
-
-        // Return empty result if no audit results exist
-        return [
-            'has_mismatches' => false,
-            'mismatches' => [],
-            'matches_count' => 0,
-            'total_checked' => 0,
-            'audited_at' => null,
-        ];
+        return app(ExtensionRescanService::class)->getPluginAuditResult($pluginSlug);
     }
 
     /**
@@ -261,22 +249,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     protected function filterOptionalMismatches(string $pluginSlug, array $auditArray): array
     {
-        $optional = app(PluginPermissionService::class)->getOptionalPermissions($pluginSlug);
-
-        if (empty($optional) || empty($auditArray['mismatches'] ?? [])) {
-            return $auditArray;
-        }
-
-        $auditArray['mismatches'] = array_values(array_filter(
-            $auditArray['mismatches'],
-            static fn (array $m) => ! (
-                ($m['type'] ?? null) === 'unused_declaration'
-                && in_array($m['permission'] ?? '', $optional, true)
-            ),
-        ));
-        $auditArray['has_mismatches'] = ! empty($auditArray['mismatches']);
-
-        return $auditArray;
+        return app(ExtensionRescanService::class)->filterOptionalMismatches($pluginSlug, $auditArray);
     }
 
     /**
@@ -353,105 +326,10 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      */
     protected function runPluginAudit(string $pluginSlug): array
     {
-        try {
-            Log::info('Plugin audit starting', ['plugin' => $pluginSlug]);
-
-            Artisan::call('dls:plugin:audit', [
-                'plugin' => $pluginSlug,
-                '--json' => true,
-            ]);
-
-            $output = trim(Artisan::output());
-
-            Log::info('Plugin audit output', [
-                'plugin' => $pluginSlug,
-                'output_length' => strlen($output),
-                'output_preview' => substr($output, 0, 500),
-            ]);
-
-            $result = json_decode($output, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::warning('Plugin audit JSON parse error', [
-                    'plugin' => $pluginSlug,
-                    'error' => json_last_error_msg(),
-                    'output' => $output,
-                ]);
-            }
-
-            if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
-                // Get signature information
-                $permissionService = app(PluginPermissionService::class);
-                $summary = $permissionService->getSummary($pluginSlug);
-                $signature = $summary['signature'] ?? [];
-
-                // Verify CSP compliance status with code scan
-                $cspScanner = app(\App\Services\Csp\CspComplianceScanner::class);
-                $cspCompatibility = $cspScanner->scanPlugin($pluginSlug);
-
-                // File hash (for rescan detection) and health score
-                $healthScorer = app(PluginHealthScorer::class);
-                $filesHash = $healthScorer->computeFilesHash($pluginSlug);
-
-                // Extract owned_tables (auto-detected from migrations)
-                $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
-                $extensionDir = base_path("plugins/{$pluginName}");
-                $tableInspection = app(PluginTableInspector::class)->inspect($extensionDir);
-
-                $auditData = [
-                    'has_mismatches' => ! empty($result['mismatches'] ?? []),
-                    'mismatches' => $result['mismatches'] ?? [],
-                    'matches_count' => count($result['matches'] ?? []),
-                    'total_checked' => $result['total_checked'] ?? 0,
-                    'risk_level' => $result['risk_level'] ?? null,
-                    'risk_reasons' => $result['risk_reasons'] ?? [],
-                    'signature_status' => $signature['status'] ?? 'unsigned',
-                    'signature_signer' => $signature['signer'] ?? null,
-                    'csp_status' => $cspCompatibility['status'] ?? 'not_checked',
-                    'csp_requires_inline_js' => $cspCompatibility['requires_inline_js'] ?? false,
-                    'csp_requires_inline_css' => $cspCompatibility['requires_inline_css'] ?? false,
-                    'csp_violations' => $cspCompatibility['violations'] ?? [],
-                    'csp_summary' => $cspCompatibility['summary'] ?? [],
-                    'files_hash' => $filesHash,
-                    'owned_tables' => $tableInspection['tables'],
-                ];
-
-                Log::info('Plugin audit data', ['plugin' => $pluginSlug, 'data' => $auditData]);
-
-                // Save to DB (base data before health score calculation)
-                $audit = PluginAudit::saveAuditResult($pluginSlug, $auditData);
-
-                // Calculate health score and persist its findings list
-                // calculate() references plugin_audits rows, so execute after saveAuditResult
-                try {
-                    $healthResult = $healthScorer->calculate($pluginSlug);
-                    $audit->update([
-                        'health_score' => $healthResult->score,
-                        'health_status' => $healthResult->status->value,
-                        'health_issues' => array_map(fn ($issue) => $issue->jsonSerialize(), $healthResult->issues),
-                    ]);
-                    $audit->refresh();
-                } catch (\Exception $e) {
-                    Log::warning('Health score persist failed during audit', [
-                        'plugin' => $pluginSlug,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-
-                Log::info('Plugin audit saved', ['plugin' => $pluginSlug, 'audit_id' => $audit->id]);
-
-                return $this->filterOptionalMismatches($pluginSlug, $audit->toAuditArray());
-            }
-        } catch (\Exception $e) {
-            Log::error('Plugin audit failed', [
-                'plugin' => $pluginSlug,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-        }
-
-        // Return existing DB audit data to stay consistent with health scorer
-        return $this->getPluginAuditResult($pluginSlug);
+        // Full rescan (permissions + CSP + signature + health + files_hash +
+        // owned_tables) lives in the shared service so the admin endpoints and
+        // the post-update auto-scan run the identical audit.
+        return app(ExtensionRescanService::class)->rescanPlugin($pluginSlug);
     }
 
     /**

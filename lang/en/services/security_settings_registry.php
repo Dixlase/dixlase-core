@@ -45,6 +45,7 @@ return [
     'api_signature_required' => 'Require API Signature',
     'api_timestamp_tolerance_seconds' => 'API Timestamp Tolerance (seconds)',
     'audit_scan_expiration_days' => 'Audit Scan Expiration Days (displays "expired" badge after this period)',
+    'auto_scan_after_update' => 'Auto-scan an extension after it is updated',
     'captcha_driver' => 'CAPTCHA Driver',
     'captcha_secret_key' => 'CAPTCHA Secret Key',
     'captcha_site_key' => 'CAPTCHA Site Key',
