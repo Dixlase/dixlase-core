@@ -344,5 +344,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         @stack('scripts')
 
+        {{-- Demo mode: render forms targeting DemoGuard-blocked routes as
+             visually read-only. No-op outside demo mode / for super admins. --}}
+        <x-ui-demo-readonly-guard />
+
     </body>
 </html>
