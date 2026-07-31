@@ -407,20 +407,55 @@ class CoreSourceSnapshot
     }
 
     /**
-     * The newest snapshot that carries rollback metadata — i.e. the most
-     * recent recorded core update, the point dls:core:rollback winds back
-     * to. Bare safety snapshots (no sidecar) are skipped. Null when no
-     * rollback point exists.
+     * The newest snapshot that carries rollback metadata AND records a
+     * from-version the rollback machinery can actually resolve — i.e.
+     * the most recent recorded core update the operator can safely wind
+     * back to. Bare safety snapshots (no sidecar) and snapshots whose
+     * from-version is unresolvable (missing / empty / `0.0.0`) are
+     * skipped so a stale placeholder cannot become the offered rollback
+     * point once a legitimate one is consumed. See Round 4 Finding B.
      */
     public function latestSnapshotWithMetadata(): ?string
     {
         foreach ($this->listSnapshots() as $dir) {
-            if (is_file($this->metadataPath($dir))) {
-                return $dir;
+            if (! is_file($this->metadataPath($dir))) {
+                continue;
             }
+            if (! self::hasResolvableFromVersion($this->readMetadata($dir))) {
+                continue;
+            }
+
+            return $dir;
         }
 
         return null;
+    }
+
+    /**
+     * True when the given metadata sidecar records a from-version the
+     * updater/rollback machinery can actually resolve — a non-empty
+     * string that is not the `0.0.0` placeholder. The placeholder is
+     * what pre-baseline installs wrote into meta when the ledger was
+     * empty (fixed forward by the install-time baseline row added in
+     * issue #171 Finding D / PR #174); no such GitHub release exists to
+     * fetch vendor/ from, so offering such a snapshot as a rollback
+     * point traps the operator in a destructive fail.
+     *
+     * Static so callers that already hold the decoded sidecar (UI-side
+     * `buildCoreSection`, the rollback command's own guard) can share
+     * the same predicate without a second file read.
+     *
+     * @param  array<string,mixed>|null  $meta
+     */
+    public static function hasResolvableFromVersion(?array $meta): bool
+    {
+        if ($meta === null) {
+            return false;
+        }
+
+        $from = $meta['from'] ?? null;
+
+        return is_string($from) && $from !== '' && $from !== '0.0.0';
     }
 
     /**
@@ -441,6 +476,44 @@ class CoreSourceSnapshot
         // is older than the retained window.
         foreach (array_slice($this->listSnapshots(), $keep) as $old) {
             $this->discard($old);
+        }
+    }
+
+    /**
+     * Delete any snapshot older than the newest that carries an
+     * unresolvable-from sidecar (missing / empty / `0.0.0`). Called
+     * after a successful update so a stale `from:0.0.0` snapshot left
+     * over from a pre-baseline update cannot become the offered
+     * rollback point once the current, resolvable snapshot is
+     * consumed. Count-based prune (see {@see pruneSnapshots}) handles
+     * bounding by age; this method separately handles unresolvability.
+     *
+     * The newest snapshot is preserved regardless of its from-version:
+     * even if it is itself unresolvable it may be the operator's sole
+     * artifact of a just-applied update, and deleting it silently
+     * would remove that record with no warning. Best-effort; never
+     * throws.
+     */
+    public function pruneUnresolvableSnapshots(): void
+    {
+        $all = $this->listSnapshots();
+        if (count($all) <= 1) {
+            return;
+        }
+
+        // Skip the newest (index 0). Everything older with an
+        // unresolvable-from sidecar can be dropped.
+        foreach (array_slice($all, 1) as $older) {
+            if (! is_file($this->metadataPath($older))) {
+                // Bare (no-sidecar) snapshots are pre-rollback safety
+                // captures and are already unreachable as rollback
+                // points; leave them for the count-based prune.
+                continue;
+            }
+            if (self::hasResolvableFromVersion($this->readMetadata($older))) {
+                continue;
+            }
+            $this->discard($older);
         }
     }
 }
