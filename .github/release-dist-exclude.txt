@@ -29,7 +29,13 @@ phpstan.neon
 node_modules/
 
 # CI staging dir — without this, rsync recurses into its own target.
-dist/
+# The leading slash anchors the pattern to the source root so it only
+# matches ./dist/. Without the anchor, `dist/` would match ANY nested
+# `dist/` directory including vendor/laravel/framework/src/Illuminate/
+# Foundation/resources/exceptions/renderer/dist/, which stripped the
+# framework's exception-page CSS from every release ZIP and broke
+# error rendering during updates — see #171 / Round 4 Finding A.
+/dist/
 
 # ----- Composer overrides used only during local development -----
 composer.local.json
