@@ -172,6 +172,21 @@ class DemoGuard
         'admin.safe-mode.disable-all',
     ];
 
+    /**
+     * The route names blocked while demo mode is on. Exposed so the admin
+     * layout can render forms whose action targets one of these routes as
+     * visually read-only (disabled controls + a notice) instead of only
+     * rejecting the POST on submit.
+     *
+     * @see \resources\views\components\ui-demo-readonly-guard.blade.php
+     *
+     * @return array<int, string>
+     */
+    public static function blockedRouteNames(): array
+    {
+        return self::BLOCKED_ROUTE_NAMES;
+    }
+
     public function handle(Request $request, Closure $next)
     {
         if (! config('dixlase.demo_mode')) {
