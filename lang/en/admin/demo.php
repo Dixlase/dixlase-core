@@ -37,6 +37,7 @@ return [
     'banner_title' => 'Demo Mode',
     'banner_message' => 'You are using a public demo. Destructive actions (plugin install, mail server config, etc.) are disabled, and outgoing mail is captured locally. Your data will be reset when this demo expires.',
     'action_disabled' => 'This action is disabled in demo mode.',
+    'readonly_notice' => 'This form is view-only in the demo. Changes cannot be saved.',
     'account' => 'Account',
     'front_page' => 'Front page',
     'admin_url' => 'Admin URL',
