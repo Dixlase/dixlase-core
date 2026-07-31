@@ -63,6 +63,7 @@ class AdminSecurityExtensionsUpdateRequest extends FormRequest
             'extension_plugin_max_health_level' => 'required|integer|min:0|max:3',
             'extension_theme_max_health_level' => 'required|integer|min:0|max:3',
             'extension_audit_max_age_days' => 'required|integer|min:1|max:365',
+            'extension_auto_scan_after_update' => 'boolean',
             'extension_allow_logic_themes' => 'boolean',
             'extension_permission_mismatch_action' => 'required|'.SecurityAction::validationRule(),
             'extension_notify_on_install' => 'boolean',
