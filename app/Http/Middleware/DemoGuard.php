@@ -187,6 +187,41 @@ class DemoGuard
         return self::BLOCKED_ROUTE_NAMES;
     }
 
+    /**
+     * Whether the given (GET page) route name belongs to a menu/page whose
+     * mutations are blocked in demo mode — i.e. a blocked route is nested under
+     * it (`<routeName>.<verb>`), it is itself a blocked route, or it falls
+     * inside a blocked `.*` namespace. Used by the sidebar to mark such menus
+     * view-only (eye icon) even though the member technically keeps edit
+     * permission (DemoGuard blocks the POST, not the menu permission).
+     *
+     * Pure predicate: callers gate on demo mode + non-super-admin. Because menu
+     * route names and mutation route names do not always share a prefix (e.g.
+     * the logs menu), a few blocked pages may not be detected here; the actual
+     * POST block and the form-level read-only cue are unaffected.
+     */
+    public static function isRouteLocked(?string $routeName): bool
+    {
+        if ($routeName === null || $routeName === '') {
+            return false;
+        }
+
+        foreach (self::BLOCKED_ROUTE_NAMES as $blocked) {
+            if (str_ends_with($blocked, '.*')) {
+                $prefix = substr($blocked, 0, -2);
+                if ($routeName === $prefix
+                    || str_starts_with($routeName, $prefix . '.')
+                    || str_starts_with($prefix, $routeName . '.')) {
+                    return true;
+                }
+            } elseif ($blocked === $routeName || str_starts_with($blocked, $routeName . '.')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function handle(Request $request, Closure $next)
     {
         if (! config('dixlase.demo_mode')) {
