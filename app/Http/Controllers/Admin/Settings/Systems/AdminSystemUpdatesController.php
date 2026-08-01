@@ -302,14 +302,21 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 ->with('error', __('admin/settings/systems/updates.core.php_cli_not_found'));
         }
 
-        // Raise the in-progress flag before spawning so the very next
-        // request lands on the polling placeholder. ExtensionsUpdate
-        // clears it in its finally block, on success or failure.
-        $this->writeExtensionUpdateInProgressFlag([
+        // Atomically acquire the extension-update lock before spawning
+        // so a double-click on the bulk-apply button cannot fire two
+        // batches at once (Round 4 Finding F). Extension and core locks
+        // are separate files by design — a batch extension update can
+        // still run alongside a core operation (out of scope for this
+        // fix, existing behaviour).
+        $lockAcquired = $this->tryAcquireExtensionUpdateLock([
             'started_at' => now()->timestamp,
             'plugins' => $pluginSlugs,
             'themes' => $themeSlugs,
         ]);
+        if (! $lockAcquired) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('warning', __('admin/settings/systems/updates.messages.already_in_progress'));
+        }
 
         $args = '';
         foreach ($pluginSlugs as $slug) {
@@ -326,7 +333,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             $args,
             escapeshellarg(storage_path('logs/extension-update.log'))
         );
-        exec($command);
+        $this->spawnDetachedProcess($command);
 
         return redirect()->route('admin.settings.systems.updates.index')
             ->with('success', __('admin/settings/systems/updates.messages.update_started'));
@@ -448,16 +455,23 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ? ' --db-backup-id='.escapeshellarg((string) $preBackupId)
             : '';
 
-        // Raise the in-progress flag *before* spawning. The next admin
-        // request lands on the placeholder instead of trying to render
-        // the index view while resources/ is being replaced. The
-        // subprocess clears the flag in CoreUpdater::update()'s finally
-        // block, regardless of success or failure.
-        $this->writeCoreUpdateInProgressFlag([
+        // Atomically acquire the core-update lock BEFORE spawning. Round
+        // 4 Finding F: without this, a rapid double-click fired two
+        // detached `dls:core:update` processes (the second silently
+        // overwrote the first's flag payload). Now the second POST loses
+        // the race and redirects with a warning; the placeholder page
+        // that the first POST landed on continues polling normally. The
+        // lock file is cleared by the subprocess in CoreUpdater::update()'s
+        // finally block.
+        $lockAcquired = $this->tryAcquireCoreUpdateLock([
             'started_at' => now()->timestamp,
             'target_version' => $state->available_version,
             'started_by_id' => $appliedById,
         ]);
+        if (! $lockAcquired) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('warning', __('admin/settings/systems/updates.core.already_in_progress'));
+        }
 
         $command = sprintf(
             'nohup %s %s dls:core:update --force --no-interaction%s%s > %s 2>&1 &',
@@ -467,7 +481,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             $dbBackupArg,
             escapeshellarg(storage_path('logs/core-update.log'))
         );
-        exec($command);
+        $this->spawnDetachedProcess($command);
 
         return redirect()->route('admin.settings.systems.updates.index')
             ->with('success', __('admin/settings/systems/updates.core.update_started', [
@@ -515,14 +529,22 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ? ' --applied-by='.escapeshellarg((string) $appliedById)
             : '';
 
-        // Raise the in-progress flag before spawning so the next request
-        // lands on the polling placeholder (the rollback replaces resources/
-        // mid-flight). dls:core:rollback clears it in its finally block.
-        $this->writeCoreUpdateInProgressFlag([
+        // Atomically acquire the core lock BEFORE spawning — Round 4
+        // Finding F was originally observed on the rollback button
+        // (double-click spawned two `dls:core:rollback` processes). The
+        // update and rollback paths share the same flag file, so a
+        // rollback also loses the race if a core update is already in
+        // flight, and vice versa — mutual exclusion for the whole core
+        // subsystem.
+        $lockAcquired = $this->tryAcquireCoreUpdateLock([
             'started_at' => now()->timestamp,
             'operation' => 'rollback',
             'started_by_id' => $appliedById,
         ]);
+        if (! $lockAcquired) {
+            return redirect()->route('admin.settings.systems.updates.index')
+                ->with('warning', __('admin/settings/systems/updates.core.already_in_progress'));
+        }
 
         $command = sprintf(
             'nohup %s %s dls:core:rollback --force --no-interaction%s > %s 2>&1 &',
@@ -531,7 +553,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             $appliedByArg,
             escapeshellarg(storage_path('logs/core-update.log'))
         );
-        exec($command);
+        $this->spawnDetachedProcess($command);
 
         return redirect()->route('admin.settings.systems.updates.index')
             ->with('success', __('admin/settings/systems/updates.core.rollback.started'));
@@ -571,6 +593,85 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $path = \App\Services\Core\CoreUpdater::inProgressFlagPath();
         @mkdir(dirname($path), 0775, true);
         @file_put_contents($path, json_encode($info, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Attempt to atomically acquire the core-update / core-rollback lock
+     * by creating the in-progress flag exclusively. Round 4 Finding F:
+     * the pre-lock flag was purely UI-informational — a rapid double-
+     * click on the rollback button spawned two detached
+     * `dls:core:rollback` processes because nothing on the write path
+     * checked the flag first, and the second `writeCoreUpdateInProgressFlag`
+     * silently overwrote the first's payload.
+     *
+     * Semantics:
+     *   - true  → we won the race; the caller may spawn the subprocess.
+     *   - false → another core operation is already in flight and still
+     *             within the stale threshold; the caller must not spawn.
+     *
+     * A stale flag (past IN_PROGRESS_STALE_THRESHOLD_SECONDS with no
+     * matching subprocess to clear it) is transparently taken over —
+     * same tolerance as the display path in readCoreUpdateInProgressFlag.
+     */
+    protected function tryAcquireCoreUpdateLock(array $info): bool
+    {
+        $path = \App\Services\Core\CoreUpdater::inProgressFlagPath();
+        @mkdir(dirname($path), 0775, true);
+
+        // Take over a stale flag from a crashed prior subprocess.
+        if (is_file($path) && time() - (int) filemtime($path) > self::IN_PROGRESS_STALE_THRESHOLD_SECONDS) {
+            @unlink($path);
+        }
+
+        // `x` mode = O_EXCL | O_CREAT | O_WRONLY — the whole open+create
+        // is a single atomic operation; if the file already exists fopen
+        // returns false and no bytes are written.
+        $handle = @fopen($path, 'x');
+        if ($handle === false) {
+            return false;
+        }
+
+        @fwrite($handle, (string) json_encode($info, JSON_UNESCAPED_UNICODE));
+        @fclose($handle);
+
+        return true;
+    }
+
+    /**
+     * Extension counterpart of {@see tryAcquireCoreUpdateLock}. Uses the
+     * extension flag file (different path), so a core update and an
+     * extension batch can still overlap — that pre-existing behaviour
+     * is out of scope for Round 4 Finding F, which is only about the
+     * "N clicks spawn N processes" of the same kind.
+     */
+    protected function tryAcquireExtensionUpdateLock(array $info): bool
+    {
+        $path = \App\Console\Commands\ExtensionsUpdate::inProgressFlagPath();
+        @mkdir(dirname($path), 0775, true);
+
+        if (is_file($path) && time() - (int) filemtime($path) > self::IN_PROGRESS_STALE_THRESHOLD_SECONDS) {
+            @unlink($path);
+        }
+
+        $handle = @fopen($path, 'x');
+        if ($handle === false) {
+            return false;
+        }
+
+        @fwrite($handle, (string) json_encode($info, JSON_UNESCAPED_UNICODE));
+        @fclose($handle);
+
+        return true;
+    }
+
+    /**
+     * Spawn a detached process. Extracted from the inline `exec($command)`
+     * calls so tests can assert on the spawn without actually invoking
+     * `nohup … &` — see CoreUpdateServerLockTest.
+     */
+    protected function spawnDetachedProcess(string $command): void
+    {
+        exec($command);
     }
 
     /**
