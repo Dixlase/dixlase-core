@@ -243,27 +243,44 @@ class CoreUpdater
                 }
             }
 
-            // For a dependency update the live tree is briefly inconsistent
-            // (new source on disk while vendor/ is mid-swap), and any HTTP
-            // request landing in that window would fatal because the
-            // autoloader can't find classes. public/index.php checks for
-            // storage/framework/maintenance.php *before* booting the
-            // framework, so `down` keeps serving a static 503 even while
-            // vendor/ is incomplete. Non-dependency updates keep the old
-            // behaviour (no downtime) — the running workers tolerate a
-            // source-only swap because vendor/ stays intact.
-            if ($dependencyUpdate) {
-                $log('Entering maintenance mode...');
-                // --refresh makes the 503 page reload every 15s so the
-                // operator's browser returns to the site automatically once
-                // the swap finishes and maintenance is lifted.
-                Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
-                $maintenanceOn = true;
-            }
+            // Source apply mid-rsync (even without a vendor swap) leaves
+            // any HTTP request landing in the window at risk of a fatal
+            // require: classes and config files disappear for a beat as
+            // rsync replaces them. On a fast local disk this window is
+            // milliseconds and workers absorb it silently, but on a slow
+            // bind-mount (Docker on macOS, some NFS setups) it stretches
+            // to minutes — the sandbox saw `require(AssetHelper.php)`
+            // and `require(config/trustedproxy.php)` fatals during
+            // exactly this window (Round 4 Finding D). public/index.php
+            // checks for storage/framework/maintenance.php *before*
+            // booting the framework, so `down` returns a static 503 for
+            // every incoming request while apply + swap + migrate + the
+            // subsequent cache clears finish. The bracket now runs
+            // unconditionally so the safety it provides does not depend
+            // on the operator's disk speed or on whether composer.lock
+            // actually changed.
+            $log('Entering maintenance mode...');
+            // --refresh makes the 503 page reload every 15s so the
+            // operator's browser returns to the site automatically once
+            // the swap finishes and maintenance is lifted.
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+            $maintenanceOn = true;
 
             $log('Applying source over live tree...');
             $this->applyToLiveTree($payloadRoot);
             $log('Applied source.');
+
+            // PHP-FPM / opcache may hold stale entries for the just-swapped
+            // files (particularly on shared realpath caches or when
+            // opcache.validate_timestamps is off). Reset in-process so the
+            // migrate step below re-parses the fresh source; a full FPM
+            // reload is still the operator's responsibility on
+            // validate_timestamps=0 hosts (CoreUpdate command prints that
+            // hint separately).
+            if (function_exists('opcache_reset')) {
+                @opcache_reset();
+                $log('Reset opcache after source apply.');
+            }
 
             if ($dependencyUpdate) {
                 $log('Swapping vendor/ (prebuilt dependencies from the release)...');
