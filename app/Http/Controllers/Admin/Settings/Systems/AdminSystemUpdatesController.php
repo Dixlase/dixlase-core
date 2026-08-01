@@ -500,7 +500,8 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      */
     public function rollbackCore(Request $request, \App\Services\Core\CoreSourceSnapshot $snapshotter)
     {
-        if ($snapshotter->latestSnapshotWithMetadata() === null) {
+        $snapshotPath = $snapshotter->latestSnapshotWithMetadata();
+        if ($snapshotPath === null) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('warning', __('admin/settings/systems/updates.core.rollback.none_to_apply'));
         }
@@ -529,6 +530,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ? ' --applied-by='.escapeshellarg((string) $appliedById)
             : '';
 
+        // Read the snapshot metadata to surface the target version on the
+        // in-progress placeholder. Rollback consumes the snapshot mid-way,
+        // so we snapshot the value into the flag payload now rather than
+        // re-reading meta from the placeholder (which would land on a
+        // just-discarded snapshot).
+        $rollbackMeta = $snapshotter->readMetadata($snapshotPath);
+        $targetVersion = is_array($rollbackMeta) ? (string) ($rollbackMeta['from'] ?? '') : '';
+
         // Atomically acquire the core lock BEFORE spawning — Round 4
         // Finding F was originally observed on the rollback button
         // (double-click spawned two `dls:core:rollback` processes). The
@@ -539,6 +548,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $lockAcquired = $this->tryAcquireCoreUpdateLock([
             'started_at' => now()->timestamp,
             'operation' => 'rollback',
+            'target_version' => $targetVersion,
             'started_by_id' => $appliedById,
         ]);
         if (! $lockAcquired) {
@@ -717,12 +727,25 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     {
         $startedAt = (int) ($info['started_at'] ?? time());
         $targetVersion = (string) ($info['target_version'] ?? '');
+        $isRollback = ($info['operation'] ?? null) === 'rollback';
         $elapsedSec = max(0, time() - $startedAt);
         $elapsedMin = (int) floor($elapsedSec / 60);
         $elapsedRem = $elapsedSec % 60;
 
-        $title = e(__('admin/settings/systems/updates.core.in_progress_title'));
-        $message = e(__('admin/settings/systems/updates.core.in_progress_message', [
+        // Rollback and update share the same in-progress placeholder shell
+        // but use distinct title/message copy so the polling modal does not
+        // say "upgrading to v—" while a rollback is running (Round 4
+        // Finding E). Elapsed and refresh-note copy is intentionally
+        // shared: it does not depend on the operation kind.
+        $titleKey = $isRollback
+            ? 'admin/settings/systems/updates.core.rollback.in_progress_title'
+            : 'admin/settings/systems/updates.core.in_progress_title';
+        $messageKey = $isRollback
+            ? 'admin/settings/systems/updates.core.rollback.in_progress_message'
+            : 'admin/settings/systems/updates.core.in_progress_message';
+
+        $title = e(__($titleKey));
+        $message = e(__($messageKey, [
             'version' => $targetVersion !== '' ? $targetVersion : '—',
         ]));
         $elapsedLabel = e(__('admin/settings/systems/updates.core.in_progress_elapsed', [
