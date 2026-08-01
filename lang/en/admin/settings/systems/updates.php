@@ -68,6 +68,8 @@ return [
             'confirm_note' => 'Only this update\'s schema changes are reversed; data created since the update is preserved. If a data migration must also be undone, restore the full database backup from the Backups page.',
             'started' => 'Core rollback started. This runs in the background; reload this page to see the result.',
             'none_to_apply' => 'There is no core rollback point available.',
+            'in_progress_title' => 'Core rollback in progress',
+            'in_progress_message' => 'Rolling back to v:version. The admin UI will resume as soon as the rollback completes.',
         ],
     ],
     'plugins' => [
