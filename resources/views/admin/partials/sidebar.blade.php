@@ -46,6 +46,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
+            // デモモード: 変更が DemoGuard でブロックされるメニューは閲覧のみ表示（目アイコン）にする。
+            // super_admin はガードを素通りするため対象外。
+            $__demoUser = auth()->user();
+            $__demoReadonly = config('dixlase.demo_mode')
+                && $__demoUser
+                && ! ($__demoUser->role instanceof \App\Enums\MemberRole
+                      && $__demoUser->role === \App\Enums\MemberRole::SUPER_ADMIN);
             // 非表示不可のメニュー
             $__protectedMenus = ['dashboard', 'profile'];
             // 並べ替え不可のメニュー（ダッシュボードは常に先頭固定）
@@ -332,7 +339,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                 <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                             @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                 <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                                            @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key))
+                                            @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($child_plugin_slug, $child_role_key) || ($__demoReadonly && \App\Http\Middleware\DemoGuard::isRouteLocked($child_item['route'] ?? null)))
                                                 <i class="fas fa-eye text-xs text-gray-400 ml-auto" title="{{ __('admin/navigation.view_only') }}" aria-label="{{ __('admin/navigation.view_only') }}"></i>
                                             @endif
                                         </a>
@@ -438,7 +445,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                         <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                                                     @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                                         <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
-                                                                    @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key))
+                                                                    @elseif (!\App\Helpers\AdminHelper::canEditMenuOrPlugin($grand_child_plugin_slug, $grand_child_role_key) || ($__demoReadonly && \App\Http\Middleware\DemoGuard::isRouteLocked($grand_child_item['route'] ?? null)))
                                                                         <i class="fas fa-eye text-xs text-gray-400 ml-auto" title="{{ __('admin/navigation.view_only') }}" aria-label="{{ __('admin/navigation.view_only') }}"></i>
                                                                     @endif
                                                                 </a>
@@ -493,6 +500,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                                 <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                                                             @elseif ($__ggcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
                                                                                 <i class="fas fa-directions text-xs text-purple-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.guide_only') }}"></i>
+                                                                            @elseif ($__demoReadonly && \App\Http\Middleware\DemoGuard::isRouteLocked($great_grand_child_item['route'] ?? null))
+                                                                                <i class="fas fa-eye text-xs text-gray-400 ml-auto" title="{{ __('admin/navigation.view_only') }}" aria-label="{{ __('admin/navigation.view_only') }}"></i>
                                                                             @endif
                                                                         </a>
                                                                     @endif

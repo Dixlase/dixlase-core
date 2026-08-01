@@ -89,6 +89,7 @@ DemoGuard so this stays in lock-step with the actual server-side enforcement.
     <script @cspNonce>
         (function () {
             var uris = @json($demoBlockedUris, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            var lockedTitle = @json(__('admin/demo.readonly_notice'), JSON_UNESCAPED_UNICODE);
 
             // Build an anchored path regex per URI: literal segments are escaped,
             // {param} / {param?} segments match a single path segment.
@@ -122,6 +123,17 @@ DemoGuard so this stays in lock-step with the actual server-side enforcement.
                 return false;
             }
 
+            function disable(el) {
+                if (!el || el.disabled) {
+                    return;
+                }
+                el.disabled = true;
+                el.setAttribute('aria-disabled', 'true');
+                if (!el.getAttribute('title')) {
+                    el.setAttribute('title', lockedTitle);
+                }
+            }
+
             function lockForm(form) {
                 if (form.hasAttribute('data-demo-locked')) {
                     return;
@@ -139,17 +151,41 @@ DemoGuard so this stays in lock-step with the actual server-side enforcement.
                     if (el.type === 'hidden') {
                         return;
                     }
-                    el.disabled = true;
-                    el.setAttribute('aria-disabled', 'true');
+                    disable(el);
                 });
             }
 
+            // The primary save button and its confirmation-modal submit button
+            // live in a sticky footer / modal stack OUTSIDE the <form>, so
+            // lockForm() does not reach them. Disable them too: modal submit
+            // buttons are linked to a locked form by the HTML `form="<id>"`
+            // attribute; the footer save button (which only opens the modal) has
+            // no such link, so on these single-form settings/profile pages we
+            // disable the footer save button(s) whenever the page has a locked
+            // form.
+            function lockExternalControls(lockedIds) {
+                lockedIds.forEach(function (id) {
+                    var esc = (window.CSS && CSS.escape) ? CSS.escape(id) : id;
+                    document.querySelectorAll('[form="' + esc + '"]').forEach(disable);
+                });
+                document.querySelectorAll('.save-button').forEach(disable);
+            }
+
             function scan() {
+                var lockedIds = [];
+                var anyLocked = false;
                 document.querySelectorAll('form').forEach(function (form) {
                     if (isBlocked(pathOf(form.getAttribute('action')))) {
                         lockForm(form);
+                        anyLocked = true;
+                        if (form.id) {
+                            lockedIds.push(form.id);
+                        }
                     }
                 });
+                if (anyLocked) {
+                    lockExternalControls(lockedIds);
+                }
             }
 
             if (document.readyState === 'loading') {
