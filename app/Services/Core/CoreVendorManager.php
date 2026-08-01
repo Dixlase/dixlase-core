@@ -368,6 +368,15 @@ class CoreVendorManager
      * both flat (`vendor/...`) and nested (`dixlase-vX/vendor/...`) layouts
      * and skips directory entries so that empty-dir markers do not inflate
      * the count.
+     *
+     * The pattern is anchored to the TOP-LEVEL vendor/ only — either at the
+     * ZIP root or directly under the single wrapper dir. It must not match
+     * `vendor/` segments deeper in the tree such as the published mail views
+     * at `resources/views/vendor/mail/...`, which are ordinary source files
+     * that have nothing to do with the Composer vendor/ dir. The on-disk
+     * side (countExtractedFiles) only ever counts the top-level vendor/, so
+     * an over-broad `(^|/)vendor/` here would report a phantom surplus and
+     * reject a COMPLETE vendor/ — blocking the swap it was meant to protect.
      */
     protected function countZipVendorFileEntries(string $zipPath): int
     {
@@ -386,7 +395,7 @@ class CoreVendorManager
                 if (str_ends_with($name, '/')) {
                     continue;
                 }
-                if (preg_match('#(^|/)vendor/#', $name) === 1) {
+                if (preg_match('#^(?:[^/]+/)?vendor/#', $name) === 1) {
                     $count++;
                 }
             }
