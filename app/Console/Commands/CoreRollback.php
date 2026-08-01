@@ -159,19 +159,32 @@ class CoreRollback extends Command
             $safetySnapshot = $snapshotter->capture();
             $this->line("Safety snapshot at {$safetySnapshot}");
 
-            // A dependency update swapped vendor/ under maintenance; the
-            // reverse must too — the window where source is old but vendor
-            // is still new would fatal any request. Non-dependency updates
-            // stay zero-downtime.
-            if ($dependencyUpdate) {
-                $this->line('Entering maintenance mode (dependency rollback)...');
-                Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
-                $maintenanceOn = true;
-            }
+            // Source restore mid-rsync — even without a vendor refetch —
+            // leaves any HTTP request landing in the window at risk of a
+            // fatal require: bootstrap/app.php reads config/trustedproxy.php
+            // *before* the framework boots, so a one-second gap is enough
+            // to fatal. On slow bind-mounts the gap stretches to minutes
+            // (Round 4 Finding D observed both AssetHelper and
+            // trustedproxy fatals during this window). Bracket the whole
+            // apply + swap + migrate + cache clear unconditionally so the
+            // safety does not depend on whether the original update was a
+            // dependency update or on the operator's disk speed.
+            $this->line('Entering maintenance mode...');
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+            $maintenanceOn = true;
 
             $this->line('Restoring core source from snapshot...');
             $snapshotter->restore($snapshotPath);
             $this->info('Core source restored (no npm run).');
+
+            // Reset opcache after the source swap so the migrate step
+            // below and any callers reaching into the freshly-restored
+            // files see the rolled-back copies rather than opcache-cached
+            // entries from the just-replaced tree.
+            if (function_exists('opcache_reset')) {
+                @opcache_reset();
+                $this->line('Reset opcache after source restore.');
+            }
 
             if ($dependencyUpdate) {
                 // vendor.old was discarded when the update succeeded, so we
