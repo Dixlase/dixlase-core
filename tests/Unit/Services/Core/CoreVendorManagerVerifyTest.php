@@ -129,6 +129,39 @@ class CoreVendorManagerVerifyTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function test_verify_ignores_vendor_segments_outside_the_top_level_vendor_dir(): void
+    {
+        // A release tree legitimately contains paths whose name merely
+        // CONTAINS "vendor/" but which are not part of the Composer vendor/
+        // dir — most notably the published mail views under
+        // resources/views/vendor/mail/... . Those live outside vendor/ and
+        // never land in $extractedRoot/vendor, so they must not inflate the
+        // ZIP-side expected count.
+        //
+        // Regression for the dryrun-9 sandbox rollback report: the old
+        // `(^|/)vendor/` pattern matched every "/vendor/" in the tree
+        // (7774 entries) while the on-disk vendor/ held 7756, so a COMPLETE
+        // vendor/ was rejected and the rollback could never succeed.
+        [$zipPath, $extractedRoot] = $this->buildZipAndExtract([
+            'dixlase-v1.0.0/vendor/autoload.php' => "<?php\n",
+            'dixlase-v1.0.0/vendor/composer/ClassLoader.php' => "<?php\n",
+            // A nested vendor/ INSIDE the Composer tree is still part of
+            // vendor/ and still lands on disk, so it stays counted.
+            'dixlase-v1.0.0/vendor/some/pkg/vendor/inner.php' => "<?php\n",
+            // Published mail views: under resources/, NOT under vendor/.
+            'dixlase-v1.0.0/resources/views/vendor/mail/html/message.blade.php' => "msg\n",
+            'dixlase-v1.0.0/resources/views/vendor/mail/text/message.blade.php' => "msg\n",
+            'dixlase-v1.0.0/resources/src/vendor/mail/html/scss/base.scss' => "// scss\n",
+        ]);
+
+        // On disk, $extractedRoot/vendor holds exactly the three Composer
+        // vendor/ files; the expected count must equal that and the verify
+        // must pass on a complete extract.
+        $this->assertSame(3, $this->invokeCountZip($zipPath));
+        $this->invokeVerify($zipPath, $extractedRoot.'/vendor');
+        $this->assertTrue(true);
+    }
+
     /**
      * Build a ZIP with the given contents and extract it into a fresh
      * subdirectory of the workDir; return [$zipPath, $extractedRoot].
