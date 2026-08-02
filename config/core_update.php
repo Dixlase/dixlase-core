@@ -52,4 +52,36 @@ return [
 
     'snapshot_retention' => (int) env('CORE_SNAPSHOT_RETENTION', 5),
 
+    /*
+    |--------------------------------------------------------------------------
+    | PHP-FPM cache reload hook (Round 5 Finding D residual mitigation)
+    |--------------------------------------------------------------------------
+    |
+    | opcache_reset() and clearstatcache(true) are per-SAPI — calling them
+    | from the CLI process running dls:core:update / dls:core:rollback does
+    | not clear the caches in PHP-FPM workers, so requests landing in the
+    | swap window can still see stale `require(...)` paths or a briefly-
+    | unregistered custom session driver. `\App\Services\Core\PhpFpmReloader`
+    | refreshes the FPM SAPI just before the maintenance lift by two paths:
+    |
+    |   http_url + http_token: POST to an internal endpoint served IN the
+    |     FPM SAPI (opcache SHM is shared across workers, so one hit is
+    |     enough for opcache; the receiving worker's realpath cache is
+    |     cleared, others retain up to `realpath_cache_ttl` seconds).
+    |
+    |   signal_pid: posix_kill($signal_pid, SIGUSR2) sends php-fpm master
+    |     a graceful reload. Requires the CLI to have permission to signal
+    |     the master (root — docker exec / root cron); a www-data CLI
+    |     spawned by a UI-triggered update will silently fail here.
+    |
+    | Both paths are best-effort. Failures are logged, never fatal.
+    |
+    */
+    'fpm_reload' => [
+        'enabled' => (bool) env('CORE_FPM_RELOAD_ENABLED', true),
+        'http_url' => env('CORE_FPM_RESET_URL', ''),
+        'http_token' => env('CORE_FPM_RESET_TOKEN', ''),
+        'signal_pid' => (int) env('CORE_FPM_RELOAD_SIGNAL_PID', 1),
+    ],
+
 ];

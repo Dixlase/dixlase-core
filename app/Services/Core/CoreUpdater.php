@@ -77,6 +77,7 @@ class CoreUpdater
         protected CoreSourceSnapshot $snapshotter,
         protected BackupServiceInterface $backupService,
         protected CoreVendorManager $vendorManager,
+        protected PhpFpmReloader $fpmReloader,
     ) {}
 
     /**
@@ -341,6 +342,17 @@ class CoreUpdater
             Artisan::call('view:clear');
             Artisan::call('cache:clear');
             $log('Caches cleared.');
+
+            // Round 5 Finding D residual: opcache_reset() and
+            // clearstatcache(true) called from CLI above only affect
+            // the CLI SAPI. Ask PhpFpmReloader to refresh the FPM SAPI
+            // (opcache SHM + realpath cache) BEFORE lifting maintenance
+            // so the first post-maintenance request lands in workers
+            // that already see the new source tree, not stale entries
+            // from the pre-swap classmap. Best-effort — never aborts
+            // the update.
+            $log('Refreshing PHP-FPM cache...');
+            $this->fpmReloader->reload();
 
             // The new code is in place and migrations passed; lift the
             // maintenance window before the (non-critical) bookkeeping

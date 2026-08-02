@@ -50,6 +50,7 @@ class CheckInstallationReady
         'csp-report',              // CSP violation report endpoint
         '_boost/*',                // MCP/Windsurf development tools
         'install/verify-mail/*',   // mail-reception verification during install
+        'system/fpm-cache-reset',  // Round 5 PR-N: FPM opcache/realpath reset invoked by dls:core:update - must remain reachable during core install/update/rollback windows
     ];
 
     /**
