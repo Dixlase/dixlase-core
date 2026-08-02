@@ -62,6 +62,18 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            // Bare internal route: FPM cache reset hook invoked by
+            // dls:core:update / dls:core:rollback from CLI to refresh
+            // opcache + realpath cache inside the PHP-FPM SAPI after a
+            // source/vendor swap. Token-gated in the controller; kept
+            // outside every route group (no session, no auth, no
+            // locale prefix) so it survives even mid-swap.
+            \Illuminate\Support\Facades\Route::post('/system/fpm-cache-reset', [
+                \App\Http\Controllers\System\FpmCacheResetController::class,
+                'reset',
+            ])->name('system.fpm-cache-reset');
+        },
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Trust forwarded headers only from the upstream IPs declared in
@@ -92,9 +104,25 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
         ]);
 
-        // Exclude CSP report endpoint from CSRF verification
+        // Exclude CSP report endpoint from CSRF verification. The
+        // fpm-cache-reset internal hook (see routes registered via
+        // withRouting's `then:` above) is POST but token-authenticated
+        // in the controller — CSRF would fail here because the call
+        // originates from a CLI subprocess with no session context.
         $middleware->validateCsrfTokens(except: [
             'csp-report',
+            'system/fpm-cache-reset',
+        ]);
+
+        // The fpm-cache-reset hook must remain reachable while the site
+        // is in maintenance mode — that IS its point (called between
+        // the source swap and the maintenance lift). Explicitly except
+        // it so a future contributor who adds a global
+        // PreventRequestsDuringMaintenance middleware, or Laravel
+        // re-introduces one via a framework upgrade, does not
+        // accidentally 503 this internal route.
+        $middleware->preventRequestsDuringMaintenance(except: [
+            'system/fpm-cache-reset',
         ]);
 
         // The language switcher cookie is a non-sensitive preference and
