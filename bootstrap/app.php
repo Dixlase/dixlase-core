@@ -93,8 +93,31 @@ return Application::configure(basePath: dirname(__DIR__))
             headers: $trustedProxyConfig['headers'],
         );
 
-        // Register global middlewares
+        // Register global middlewares.
+        //
+        // PreventRequestsDuringMaintenance MUST be at the top of the
+        // stack: it short-circuits every request when
+        // storage/framework/maintenance.php exists so the rest of the
+        // middleware (session, CSP, source-code header, …) never runs
+        // against a mid-swap tree. Round 5 root cause for Finding D:
+        // Dixlase's custom `use([...])` replaces Laravel's default
+        // global stack, which historically dropped this middleware —
+        // so `Artisan::call('down')` from the CoreUpdater / CoreRollback
+        // wrote the maintenance sentinel but nothing observed it, and
+        // the "maintenance window" was effectively non-existent. That
+        // let requests reach a half-swapped source tree and produced
+        // the transient 500s (`Session driver [guard-aware-database] is
+        // not supported`, `require(AssetHelper): No such file`,
+        // half-written composer/installed.php parse errors) the sandbox
+        // caught during dryrun-10 verification.
+        //
+        // Note: Dixlase also has its own `CheckMaintenanceMode`
+        // middleware (bootstrap/app.php `appendToGroup('web', …)`
+        // below), which is a DB-driven "maintenance mode" toggle for
+        // the operator-facing site UI — a totally different concept
+        // from `Artisan::call('down')`. Both coexist safely.
         $middleware->use([
+            \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class, // Round 5 Finding D root fix: make `Artisan::call('down')` actually block requests
             \Illuminate\Http\Middleware\TrustProxies::class, // Apply config/trustedproxy.php to incoming forwarded headers
             \App\Http\Middleware\CheckInstallationReady::class, // Check installation readiness + installation status
             \App\Http\Middleware\ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
@@ -116,11 +139,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // The fpm-cache-reset hook must remain reachable while the site
         // is in maintenance mode — that IS its point (called between
-        // the source swap and the maintenance lift). Explicitly except
-        // it so a future contributor who adds a global
-        // PreventRequestsDuringMaintenance middleware, or Laravel
-        // re-introduces one via a framework upgrade, does not
-        // accidentally 503 this internal route.
+        // the source swap and the maintenance lift). Now that
+        // PreventRequestsDuringMaintenance is on the global stack, this
+        // except list actually takes effect: fpm-cache-reset passes
+        // through the sentinel check while every other request 503s.
+        // `/up` is Laravel's default health-check path and is exempt
+        // by default at the framework level.
         $middleware->preventRequestsDuringMaintenance(except: [
             'system/fpm-cache-reset',
         ]);
