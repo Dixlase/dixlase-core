@@ -5,7 +5,22 @@ use Illuminate\Http\Request;
 define('LARAVEL_START', microtime(true));
 
 // Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+//
+// Round 5 residual fix: PHP-FPM workers hold a stale negative stat of
+// the maintenance-mode sentinel path (realpath / stat cache) for
+// several seconds after `artisan down` writes it. Without the
+// invalidation below, workers keep telling `file_exists()` "no such
+// file" for ~4-9 s and serve requests INTO the mid-swap source tree
+// — producing the composer-autoload-layer `require(GlobalHelper.php):
+// Failed to open stream` fatal the sandbox observed during the
+// dryrun-11 → dryrun-12 verification. Clearing the stat cache for
+// just this one path costs a single syscall per request in normal
+// operation (negligible) and closes the entry-side gap: workers see
+// the sentinel the instant it lands and short-circuit to 503 before
+// any file operation runs.
+$maintenance = __DIR__.'/../storage/framework/maintenance.php';
+clearstatcache(true, $maintenance);
+if (file_exists($maintenance)) {
     require $maintenance;
 }
 
