@@ -95,6 +95,36 @@ class CoreMaintenanceBracketRegressionTest extends TestCase
         );
     }
 
+    public function test_core_updater_asks_phpfpm_reloader_before_lifting_maintenance(): void
+    {
+        // Round 5 Finding D residual: the CLI opcache_reset() covered
+        // by the tests above only affects the CLI SAPI. FPM workers
+        // must also be reset (via PhpFpmReloader) before maintenance
+        // lifts, otherwise the first post-maintenance request sees
+        // stale opcache/realpath entries and can 500 with
+        // "class not found" or a bad-path require.
+        $source = (string) file_get_contents(app_path('Services/Core/CoreUpdater.php'));
+        $this->assertStringContainsString(
+            'fpmReloader->reload()',
+            $source,
+            'CoreUpdater::update() must call PhpFpmReloader::reload() '
+            .'before Artisan::call(\'up\') so FPM workers see the new '
+            .'source tree on the first post-maintenance request '
+            .'(Round 5 Finding D residual).'
+        );
+    }
+
+    public function test_core_rollback_asks_phpfpm_reloader_before_lifting_maintenance(): void
+    {
+        $source = (string) file_get_contents(app_path('Console/Commands/CoreRollback.php'));
+        $this->assertStringContainsString(
+            'PhpFpmReloader',
+            $source,
+            'CoreRollback::handle() must call PhpFpmReloader before '
+            .'lifting maintenance — same reasoning as the update path.'
+        );
+    }
+
     private function assertDownCallIsUnconditional(string $file, string $label): void
     {
         $source = (string) file_get_contents($file);
