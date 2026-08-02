@@ -88,4 +88,4 @@ window.Dixlase.newTabPreview = function(url, el) {
 // confirm that a core update actually replaces the built front-end
 // assets (not just the source tree and the VERSION file). Safe to keep
 // past dryrun-10; harmless in production.
-window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:dryrun-10';
+window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:dryrun-12';
