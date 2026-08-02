@@ -203,6 +203,14 @@ class CoreRollback extends Command
             Artisan::call('view:clear');
             Artisan::call('cache:clear');
 
+            // Round 5 Finding D residual: refresh the PHP-FPM SAPI
+            // (opcache SHM + realpath cache) before lifting maintenance
+            // so the first post-maintenance request does not see stale
+            // classmap entries pointing at the just-restored files.
+            // Best-effort — never aborts the rollback.
+            $this->line('Refreshing PHP-FPM cache...');
+            app(\App\Services\Core\PhpFpmReloader::class)->reload();
+
             if ($maintenanceOn) {
                 $this->line('Lifting maintenance mode...');
                 Artisan::call('up');
