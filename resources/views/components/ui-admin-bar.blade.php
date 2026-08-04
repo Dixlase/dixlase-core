@@ -68,7 +68,7 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
             {{-- Left side: Site name and menu --}}
-            <div class="flex items-center {{ $isAdminLayout ? '' : 'space-x-4' }}">
+            <div class="flex items-center min-w-0 {{ $isAdminLayout ? '' : 'space-x-1 sm:space-x-4' }}">
                 {{-- Site name/logo --}}
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity {{ $isAdminLayout ? 'mr-4' : '' }}">
                     <x-application-logo
@@ -128,7 +128,7 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                         : null;
                 @endphp
 
-                <div class="flex items-center space-x-2 ml-2">
+                <div class="hidden sm:flex items-center space-x-2 ml-2">
                     @if($envHref)
                         <a href="{{ $envHref }}"
                            title="{{ $envTooltip }}"
