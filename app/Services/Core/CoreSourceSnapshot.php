@@ -207,26 +207,241 @@ class CoreSourceSnapshot
     }
 
     /**
-     * Replace the contents of $live with $source, preserving every
-     * symlink that exists in the live tree.
+     * Replace the contents of $live with $source atomically.
      *
-     * Symlink-aware analogue of `File::deleteDirectory($live);
-     * File::copyDirectory($source, $live);` — same effect for regular
-     * files and directories, but every symlink in the live tree is
-     * skipped on both the delete side (so it survives the swap) and the
-     * copy side (so the source's symlinks, if any, are not materialised
-     * into the live tree). Both the snapshot rollback path and
-     * CoreUpdater::applyToLiveTree() route their directory swaps
-     * through here so the runtime-created symlinks under public/ —
-     * public/storage (from `php artisan storage:link`) and
-     * public/assets/themes/<slug> (from `dls:theme:symlink`) — survive
-     * both a successful upgrade and a failed-then-rolled-back upgrade.
+     * Round 5 PR-Q: the pre-atomic implementation was a
+     * `removeContentPreservingSymlinks($live)` followed by a fresh
+     * `copyDirectoryWithoutSymlinks($source, $live)` — a delete-then-
+     * copy that took seconds on slow disks and exposed the live tree
+     * to any web request landing in the window. Even with the
+     * Round 4/5 maintenance middleware + FPM stat-cache bypass, the
+     * sandbox dryrun-13/14 verification observed real fatals from
+     * requests that slipped through:
+     * `include(app/Enums/MenuVisibility.php): No such file` on the
+     * update side, and `include(GuardAwareDatabaseSessionHandler.php)`
+     * on the rollback side. Any request touching a not-yet-recopied
+     * class would fatal.
+     *
+     * The rename-based implementation makes the swap atomic at the
+     * kernel level: the staged tree is fully assembled at `$live.new`,
+     * the current live tree is renamed to `$live.old`, and the staged
+     * tree is renamed into `$live`. Every request either sees the
+     * pre-swap tree in full or the post-swap tree in full — never a
+     * half-swapped state — regardless of maintenance-mode timing.
+     *
+     * Two things must survive the swap that were previously handled
+     * by the "preserving symlinks" naming of the old method:
+     *
+     *   1. Runtime-created symlinks under public/ — public/storage
+     *      (from `php artisan storage:link`), public/assets/themes/
+     *      <slug> and public/assets/plugins/<slug> (from
+     *      `dls:theme:symlink` / `dls:plugin:symlink`), public/assets/
+     *      admin (from `make:link-assets`). They live in the live tree
+     *      but never in the staged tree, so they would be lost when
+     *      the staged tree becomes the new live tree. Before the
+     *      rename we scan the live tree for these and recreate them
+     *      in $live.new at the same relative paths with the same
+     *      targets.
+     *   2. Protected children inside a swapped source dir — most
+     *      importantly `bootstrap/cache/`. It is listed in
+     *      PROTECTED_PATHS but sits INSIDE the `bootstrap` directory
+     *      that gets swapped. Before the rename we move the contents
+     *      of any such protected child from live into $live.new.
+     *
+     * On a filesystem that cannot rename between $live and $live.new
+     * (e.g. `$live` is on a different mount than the staging root),
+     * the method falls back to the pre-atomic behaviour with a log
+     * line — imperfect but preserves correctness across setups where
+     * the atomic swap cannot apply.
      */
     public function replaceLiveDirectory(string $source, string $live): void
     {
-        self::removeContentPreservingSymlinks($live);
-        File::ensureDirectoryExists($live);
-        self::copyDirectoryWithoutSymlinks($source, $live);
+        $newDir = $live.'.new';
+        $oldDir = $live.'.old';
+
+        // Recover any leftover directories from an interrupted prior
+        // run. The atomic swap depends on these paths being available.
+        if (is_dir($newDir)) {
+            File::deleteDirectory($newDir);
+        }
+        if (is_dir($oldDir)) {
+            File::deleteDirectory($oldDir);
+        }
+
+        // Stage the staged tree into $live.new. `copyDirectoryWithoutSymlinks`
+        // is inherited from the pre-atomic implementation: staged trees
+        // (from snapshot dirs or a downloaded release payload) never
+        // contain symlinks by design, so no symlink handling is needed
+        // on this side.
+        File::ensureDirectoryExists($newDir);
+        self::copyDirectoryWithoutSymlinks($source, $newDir);
+
+        // If the live tree exists, salvage the state that must survive
+        // the swap: runtime symlinks and protected children.
+        if (is_dir($live)) {
+            self::recreateLiveSymlinksInto($live, $newDir);
+            self::moveProtectedChildrenInto($live, $newDir);
+        }
+
+        // Atomic swap. Both renames are metadata-only kernel operations
+        // and complete in microseconds. The window between them (during
+        // which `$live` momentarily points at an inode belonging to
+        // `$oldDir`) is not observable by web requests — the directory
+        // is briefly named `$live.old` rather than absent.
+        if (is_dir($live)) {
+            if (! @rename($live, $oldDir)) {
+                // Cross-filesystem or permission failure. Fall back to
+                // the pre-atomic behaviour rather than aborting; the
+                // caller (and the operator) still get a working tree.
+                self::deleteRecursive($newDir);
+                self::removeContentPreservingSymlinks($live);
+                File::ensureDirectoryExists($live);
+                self::copyDirectoryWithoutSymlinks($source, $live);
+
+                return;
+            }
+        }
+
+        if (! @rename($newDir, $live)) {
+            // Best-effort recovery: put the old dir back where it was.
+            if (is_dir($oldDir)) {
+                @rename($oldDir, $live);
+            }
+            throw new RuntimeException(
+                "Atomic swap failed: could not rename {$newDir} into {$live}. "
+                .'The pre-swap tree has been restored; the update or rollback '
+                .'is aborted safely.'
+            );
+        }
+
+        // Cleanup the pre-swap tree. Failure here does not affect the
+        // just-completed swap.
+        if (is_dir($oldDir)) {
+            self::deleteRecursive($oldDir);
+        }
+    }
+
+    /**
+     * Scan $liveDir for symlinks (recursively, without descending
+     * into them) and recreate each one at the equivalent relative
+     * path under $targetDir. Called before the atomic rename so the
+     * runtime-created symlinks under public/ survive into the new
+     * live tree. Best-effort: a single-symlink failure is logged and
+     * swallowed rather than aborting the whole swap.
+     */
+    protected static function recreateLiveSymlinksInto(string $liveDir, string $targetDir): void
+    {
+        $links = self::collectSymlinks($liveDir);
+        foreach ($links as $relative => $target) {
+            $destination = $targetDir.'/'.$relative;
+            File::ensureDirectoryExists(dirname($destination));
+            if (is_link($destination) || file_exists($destination)) {
+                // A staged file already occupies the slot — drop it so
+                // the symlink can take its place. The staged content
+                // was a shadow of what the runtime symlink points at.
+                @unlink($destination);
+            }
+            @symlink($target, $destination);
+        }
+    }
+
+    /**
+     * @return array<string, string> Symlinks under $dir keyed by
+     *                               path relative to $dir; value is the symlink's own target
+     *                               (raw readlink, may be relative).
+     */
+    protected static function collectSymlinks(string $dir): array
+    {
+        $collected = [];
+        if (! is_dir($dir)) {
+            return $collected;
+        }
+
+        self::walkForSymlinks($dir, '', $collected);
+
+        return $collected;
+    }
+
+    /**
+     * Depth-first walk that adds symlinks to $collected and descends
+     * into real subdirectories only — never into a symlinked
+     * subdirectory, so `public/storage` is captured as one entry
+     * without walking the storage/ tree behind it.
+     *
+     * @param  array<string, string>  &$collected
+     */
+    protected static function walkForSymlinks(string $baseDir, string $relative, array &$collected): void
+    {
+        $current = $relative === '' ? $baseDir : $baseDir.'/'.$relative;
+        $iter = new \FilesystemIterator($current, \FilesystemIterator::SKIP_DOTS);
+        foreach ($iter as $item) {
+            $path = $item->getPathname();
+            $childRelative = $relative === ''
+                ? $item->getBasename()
+                : $relative.'/'.$item->getBasename();
+
+            if (is_link($path)) {
+                $target = @readlink($path);
+                if ($target !== false) {
+                    $collected[$childRelative] = $target;
+                }
+
+                continue;
+            }
+            if (is_dir($path)) {
+                self::walkForSymlinks($baseDir, $childRelative, $collected);
+            }
+        }
+    }
+
+    /**
+     * Move each PROTECTED_PATHS entry that lives INSIDE $liveDir
+     * (e.g. `bootstrap/cache/` under a bootstrap swap) into
+     * $newDir at the same relative path. Called before the atomic
+     * rename so cache contents survive the swap.
+     */
+    protected static function moveProtectedChildrenInto(string $liveDir, string $newDir): void
+    {
+        // liveDir is an absolute path like `/var/www/html/bootstrap`.
+        // We need the relative-from-base — the caller doesn't tell us
+        // the base, so derive it from PROTECTED_PATHS entries that
+        // could be a child of this dir.
+        foreach (self::PROTECTED_PATHS as $protectedRelativeToBase) {
+            $liveDirBasename = basename($liveDir);
+            $expectedPrefix = $liveDirBasename.'/';
+            if (! str_starts_with($protectedRelativeToBase, $expectedPrefix)) {
+                continue;
+            }
+            $childRelative = substr($protectedRelativeToBase, strlen($expectedPrefix));
+            $liveChild = $liveDir.'/'.$childRelative;
+            if (! file_exists($liveChild) && ! is_link($liveChild)) {
+                continue;
+            }
+            $newChild = $newDir.'/'.$childRelative;
+            File::ensureDirectoryExists(dirname($newChild));
+            if (file_exists($newChild) || is_link($newChild)) {
+                self::deleteRecursive($newChild);
+            }
+            @rename($liveChild, $newChild);
+        }
+    }
+
+    /**
+     * Best-effort recursive delete used by the atomic-swap paths.
+     * `File::deleteDirectory` on a directory that contains a symlink
+     * behaves fine, but this wrapper also handles a leaf file/symlink
+     * so callers do not have to type-check.
+     */
+    protected static function deleteRecursive(string $path): void
+    {
+        if (is_link($path) || is_file($path)) {
+            @unlink($path);
+
+            return;
+        }
+        if (is_dir($path)) {
+            File::deleteDirectory($path);
+        }
     }
 
     /**

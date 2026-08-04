@@ -173,6 +173,22 @@ class CoreRollback extends Command
             Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
             $maintenanceOn = true;
 
+            // Round 5 residual: prime the FPM SAPI so workers see the
+            // maintenance sentinel before any source file moves. On the
+            // rollback path this window was worse than on the update
+            // path — the sandbox measured ~5 s of 200 responses after
+            // `down` before the entry stabilised, and requests slipped
+            // through into a mid-restore tree and fataled
+            // (`include(app/Enums/MenuVisibility.php)`,
+            // `include(GuardAwareDatabaseSessionHandler.php)`). Kicking
+            // PhpFpmReloader here closes the entry window without
+            // waiting for stat caches to age out on their own. See PR-Q
+            // for the primary fix (atomic swap in
+            // CoreSourceSnapshot::replaceLiveDirectory) — this hook is
+            // belt-and-braces.
+            $this->line('Priming FPM cache after maintenance sentinel write...');
+            app(\App\Services\Core\PhpFpmReloader::class)->reload();
+
             $this->line('Restoring core source from snapshot...');
             $snapshotter->restore($snapshotPath);
             $this->info('Core source restored (no npm run).');
