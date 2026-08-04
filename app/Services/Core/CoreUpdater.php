@@ -267,6 +267,20 @@ class CoreUpdater
             Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
             $maintenanceOn = true;
 
+            // Round 5 residual: force the FPM SAPI to see the maintenance
+            // sentinel BEFORE any source file moves. `Artisan::call('down')`
+            // wrote the sentinel from the CLI SAPI, but FPM workers might
+            // still be serving requests with their pre-down class map /
+            // stat cache; the PR-R stat-cache bypass in public/index.php
+            // helps but does not cover the composer-autoload layer that
+            // runs before Laravel boots. Kicking PhpFpmReloader here
+            // closes the entry-side window that the sandbox dryrun-13/14
+            // verification measured (~4-9 s of 200 responses under
+            // maint=ON with mid-swap fatals). Best-effort — same as the
+            // exit-side reload below.
+            $log('Priming FPM cache after maintenance sentinel write...');
+            $this->fpmReloader->reload();
+
             $log('Applying source over live tree...');
             $this->applyToLiveTree($payloadRoot);
             $log('Applied source.');
