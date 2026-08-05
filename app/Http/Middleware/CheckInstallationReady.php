@@ -300,22 +300,25 @@ class CheckInstallationReady
      * Overwrite the placeholder APP_URL in a freshly-created .env so the
      * installer issues correct asset / route URLs from the very first request.
      *
-     * Scheme detection order:
-     *   1. $request->isSecure() — honours TRUSTED_PROXIES if set
-     *   2. X-Forwarded-Proto header — read raw, since trusted proxies are
-     *      typically not yet configured during the install bootstrap
-     *   3. Cloudflare CF-Visitor JSON
-     *   4. Fallback to $request->getScheme()
-     *
-     * The host is read from $request->getHttpHost() which already respects
-     * X-Forwarded-Host when the proxy is trusted, and falls back to the Host
-     * header otherwise.
+     * SECURITY: the host comes from $request->getHttpHost() (the Host header,
+     * which is attacker-controllable and cannot be authenticated on a fresh
+     * install — no allow-list exists yet). We reject syntactically invalid
+     * hosts to block newline/control-char injection into .env, and the scheme
+     * is trusted only via TRUSTED_PROXIES (see detectRequestScheme). A spoofed
+     * first-request Host would otherwise poison password-reset / verification
+     * links, so the operator must still verify APP_URL after install. A future
+     * installer change should collect APP_URL from the wizard form rather than
+     * inferring it from the request.
      */
     private function seedAppUrl(Request $request, string $envPath): void
     {
         $scheme = $this->detectRequestScheme($request);
         $host = $request->getHttpHost();
-        if ($host === '') {
+        if ($host === '' || ! $this->isValidHost($host)) {
+            Log::channel('install')->warning('APP_URL seeding skipped: missing or invalid Host header', [
+                'host' => $host,
+            ]);
+
             return;
         }
 
@@ -353,9 +356,13 @@ class CheckInstallationReady
     }
 
     /**
-     * Detect the public scheme of the current request, even when the
-     * application is behind a reverse proxy whose IP is not yet listed in
-     * TRUSTED_PROXIES (which is the typical situation during initial install).
+     * Detect the public scheme of the current request.
+     *
+     * The scheme is trusted only via $request->isSecure(), which honours
+     * X-Forwarded-Proto exclusively through TRUSTED_PROXIES. Raw X-Forwarded-Proto
+     * and CF-Visitor headers are deliberately NOT read here: during install the
+     * trusted-proxy list is usually still empty, so believing those headers would
+     * let any client forge "https" and poison the seeded APP_URL.
      */
     private function detectRequestScheme(Request $request): string
     {
@@ -363,20 +370,26 @@ class CheckInstallationReady
             return 'https';
         }
 
-        $forwardedProto = $request->headers->get('X-Forwarded-Proto');
-        if (is_string($forwardedProto) && strtolower(trim(explode(',', $forwardedProto)[0])) === 'https') {
-            return 'https';
-        }
-
-        $cfVisitor = $request->headers->get('CF-Visitor');
-        if (is_string($cfVisitor) && $cfVisitor !== '') {
-            $decoded = json_decode($cfVisitor, true);
-            if (is_array($decoded) && ($decoded['scheme'] ?? null) === 'https') {
-                return 'https';
-            }
-        }
-
         return $request->getScheme() ?: 'http';
+    }
+
+    /**
+     * Whether a Host header value is a syntactically valid host[:port].
+     *
+     * Defence-in-depth against control-character / newline injection into the
+     * seeded APP_URL. It does NOT authenticate the host — on a fresh install no
+     * allow-list exists yet, so the operator must still verify APP_URL after
+     * installation.
+     */
+    private function isValidHost(string $host): bool
+    {
+        // hostname / IPv4, optional :port
+        if (preg_match('/^[A-Za-z0-9.\-]+(:\d{1,5})?$/', $host) === 1) {
+            return true;
+        }
+
+        // bracketed IPv6, optional :port
+        return preg_match('/^\[[0-9A-Fa-f:]+\](:\d{1,5})?$/', $host) === 1;
     }
 
     /**
