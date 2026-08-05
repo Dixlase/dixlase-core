@@ -60,10 +60,19 @@ class SafeMode
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Detect ?safe= parameter
+        // Detect ?safe= parameter.
+        //
+        // Safe mode disables CSP / plugins / theme for the current session, so
+        // activating it downgrades that session's security posture. Restrict
+        // activation to a SUPER_ADMIN (the site operator): otherwise any
+        // authenticated member could strip their own CSP, and a crafted
+        // "?safe=csp" link could trick a privileged user into disabling
+        // protections. Deactivation already requires a CSRF-protected POST
+        // (admin.safe-mode.disable).
         $safeParam = $request->query('safe');
+        $user = $request->user();
 
-        if ($safeParam !== null && auth()->check()) {
+        if ($safeParam !== null && $user && $user->role === \App\Enums\MemberRole::SUPER_ADMIN) {
             $modes = SafeModeEnum::fromUrlParam($safeParam);
 
             foreach ($modes as $mode) {
