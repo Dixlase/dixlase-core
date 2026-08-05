@@ -80,33 +80,41 @@ Route::prefix($adminUrl)->name('admin.')
             }
         });
 
-        // Login
+        // Login and every authentication entry/completion endpoint.
+        //
+        // A `:login` lockdown is an emergency control that blocks NEW
+        // authentications. Every route that can establish a session
+        // (password, passkey, email 2FA, recovery code) or begin a password
+        // reset must therefore sit inside this group — not just the password
+        // form — otherwise an attacker holding a stolen passkey, a live 2FA
+        // session, a recovery code, or a reset token could authenticate
+        // through an uncovered endpoint while the lockdown is active.
         Route::middleware([\App\Http\Middleware\CheckLockdown::class.':login'])->group(function () {
             Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
             Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
+
+            // Login identifier verification (check existence of email address/account name)
+            Route::post('/login/check-identifier', [AdminLoginIdentifierCheckController::class, 'check'])->name('login.check-identifier');
+
+            // Passkey login
+            Route::post('/login/passkey/challenge', [AdminPasskeyLoginController::class, 'getChallenge'])->name('login.passkey.challenge');
+            Route::post('/login/passkey/verify', [AdminPasskeyLoginController::class, 'verify'])->name('login.passkey.verify');
+
+            // Two-factor authentication (email)
+            Route::get('/two-fa-email', [AdminTwoFaController::class, 'showEmailChallenge'])->name('two-fa.email.show');
+            Route::post('/two-fa-email/verify', [AdminTwoFaController::class, 'verifyEmail'])->name('two-fa.email.verify');
+            Route::post('/two-fa-email/resend', [AdminTwoFaController::class, 'resendEmail'])->name('two-fa.email.resend');
+
+            // Recovery code
+            Route::get('/two-fa-recovery', [AdminTwoFaController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
+            Route::post('/two-fa-recovery', [AdminTwoFaController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
+
+            // Password reset
+            Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
+            Route::post('/forgot-password', [AdminPasswordResetLinkController::class, 'store'])->name('password.email');
+            Route::get('/reset-password/{token}', [AdminNewPasswordController::class, 'create'])->name('password.reset');
+            Route::post('/reset-password', [AdminNewPasswordController::class, 'store'])->name('password.store');
         });
-
-        // Login identifier verification (check existence of email address/account name)
-        Route::post('/login/check-identifier', [AdminLoginIdentifierCheckController::class, 'check'])->name('login.check-identifier');
-
-        // Passkey login
-        Route::post('/login/passkey/challenge', [AdminPasskeyLoginController::class, 'getChallenge'])->name('login.passkey.challenge');
-        Route::post('/login/passkey/verify', [AdminPasskeyLoginController::class, 'verify'])->name('login.passkey.verify');
-
-        // Two-factor authentication (email)
-        Route::get('/two-fa-email', [AdminTwoFaController::class, 'showEmailChallenge'])->name('two-fa.email.show');
-        Route::post('/two-fa-email/verify', [AdminTwoFaController::class, 'verifyEmail'])->name('two-fa.email.verify');
-        Route::post('/two-fa-email/resend', [AdminTwoFaController::class, 'resendEmail'])->name('two-fa.email.resend');
-
-        // Recovery code
-        Route::get('/two-fa-recovery', [AdminTwoFaController::class, 'showRecoveryCodeChallenge'])->name('two-fa.recovery-code.show');
-        Route::post('/two-fa-recovery', [AdminTwoFaController::class, 'verifyRecoveryCode'])->name('two-fa.recovery-code.confirm');
-
-        // Password reset
-        Route::get('/forgot-password', [AdminPasswordResetLinkController::class, 'create'])->name('password.request');
-        Route::post('/forgot-password', [AdminPasswordResetLinkController::class, 'store'])->name('password.email');
-        Route::get('/reset-password/{token}', [AdminNewPasswordController::class, 'create'])->name('password.reset');
-        Route::post('/reset-password', [AdminNewPasswordController::class, 'store'])->name('password.store');
 
         // Email verification (no authentication required, signed URL)
         Route::get('/verify-mail/{id}/{hash}', [AdminProfileController::class, 'verifyEmail'])
