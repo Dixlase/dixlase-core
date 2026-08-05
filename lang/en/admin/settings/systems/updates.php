@@ -102,6 +102,7 @@ return [
         'update_started' => 'The update has started. This page will refresh automatically until it completes.',
         'already_in_progress' => 'A plugin/theme update batch is already running. Wait for it to finish before starting a new one.',
         'core_update_complete' => 'Core update complete: v:from → v:to.',
+        'core_rollback_complete' => 'Core rollback complete: v:from → v:to.',
         'update_complete_frame' => 'Updated :subject.',
         'update_complete_plugins' => 'plugin(s) :names',
         'update_complete_themes' => 'theme(s) :names',

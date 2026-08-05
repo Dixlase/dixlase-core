@@ -41,6 +41,7 @@ use App\Models\CoreVersionHistory;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
+use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -246,6 +247,20 @@ class CoreRollback extends Command
             // steps back to the PREVIOUS update rather than repeating this
             // one. The DB backup is retained as a safety net.
             $snapshotter->discard($snapshotPath);
+
+            // Record completion for the System Updates page's one-shot
+            // "rollback complete" flash. Mirrors CoreUpdater: the web UI runs
+            // this rollback detached and cannot flash directly, so this is
+            // written before the finally block clears the in-progress flag —
+            // index() surfaces it as soon as the flag is gone. 'operation' =>
+            // 'rollback' selects the rollback message over the update one.
+            SystemUpdateFlash::record([
+                'status' => 'success',
+                'kind' => 'core',
+                'operation' => 'rollback',
+                'from' => $current !== '' ? $current : $to,
+                'to' => $from,
+            ]);
 
             $this->info("Core rolled back to v{$from}.");
             $this->line("Pre-rollback state kept at: {$safetySnapshot}");

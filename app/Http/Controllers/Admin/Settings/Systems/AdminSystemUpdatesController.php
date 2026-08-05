@@ -876,7 +876,11 @@ HTML;
     protected function buildUpdateCompleteFlash(array $result): string
     {
         if (($result['kind'] ?? '') === 'core') {
-            return __('admin/settings/systems/updates.messages.core_update_complete', [
+            $key = (($result['operation'] ?? null) === 'rollback')
+                ? 'admin/settings/systems/updates.messages.core_rollback_complete'
+                : 'admin/settings/systems/updates.messages.core_update_complete';
+
+            return __($key, [
                 'from' => (string) ($result['from'] ?? ''),
                 'to' => (string) ($result['to'] ?? ''),
             ]);
