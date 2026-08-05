@@ -39,7 +39,6 @@ use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use App\Http\Controllers\Front\LocaleSwitchController;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 // CSP violation report endpoint (no auth, session/CSP middleware excluded).
@@ -57,6 +56,14 @@ Route::post('/csp-report', [CspReportController::class, 'report'])
 // Session/CSRF middleware are excluded so concurrent GETs don't fight over
 // the session id and accidentally invalidate the admin's session.
 Route::get('assets/{type}/{file}', function ($type, $file) {
+    // Reject path traversal before $file is used to build any filesystem
+    // path. $file feeds both the plugin directory segment and the file name
+    // below, so a single "../" would otherwise escape the assets root and
+    // expose arbitrary files (.env, logs, database) to anonymous requests.
+    if (str_contains($file, '..') || str_contains($file, "\0")) {
+        abort(404);
+    }
+
     $basePath = match ($type) {
         'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'),
         'admin' => base_path('resources/admin/assets'),
@@ -64,12 +71,17 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
         default => abort(404),
     };
 
-    $filePath = "{$basePath}/{$file}";
-    if (! File::exists($filePath)) {
+    // Containment check: the resolved target must stay inside the resolved
+    // base directory. realpath() returns false for a nonexistent path, which
+    // also covers the previous File::exists() guard.
+    $realBase = realpath($basePath);
+    $realFile = realpath("{$basePath}/{$file}");
+    if ($realBase === false || $realFile === false
+        || ! str_starts_with($realFile, $realBase.DIRECTORY_SEPARATOR)) {
         abort(404);
     }
 
-    return response()->file($filePath);
+    return response()->file($realFile);
 })
     ->where('file', '.*')
     ->withoutMiddleware([
