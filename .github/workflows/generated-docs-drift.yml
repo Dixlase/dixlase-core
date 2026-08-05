@@ -108,17 +108,20 @@ jobs:
           php artisan key:generate
 
       # The dls:license/readme/plugin-api:generate commands come from
-      # DixlaseCoreDevKit's ServiceProvider, which only boots for plugins
-      # listed in the enabled-plugins cache — normally populated from the
-      # database. This job has no database (docs are generated from core app/
-      # + CoreDevKit templates, not from DB), so having CoreDevKit merely
-      # on disk is not enough: seed the cache directly to enable it. No other
-      # plugin needs enabling, which also avoids booting their providers
-      # without a database.
+      # DixlaseCoreDevKit's ServiceProvider. PluginServiceProvider registers
+      # plugin providers only when BOTH (1) the app is marked installed and
+      # (2) the plugin is listed in the enabled-plugins cache — which is
+      # normally populated from the database. This job has no database (docs
+      # are generated from core app/ + CoreDevKit templates, not the DB), so
+      # having CoreDevKit merely on disk is not enough: mark the app installed
+      # and seed the cache with CoreDevKit. Only CoreDevKit is enabled, which
+      # also avoids booting other providers without a database.
       - name: Enable DixlaseCoreDevKit so its generators register
         run: |
+          sed -i 's/^INSTALLED=.*/INSTALLED=true/' .env
           mkdir -p storage/framework/cache
           printf "<?php\n\nreturn ['DixlaseCoreDevKit'];\n" > storage/framework/cache/enabled_plugins.php
+          grep '^INSTALLED=' .env
           cat storage/framework/cache/enabled_plugins.php
 
       - name: Regenerate the generated documents
