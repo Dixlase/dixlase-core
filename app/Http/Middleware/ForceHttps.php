@@ -129,16 +129,16 @@ class ForceHttps
      * Detect HTTPS, including the reverse-proxy / IAP case where
      * X-Forwarded-Proto carries the original scheme.
      *
-     * Note: X-Forwarded-Proto is only honoured when the upstream proxy is
-     * declared in TRUSTED_PROXIES. See config/trustedproxy.php.
+     * X-Forwarded-Proto is honoured only through Laravel's TrustProxies (via
+     * $request->isSecure()), i.e. only when the upstream proxy is declared in
+     * TRUSTED_PROXIES. See config/trustedproxy.php. The header must never be
+     * read directly here: with no trusted proxy configured (the default) any
+     * client could forge "X-Forwarded-Proto: https" to bypass HTTPS
+     * enforcement and suppress HSTS (an SSL-strip primitive).
      */
     protected function requestIsSecure(Request $request): bool
     {
-        if ($request->isSecure()) {
-            return true;
-        }
-
-        return $request->header('X-Forwarded-Proto') === 'https';
+        return $request->isSecure();
     }
 
     protected function isExcludedPath(Request $request): bool
