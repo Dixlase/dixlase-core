@@ -72,14 +72,26 @@ class ContentSecurityPolicy
      */
     public function handle(Request $request, Closure $next, ?string $context = null): Response
     {
-        // Skip if CSP is disabled
+        // The non-CSP security headers (X-Frame-Options, X-Content-Type-Options,
+        // Referrer-Policy, Permissions-Policy) must be present on EVERY response
+        // — error pages (>=400), non-HTML responses, excluded paths, and when CSP
+        // is disabled. Only the Content-Security-Policy header itself is gated on
+        // a successful HTML response.
+
+        // CSP disabled: still emit the baseline security headers.
         if (! $this->builder->isEnabled()) {
-            return $next($request);
+            $response = $next($request);
+            $this->addSecurityHeaders($response);
+
+            return $response;
         }
 
-        // Check excluded paths
+        // Excluded path: skip CSP processing but still emit security headers.
         if ($this->isExcludedPath($request)) {
-            return $next($request);
+            $response = $next($request);
+            $this->addSecurityHeaders($response);
+
+            return $response;
         }
 
         // Store nonce in request (for use in Blade)
@@ -98,7 +110,10 @@ class ContentSecurityPolicy
         // Get response
         $response = $next($request);
 
-        // Add CSP header only to HTML responses
+        // Baseline security headers on every response (including >=400 / non-HTML).
+        $this->addSecurityHeaders($response);
+
+        // Add the CSP header only to successful HTML responses.
         if ($this->shouldAddCspHeader($response)) {
             // Add nonce to scripts inserted by Laravel Boost (development environment only)
             if (! app()->environment('production')) {
@@ -113,13 +128,8 @@ class ContentSecurityPolicy
             // defer to default browser behavior by not adding the header itself
             if ($headerValue !== '') {
                 $response->headers->set($headerName, $headerValue);
-            }
 
-            // Additional security headers (added even when CSP is disabled)
-            $this->addSecurityHeaders($response);
-
-            // Route-level frame-ancestors override (for iframe preview in admin panel)
-            if ($headerValue !== '') {
+                // Route-level frame-ancestors override (for iframe preview in admin panel)
                 $this->overrideFrameAncestorsIfRequested($request, $response, $headerName);
             }
         }
