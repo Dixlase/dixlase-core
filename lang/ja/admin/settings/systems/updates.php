@@ -102,6 +102,7 @@ return [
         'update_started' => 'アップデートを開始しました。完了するまでこのページは自動で再読み込みされます。',
         'already_in_progress' => 'プラグイン／テーマの一括アップデートが既に実行中です。完了してから新しい操作を開始してください。',
         'core_update_complete' => 'コアのアップデートが完了しました: v:from → v:to',
+        'core_rollback_complete' => 'コアのロールバックが完了しました: v:from → v:to',
         'update_complete_frame' => ':subjectをアップデートしました。',
         'update_complete_plugins' => 'プラグイン:names',
         'update_complete_themes' => 'テーマ:names',
