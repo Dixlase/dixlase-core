@@ -190,14 +190,39 @@ class CoreRollback extends Command
             $this->line('Priming FPM cache after maintenance sentinel write...');
             app(\App\Services\Core\PhpFpmReloader::class)->reload();
 
+            // Round 6 fix: reverse the SCHEMA before restoring the source.
+            // The `down()` implementation for every migration this update
+            // added lives in the NEW (about-to-be-rolled-back) version's
+            // migration files. If we restore the old source first,
+            // `migrate:rollback` loads its target list from
+            // `dls_migrations` but cannot find the files on disk, so it
+            // silent-skips each one — the schema stays applied, the row
+            // stays in `dls_migrations`, and the command reports
+            // "Schema rollback complete" while the update's schema
+            // changes remain live.
+            //
+            // Running `rollbackSchema()` first mirrors the update path
+            // (update = apply new source, then run its `up()`; rollback
+            // = run the new `down()`, then restore old source) and has
+            // the bonus that a `migrate:rollback` failure aborts before
+            // any file on disk changes — the operator can retry against
+            // a still-consistent state.
+            //
+            // vendor and cache clears stay AFTER the source restore so
+            // they operate on the rolled-back tree.
+            $this->rollbackSchema($meta);
+
             $this->line('Restoring core source from snapshot...');
             $snapshotter->restore($snapshotPath);
             $this->info('Core source restored (no npm run).');
 
-            // Reset opcache after the source swap so the migrate step
-            // below and any callers reaching into the freshly-restored
-            // files see the rolled-back copies rather than opcache-cached
-            // entries from the just-replaced tree.
+            // Reset opcache after the source swap so any classes
+            // referenced by the CLI process for the remainder of this
+            // command (cache-clear artisan calls below, the vendor
+            // refetch closure, etc.) resolve against the rolled-back
+            // tree rather than opcache-cached entries from the just-
+            // replaced files. `rollbackSchema()` above ran before the
+            // swap and did not depend on this reset.
             if (function_exists('opcache_reset')) {
                 @opcache_reset();
                 $this->line('Reset opcache after source restore.');
@@ -211,8 +236,6 @@ class CoreRollback extends Command
                 $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l));
                 $this->info('vendor/ restored to match the rolled-back source.');
             }
-
-            $this->rollbackSchema($meta);
 
             $this->line('Clearing caches...');
             Artisan::call('config:clear');
