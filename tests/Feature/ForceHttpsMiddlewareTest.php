@@ -72,8 +72,10 @@ class ForceHttpsMiddlewareTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function test_request_with_forwarded_proto_https_not_redirected(): void
+    public function test_untrusted_forwarded_proto_https_is_still_redirected(): void
     {
+        // Without a trusted proxy, X-Forwarded-Proto must NOT be believed —
+        // otherwise any client could forge it to strip HTTPS enforcement.
         config(['app.force_ssl' => true]);
 
         $request = Request::create('http://example.com/admin/login', 'GET');
@@ -81,7 +83,35 @@ class ForceHttpsMiddlewareTest extends TestCase
 
         $response = $this->middleware->handle($request, fn ($req) => response('OK'));
 
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(
+            301,
+            $response->getStatusCode(),
+            'A forged X-Forwarded-Proto from an untrusted client must not bypass the HTTPS redirect.',
+        );
+    }
+
+    public function test_trusted_proxy_forwarded_proto_https_not_redirected(): void
+    {
+        // When the connecting IP is a declared trusted proxy, the forwarded
+        // scheme IS honoured (the legitimate reverse-proxy / IAP case).
+        config(['app.force_ssl' => true]);
+        Request::setTrustedProxies(
+            ['127.0.0.1'],
+            Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        try {
+            $request = Request::create('http://example.com/admin/login', 'GET');
+            $request->server->set('REMOTE_ADDR', '127.0.0.1');
+            $request->headers->set('X-Forwarded-For', '203.0.113.7');
+            $request->headers->set('X-Forwarded-Proto', 'https');
+
+            $response = $this->middleware->handle($request, fn ($req) => response('OK'));
+
+            $this->assertEquals(200, $response->getStatusCode());
+        } finally {
+            Request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
+        }
     }
 
     public function test_install_routes_excluded_from_redirect(): void
@@ -206,8 +236,10 @@ class ForceHttpsMiddlewareTest extends TestCase
         );
     }
 
-    public function test_hsts_header_emitted_when_request_is_https_via_forwarded_proto(): void
+    public function test_hsts_not_emitted_for_untrusted_forwarded_proto(): void
     {
+        // A forged X-Forwarded-Proto from an untrusted client must not make the
+        // app believe the connection is HTTPS, so no HSTS header is emitted.
         config([
             'security.hsts.max_age' => 86400,
             'security.hsts.include_subdomains' => false,
@@ -219,9 +251,38 @@ class ForceHttpsMiddlewareTest extends TestCase
 
         $response = $this->middleware->handle($request, fn ($req) => response('OK'));
 
-        $this->assertSame(
-            'max-age=86400',
-            $response->headers->get('Strict-Transport-Security'),
+        $this->assertFalse(
+            $response->headers->has('Strict-Transport-Security'),
+            'HSTS must NOT be emitted for a forged forwarded-proto from an untrusted client.',
         );
+    }
+
+    public function test_hsts_emitted_when_https_via_trusted_proxy(): void
+    {
+        config([
+            'security.hsts.max_age' => 86400,
+            'security.hsts.include_subdomains' => false,
+            'security.hsts.preload' => false,
+        ]);
+        Request::setTrustedProxies(
+            ['127.0.0.1'],
+            Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        try {
+            $request = Request::create('http://example.com/', 'GET');
+            $request->server->set('REMOTE_ADDR', '127.0.0.1');
+            $request->headers->set('X-Forwarded-For', '203.0.113.7');
+            $request->headers->set('X-Forwarded-Proto', 'https');
+
+            $response = $this->middleware->handle($request, fn ($req) => response('OK'));
+
+            $this->assertSame(
+                'max-age=86400',
+                $response->headers->get('Strict-Transport-Security'),
+            );
+        } finally {
+            Request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
+        }
     }
 }
