@@ -57,7 +57,7 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
                 <span><i class="fas fa-user mr-1" aria-hidden="true"></i>{{ __('admin/demo.account') }}: <strong>{{ config('dixlase.demo_account') }}</strong></span>
             @endif
             <a href="{{ url('/') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
-            <span class="whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}: {{ route('admin.login') }}</span>
+            <a href="{{ route('admin.login') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}</a>
             @if(config('dixlase.demo_expires_at'))
                 {{-- Rendered as an ISO-8601 UTC timestamp; the script below
                      rewrites it to each visitor's local time. The " UTC"
