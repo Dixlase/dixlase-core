@@ -49,9 +49,11 @@ class CspServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register CspNonceGenerator as a singleton
-        // To use the same nonce for each request
-        $this->app->singleton(CspNonceGenerator::class, function ($app) {
+        // Register CspNonceGenerator as request-scoped: one nonce per request
+        // under PHP-FPM, and flushed between requests under Octane / any
+        // long-lived worker (a singleton would reuse one nonce across requests
+        // there, defeating the nonce).
+        $this->app->scoped(CspNonceGenerator::class, function ($app) {
             return new CspNonceGenerator();
         });
 

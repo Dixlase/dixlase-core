@@ -197,7 +197,7 @@ class CheckInstallationReady
         if (! $isInstalled) {
             // Handle uninstalled state
 
-            if ($request->is('install*') || $request->is('install/*')) {
+            if ($request->is('install') || $request->is('install/*')) {
                 // Access within install routes
 
                 if ($request->is('install/complete')) {
