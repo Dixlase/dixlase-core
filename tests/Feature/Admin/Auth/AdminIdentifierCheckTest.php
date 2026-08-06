@@ -217,6 +217,7 @@ class AdminIdentifierCheckTest extends TestCase
             'login' => 'admin@example.com',
         ]);
 
-        $this->assertNotNull(session('captcha_verified_admin@example.com'));
+        // The identifier is hashed into the session key (see LoginIdentifierCheckTrait).
+        $this->assertNotNull(session('captcha_verified_'.hash('sha256', 'admin@example.com')));
     }
 }

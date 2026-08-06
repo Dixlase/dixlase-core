@@ -102,8 +102,11 @@ trait LoginIdentifierCheckTrait
             ], 422);
         }
 
-        // Store CAPTCHA verified flag in session (valid for 5 minutes)
-        session()->put('captcha_verified_'.$login, time());
+        // Store CAPTCHA verified flag in session (valid for 5 minutes).
+        // Hash the identifier so an attacker-controlled login string cannot
+        // inflate the session with unbounded keys. LoginTrait reads with the
+        // same derivation.
+        session()->put('captcha_verified_'.hash('sha256', (string) $login), time());
 
         // Get lockout settings
         $settingModelClass = $this->getSettingModelClass();

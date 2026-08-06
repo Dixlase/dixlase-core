@@ -239,8 +239,9 @@ trait LoginTrait
         // Determine if input value is email address or account name
         $isEmail = str_contains($login, '@');
 
-        // CAPTCHA verification (skip if already verified in identifier check)
-        $captchaVerifiedKey = 'captcha_verified_'.$login;
+        // CAPTCHA verification (skip if already verified in identifier check).
+        // Key derivation must match LoginIdentifierCheckTrait (hashed identifier).
+        $captchaVerifiedKey = 'captcha_verified_'.hash('sha256', (string) $login);
         $captchaVerifiedTime = session()->get($captchaVerifiedKey);
         $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // Within 5 minutes
 
