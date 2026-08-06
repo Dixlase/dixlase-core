@@ -205,28 +205,40 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiRequest::class,
         ]);
 
-        // Middleware group for plugin (basic)
+        // Middleware group for plugin (basic).
+        //
+        // Mirrors Laravel's `web` stack order (cookie encryption -> queued
+        // cookies -> session -> errors -> CSRF -> bindings) so plugin routes
+        // are stateful-safe by default. EncryptCookies and ValidateCsrfToken
+        // were previously omitted, leaving these groups CSRF-unsafe — a serious
+        // gap for the session-authenticated plugin.admin group below.
         $middleware->group('plugin', [
-            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
 
         // For plugin frontend (IP restriction enforced)
         $middleware->group('plugin.web', [
-            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\FrontIpFilter::class, // Enforce IP restriction
         ]);
 
         // For plugin admin panel (authentication + IP restriction enforced)
         $middleware->group('plugin.admin', [
-            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Authenticate::class.':member', // Enforce authentication
             \App\Http\Middleware\AdminIpFilter::class, // Enforce IP restriction

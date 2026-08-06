@@ -110,4 +110,25 @@ class SafeModeSecurityTest extends TestCase
 
         $this->assertNull(session('safe_mode_invalid_mode'));
     }
+
+    public function test_safe_mode_not_activated_for_non_super_admin(): void
+    {
+        // Regression: activation must be SUPER_ADMIN-only. A regular admin (or
+        // any lower role) must NOT be able to strip CSP for their session via
+        // a ?safe= link.
+        $regularAdmin = Member::create([
+            'account_name' => 'regular-admin',
+            'display_name' => 'Regular Admin',
+            'email' => 'regular-admin@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'role' => MemberRole::ADMIN,
+            'status' => MemberStatus::Active,
+        ]);
+
+        $this->actingAs($regularAdmin, 'member')
+            ->get(route('admin.dashboard', ['safe' => 'csp']));
+
+        $this->assertNull(session('safe_mode_csp'));
+    }
 }

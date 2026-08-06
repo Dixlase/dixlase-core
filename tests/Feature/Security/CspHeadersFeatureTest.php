@@ -209,10 +209,25 @@ class CspHeadersFeatureTest extends TestCase
 
         $response = $this->actingAs($member)->get(route('admin.dashboard'));
 
-        // CSPが無効の場合、ヘッダーは付与されない
-        // ただし、他のセキュリティヘッダーは付与される可能性がある
-        // このテストはCSP固有のヘッダーのみをチェック
-        $this->assertTrue(true); // CSP無効時の動作は実装依存
+        // With CSP disabled the Content-Security-Policy header is gone, but the
+        // baseline security headers MUST still be emitted (regression: they used
+        // to be dropped together with CSP on the isEnabled() early return).
+        $this->assertFalse($response->headers->has('Content-Security-Policy'));
+        $this->assertFalse($response->headers->has('Content-Security-Policy-Report-Only'));
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    }
+
+    public function test_security_headers_present_on_error_response(): void
+    {
+        // Regression: error responses (>=400) used to receive no security
+        // headers because shouldAddCspHeader() returns false for them.
+        $response = $this->get('/this-route-does-not-exist-xyz');
+
+        $response->assertStatus(404);
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
     }
 
     // ========================================
