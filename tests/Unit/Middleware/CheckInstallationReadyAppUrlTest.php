@@ -62,28 +62,52 @@ class CheckInstallationReadyAppUrlTest extends TestCase
         $this->assertSame('https', $this->detectScheme->invoke($this->middleware, $request));
     }
 
-    public function test_detect_uses_x_forwarded_proto_when_request_is_not_trusted_as_secure(): void
+    public function test_detect_ignores_untrusted_x_forwarded_proto(): void
     {
+        // Without a trusted proxy, a raw X-Forwarded-Proto must NOT be believed,
+        // otherwise a client could forge the seeded APP_URL scheme.
         $request = Request::create('http://dixlase.org/install', 'GET');
         $request->headers->set('X-Forwarded-Proto', 'https');
 
-        $this->assertSame('https', $this->detectScheme->invoke($this->middleware, $request));
+        $this->assertSame('http', $this->detectScheme->invoke($this->middleware, $request));
     }
 
-    public function test_detect_uses_first_entry_of_comma_separated_forwarded_proto(): void
+    public function test_detect_honours_forwarded_proto_from_trusted_proxy(): void
     {
+        Request::setTrustedProxies(
+            ['127.0.0.1'],
+            Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        try {
+            $request = Request::create('http://dixlase.org/install', 'GET');
+            $request->server->set('REMOTE_ADDR', '127.0.0.1');
+            $request->headers->set('X-Forwarded-For', '203.0.113.9');
+            $request->headers->set('X-Forwarded-Proto', 'https');
+
+            $this->assertSame('https', $this->detectScheme->invoke($this->middleware, $request));
+        } finally {
+            Request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_PROTO);
+        }
+    }
+
+    public function test_detect_ignores_comma_separated_untrusted_forwarded_proto(): void
+    {
+        // The raw multi-value parsing is gone; without a trusted proxy the
+        // header is ignored entirely.
         $request = Request::create('http://dixlase.org/install', 'GET');
         $request->headers->set('X-Forwarded-Proto', 'https, http');
 
-        $this->assertSame('https', $this->detectScheme->invoke($this->middleware, $request));
+        $this->assertSame('http', $this->detectScheme->invoke($this->middleware, $request));
     }
 
-    public function test_detect_uses_cloudflare_cf_visitor_header(): void
+    public function test_detect_ignores_cloudflare_cf_visitor_header(): void
     {
+        // CF-Visitor is a raw, unauthenticated header and is no longer trusted.
         $request = Request::create('http://dixlase.org/install', 'GET');
         $request->headers->set('CF-Visitor', json_encode(['scheme' => 'https']));
 
-        $this->assertSame('https', $this->detectScheme->invoke($this->middleware, $request));
+        $this->assertSame('http', $this->detectScheme->invoke($this->middleware, $request));
     }
 
     public function test_detect_falls_back_to_plain_http_when_no_forwarded_headers(): void
@@ -120,16 +144,17 @@ class CheckInstallationReadyAppUrlTest extends TestCase
         @unlink($envPath);
     }
 
-    public function test_seed_picks_up_proxy_provided_https_scheme(): void
+    public function test_seed_ignores_untrusted_proxy_scheme(): void
     {
         $envPath = $this->makeTempEnv("APP_URL=http://localhost\n");
-        // http request body — but proxy says the public scheme is https.
+        // A raw X-Forwarded-Proto from an untrusted client must not upgrade the
+        // seeded scheme — it stays http.
         $request = Request::create('http://dixlase.org/install', 'GET');
         $request->headers->set('X-Forwarded-Proto', 'https');
 
         $this->seedAppUrl->invoke($this->middleware, $request, $envPath);
 
-        $this->assertStringContainsString('APP_URL=https://dixlase.org', file_get_contents($envPath));
+        $this->assertStringContainsString('APP_URL=http://dixlase.org', file_get_contents($envPath));
 
         @unlink($envPath);
     }
