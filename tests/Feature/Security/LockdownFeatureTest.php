@@ -130,6 +130,48 @@ class LockdownFeatureTest extends TestCase
         $response->assertStatus(503);
     }
 
+    public function test_login_lockdown_blocks_all_authentication_endpoints(): void
+    {
+        // Regression for the lockdown-coverage gap: a `:login` lockdown must
+        // cover every route that can establish a session (password, passkey,
+        // email 2FA, recovery code) or begin a reset — not just /login.
+        LockdownService::activate(
+            type: LockdownStatus::TYPE_LOGIN,
+            reason: 'Credential stuffing'
+        );
+
+        $postRoutes = [
+            'admin.login.check-identifier',
+            'admin.login.passkey.challenge',
+            'admin.login.passkey.verify',
+            'admin.two-fa.email.verify',
+            'admin.two-fa.email.resend',
+            'admin.two-fa.recovery-code.confirm',
+            'admin.password.email',
+            'admin.password.store',
+        ];
+
+        foreach ($postRoutes as $name) {
+            $this->post(route($name))->assertStatus(
+                503,
+                "Route {$name} must be blocked during a login lockdown."
+            );
+        }
+
+        $getRoutes = [
+            'admin.two-fa.email.show',
+            'admin.two-fa.recovery-code.show',
+            'admin.password.request',
+        ];
+
+        foreach ($getRoutes as $name) {
+            $this->get(route($name))->assertStatus(
+                503,
+                "Route {$name} must be blocked during a login lockdown."
+            );
+        }
+    }
+
     // ========================================
     // SUPER_ADMIN例外テスト
     // ========================================
