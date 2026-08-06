@@ -107,6 +107,21 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      # The dls:license/readme/plugin-api:generate commands live in
+      # DixlaseCoreDevKit's ServiceProvider. Going through PluginServiceProvider's
+      # normal enable path requires INSTALLED=true AND a database (it refreshes
+      # the enabled-plugins cache from the DB) — neither is present here, and a
+      # database would drop CoreDevKit from the cache anyway. Instead register
+      # the provider directly in bootstrap/providers.php: its register() only
+      # merges config and registers console commands (no DB, no install gate),
+      # so the generators become available without a database or an installed
+      # app. bootstrap/providers.php is not one of the compared documents, so
+      # this ephemeral edit does not affect the drift result.
+      - name: Register DixlaseCoreDevKit's document generators
+        run: |
+          php -r '$f="bootstrap/providers.php"; $a=require $f; $p="Plugins\\DixlaseCoreDevKit\\App\\Providers\\DixlaseCoreDevKitServiceProvider"; if(!in_array($p,$a,true)){$a[]=$p;} file_put_contents($f,"<?php".PHP_EOL.PHP_EOL."return ".var_export($a,true).";".PHP_EOL);'
+          tail -3 bootstrap/providers.php
+
       - name: Regenerate the generated documents
         run: |
           php artisan dls:license:generate --lang=en
@@ -136,7 +151,12 @@ jobs:
             PLUGIN-API.md
           )
 
-          if git diff --quiet -- "${TARGETS[@]}"; then
+          # -I ignores hunks whose changed lines all match the pattern. The
+          # PLUGIN-API "Last Updated" line is stamped with date('Y-m-d') on
+          # every generation, so without this it registers as perpetual drift
+          # (the check could never pass). Real content changes still fail.
+          IGNORE='^\*\*Last Updated:\*\*'
+          if git diff --quiet -I"$IGNORE" -- "${TARGETS[@]}"; then
             echo "No drift: every generated document matches its template."
             exit 0
           fi
@@ -155,5 +175,5 @@ jobs:
           echo "  - Template is right -> run the generators locally and commit"
           echo "    the regenerated documents."
           echo
-          git diff -- "${TARGETS[@]}"
+          git diff -I"$IGNORE" -- "${TARGETS[@]}"
           exit 1
