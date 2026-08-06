@@ -315,7 +315,7 @@ class ApiKey extends Model
      */
     public function hasScope(string $scope): bool
     {
-        return in_array($scope, $this->scopes ?? []);
+        return in_array($scope, $this->scopes ?? [], true);
     }
 
     /**
@@ -342,14 +342,17 @@ class ApiKey extends Model
     /**
      * Check if access from specified IP is allowed
      */
-    public function allowsIp(string $ip): bool
+    public function allowsIp(?string $ip): bool
     {
         // Allow all IPs if allowed IP list is empty
         if (empty($this->allowed_ips)) {
             return true;
         }
 
-        return in_array($ip, $this->allowed_ips);
+        // Null-safe (an unresolved client IP is denied against a non-empty
+        // list rather than throwing a TypeError) and CIDR-capable, matching
+        // the core IP allow-list semantics used elsewhere.
+        return \App\Helpers\IpAccessControlHelper::ipMatchesAny($ip, $this->allowed_ips);
     }
 
     /**

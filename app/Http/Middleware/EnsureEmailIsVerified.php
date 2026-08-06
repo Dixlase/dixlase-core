@@ -64,7 +64,11 @@ class EnsureEmailIsVerified
     {
         // Use member guard for admin panel
         // Note: For my page (user), use EnsureUserEmailIsVerified from the plugin side
-        $guard = \App\Helpers\AdminHelper::isAdminRequest($request) ? 'member' : 'web';
+        // Non-admin requests resolve the front 'user' guard. The previous
+        // 'web' fallback is not a defined guard (config/auth.php defines only
+        // 'member' and 'user'), so applying the `verified` alias to a
+        // non-admin route threw "Auth guard [web] is not defined" (500).
+        $guard = \App\Helpers\AdminHelper::isAdminRequest($request) ? 'member' : 'user';
         $user = auth($guard)->user();
 
         if (

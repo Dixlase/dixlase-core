@@ -162,8 +162,11 @@ class AppServiceProvider extends ServiceProvider
         // Register route slug registry as singleton
         $this->app->singleton(RouteSlugRegistry::class);
 
-        // Register CSP Nonce Generator as singleton (use same nonce value per request)
-        $this->app->singleton(\App\Services\Csp\CspNonceGenerator::class);
+        // Register CSP Nonce Generator as request-scoped: one nonce per request
+        // under PHP-FPM, and correctly flushed between requests under Octane /
+        // any long-lived worker (a singleton would reuse one nonce forever there,
+        // defeating the nonce).
+        $this->app->scoped(\App\Services\Csp\CspNonceGenerator::class);
 
         // Register legal page registry service as singleton
         $this->app->singleton(LegalPageService::class);
