@@ -3,7 +3,6 @@
 namespace Tests\Unit\Services\Backup;
 
 use App\Contracts\Backup\BackupServiceInterface;
-use App\DTO\Backup\BackupResultDTO;
 use App\Models\BackupRecord;
 use App\Services\Backup\CoreBackupService;
 use App\Services\Verification\CoreFileVerificationService;
@@ -16,9 +15,18 @@ class CoreBackupServiceTest extends TestCase
 
     private CoreBackupService $service;
 
+    /** Throwaway stand-in for custom/, relative to base_path(). */
+    private string $customDirRelative;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Keep the backup target off the real custom/ directory — see the
+        // matching note in CoreRestoreServiceTest.
+        $this->customDirRelative = 'storage/framework/testing/custom-'.uniqid();
+        config(['custom.custom_files_dir' => $this->customDirRelative]);
+        @mkdir(base_path($this->customDirRelative), 0755, true);
 
         $this->service = new CoreBackupService(new CoreFileVerificationService());
     }
@@ -27,6 +35,7 @@ class CoreBackupServiceTest extends TestCase
     {
         // テストで生成したバックアップファイルとtempディレクトリを削除
         $this->cleanupBackupFiles();
+        @rmdir(base_path($this->customDirRelative));
 
         parent::tearDown();
     }
@@ -205,11 +214,8 @@ class CoreBackupServiceTest extends TestCase
     public function test_backup_custom_directory(): void
     {
         // custom/ ディレクトリにテストファイルを配置
-        $customDir = base_path('custom');
+        $customDir = base_path($this->customDirRelative);
         $testFile = $customDir.'/backup-test-'.uniqid().'.txt';
-        if (! is_dir($customDir)) {
-            mkdir($customDir, 0755, true);
-        }
         file_put_contents($testFile, 'test content');
 
         try {
