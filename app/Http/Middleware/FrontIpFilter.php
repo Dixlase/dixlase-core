@@ -52,8 +52,11 @@ class FrontIpFilter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Do not apply restrictions in the local environment
-        if (app()->environment('local')) {
+        // Skip IP restriction only in local development (APP_ENV=local WITH
+        // debug on). Gating on app.debug means a production box misconfigured
+        // as APP_ENV=local (but APP_DEBUG=false) still enforces the allow-list
+        // instead of silently disabling all front IP restrictions.
+        if (app()->environment('local') && config('app.debug')) {
             return $next($request);
         }
 

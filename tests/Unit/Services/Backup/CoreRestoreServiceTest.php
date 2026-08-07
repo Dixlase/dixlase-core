@@ -21,9 +21,21 @@ class CoreRestoreServiceTest extends TestCase
 
     private CoreRestoreService $restoreService;
 
+    /** Throwaway stand-in for custom/, relative to base_path(). */
+    private string $customDirRelative;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Point the custom-files target at a scratch directory. Restoring
+        // TARGET_CUSTOM wipes the destination before extracting, so running
+        // these tests against the real custom/ deletes any tracked file the
+        // archive happens not to contain — which silently removed
+        // custom/README.md from working checkouts.
+        $this->customDirRelative = 'storage/framework/testing/custom-'.uniqid();
+        config(['custom.custom_files_dir' => $this->customDirRelative]);
+        @mkdir(base_path($this->customDirRelative), 0755, true);
 
         $verifier = new CoreFileVerificationService();
         $this->backupService = new CoreBackupService($verifier);
@@ -37,7 +49,25 @@ class CoreRestoreServiceTest extends TestCase
     protected function tearDown(): void
     {
         $this->cleanupBackupFiles();
+        $this->removeCustomDir();
         parent::tearDown();
+    }
+
+    private function removeCustomDir(): void
+    {
+        $dir = base_path($this->customDirRelative);
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        foreach ($items as $item) {
+            $item->isDir() ? @rmdir($item->getPathname()) : @unlink($item->getPathname());
+        }
+        @rmdir($dir);
     }
 
     /**
@@ -104,10 +134,7 @@ class CoreRestoreServiceTest extends TestCase
      */
     public function test_restore_custom_directory_round_trip(): void
     {
-        $customDir = base_path('custom');
-        if (! is_dir($customDir)) {
-            mkdir($customDir, 0755, true);
-        }
+        $customDir = base_path($this->customDirRelative);
 
         $testFile = $customDir.'/restore-test-'.uniqid().'.txt';
         $originalContent = 'original content '.uniqid();
@@ -211,10 +238,7 @@ class CoreRestoreServiceTest extends TestCase
      */
     public function test_rollback_restores_pre_restore_state(): void
     {
-        $customDir = base_path('custom');
-        if (! is_dir($customDir)) {
-            mkdir($customDir, 0755, true);
-        }
+        $customDir = base_path($this->customDirRelative);
 
         $testFile = $customDir.'/rollback-test-'.uniqid().'.txt';
         $stateA = 'state A '.uniqid();

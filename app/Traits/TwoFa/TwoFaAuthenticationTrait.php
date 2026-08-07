@@ -662,6 +662,20 @@ trait TwoFaAuthenticationTrait
             return $user;
         }
 
+        // Check lockout status (parity with verifyEmail): recovery-code entry
+        // must be throttled by the same 2FA lockout so it cannot be used as an
+        // un-throttled brute-force channel.
+        $twoFa = $this->getTwoFaService();
+        $lockoutStatus = $twoFa->checkLockout($user);
+
+        if ($lockoutStatus['locked_out']) {
+            return back()->withErrors([
+                'recovery_code' => __('two_fa.lockout.message', [
+                    'minutes' => $lockoutStatus['remaining_minutes'],
+                ]),
+            ]);
+        }
+
         if (! $this->verifyRecoveryCodeValue($user, $request->recovery_code)) {
             return back()->withErrors([
                 'recovery_code' => __('two_fa.recovery_code.invalid'),

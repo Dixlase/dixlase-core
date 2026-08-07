@@ -264,6 +264,30 @@ class AdminTwoFaFlowTest extends TestCase
         $this->assertGuest('member');
     }
 
+    public function test_recovery_code_is_rejected_when_locked_out(): void
+    {
+        $this->loginAndGetTwoFaSession();
+
+        // Drive the account into 2FA lockout (max failed attempts in the window).
+        $attemptService = app(\App\Services\TwoFa\TwoFaAttemptService::class);
+        for ($i = 0; $i < 5; $i++) {
+            $attemptService->recordAttempt($this->admin, 'email', false);
+        }
+
+        $recoveryService = app(TwoFaRecoveryCodeService::class);
+        $codes = $recoveryService->generate($this->admin);
+
+        // Even a VALID recovery code must be rejected while locked out — the
+        // recovery endpoint must honour the same lockout as the email 2FA path.
+        $response = $this->post(route('admin.two-fa.recovery-code.confirm'), [
+            'recovery_code' => $codes[0],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['recovery_code']);
+        $this->assertGuest('member');
+    }
+
     public function test_used_recovery_code_cannot_be_reused(): void
     {
         $recoveryService = app(TwoFaRecoveryCodeService::class);
