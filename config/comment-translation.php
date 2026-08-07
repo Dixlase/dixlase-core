@@ -33,30 +33,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Middleware;
+return [
 
-use App\Models\SecuritySetting;
-use Closure;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+    /*
+    |--------------------------------------------------------------------------
+    | Comment Translation (Core)
+    |--------------------------------------------------------------------------
+    |
+    | Settings shared by the user-facing half of the comment-translation
+    | pipeline: `dls:comment:build` and `dls:comment:status`, plus the
+    | services they depend on (TranslationFileService, CommentBuilderService).
+    |
+    | These live in Core rather than in DixlaseCoreDevKit because the
+    | user-facing commands must keep working in a release checkout, where
+    | development plugins are not present. The authoring half of the pipeline
+    | (`dls:comment:extract` / `dls:comment:translate`) stays in CoreDevKit
+    | and keeps its own settings under `core-dev.comment_translation`.
+    |
+    */
 
-class CheckPasswordResetEnabled
-{
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next): Response
-    {
-        // Check if password reset feature is enabled
-        $passwordResetEnabled = (bool) SecuritySetting::get('password_reset_enabled', false);
+    // Translation file storage root (relative to the Core project root).
+    // Per-locale sub-directories (e.g. `ja/`, `zh/`) live under this path.
+    'storage_path' => 'resources/comment-translations',
 
-        if (! $passwordResetEnabled) {
-            // Return 404 if password reset feature is disabled
-            abort(404);
-        }
+    // Default locale used by the translation pipeline when none is given
+    // on the command line via `--locale=`.
+    'default_locale' => 'ja',
 
-        return $next($request);
-    }
-}
+];

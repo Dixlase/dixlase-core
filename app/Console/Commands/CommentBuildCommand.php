@@ -35,10 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\CommentTranslation\CommentBuilderService;
 use App\Services\CommentTranslation\ExtensionDictionaryLocator;
+use App\Services\CommentTranslation\TranslationFileService;
 use Illuminate\Console\Command;
-use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\CommentBuilderService;
-use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\TranslationFileService;
 
 /**
  * Apply per-locale comment translations to PHP source.
@@ -69,7 +69,7 @@ class CommentBuildCommand extends Command
 {
     /** @var string */
     protected $signature = 'dls:comment:build
-        {--locale= : Target locale (default: from config core-dev.comment_translation.default_locale)}
+        {--locale= : Target locale (default: from config comment-translation.default_locale)}
         {--in-place : Rewrite source files directly instead of copying to --output}
         {--reverse : Apply locale → EN direction (revert a previous in-place conversion)}
         {--output= : Output destination when not --in-place (default: dist/{locale})}

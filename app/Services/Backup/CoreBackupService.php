@@ -347,7 +347,15 @@ class CoreBackupService implements BackupServiceInterface
                 'storage/app/private',
                 self::PRIVATE_EXCLUDE_DIRS,
             ),
-            BackupServiceInterface::TARGET_CUSTOM => $this->addDirectoryToZip($zip, base_path('custom'), 'custom'),
+            // The on-disk location honours custom.custom_files_dir (the same
+            // key AppServiceProvider loads overrides from), but the archive
+            // namespace stays 'custom' so backups remain portable between
+            // installs that name the directory differently.
+            BackupServiceInterface::TARGET_CUSTOM => $this->addDirectoryToZip(
+                $zip,
+                base_path(config('custom.custom_files_dir', 'custom')),
+                'custom',
+            ),
             BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'storage/logs'),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->addCoreSourceToZip($zip),
             BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip(
