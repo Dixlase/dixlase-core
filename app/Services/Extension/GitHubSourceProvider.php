@@ -141,7 +141,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             'license' => $this->resolveString($manifest['license'] ?? null),
             'package_name' => $this->resolveString($manifest['package_name'] ?? null),
             'namespace' => $this->resolveString($manifest['namespace'] ?? null),
-            'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$repoName}/{$defaultBranch}/{$thumbnailFile}",
+            'thumbnail_url' => route('admin.settings.extension-thumbnail-online', [
+                'source' => $this->source->id,
+                'type' => $extensionType,
+                'slug' => $slug,
+            ]),
             'repository_url' => $repo['html_url'] ?? null,
             'updated_at' => $repo['updated_at'] ?? null,
             'extension_type' => $extensionType,
@@ -497,7 +501,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     'version' => $this->resolveString($manifest['version'] ?? null),
                     'author' => $this->resolveString($manifest['author'] ?? null),
                     'license' => $this->resolveString($manifest['license'] ?? null),
-                    'thumbnail_url' => "https://raw.githubusercontent.com/{$this->owner}/{$name}/{$defaultBranch}/{$thumbnailFile}",
+                    'thumbnail_url' => route('admin.settings.extension-thumbnail-online', [
+                        'source' => $this->source->id,
+                        'type' => $extensionType,
+                        'slug' => $slug,
+                    ]),
                 ];
             }
 
@@ -505,6 +513,108 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         } while (count($data) === 100);
 
         return $repos;
+    }
+
+    /**
+     * Fetch the raw thumbnail bytes for an extension in this GitHub source.
+     *
+     * Probes `resources/assets/thumbnail.{ext}` first (where installed
+     * extensions ship their thumbnail) and only then a manifest-declared
+     * path or the legacy repo-root `thumbnail.{ext}` / `screenshot.{ext}`
+     * fallback, so a plugin author who follows the standard layout does
+     * not need to declare anything. Extensions are checked in `webp,
+     * png, jpg, jpeg` priority order — modern/small first.
+     *
+     * Uses the Contents API rather than raw.githubusercontent.com so the
+     * request is authenticated with the same token as every other
+     * provider call; raw.githubusercontent.com would 404 for a private
+     * repo even when a valid token is present because there is no
+     * standard way to authenticate that host from a caller that isn't a
+     * git client.
+     *
+     * @return array{content: string, mime: string}|null
+     */
+    public function fetchThumbnail(string $slug, string $extensionType = 'plugin'): ?array
+    {
+        $repoName = $this->buildRepoName($slug, $extensionType);
+        $manifest = $this->fetchManifest($repoName, $extensionType);
+
+        // Candidate paths, in priority order.
+        $candidates = [];
+
+        // Standard installed-layout path — same location the local
+        // AdminExtensionThumbnailController reads from.
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+            $candidates[] = "resources/assets/thumbnail.{$ext}";
+        }
+
+        // Manifest-declared override (`plugin.json` / `theme.json`).
+        $declared = is_array($manifest) && is_string($manifest['thumbnail'] ?? null)
+            ? ltrim($manifest['thumbnail'], '/')
+            : null;
+        if ($declared !== null) {
+            $candidates[] = $declared;
+        }
+
+        // Legacy root fallback — the previous URL scheme pointed here
+        // and some existing repos still ship the image at the root.
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+            $candidates[] = "thumbnail.{$ext}";
+        }
+        if ($extensionType === 'theme') {
+            foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+                $candidates[] = "screenshot.{$ext}";
+            }
+        }
+
+        // De-duplicate while preserving order.
+        $candidates = array_values(array_unique($candidates));
+
+        foreach ($candidates as $path) {
+            $bytes = $this->fetchRepoFileBytes($repoName, $path);
+            if ($bytes === null) {
+                continue;
+            }
+
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'webp' => 'image/webp',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                default => 'application/octet-stream',
+            };
+
+            return ['content' => $bytes, 'mime' => $mime];
+        }
+
+        return null;
+    }
+
+    /**
+     * Fetch a file's raw bytes from the repo via the Contents API.
+     * Returns null on any failure (missing file, auth error, oversized
+     * file that the API refuses to inline, etc.).
+     */
+    protected function fetchRepoFileBytes(string $repoName, string $path): ?string
+    {
+        $response = $this->client()
+            ->acceptJson()
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$path}");
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $data = $response->json();
+        $content = $data['content'] ?? null;
+        $encoding = $data['encoding'] ?? null;
+
+        if (! is_string($content) || $encoding !== 'base64') {
+            return null;
+        }
+
+        $decoded = base64_decode(str_replace("\n", '', $content), true);
+
+        return $decoded === false ? null : $decoded;
     }
 
     /**
