@@ -540,26 +540,33 @@ class ExtensionCardPresenter
      * Falls back to the bundled default SVG when none of the candidates
      * exist on disk.
      *
-     * The probe sits in `resources/assets/` so the existing public symlink
-     * (`public/assets/{type}/{directory} -> resources/assets`) serves the
-     * file without exposing the plugin/theme root, where `plugin.json`,
-     * `composer.json`, `signature.sig`, and other sidecar files live.
+     * The URL points at the `settings.extension-thumbnail` route — a
+     * dedicated admin endpoint that streams the image file directly. The
+     * `public/assets/{type}/{directory}` symlink is intentionally NOT
+     * used: its lifecycle is tied to enable/disable so that a disabled
+     * plugin's JS/CSS stops being web-served, but that same lifecycle
+     * would otherwise hide the thumbnail of every installed-but-disabled
+     * (or freshly-installed-not-yet-enabled) extension on the card list.
+     * Serving the thumbnail through a controller decouples the two.
      *
      * Extension priority — modern/small first so authors get the smaller
      * download when they ship multiple formats:
      *
      *   webp > png > jpg > jpeg
      *
-     * @param  string  $type       Extension kind directory: `plugins` or `themes`.
+     * @param  string  $type  Extension kind directory: `plugins` or `themes`.
      * @param  string  $directory  Extension folder name, e.g. `DixlaseSEO`.
-     * @param  string  $defaultSvg Asset path used when no thumbnail is found.
+     * @param  string  $defaultSvg  Asset path used when no thumbnail is found.
      */
     private static function resolveExtensionThumbnailUrl(string $type, string $directory, string $defaultSvg): string
     {
         foreach (['webp', 'png', 'jpg', 'jpeg'] as $extension) {
             $relativePath = "{$type}/{$directory}/resources/assets/thumbnail.{$extension}";
             if (file_exists(base_path($relativePath))) {
-                return asset("assets/{$type}/{$directory}/thumbnail.{$extension}");
+                return route('admin.settings.extension-thumbnail', [
+                    'type' => $type,
+                    'directory' => $directory,
+                ]);
             }
         }
 
