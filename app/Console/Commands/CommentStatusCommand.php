@@ -36,8 +36,8 @@
 namespace App\Console\Commands;
 
 use App\Services\CommentTranslation\ExtensionDictionaryLocator;
+use App\Services\CommentTranslation\TranslationFileService;
 use Illuminate\Console\Command;
-use Plugins\DixlaseCoreDevKit\App\Services\CommentTranslation\TranslationFileService;
 
 /**
  * Display comment-translation progress for a locale.
@@ -54,7 +54,7 @@ class CommentStatusCommand extends Command
 {
     /** @var string */
     protected $signature = 'dls:comment:status
-        {--locale= : Locale to inspect (default: from config core-dev.comment_translation.default_locale)}
+        {--locale= : Locale to inspect (default: from config comment-translation.default_locale)}
         {--strict : Exit 1 if any pending entries exist (use in release CI)}
         {--include-plugins : Also aggregate plugins/*/resources/comment-translations/{locale}/}
         {--include-themes : Also aggregate themes/*/resources/comment-translations/{locale}/}
