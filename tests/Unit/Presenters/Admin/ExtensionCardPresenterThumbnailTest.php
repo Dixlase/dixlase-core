@@ -23,17 +23,22 @@
 namespace Tests\Unit\Presenters\Admin;
 
 use App\Presenters\Admin\ExtensionCardPresenter;
+use Illuminate\Support\Facades\Route;
 use ReflectionMethod;
 use Tests\TestCase;
 
 /**
- * Pins the multi-format thumbnail probe in ExtensionCardPresenter.
+ * Pins the thumbnail-URL contract in ExtensionCardPresenter.
  *
- * The presenter looks for `thumbnail.{webp,png,jpg,jpeg}` inside an
- * extension's `resources/assets/` directory and returns the asset URL
- * with the matching extension. When nothing is found it must fall back
- * to the bundled default SVG that the card view renders as a generic
- * plugin/theme placeholder.
+ * The presenter checks for `thumbnail.{webp,png,jpg,jpeg}` inside an
+ * extension's `resources/assets/` directory and returns the URL to the
+ * admin thumbnail endpoint when any format is present; otherwise the
+ * bundled default SVG is returned so the card view still renders a
+ * generic placeholder.
+ *
+ * The endpoint URL is intentionally format-agnostic — extension picking
+ * (webp > png > jpg > jpeg) is a controller-side concern pinned by
+ * `AdminExtensionThumbnailControllerFormatPriorityTest`.
  */
 class ExtensionCardPresenterThumbnailTest extends TestCase
 {
@@ -49,6 +54,20 @@ class ExtensionCardPresenterThumbnailTest extends TestCase
      */
     private const THEME_FIXTURE = '__test_thumbnail_resolver__';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The presenter emits route() URLs; register a stub for the
+        // route it targets so the test does not need the full admin
+        // route file (and its middleware / controller dependency chain)
+        // loaded just to verify the URL contract.
+        Route::get(
+            'stub/extension-thumbnail/{type}/{directory}',
+            fn () => null,
+        )->name('admin.settings.extension-thumbnail');
+    }
+
     protected function tearDown(): void
     {
         $this->removeFixtures();
@@ -56,46 +75,36 @@ class ExtensionCardPresenterThumbnailTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_returns_webp_url_when_webp_thumbnail_exists(): void
+    public function test_returns_route_url_when_webp_thumbnail_exists(): void
     {
         $this->writePluginThumbnail('webp');
 
         $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
 
-        $this->assertStringEndsWith(
-            'assets/plugins/'.self::PLUGIN_FIXTURE.'/thumbnail.webp',
+        $this->assertSame(
+            route('admin.settings.extension-thumbnail', ['type' => 'plugins', 'directory' => self::PLUGIN_FIXTURE]),
             $url,
-            'webp should win when it is the only present format',
+            'when any supported format exists the presenter must return the admin thumbnail-endpoint URL',
         );
     }
 
-    public function test_prefers_webp_over_png_when_both_present(): void
+    public function test_returns_route_url_for_every_supported_format(): void
     {
-        $this->writePluginThumbnail('png');
-        $this->writePluginThumbnail('webp');
+        $expected = route('admin.settings.extension-thumbnail', [
+            'type' => 'plugins',
+            'directory' => self::PLUGIN_FIXTURE,
+        ]);
 
-        $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $format) {
+            $this->removeFixtures();
+            $this->writePluginThumbnail($format);
 
-        $this->assertStringEndsWith('thumbnail.webp', $url);
-    }
-
-    public function test_picks_png_when_webp_absent_but_png_present(): void
-    {
-        $this->writePluginThumbnail('png');
-
-        $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
-
-        $this->assertStringEndsWith('thumbnail.png', $url);
-    }
-
-    public function test_picks_jpg_over_jpeg_when_both_present(): void
-    {
-        $this->writePluginThumbnail('jpeg');
-        $this->writePluginThumbnail('jpg');
-
-        $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
-
-        $this->assertStringEndsWith('thumbnail.jpg', $url);
+            $this->assertSame(
+                $expected,
+                $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg'),
+                "presenter should emit the endpoint URL when thumbnail.{$format} is the only present format",
+            );
+        }
     }
 
     public function test_falls_back_to_default_svg_when_no_format_present(): void
@@ -130,10 +139,21 @@ class ExtensionCardPresenterThumbnailTest extends TestCase
 
         $url = $this->callResolver('themes', self::THEME_FIXTURE, 'assets/images/theme-default.svg');
 
-        $this->assertStringEndsWith(
-            'assets/themes/'.self::THEME_FIXTURE.'/thumbnail.webp',
+        $this->assertSame(
+            route('admin.settings.extension-thumbnail', ['type' => 'themes', 'directory' => self::THEME_FIXTURE]),
             $url,
         );
+    }
+
+    public function test_theme_falls_back_to_theme_default_svg(): void
+    {
+        $url = $this->callResolver(
+            'themes',
+            'this-theme-does-not-exist-'.uniqid(),
+            'assets/images/theme-default.svg',
+        );
+
+        $this->assertStringEndsWith('assets/images/theme-default.svg', $url);
     }
 
     private function callResolver(string $type, string $directory, string $defaultSvg): string
