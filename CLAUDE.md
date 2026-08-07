@@ -83,6 +83,16 @@
 - `phpunit.xml`'s `<env>` overrides require `force="true"` to actually overwrite values already present in the process env (otherwise `.env` wins). When you add new test-only env vars, include `force="true"`.
 - Prefer `--testsuite=<Name>` over `php artisan test <path>`. Path-direct invocation can bypass `<env>` evaluation depending on the runner, which is how the original incident dropped production tables in May 2026.
 
+### Tests Must Not Touch Tracked Working-Tree Files
+
+The database is not the only thing a test run can destroy. Tests that exercise file-system features (backup, restore, install, import/export, cache warm-up) can delete **tracked repository files** while the suite still reports all green.
+
+- **Never point a test at a real repository directory.** Do not use `base_path('custom')`, `base_path('plugins')`, `base_path('themes')`, `resource_path()`, or any other path inside the working tree as a test fixture target. Create a throwaway directory under `storage/framework/testing/` instead, and remove it in `tearDown()`.
+- When the code under test resolves a path from config, **override the config in `setUp()`** so the test cannot reach the real location (e.g. `config(['custom.custom_files_dir' => 'storage/framework/testing/custom-'.uniqid()])`). If the code hardcodes the path, fix the code to read the config rather than pointing the test at the live directory.
+- **`custom/README.md` and `custom/README.ja.md` must never be deleted.** They are tracked, they document the `custom/` override mechanism, and nothing in a test run has any business removing them. The same applies to `README.laravel.md` and every other tracked file at the repository root.
+- **Run `git status` after any test run or code-generation command** (`dls:plugin-api:generate`, `dls:readme:generate`, `dls:governance:generate`, `dls:claude:setup`). If tracked files show as deleted or modified and you did not edit them, restore them with `git checkout -- <path>` and investigate before continuing. Never stage or commit such a deletion.
+- Restore operations are especially dangerous: a restore typically **clears the destination directory before extracting**, so any tracked file the archive happens not to contain is destroyed. This is exactly how `custom/README.md` was repeatedly deleted from working checkouts while the suite stayed green — see the fix in `CoreBackupService` / `CoreRestoreService`, which now resolve the target through `config('custom.custom_files_dir')`.
+
 ### Admin Layout Protected Regions
 - Do not modify CSS classes of: flex container (no top padding), page header (`pt-6 pb-6 px-8`), article (`mt-5`), sidebar (`md:top-12`) in `resources/views/layouts/admin.blade.php`
 - These offsets align with the admin bar (`h-12`) — changes affect every admin page
