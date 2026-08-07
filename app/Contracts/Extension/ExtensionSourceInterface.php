@@ -121,6 +121,25 @@ interface ExtensionSourceInterface
     public function downloadCoreRelease(string $version): string;
 
     /**
+     * Fetch the raw thumbnail image bytes for an online extension.
+     *
+     * The admin "add plugin / add theme" pages need to render thumbnails
+     * that live in the extension's source repository — often behind
+     * private-repo auth that the operator's browser has no way to
+     * present. Providers implement this to fetch the image server-side
+     * with the same credential the rest of the provider uses, so it can
+     * be streamed back through a same-origin admin endpoint.
+     *
+     * Returns null when there is no thumbnail for the slug or the fetch
+     * fails; the caller is expected to fall back to a default image.
+     *
+     * @param  string  $slug  Extension slug (kebab-case)
+     * @param  string  $extensionType  "plugin" or "theme"
+     * @return array{content: string, mime: string}|null
+     */
+    public function fetchThumbnail(string $slug, string $extensionType = 'plugin'): ?array;
+
+    /**
      * Check if the source is available (connectivity + authentication)
      */
     public function isAvailable(): bool;

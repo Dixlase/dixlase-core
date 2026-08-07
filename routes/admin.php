@@ -57,6 +57,7 @@ use App\Http\Controllers\Admin\Profile\AdminProfileSidebarController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaController;
 use App\Http\Controllers\Admin\Profile\AdminProfileTwoFaManagementController;
 use App\Http\Controllers\Admin\SafeModeController;
+use App\Http\Controllers\Admin\Settings\AdminExtensionThumbnailController;
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
 use App\Http\Controllers\Admin\Settings\Base;
@@ -565,6 +566,30 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.themes')
                     ->name('settings.themes.update-all');
             });
+
+            // Extension thumbnail (image only) — served directly from
+            // plugins/{Dir}/resources/assets/thumbnail.* regardless of the
+            // enable/disable symlink, so installed-but-disabled cards still
+            // render their bundled thumbnail. No menu-access gate: the
+            // plugin/theme list pages that reference these URLs already
+            // enforce their own permission checks below, and the endpoint
+            // itself only serves image bytes.
+            Route::get('/settings/extension-thumbnail/{type}/{directory}', [AdminExtensionThumbnailController::class, 'show'])
+                ->where('type', 'plugins|themes')
+                ->where('directory', '[A-Za-z0-9_-]+')
+                ->name('settings.extension-thumbnail');
+
+            // Extension thumbnail for a not-yet-installed extension fetched
+            // from a configured source (e.g. a private GitHub repo). The
+            // provider fetches the image server-side with the source's
+            // token and streams the bytes back through the admin origin,
+            // because raw.githubusercontent.com would 404 for a private
+            // repo from an unauthenticated browser request.
+            Route::get('/settings/extension-thumbnail-online/{source}/{type}/{slug}', [AdminExtensionThumbnailController::class, 'showOnline'])
+                ->where('source', '[0-9]+')
+                ->where('type', 'plugin|theme')
+                ->where('slug', '[a-z0-9-]+')
+                ->name('settings.extension-thumbnail-online');
 
             // Plugin settings (with permission check)
             Route::middleware('check.menu.access:settings.plugins')->group(function () {
