@@ -416,7 +416,14 @@ class CoreRestoreService implements RestoreServiceInterface
                 storage_path('app/private'),
                 self::PRIVATE_PRESERVE_DIRS,
             ),
-            BackupServiceInterface::TARGET_CUSTOM => $this->restoreDirectory($zip, 'custom', base_path('custom')),
+            // Archive namespace stays 'custom'; the destination honours
+            // custom.custom_files_dir so a restore lands where this install
+            // actually loads overrides from. Kept in step with CoreBackupService.
+            BackupServiceInterface::TARGET_CUSTOM => $this->restoreDirectory(
+                $zip,
+                'custom',
+                base_path(config('custom.custom_files_dir', 'custom')),
+            ),
             BackupServiceInterface::TARGET_LOGS => $this->restoreDirectory(
                 $zip,
                 $this->resolveNamespace($zip, 'storage/logs', 'logs'),
