@@ -161,4 +161,31 @@ class DashboardTest extends TestCase
 
         $response->assertRedirect();
     }
+
+    /**
+     * アップデートがある時、更新通知ウィジェットにアップデート管理へのリンクが表示される
+     */
+    public function test_updates_notice_widget_links_to_updates_when_available(): void
+    {
+        $html = view('admin.dashboard._updates-notice', [
+            'updates' => ['total' => 3, 'core' => 1, 'plugins' => 2, 'themes' => 0],
+        ])->render();
+
+        $this->assertStringContainsString(__('admin/dashboard.updates_manage_link'), $html);
+        $this->assertStringContainsString(__('admin/dashboard.updates_available_label'), $html);
+        $this->assertStringContainsString(route('admin.settings.systems.updates.index'), $html);
+    }
+
+    /**
+     * すべて最新の時、更新通知ウィジェットは何も描画しない
+     */
+    public function test_updates_notice_widget_renders_nothing_when_up_to_date(): void
+    {
+        $html = view('admin.dashboard._updates-notice', [
+            'updates' => ['total' => 0, 'core' => 0, 'plugins' => 0, 'themes' => 0],
+        ])->render();
+
+        $this->assertStringNotContainsString(__('admin/dashboard.updates_manage_link'), $html);
+        $this->assertSame('', trim($html));
+    }
 }
