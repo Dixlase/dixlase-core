@@ -70,7 +70,20 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     ) {
         $this->baseUrl = rtrim($source->base_url, '/');
         $this->owner = $source->owner ?? config('extension-sources.github.default_owner', 'Dixlase');
-        $this->token = $source->auth_token ?? config('extension-sources.github.default_token');
+        // Treat an empty-string `auth_token` the same as `null` so the
+        // `EXTENSION_GITHUB_TOKEN` env fallback engages. `??` alone only
+        // falls through on NULL, so a row where the operator cleared the
+        // field to `''` (or a legacy row that was never populated) used
+        // to pin an empty string as the API credential and every
+        // download request went out anonymously, dying with
+        // "release not found" on any private repo — the env token
+        // configured on the same server was never consulted. Round 7's
+        // operational note flagged this after a stale non-null PAT hid
+        // the env fallback for the sandbox core-update run.
+        $rawToken = $source->auth_token;
+        $this->token = ($rawToken !== null && $rawToken !== '')
+            ? $rawToken
+            : config('extension-sources.github.default_token');
         $this->repoPrefix = $source->settings['repo_prefix'] ?? config('extension-sources.github.repo_prefix', 'dixlase-');
         $this->themeRepoPrefix = $source->settings['theme_repo_prefix'] ?? config('extension-sources.github.theme_repo_prefix', 'dixlase-theme-');
         $this->coreRepo = $source->settings['core_repo'] ?? config('extension-sources.github.core_repo', 'dixlase-core');
