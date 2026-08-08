@@ -860,10 +860,25 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 );
             }
 
-            // Installation success message
-            $successMessage = $plugin
-                ? __('admin/settings/plugins/index.messages.install_success')
-                : __('admin/settings/plugins/index.messages.install_success_no_plugin');
+            // Installation success message.
+            //
+            // When a `$plugin` row exists we embed an inline "「name」
+            // を有効化" CTA link that jumps to the freshly installed
+            // card in the installed section (`#installed-plugin-{id}`
+            // anchor). The pattern mirrors the download-completion
+            // flash so both post-add flows read the same way and the
+            // operator can always reach their next click from within
+            // the flash body itself, even when the redirect target
+            // scrolls past the card by default.
+            if ($plugin) {
+                $successMessage = $this->buildJustInstalledFlash(
+                    __('admin/settings/plugins/index.messages.install_success'),
+                    $plugin->id,
+                    (string) ($plugin->translated_name ?? $plugin->name ?? $plugin->slug),
+                );
+            } else {
+                $successMessage = __('admin/settings/plugins/index.messages.install_success_no_plugin');
+            }
 
             return $this->redirectAfterPluginAction($request, $plugin?->slug)
                 ->with('success', $successMessage)
@@ -1549,6 +1564,24 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $url = route('admin.settings.plugins.index', ['just_added' => $directory])
             .'#just-added-plugin-'.$directory;
         $ctaLabel = __('admin/settings/plugins/index.messages.download_complete_cta', ['name' => $displayName]);
+
+        return e($sentence)
+            .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'
+            .e($ctaLabel).'</a>';
+    }
+
+    /**
+     * Companion to `buildJustAddedFlash()` for the post-install flash.
+     * Same shape — the translated sentence, then a CTA link — but
+     * targets the installed-section anchor `#installed-plugin-{id}` so
+     * the just-installed card scrolls into view (and picks up its blue
+     * ring highlight) instead of the newly-added card that was the
+     * subject of the download flash.
+     */
+    protected function buildJustInstalledFlash(string $sentence, int $pluginId, string $displayName): string
+    {
+        $url = route('admin.settings.plugins.index').'#installed-plugin-'.$pluginId;
+        $ctaLabel = __('admin/settings/plugins/index.messages.enable_cta', ['name' => $displayName]);
 
         return e($sentence)
             .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'

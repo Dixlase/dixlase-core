@@ -43,40 +43,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    {{-- Banner for activation immediately after installation --}}
-    @if($installedPluginCard)
-        <div class="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 mr-2"></i>
-                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                        {{ __('admin/settings/plugins/index.messages.enable_prompt', ['name' => $installedPluginCard['translatedName']]) }}
-                    </span>
-                </div>
-                <x-form-button
-                    type="button"
-                    :label="__('common.enable')"
-                    variant="success"
-                    size="xs"
-                    icon="fas fa-play"
-                    :disabled="$viewOnly"
-                    :title="$tooltipText"
-                    class="two-stage-action-btn"
-                    data-action-type="enable"
-                    data-needs-scan="{{ $installedPluginCard['needsScan'] ? '1' : '0' }}"
-                    data-plugin-slug="{{ $installedPluginCard['slug'] }}"
-                    data-plugin-name="{{ $installedPluginCard['translatedName'] }}"
-                    data-form-id="quickEnableForm"
-                    data-enable-action="{{ $installedPluginCard['enableAction'] }}"
-                    data-health-score="{{ $installedPluginCard['healthScore'] ?? '' }}"
-                    data-health-status="{{ $installedPluginCard['healthStatus'] ?? '' }}"
-                    data-health-issues="{{ json_encode($installedPluginCard['healthIssues'] ?? []) }}"
-                />
-            </div>
-        </div>
-    @endif
-
-    {{-- Page-level action bar: lives above the section so the section header
+{{-- Page-level action bar: lives above the section so the section header
          reads as a heading, not a button toolbar. Right-aligned so the
          buttons sit under the breadcrumb / description on the admin
          layout, matching other settings pages. --}}
@@ -136,7 +103,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if($plugins->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 @foreach ($pluginCards as $card)
-                    @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
+                    {{-- Highlight + anchor target for the "just installed"
+                         flash CTA. `id` matches the fragment link so the
+                         browser scrolls the card into view; the blue
+                         ring differentiates it from the green "just
+                         downloaded" state used on the uninstalled side.
+                         `scroll-mt-16` clears the fixed admin bar (h-12). --}}
+                    @php
+                        $isJustInstalled = $installedPluginCard && $card['id'] === $installedPluginCard['id'];
+                    @endphp
+                    <div
+                        @if($isJustInstalled)
+                            id="installed-plugin-{{ $card['id'] }}"
+                            class="scroll-mt-16 ring-2 ring-blue-500 dark:ring-blue-400 rounded-xl"
+                        @endif
+                    >
+                        @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
+                    </div>
                 @endforeach
             </div>
         @else
@@ -188,11 +171,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </section>
     @endif
 </div>
-
-{{-- Activation confirmation modal immediately after installation --}}
-@if($installedPluginCard)
-    @include('admin.settings.plugins.partials.quick-enable-modal', ['card' => $installedPluginCard])
-@endif
 
 @endsection
 

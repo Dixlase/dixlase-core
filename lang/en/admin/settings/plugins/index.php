@@ -330,7 +330,7 @@ return [
         'install_success' => 'Plugin has been installed successfully.',
         'install_success_no_plugin' => 'Plugin has been installed successfully.',
         'enable_here' => 'click here',
-        'enable_prompt' => 'Plugin ":name" is ready to be enabled.',
+        'enable_cta' => 'Enable ":name"',
         'download_complete_cta' => 'Install ":name"',
         'install_failed' => 'Plugin installation failed: :error',
         'install_directory_not_found' => 'Plugin directory not found.',
