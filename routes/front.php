@@ -34,6 +34,7 @@
  */
 
 use App\Helpers\PluginHelper;
+use App\Helpers\ThemeHelper;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
@@ -65,7 +66,12 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
     }
 
     $basePath = match ($type) {
-        'theme' => base_path('themes/'.getActiveThemeDirectory().'/assets'),
+        // ThemeHelper::getActiveThemePath() returns null when no theme is
+        // active; abort rather than let that concatenate into an absolute
+        // "/assets" root. (The realpath containment check below would also
+        // reject it, but this route must not lean on a later guard to be
+        // safe.)
+        'theme' => (ThemeHelper::getActiveThemePath() ?? abort(404)).'/assets',
         'admin' => base_path('resources/admin/assets'),
         'plugin' => base_path("plugins/{$file}/assets"),
         default => abort(404),
