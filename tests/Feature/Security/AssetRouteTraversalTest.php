@@ -53,6 +53,35 @@ class AssetRouteTraversalTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * Every traversal case above is rejected by the `..`/NUL guard *before*
+     * the match statement runs, so none of them ever exercised the
+     * `'theme' =>` arm. That blind spot let the arm call a function that does
+     * not exist — `getActiveThemeDirectory()` — so a perfectly ordinary theme
+     * asset request fataled instead of being served. A benign filename is
+     * required to reach the arm at all.
+     */
+    public function test_benign_theme_asset_request_reaches_the_route_without_erroring(): void
+    {
+        $this->withoutMiddleware([CheckInstallationReady::class]);
+
+        $response = $this->get('/assets/theme/app.css');
+
+        // With no active theme configured in the test environment the route
+        // must 404. What it must never do is 500: that is what an undefined
+        // function in the theme arm produced.
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function test_benign_admin_asset_request_reaches_the_route_without_erroring(): void
+    {
+        $this->withoutMiddleware([CheckInstallationReady::class]);
+
+        $response = $this->get('/assets/admin/does-not-exist.css');
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
     public function test_encoded_traversal_to_env_is_blocked_for_theme_assets(): void
     {
         $this->withoutMiddleware([CheckInstallationReady::class]);
