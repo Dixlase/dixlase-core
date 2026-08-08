@@ -65,25 +65,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    {{-- Available updates count (click to go to integrated update management page) --}}
-    @if(($extensionOverview['updates']['total'] ?? 0) > 0)
-        <div class="mb-4 p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
-            <a href="{{ route('admin.settings.systems.updates.index') }}" class="flex items-center justify-between gap-3 text-sm">
-                <span class="flex items-center gap-2 text-blue-800 dark:text-blue-200 font-medium">
-                    <i class="fas fa-arrow-up"></i>
-                    {{ __('admin/dashboard.updates_available_label') }}: {{ $extensionOverview['updates']['total'] }}
-                </span>
-                <span class="text-blue-700 dark:text-blue-300 text-xs">
-                    {{ __('admin/dashboard.updates_available_summary', [
-                        'core' => $extensionOverview['updates']['core'] ?? 0,
-                        'plugins' => $extensionOverview['updates']['plugins'],
-                        'themes' => $extensionOverview['updates']['themes'],
-                    ]) }}
-                    <i class="fas fa-arrow-right ml-1"></i>
-                </span>
-            </a>
-        </div>
-    @endif
+    {{-- Available-updates notice moved to the standalone dashboard widget
+         admin.dashboard._updates-notice (shown near the top of the dashboard). --}}
 
     {{-- Health Summary --}}
     <div>
