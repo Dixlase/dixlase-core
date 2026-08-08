@@ -42,7 +42,6 @@ use App\Enums\ContentStorageType;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Parsedown;
 
 /**
  * Page content management service
@@ -163,7 +162,13 @@ class PageContentService
                     : $content,
                 ContentEditorType::GUI => $this->renderGui($content),
             };
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable, not \Exception: a missing class or function raises
+            // \Error, which does not extend \Exception. That is precisely how
+            // the Parsedown outage bypassed this fallback — the safety net was
+            // here the whole time and simply never caught anything. Rendering
+            // is a display concern, so degrading to the raw content beats a
+            // 500 for any renderer failure, not just the tidy ones.
             Log::error('Failed to render content', [
                 'editor_type' => $editorType->value,
                 'error' => $e->getMessage(),
@@ -280,10 +285,33 @@ class PageContentService
      */
     protected function renderMarkdown(string $content): string
     {
-        $parsedown = new Parsedown();
-        $parsedown->setSafeMode(false); // Allow HTML tags
+        // Str::markdown() wraps league/commonmark, which ships as a runtime
+        // dependency of laravel/framework and is therefore always present.
+        // The previous implementation used Parsedown, which is declared
+        // nowhere in composer.json — it only appears as a *dev* dependency of
+        // league/commonmark, and dev dependencies are never installed
+        // transitively. So `new Parsedown()` could never resolve in a clean
+        // checkout and every Markdown page render died on it.
+        //
+        // This also makes rendering agree with preview: ContentPreviewService
+        // already renders Markdown through Str::markdown().
+        //
+        // On raw HTML: Str::markdown() uses GithubFlavoredMarkdownConverter,
+        // whose tagfilter neutralises <script>, <iframe> and <style> while
+        // letting ordinary inline HTML through. That preserves the intent of
+        // the old `setSafeMode(false)` ("allow HTML tags") on a safer footing.
+        return Str::markdown($this->normalizeMarkdown($content));
+    }
 
-        return $parsedown->text($content);
+    /**
+     * Tolerate ATX headings written without a space (`#Heading`).
+     *
+     * Mirrors ContentPreviewService::normalizeMarkdown(); the two must stay in
+     * step or a page will preview differently from how it publishes.
+     */
+    protected function normalizeMarkdown(string $content): string
+    {
+        return preg_replace('/^(#{1,6})([^\s#])/m', '$1 $2', $content);
     }
 
     /**
