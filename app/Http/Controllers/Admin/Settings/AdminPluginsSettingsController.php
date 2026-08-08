@@ -174,6 +174,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $installedPluginCard = collect($pluginCards)->firstWhere('id', $installedPluginId);
         }
 
+        // Identify the "just added" plugin so the matching uninstalled
+        // card can be visually highlighted (green ring) when the user
+        // arrives via the add page's CTA. The directory is passed as a
+        // query parameter (`?just_added=Dir`) rather than a session
+        // flash because the flash is consumed by the add page render
+        // and would not survive the follow-up navigation to plugin
+        // master. Whitelisted against the current uninstalled list, so
+        // an arbitrary query value cannot invent a card.
+        $justAddedDirectory = request()->query('just_added');
+        $justAddedPluginCard = null;
+        if (is_string($justAddedDirectory) && $justAddedDirectory !== '') {
+            $justAddedPluginCard = collect($uninstalledPluginCards)->firstWhere('directory', $justAddedDirectory);
+        }
+
         // Determine scan requirement based on security mode
         $scanRequired = self::isScanRequired();
 
@@ -195,6 +209,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         $this->viewParams['pluginCards'] = $pluginCards;
         $this->viewParams['uninstalledPluginCards'] = $uninstalledPluginCards;
         $this->viewParams['installedPluginCard'] = $installedPluginCard;
+        $this->viewParams['justAddedPluginCard'] = $justAddedPluginCard;
         $this->viewParams['scanRequired'] = $scanRequired;
         $this->viewParams['isSimpleMode'] = \App\Helpers\AdminModeHelper::isSimpleMode();
         $this->viewParams['heading'] = __('admin/settings/plugins/index.heading');
@@ -716,9 +731,16 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
             $this->purgeAuditRecordsForSlug($slugFromManifest ?? Str::slug($pluginDir), $pluginDir);
 
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('success', __('admin/settings/plugins/add.messages.upload_success'))
-                ->with('uploaded_plugin_directory', $pluginDir);
+            // See downloadFromSource() for the reasoning on redirecting
+            // to plugin master and embedding the CTA in the flash body.
+            return redirect()->route('admin.settings.plugins.index', [
+                'just_added' => $pluginDir,
+            ])
+                ->with('success', $this->buildJustAddedFlash(
+                    __('admin/settings/plugins/add.messages.upload_success'),
+                    $pluginDir,
+                    $pluginDir,
+                ));
         } catch (\Throwable $e) {
             if (File::exists($tempPath)) {
                 File::delete($tempPath);
@@ -1453,9 +1475,39 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     linkage: $manager->resolveSourceLinkage($download['source'], $slug, 'plugin'),
                 );
 
-                return redirect()->route('admin.settings.plugins.index')
-                    ->with('success', __('admin/settings/plugins/add.messages.download_success', ['name' => $displayName]))
-                    ->with('uploaded_plugin_directory', $result['directory']);
+                // Redirect to plugin master, not back to the add page.
+                // In dev, Vite's `liveReload` watches `plugins/**/*.php`
+                // etc. and fires WebSocket "page reload" messages while
+                // the just-downloaded ZIP is being extracted. Those
+                // messages cancel any in-flight navigation on the same
+                // URL, which is precisely the add page the form was
+                // submitted from — the redirect response then arrives
+                // after the browser has already re-loaded /add and gets
+                // ignored, taking the session flash with it. Plugin
+                // master lives at a different URL so the redirect is
+                // more likely to survive, and its own render is the
+                // natural place to continue with install + enable.
+                //
+                // Belt-and-braces: the flash payload embeds a link to
+                // the just-added card so the CTA travels with the
+                // message no matter where the redirect actually lands.
+                // If Vite HMR happens to bounce the operator back onto
+                // the add page mid-navigation, the same link still
+                // renders inside the flash there and takes them to
+                // plugin master on click.
+                //
+                // The `just_added` query param drives the "downloaded"
+                // banner + green ring highlight on the matching card.
+                // A query param is preferred over a session flash for
+                // the ring because it survives a plain page refresh.
+                return redirect()->route('admin.settings.plugins.index', [
+                    'just_added' => $result['directory'],
+                ])
+                    ->with('success', $this->buildJustAddedFlash(
+                        __('admin/settings/plugins/add.messages.download_success', ['name' => $displayName]),
+                        $result['directory'],
+                        $displayName,
+                    ));
             }
 
             return redirect()->route('admin.settings.plugins.add')
@@ -1479,6 +1531,29 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * control on accident.
      */
     private const SOURCE_SIDECAR_FILENAME = '.dixlase-source.json';
+
+    /**
+     * Build an HTML flash-message body that pairs a completion sentence
+     * (e.g. "Plugin :name downloaded successfully.") with a link that
+     * takes the operator straight to the just-added card in plugin
+     * master. `<x-ui-flash-message />` renders the `success` session
+     * value with `{!! !!}`, so the returned string is emitted as-is.
+     *
+     * The link travels with the flash so whichever page ends up
+     * consuming it (plugin master via the intended redirect, or the
+     * add page if Vite HMR bounced the navigation back mid-download)
+     * the CTA still reaches the same destination.
+     */
+    protected function buildJustAddedFlash(string $sentence, string $directory, string $displayName): string
+    {
+        $url = route('admin.settings.plugins.index', ['just_added' => $directory])
+            .'#just-added-plugin-'.$directory;
+        $ctaLabel = __('admin/settings/plugins/index.messages.download_complete_cta', ['name' => $displayName]);
+
+        return e($sentence)
+            .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'
+            .e($ctaLabel).'</a>';
+    }
 
     /**
      * Write the supply-chain linkage produced by ExtensionSourceManager

@@ -331,6 +331,7 @@ return [
         'install_success_no_plugin' => 'プラグインが正常にインストールされました。',
         'enable_here' => 'こちら',
         'enable_prompt' => 'プラグイン「:name」を有効化できます。',
+        'download_complete_cta' => '「:name」をインストール',
         'install_failed' => 'プラグインのインストールに失敗しました: :error',
         'install_directory_not_found' => 'プラグインディレクトリが見つかりません。',
         'uninstall_success' => 'プラグインをアンインストールしました',

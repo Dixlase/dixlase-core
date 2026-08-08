@@ -167,7 +167,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach ($uninstalledPluginCards as $card)
-                @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
+                {{-- Highlight + anchor target for the "just downloaded" banner.
+                     `id` matches the banner's fragment link so clicking
+                     "Install this plugin" scrolls to and briefly rings
+                     the card. `scroll-margin-top` clears the fixed
+                     admin bar (h-12) so the ring doesn't hide under it. --}}
+                @php
+                    $isJustAdded = $justAddedPluginCard && $card['directory'] === $justAddedPluginCard['directory'];
+                @endphp
+                <div
+                    @if($isJustAdded)
+                        id="just-added-plugin-{{ $card['directory'] }}"
+                        class="scroll-mt-16 ring-2 ring-green-500 dark:ring-green-400 rounded-xl"
+                    @endif
+                >
+                    @include('admin.settings.plugins.partials.plugin-card', ['card' => $card])
+                </div>
             @endforeach
         </div>
     </section>
