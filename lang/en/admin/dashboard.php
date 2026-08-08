@@ -122,6 +122,7 @@ return [
     'updates_available_label' => 'Updates Available',
     'updates_available_summary' => ':core core / :plugins plugin(s) / :themes theme(s)',
     'updates_all_up_to_date' => 'All up to date',
+    'updates_manage_link' => 'Manage updates',
 
     // Member overview
     'member_overview' => 'Member Overview',

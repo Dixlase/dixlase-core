@@ -41,6 +41,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <i class="fas fa-tachometer-alt mr-2"></i>{{ __('admin/dashboard.heading') }}
         </h1>
 
+        {{-- Available-updates notice (core / plugins / themes); renders only when an update is available --}}
+        @include('admin.dashboard._updates-notice', ['updates' => $extensionOverview['updates'] ?? []])
+
         {{-- Getting started card --}}
         @if(isset($gettingStarted))
             @include('admin.dashboard._getting-started')
