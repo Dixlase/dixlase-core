@@ -42,9 +42,16 @@ use ZipArchive;
 
 class PluginDownload extends Command
 {
+    /**
+     * The target version is `--to=`, not `--version=`: Symfony's Application
+     * already registers a global `--version` (`-V`), and declaring it again
+     * here made every invocation — including `--help` — abort with
+     * "An option named \"version\" already exists.". `--to=` also matches
+     * dls:core:update, which names its target version the same way.
+     */
     protected $signature = 'dls:plugin:download
         {slug : Plugin slug to download}
-        {--version= : Specific version (defaults to latest)}
+        {--to= : Specific version to download (defaults to latest)}
         {--source= : Source ID to download from}
         {--extract : Extract the ZIP to the plugins directory}';
 
@@ -53,7 +60,7 @@ class PluginDownload extends Command
     public function handle(ExtensionSourceManager $manager): int
     {
         $slug = $this->argument('slug');
-        $version = $this->option('version');
+        $version = $this->option('to');
         $sourceId = $this->option('source') ? (int) $this->option('source') : null;
 
         $this->info("Downloading plugin '{$slug}'...");
