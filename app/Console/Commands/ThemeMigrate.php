@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Theme;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -100,7 +101,12 @@ class ThemeMigrate extends Command
         // recorded into the stock ledger and exposed the theme migrations
         // to any subsequent stock `php artisan migrate` run, which would
         // re-apply them and hit "table already exists".
-        $themeSlug = Str::slug(Str::headline($themeName), '-');
+        // Record under the theme's canonical slug (theme.json / DB), NOT a
+        // slug re-derived from the directory name — the update and rollback
+        // paths key the theme_migrations ledger on the canonical slug, and a
+        // re-derived one (e.g. DixlaseOnePage -> dixlase-one-page) would
+        // diverge from the declared dixlase-onepage.
+        $themeSlug = Theme::resolveSlug($themeName);
         $migrator = new ThemeMigrator(
             app(Filesystem::class),
             app(ConnectionResolverInterface::class),

@@ -156,6 +156,39 @@ class Theme extends Model
     }
 
     /**
+     * Resolve a theme's canonical slug from its directory name.
+     *
+     * The slug is the theme's declared identity (theme.json `slug`), and it
+     * is the key the theme_migrations ledger is written under by the update
+     * path. Commands that only receive a directory name (dls:theme:migrate,
+     * dls:theme:migrate:rollback) must NOT re-derive the slug from the
+     * directory via Str::kebab / Str::headline — for a directory like
+     * `DixlaseOnePage` that yields `dixlase-one-page`, which mismatches the
+     * declared `dixlase-onepage` and makes migration rollback look under the
+     * wrong ledger key (leaving orphan schema + ledger rows).
+     *
+     * Resolution order: the installed theme's recorded slug (DB) → the
+     * theme.json manifest declaration → a last-resort kebab of the directory.
+     */
+    public static function resolveSlug(string $directory): string
+    {
+        $slug = static::query()->where('directory', $directory)->value('slug');
+        if (is_string($slug) && $slug !== '') {
+            return $slug;
+        }
+
+        $manifest = base_path("themes/{$directory}/theme.json");
+        if (is_file($manifest)) {
+            $data = json_decode((string) file_get_contents($manifest), true);
+            if (is_array($data) && isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '') {
+                return $data['slug'];
+            }
+        }
+
+        return \Illuminate\Support\Str::kebab($directory);
+    }
+
+    /**
      * Prevent theme deletion (default theme cannot be deleted)
      */
     public function deleteTheme()
