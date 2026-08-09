@@ -107,6 +107,11 @@ return [
         'update_complete_plugins' => 'プラグイン:names',
         'update_complete_themes' => 'テーマ:names',
         'update_complete_join' => '・',
+        'update_complete_rollback_hint' => '問題が発生した場合は、:linksからロールバックできます。',
+        'rollback_hint_plugin_detail' => 'プラグイン詳細',
+        'rollback_hint_plugin_master' => 'プラグインマスター',
+        'rollback_hint_theme_detail' => 'テーマ詳細',
+        'rollback_hint_theme_master' => 'テーママスター',
     ],
 
     // デタッチ実行中のプラグイン／テーマ更新を待つポーリング用プレースホルダ
