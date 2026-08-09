@@ -106,15 +106,25 @@ class PluginRollback extends Command
         }
 
         try {
+            // Reverse the schema BEFORE restoring the source, so the
+            // migrations added by the update are still on disk for
+            // migrate:rollback to load and run their down(). Restoring the
+            // old source first (as this used to do) deletes those migration
+            // files, leaving migrate:rollback nothing to reverse — it would
+            // silently roll back 0 migrations while reporting success, and
+            // the schema (table/column) + the dls_plugin_migrations rows for
+            // the update would survive. This mirrors the ordering the core
+            // CoreRollback fix (PR #209) established. If the schema rollback
+            // throws, we abort before touching the source, so the tree and
+            // the schema both stay at the post-update version (consistent
+            // and retryable).
+            $this->rollbackSchemaFromBackupMetadata($plugin->slug, $dir, $backupPath);
+
             $asidePath = $this->restoreExtensionBackupInto($backupPath, $livePath);
             $this->info('Plugin source + prebuilt assets restored from backup (no npm run).');
 
             // Point the public asset symlink at the restored resources/assets.
             Artisan::call('dls:plugin:symlink', ['action' => 'create', 'plugin' => $dir]);
-
-            // Delegate the schema half so the operator does not have to run
-            // a second command; best-effort, mirrors dls:plugin:update.
-            $this->rollbackSchemaFromBackupMetadata($plugin->slug, $dir, $backupPath);
 
             // Keep the recorded version in step with the restored plugin.json.
             $this->syncPluginVersion($plugin, $livePath);
