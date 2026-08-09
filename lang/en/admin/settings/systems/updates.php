@@ -107,6 +107,11 @@ return [
         'update_complete_plugins' => 'plugin(s) :names',
         'update_complete_themes' => 'theme(s) :names',
         'update_complete_join' => ' and ',
+        'update_complete_rollback_hint' => 'If something isn\'t working, you can roll back from :links.',
+        'rollback_hint_plugin_detail' => 'the plugin detail page',
+        'rollback_hint_plugin_master' => 'the plugin master',
+        'rollback_hint_theme_detail' => 'the theme detail page',
+        'rollback_hint_theme_master' => 'the theme master',
     ],
 
     // Polling placeholder shown while a detached plugin/theme update runs
