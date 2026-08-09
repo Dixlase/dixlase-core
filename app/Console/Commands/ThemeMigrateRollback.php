@@ -35,8 +35,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Theme;
+use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -85,28 +88,42 @@ class ThemeMigrateRollback extends Command
 
         $this->info("Rolling back migrations for theme: {$themeName}");
 
-        // Execute rollback
-        $options = [
-            '--path' => "themes/{$themeName}/database/migrations",
-            '--force' => $this->option('force'),
-        ];
+        // Roll back through ThemeMigrator so it reverses rows in the
+        // dls_theme_migrations ledger. The previous implementation delegated
+        // to the stock `migrate:rollback`, which operates on dls_migrations
+        // and therefore reversed NOTHING recorded by ThemeMigrator — the
+        // theme migration rollback silently no-opped and left orphan schema.
+        // The ledger is keyed on the theme's canonical slug (theme.json / DB),
+        // resolved here so it matches what the update path recorded under.
+        $themeSlug = Theme::resolveSlug($themeName);
+        $migrator = new ThemeMigrator(
+            app(Filesystem::class),
+            app(ConnectionResolverInterface::class),
+            'theme_migrations',
+            $themeSlug,
+        );
 
-        if ($this->option('pretend')) {
-            $options['--pretend'] = true;
+        try {
+            $rolledBack = $migrator->rollback($themeName, [
+                'step' => $this->option('step') ? (int) $this->option('step') : 1,
+                'pretend' => (bool) $this->option('pretend'),
+                'force' => (bool) $this->option('force'),
+            ]);
+        } catch (\Throwable $e) {
+            $this->error("Rollback failed for theme: {$themeName}: {$e->getMessage()}");
+
+            return 1;
         }
 
-        if ($this->option('step')) {
-            $options['--step'] = (int) $this->option('step');
-        }
-
-        $exitCode = Artisan::call('migrate:rollback', $options, $this->getOutput());
-
-        if ($exitCode === 0) {
-            $this->info("Rollback completed successfully for theme: {$themeName}");
+        if (empty($rolledBack)) {
+            $this->info("No migrations to roll back for theme: {$themeName}.");
         } else {
-            $this->error("Rollback failed for theme: {$themeName}");
+            foreach ($rolledBack as $file) {
+                $this->info('Rolled back: '.$file);
+            }
+            $this->info("Rollback completed successfully for theme: {$themeName}");
         }
 
-        return $exitCode;
+        return 0;
     }
 }
