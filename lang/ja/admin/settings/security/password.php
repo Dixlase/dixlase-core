@@ -64,7 +64,8 @@ return [
     'require_uppercase' => '大文字を含める',
     'require_number' => '数字を含める',
     'require_symbol' => '記号を含める',
-    'security_warning' => 'セキュリティ強化のため、より厳しい条件を設定することを推奨します。',
+    'recommended_badge' => '推奨',
+    'security_warning' => '本番運用では 12 文字以上、機密性の高いシステムでは 16 文字以上への設定を推奨します。',
     'reset_enabled' => 'パスワードリセット機能を有効化',
     'plugin_custom_hint' => 'プラグイン（DixlaseUsersなど）で独自のパスワードポリシーを設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
 
