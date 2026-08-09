@@ -902,9 +902,69 @@ HTML;
             ]);
         }
 
-        return __('admin/settings/systems/updates.messages.update_complete_frame', [
+        $message = __('admin/settings/systems/updates.messages.update_complete_frame', [
             'subject' => implode(__('admin/settings/systems/updates.messages.update_complete_join'), $segments),
         ]);
+
+        // Append a rollback hint pointing at where the rollback control lives.
+        // The extension update just took a pre-update backup, so a rollback is
+        // available. The whole flash is rendered unescaped ({!! !!}), so build
+        // real <a> links here; only the route URLs (safe) and static lang
+        // labels go into them.
+        $hint = $this->buildRollbackHint($result);
+        if ($hint !== '') {
+            $message .= ' '.$hint;
+        }
+
+        return $message;
+    }
+
+    /**
+     * Build the "if something goes wrong you can roll back from …" hint for the
+     * extension update-complete flash. Links to the extension's detail page
+     * (where the rollback button is) when a single extension of that type was
+     * updated, or to the master list when several were. Returns '' when there
+     * is nothing to link to.
+     *
+     * @param  array<string, mixed>  $result
+     */
+    protected function buildRollbackHint(array $result): string
+    {
+        $pluginSlugs = is_array($result['updated_plugin_slugs'] ?? null) ? array_values($result['updated_plugin_slugs']) : [];
+        $themeSlugs = is_array($result['updated_theme_slugs'] ?? null) ? array_values($result['updated_theme_slugs']) : [];
+
+        $links = [];
+
+        if ($pluginSlugs !== []) {
+            [$url, $labelKey] = count($pluginSlugs) === 1
+                ? [route('admin.settings.plugins.show', ['slug' => $pluginSlugs[0]]), 'rollback_hint_plugin_detail']
+                : [route('admin.settings.plugins.index'), 'rollback_hint_plugin_master'];
+            $links[] = $this->rollbackHintLink($url, __("admin/settings/systems/updates.messages.{$labelKey}"));
+        }
+
+        if ($themeSlugs !== []) {
+            [$url, $labelKey] = count($themeSlugs) === 1
+                ? [route('admin.settings.themes.show', ['slug' => $themeSlugs[0]]), 'rollback_hint_theme_detail']
+                : [route('admin.settings.themes.index'), 'rollback_hint_theme_master'];
+            $links[] = $this->rollbackHintLink($url, __("admin/settings/systems/updates.messages.{$labelKey}"));
+        }
+
+        if ($links === []) {
+            return '';
+        }
+
+        return __('admin/settings/systems/updates.messages.update_complete_rollback_hint', [
+            'links' => implode(__('admin/settings/systems/updates.messages.update_complete_join'), $links),
+        ]);
+    }
+
+    /**
+     * A single underlined anchor for the rollback hint. Both arguments are
+     * escaped because the flash is rendered unescaped.
+     */
+    protected function rollbackHintLink(string $url, string $label): string
+    {
+        return '<a href="'.e($url).'" class="underline font-medium">'.e($label).'</a>';
     }
 
     /**
@@ -915,11 +975,13 @@ HTML;
      */
     protected function quoteExtensionNames(array $names): string
     {
+        // The flash is rendered unescaped ({!! !!}), so escape each display
+        // name — a plugin/theme author controls it and it could contain HTML.
         if (app()->getLocale() === 'ja') {
-            return implode('', array_map(static fn (string $n): string => '「'.$n.'」', $names));
+            return implode('', array_map(static fn (string $n): string => '「'.e($n).'」', $names));
         }
 
-        return implode(', ', $names);
+        return implode(', ', array_map(static fn (string $n): string => e($n), $names));
     }
 
     protected function buildCoreSection(array $target): array

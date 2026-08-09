@@ -79,6 +79,10 @@ class ExtensionsUpdate extends Command
         // kind so the completion flash can read "プラグイン「A」・テーマ「X」".
         $updatedPlugins = [];
         $updatedThemes = [];
+        // Slugs run parallel to the display-name arrays; the completion flash
+        // needs them to link straight to a single extension's detail page.
+        $updatedPluginSlugs = [];
+        $updatedThemeSlugs = [];
 
         try {
             foreach ($pluginSlugs as $slug) {
@@ -87,6 +91,7 @@ class ExtensionsUpdate extends Command
                 if ($code === 0) {
                     $this->line("[extensions-update] plugin {$slug} done");
                     $updatedPlugins[] = ExtensionDisplayName::for('plugin', $slug);
+                    $updatedPluginSlugs[] = $slug;
                 } else {
                     $failed++;
                 }
@@ -98,6 +103,7 @@ class ExtensionsUpdate extends Command
                 if ($code === 0) {
                     $this->line("[extensions-update] theme {$slug} done");
                     $updatedThemes[] = ExtensionDisplayName::for('theme', $slug);
+                    $updatedThemeSlugs[] = $slug;
                 } else {
                     $failed++;
                 }
@@ -113,7 +119,9 @@ class ExtensionsUpdate extends Command
                     'status' => 'success',
                     'kind' => 'extension',
                     'updated_plugins' => $updatedPlugins,
+                    'updated_plugin_slugs' => $updatedPluginSlugs,
                     'updated_themes' => $updatedThemes,
+                    'updated_theme_slugs' => $updatedThemeSlugs,
                     'failed_count' => $failed,
                 ]);
             }
