@@ -33,44 +33,57 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+/*
+|--------------------------------------------------------------------------
+| Where CAPTCHA is actually configured
+|--------------------------------------------------------------------------
+|
+| Almost nothing about CAPTCHA is configured here. Provider selection and
+| credentials live in the DATABASE and are edited through the admin panel
+| (Settings -> Security -> CAPTCHA); they are read via SecuritySetting:
+|
+|   provider        SecuritySetting 'captcha_driver'
+|                   (CaptchaFailoverService::getActiveProvider())
+|   site/secret key SecuritySetting '{provider}_site_key' / '_secret_key'
+|                   (CaptchaFailoverService::getProviderConfig())
+|   reCAPTCHA v2/v3 SecuritySetting 'captcha_google_version'
+|   minimum score   SecuritySetting 'captcha_google_min_score'
+|   Enterprise id   SecuritySetting 'captcha_google_project_id'
+|
+| Which driver class runs is decided by a switch in CaptchaServiceProvider,
+| not by config. Adding a provider means editing that switch — a 'class'
+| entry here would have no effect.
+|
+| Temporary bypass is a runtime state held in the cache and driven by
+| CaptchaBypassService / dls:captcha:bypass, not a config value.
+|
+| This file previously also declared 'default', per-driver 'class',
+| 'site_key', 'secret_key', 'version', 'min_score' and 'bypass'. Not one of
+| them was ever read: a repository-wide search finds exactly two reads of
+| config('captcha.*') — 'drivers.turnstile.theme' and 'forms', both kept
+| below. The stale entries were removed because settings that are silently
+| ignored are worse than settings that are absent: CAPTCHA_DRIVER,
+| RECAPTCHA_SITE_KEY and friends in a .env looked authoritative and did
+| nothing. 'drivers.google.class' also pointed at App\Captcha\
+| GoogleRecaptchaDriver, a class deleted when the Google driver was split
+| into V2/V3/Enterprise — which is how PHPStan found this.
+|
+*/
+
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Default Captcha Driver
-    |--------------------------------------------------------------------------
-    |
-    | This option controls the default captcha driver that will be used
-    | for verification. You may set this to any of the drivers defined
-    | in the "drivers" array below.
-    |
-    */
-
-    'default' => env('CAPTCHA_DRIVER', 'google'),
-
     /*
     |--------------------------------------------------------------------------
     | Captcha Drivers
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the captcha drivers for your application.
-    | Each driver has its own configuration options.
+    | Presentation-only options that have no place in the database because
+    | they describe how a widget is drawn rather than how it authenticates.
+    | Credentials are NOT here — see the note at the top of this file.
     |
     */
 
     'drivers' => [
-        'google' => [
-            'class' => \App\Captcha\GoogleRecaptchaDriver::class,
-            'site_key' => env('RECAPTCHA_SITE_KEY'),
-            'secret_key' => env('RECAPTCHA_SECRET_KEY'),
-            'version' => env('RECAPTCHA_VERSION', 'v3'), // 'v2_checkbox', 'v2_invisible', 'v3'
-            'min_score' => env('RECAPTCHA_MIN_SCORE', 0.5),
-        ],
-
         'turnstile' => [
-            'class' => \App\Captcha\TurnstileCaptchaDriver::class,
-            'site_key' => env('TURNSTILE_SITE_KEY'),
-            'secret_key' => env('TURNSTILE_SECRET_KEY'),
-
             /*
             | Widget colour scheme. Three-tier resolution applied in
             | the driver:
@@ -90,25 +103,11 @@ return [
             'theme' => env('TURNSTILE_THEME'),
         ],
 
-        // Future drivers can be added here
-        // 'hcaptcha' => [
-        //     'class' => \App\Captcha\HCaptchaDriver::class,
-        //     'site_key' => env('HCAPTCHA_SITE_KEY'),
-        //     'secret_key' => env('HCAPTCHA_SECRET_KEY'),
-        // ],
+        // A new provider is added by extending the switch in
+        // CaptchaServiceProvider and storing its credentials through the
+        // admin panel. Only add an entry here if the provider needs a
+        // presentation option like the Turnstile theme above.
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Bypass for Testing
-    |--------------------------------------------------------------------------
-    |
-    | When this is set to true, all captcha verifications will pass.
-    | This is useful for testing environments.
-    |
-    */
-
-    'bypass' => env('CAPTCHA_BYPASS', false),
 
     /*
     |--------------------------------------------------------------------------
