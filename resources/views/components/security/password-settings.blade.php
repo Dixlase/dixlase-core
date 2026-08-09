@@ -49,9 +49,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ])
 
 @php
+    // Default option set — mark 12+ as the recommended baseline for
+    // production use. 8 remains the install default (matches the NIST
+    // SP 800-63B / OWASP absolute floor, chosen for setup approachability),
+    // but 12+ is what we advise once the site is in operation. See
+    // `admin/settings/security/password.security_warning` for the copy
+    // that spells out the tiered guidance (12 for production, 16 for
+    // high-sensitivity systems).
     $defaultMinLengthOptions = [
         ['value' => '8', 'label' => __('common.characters', ['count' => 8])],
-        ['value' => '12', 'label' => __('common.characters', ['count' => 12])],
+        [
+            'value' => '12',
+            'label' => __('common.characters', ['count' => 12]),
+            'badge' => __($translationPrefix . '.recommended_badge'),
+            'badgeColor' => 'green',
+        ],
         ['value' => '16', 'label' => __('common.characters', ['count' => 16])],
     ];
     $minLengthOptions = $minLengthOptions ?? $defaultMinLengthOptions;
