@@ -112,4 +112,89 @@ class AdminSystemUpdatesFlashTest extends TestCase
             $this->assertNotSame($key, __($key), "Missing core_rollback_complete for locale {$locale}");
         }
     }
+
+    public function test_single_plugin_update_links_the_rollback_hint_to_the_plugin_detail(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFlash([
+            'status' => 'success',
+            'kind' => 'extension',
+            'updated_plugins' => ['Cookie'],
+            'updated_plugin_slugs' => ['dixlase-cookie'],
+            'updated_themes' => [],
+            'updated_theme_slugs' => [],
+        ]);
+
+        // Names the plugin, carries the rollback hint, and links straight to
+        // that one plugin's detail page (where the rollback button lives).
+        $this->assertStringContainsString('Cookie', $message);
+        $this->assertStringContainsStringIgnoringCase('roll back', $message);
+        $this->assertStringContainsString(
+            route('admin.settings.plugins.show', ['slug' => 'dixlase-cookie']),
+            $message,
+        );
+        // Uses the "detail" label, not the "master" label. (The detail URL
+        // contains the master URL as a path prefix, so assert on the label.)
+        $this->assertStringContainsString(__('admin/settings/systems/updates.messages.rollback_hint_plugin_detail'), $message);
+        $this->assertStringNotContainsString(__('admin/settings/systems/updates.messages.rollback_hint_plugin_master'), $message);
+    }
+
+    public function test_multiple_plugins_update_links_the_rollback_hint_to_the_plugin_master(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFlash([
+            'status' => 'success',
+            'kind' => 'extension',
+            'updated_plugins' => ['Cookie', 'SEO'],
+            'updated_plugin_slugs' => ['dixlase-cookie', 'dixlase-seo'],
+            'updated_themes' => [],
+            'updated_theme_slugs' => [],
+        ]);
+
+        // Two plugins → a single detail link cannot serve both, so the hint
+        // points at the plugin master list.
+        $this->assertStringContainsString(route('admin.settings.plugins.index'), $message);
+        $this->assertStringNotContainsString(
+            route('admin.settings.plugins.show', ['slug' => 'dixlase-cookie']),
+            $message,
+        );
+    }
+
+    public function test_extension_display_names_are_html_escaped_in_the_flash(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFlash([
+            'status' => 'success',
+            'kind' => 'extension',
+            'updated_plugins' => ['<script>x</script>'],
+            'updated_plugin_slugs' => ['evil-plugin'],
+            'updated_themes' => [],
+            'updated_theme_slugs' => [],
+        ]);
+
+        // The flash is rendered unescaped, so a malicious display name must be
+        // neutralised at build time.
+        $this->assertStringNotContainsString('<script>', $message);
+        $this->assertStringContainsString('&lt;script&gt;', $message);
+    }
+
+    public function test_rollback_hint_keys_exist_in_both_locales(): void
+    {
+        foreach (['en', 'ja'] as $locale) {
+            $this->app->setLocale($locale);
+            foreach ([
+                'update_complete_rollback_hint',
+                'rollback_hint_plugin_detail',
+                'rollback_hint_plugin_master',
+                'rollback_hint_theme_detail',
+                'rollback_hint_theme_master',
+            ] as $suffix) {
+                $key = "admin/settings/systems/updates.messages.{$suffix}";
+                $this->assertNotSame($key, __($key), "Missing {$suffix} for locale {$locale}");
+            }
+        }
+    }
 }
