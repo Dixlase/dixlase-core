@@ -65,7 +65,8 @@ return [
     'require_uppercase' => 'Require Uppercase',
     'require_number' => 'Require Number',
     'require_symbol' => 'Require symbols',
-    'security_warning' => 'For enhanced security, we recommend setting stricter requirements.',
+    'recommended_badge' => 'Recommended',
+    'security_warning' => 'For production sites we recommend 12 characters or more; for systems handling sensitive data, 16 or more.',
     'reset_enabled' => 'Enable password reset feature',
     'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own password policies. If a plugin has custom settings enabled, those will take precedence.',
 
