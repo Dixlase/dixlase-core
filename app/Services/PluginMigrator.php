@@ -106,6 +106,19 @@ class PluginMigrator
         if (Schema::hasTable('plugins')) {
             $slug = Plugin::where('name', $pluginName)->value('slug');
         }
+        // Before falling back to a derived slug (which mangles compound
+        // names like OnePage -> one-page), honour the plugin's declared
+        // slug from its manifest so a not-yet-registered plugin still keys
+        // the ledger the same way the installed model would.
+        if ($slug === null) {
+            $manifest = base_path("plugins/{$pluginName}/plugin.json");
+            if (is_file($manifest)) {
+                $data = json_decode((string) file_get_contents($manifest), true);
+                if (is_array($data) && isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '') {
+                    $slug = $data['slug'];
+                }
+            }
+        }
         if ($slug === null) {
             $slug = Str::slug(Str::headline($pluginName), '-');
         }

@@ -82,7 +82,7 @@ class ThemeInstall extends Command
         }
 
         // Check if theme is already registered
-        $slug = Str::kebab($themeName);
+        $slug = Theme::resolveSlug($themeDirName);
         $exists = Theme::where('slug', $slug)->exists();
 
         if ($exists && ! $this->option('force')) {
@@ -212,7 +212,7 @@ class ThemeInstall extends Command
         $hasSettings = file_exists("{$themeDir}/app/Http/Controllers/Admin/Settings/Themes/ThemeSettingsController.php");
 
         // Register the theme
-        $slug = Str::kebab($themeName);
+        $slug = Theme::resolveSlug($themeDirName);
 
         // Default an official-vendor theme to the official source so it
         // is updatable out of the box. A theme installed from a
