@@ -41,13 +41,13 @@ management page. Renders nothing when everything is up to date.
     <section class="overflow-hidden shadow-sm sm:rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-5">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-start gap-3">
-                <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-800/60 dark:text-blue-200">
+                <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                     <i class="fas fa-arrow-up"></i>
                 </span>
                 <div>
                     <h2 class="text-base font-semibold text-blue-900 dark:text-blue-100">
                         {{ __('admin/dashboard.updates_available_label') }}
-                        <span class="ml-1 inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
+                        <span class="ml-1 inline-flex min-w-6 items-center justify-center rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
                             {{ $updates['total'] }}
                         </span>
                     </h2>
