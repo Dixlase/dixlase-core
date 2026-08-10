@@ -177,11 +177,21 @@ return [
     */
 
     'features' => [
-        Features::registration(),
-        // Features::resetPasswords(), // Disabled to use custom controller
-        // Features::emailVerification(),
-        Features::updateProfileInformation(),
-        Features::updatePasswords(),
+        // Features::registration() is deliberately absent. Dixlase members are
+        // created by an administrator (admin.members.create); there is no
+        // self-service signup. Enabling it publishes POST /register, whose only
+        // middleware is `web` + RedirectIfAuthenticated — i.e. reachable by an
+        // anonymous visitor, bypassing AdminIpFilter / Authenticate / lockdown
+        // that guard every other admin route. Do not re-add it without also
+        // designing the member-facing flow it implies.
+        //
+        // Features::updateProfileInformation() and Features::updatePasswords()
+        // are absent for a smaller reason: the admin panel edits profiles and
+        // passwords through its own controllers under admin.profile.*, so the
+        // Fortify endpoints were unused duplicates of that surface.
+        //
+        // Features::resetPasswords() and emailVerification() were already off;
+        // both are handled by custom controllers.
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,
