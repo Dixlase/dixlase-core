@@ -85,9 +85,18 @@ trait AccountVerificationTrait
     protected function getVerificationCompletedNotificationClass(): string
     {
         return match ($this->getContext()) {
-            'admin' => \App\Notifications\MemberVerificationCompletedNotification::class,
+            // MemberVerifiedNotification, not MemberVerificationCompletedNotification:
+            // the class was renamed and these references were left behind. Because
+            // the caller gates on class_exists(), the effect was not a crash but
+            // silence — verification-completed mail simply never went out. The
+            // orphaned class still carries the matching
+            // mail.verify-email.member_verification_completed.* translation keys.
+            'admin' => \App\Notifications\MemberVerifiedNotification::class,
+            // The 'user' context is served by the DixlaseUsers plugin. Its classes
+            // are intentionally absent from Core; the class_exists() gate at the
+            // call site turns that into a no-op rather than an error.
             'user' => \App\Notifications\UserVerificationCompletedNotification::class,
-            default => \App\Notifications\MemberVerificationCompletedNotification::class,
+            default => \App\Notifications\MemberVerifiedNotification::class,
         };
     }
 

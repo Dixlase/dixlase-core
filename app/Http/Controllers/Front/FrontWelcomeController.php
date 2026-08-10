@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Enums\ContentEditorType;
 use App\Models\FrontPage;
+use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
 use Illuminate\Support\Facades\App;
 
