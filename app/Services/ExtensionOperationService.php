@@ -42,6 +42,7 @@ use App\Mail\ExtensionOperationNotificationMail;
 use App\Models\AuditLog;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 

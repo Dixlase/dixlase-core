@@ -446,21 +446,32 @@ class CaptchaFailoverService
     protected static function notifyAdminOfFailover(string $failedProvider, string $newProvider): void
     {
         try {
-            if (class_exists(\App\Services\SystemNotificationService::class)) {
-                $failedLabel = CaptchaProvider::tryFrom($failedProvider)?->label() ?? $failedProvider;
-                $newLabel = CaptchaProvider::tryFrom($newProvider)?->label() ?? $newProvider;
+            $failedLabel = CaptchaProvider::tryFrom($failedProvider)?->label() ?? $failedProvider;
+            $newLabel = CaptchaProvider::tryFrom($newProvider)?->label() ?? $newProvider;
 
-                \App\Services\SystemNotificationService::send(
-                    __('security.captcha_failover_subject'),
-                    __('security.captcha_failover_message', [
-                        'from' => $failedLabel,
-                        'to' => $newLabel,
-                        'time' => now()->format('Y-m-d H:i:s'),
-                    ]),
-                    'warning'
-                );
-            }
-        } catch (\Exception $e) {
+            // This used to be a static ::send() call behind a
+            // class_exists() guard. The guard passed — the class is core and
+            // always present — and the call then died on an undefined method,
+            // because SystemNotificationService exposes instance methods and
+            // has never had a send(). Failover notifications therefore never
+            // reached anyone, and the failure surfaced inside error handling,
+            // where something has already gone wrong.
+            app(\App\Services\SystemNotificationService::class)->sendAdminNotification(
+                __('security.captcha_failover_subject'),
+                __('security.captcha_failover_message', [
+                    'from' => $failedLabel,
+                    'to' => $newLabel,
+                    'time' => now()->format('Y-m-d H:i:s'),
+                ]),
+                [
+                    'from' => $failedProvider,
+                    'to' => $newProvider,
+                ],
+            );
+        } catch (\Throwable $e) {
+            // \Throwable, not \Exception: this is the last line of an error
+            // path, and an \Error escaping here would replace a captcha
+            // failover with a fatal.
             Log::error('Failed to send CAPTCHA failover notification', [
                 'error' => $e->getMessage(),
             ]);

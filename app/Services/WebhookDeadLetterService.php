@@ -105,11 +105,18 @@ class WebhookDeadLetterService
      */
     protected static function sendNotification(WebhookDeadLetter $deadLetter): void
     {
-        // Use SystemNotificationService if available
-        if (class_exists(\App\Services\SystemNotificationService::class)) {
-            $summary = $deadLetter->getSummary();
+        $summary = $deadLetter->getSummary();
 
-            \App\Services\SystemNotificationService::send(
+        try {
+            // This used to be a static ::send() call behind a class_exists()
+            // guard. The guard passed — the class is core and always present —
+            // and the call then died on an undefined method, because
+            // SystemNotificationService exposes instance methods and has never
+            // had a send(). Nothing here was wrapped, so the resulting \Error
+            // propagated and the markDeadLetterNotified() below never ran
+            // either: the notification was never sent AND the dead letter was
+            // never marked.
+            app(\App\Services\SystemNotificationService::class)->sendAdminNotification(
                 __('admin/webhook.dead_letter.notification_subject'),
                 __('admin/webhook.dead_letter.notification_message', [
                     'event' => $summary['event'],
@@ -117,11 +124,19 @@ class WebhookDeadLetterService
                     'attempts' => $summary['total_attempts'],
                     'error' => $summary['last_error'],
                 ]),
-                'warning'
+                $summary,
             );
+        } catch (\Throwable $e) {
+            // Notifying about a failure must not become a second failure.
+            Log::error('Failed to send webhook dead-letter notification', [
+                'webhook_dead_letter_id' => $deadLetter->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        // Also mark the delivery as notified
+        // Mark the delivery as notified regardless: the record is what stops
+        // this dead letter being re-announced on every sweep, and it must not
+        // hinge on whether mail happened to be deliverable.
         $deadLetter->delivery?->markDeadLetterNotified();
     }
 
