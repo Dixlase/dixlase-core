@@ -311,9 +311,15 @@ class EmailVerificationHelper
     protected function getVerificationCompletedNotificationClass(string $context): string
     {
         return match ($context) {
-            'admin' => \App\Notifications\MemberVerificationCompletedNotification::class,
+            // Kept in step with AccountVerificationTrait, which carries the same
+            // mapping. MemberVerifiedNotification is the renamed class; the old
+            // name never existed as a file, so this branch resolved to nothing
+            // and the class_exists() gate at the call site skipped the mail
+            // silently instead of failing.
+            'admin' => \App\Notifications\MemberVerifiedNotification::class,
+            // 'user' is DixlaseUsers territory and intentionally absent here.
             'user' => \App\Notifications\UserVerificationCompletedNotification::class,
-            default => \App\Notifications\MemberVerificationCompletedNotification::class,
+            default => \App\Notifications\MemberVerifiedNotification::class,
         };
     }
 
