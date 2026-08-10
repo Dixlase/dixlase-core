@@ -38,6 +38,7 @@
 namespace App\Services\Csp;
 
 use App\Contracts\CspPolicyProvider;
+use Illuminate\Support\Facades\Log;
 
 /**
  * CSP Policy Registry
@@ -121,9 +122,38 @@ class CspPolicyRegistry
     {
         $collected = $this->directives;
 
-        // Collect directives from providers
+        // Collect directives from providers.
+        //
+        // A provider is third-party code reached from the CSP middleware, which
+        // runs on EVERY request — so an exception here is not a CSP problem, it
+        // is a site outage. That is not hypothetical: DixlaseSEO read its own
+        // settings table in getCspDirectives(), and while the plugin was
+        // enabled without its schema (right after install, after a failed
+        // migration, mid-rollback) the resulting PDOException returned 500 for
+        // every page, front pages included.
+        //
+        // A failing provider is therefore skipped rather than allowed to
+        // propagate. The cost is narrow and known: only that provider's
+        // directives are missing, so the policy is looser for the resources it
+        // would have allow-listed — while every other provider still applies.
+        // Serving a page under a slightly looser policy beats serving no page.
+        //
+        // The failure is logged rather than swallowed: a silent skip would hide
+        // exactly the kind of defect this catch exists to survive.
         foreach ($this->providers as $name => $provider) {
-            $providerDirectives = $provider->getCspDirectives();
+            try {
+                $providerDirectives = $provider->getCspDirectives();
+            } catch (\Throwable $e) {
+                // \Throwable, not \Exception: a missing class or a driver-level
+                // fault arrives as an \Error and would sail past \Exception.
+                Log::error('CSP provider failed; its directives are omitted from this response', [
+                    'provider' => $name,
+                    'exception' => $e::class,
+                    'error' => $e->getMessage(),
+                ]);
+
+                continue;
+            }
 
             foreach ($providerDirectives as $directive => $values) {
                 if (! isset($collected[$directive])) {
