@@ -129,12 +129,15 @@ class StaleSymbolReferenceTest extends TestCase
 
     public function test_verification_notification_mapping_resolves_for_core_contexts(): void
     {
-        // The admin and default branches are Core's own; they must resolve.
-        // The 'user' branch belongs to the DixlaseUsers plugin and is
-        // deliberately absent here, so it is not asserted.
+        // Every arm of the mapping now belongs to Core, so every context must
+        // resolve to a class that exists. A 'user' arm naming a front-end
+        // account plugin's notification classes used to sit alongside these and
+        // was excluded from the assertion; it has since been removed, which is
+        // why 'user' is asserted here like any other context rather than
+        // carved out.
         $helper = new EmailVerificationHelper();
 
-        foreach (['admin', 'anything-else'] as $context) {
+        foreach (['admin', 'user', 'anything-else'] as $context) {
             foreach (['getVerificationCompletedNotificationClass', 'getAdminVerifiedNotificationClass'] as $resolver) {
                 $method = new ReflectionMethod($helper, $resolver);
                 $method->setAccessible(true);

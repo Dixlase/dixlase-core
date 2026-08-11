@@ -265,22 +265,14 @@ class CaptchaHelper
             );
         }
 
-        // User plugin form
-        if (in_array($formName, ['user_login', 'user_register', 'user_password_reset'])) {
-            // Check if the legacy users-plugin setting model is present
-            if (class_exists('\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting')) {
-                $settingKey = match ($formName) {
-                    'user_login' => 'captcha_login_enabled',
-                    'user_register' => 'captcha_register_enabled',
-                    'user_password_reset' => 'captcha_password_reset_enabled',
-                };
-
-                return filter_var(
-                    \Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::getValue($settingKey, false),
-                    FILTER_VALIDATE_BOOLEAN
-                );
-            }
-        }
+        // A branch for 'user_login' / 'user_register' / 'user_password_reset'
+        // used to sit here, reading those keys out of the DixlaseUsers plugin's
+        // settings model behind a class_exists() gate. Those form names appear
+        // nowhere else in Core, and the gate meant the branch fell through to
+        // the same `return false` below whenever the plugin was absent.
+        // Plugin-owned forms now take the generic path like every other plugin
+        // form: isEnabledForFormWithModel() accepts the plugin's own settings
+        // model and key, so Core no longer has to name a plugin's internals.
 
         // Other forms are managed independently by the plugin side, so return false here
         // Plugins should determine CAPTCHA enabled/disabled from their own settings table
