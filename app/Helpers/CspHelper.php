@@ -190,14 +190,19 @@ if (! function_exists('csp_is_enabled')) {
     }
 }
 
-if (! function_exists('csp_get_mode')) {
-    /**
-     * Get CSP mode
-     *
-     * @return string 'enforce' or 'report-only'
-     */
-    function csp_get_mode(): string
-    {
-        return app(CspBuilder::class)->getMode();
-    }
-}
+// csp_get_mode() used to live here. It called CspBuilder::getMode(), which has
+// never existed, so any caller would have fataled — and it had none.
+//
+// It also predates the current design. Its return type promised
+// 'enforce' or 'report-only', while CSP mode is now App\Enums\CspMode
+// (Development / Standard / Strict, with Strict reserved for later) stored in
+// SecuritySetting under 'csp_mode'. enforce vs report-only is a separate axis,
+// carried by CspBuilder::getHeaderName().
+//
+// Read the mode the way the rest of the codebase does — CspBuilder:627,
+// DashboardPresenter:221, ExtensionHelper:147, dls:csp:status and
+// dls:csp:set-admin-mode all use this shape:
+//
+//     $mode = CspMode::fromValue(
+//         SecuritySetting::get('csp_mode', CspMode::default()->value)
+//     ) ?? CspMode::default();
