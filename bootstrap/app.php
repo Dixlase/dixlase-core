@@ -174,6 +174,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // Admin panel operation log
             'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // Admin panel menu access permission
             'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // Admin panel menu edit permission
+            'plugin.admin.access' => \App\Http\Middleware\EnsurePluginAdminAccess::class, // Plugin admin route authorization
             'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // Installation step check
             'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // API key authentication
             'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // API rate limit

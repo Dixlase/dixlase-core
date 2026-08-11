@@ -238,6 +238,24 @@ class PermissionRegistry
     }
 
     /**
+     * Whether the plugin actually declares a permission for this menu key.
+     *
+     * getPluginEffective() substitutes ADMIN/ADMIN when a key is undeclared,
+     * so its return value cannot distinguish "the plugin granted this to
+     * ADMIN" from "the plugin said nothing". Callers that need to walk a
+     * dotted key from most specific to least -- EnsurePluginAdminAccess does
+     * exactly that -- have to know which ancestor carries a real declaration.
+     *
+     * @param  string  $pluginSlug  Plugin DIRECTORY name (e.g. DixlaseSEO), not
+     *                              the kebab slug: resolvePluginRolesPath()
+     *                              reads plugins/{$pluginSlug}/config/admin/roles.php.
+     */
+    public static function hasPluginDefinition(string $pluginSlug, string $menuKey): bool
+    {
+        return self::getPluginDefault($pluginSlug, $menuKey) !== null;
+    }
+
+    /**
      * Get plugin default permission (supports nested structure)
      */
     protected static function getPluginDefault(string $pluginSlug, string $menuKey): ?array
