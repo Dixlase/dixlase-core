@@ -1,0 +1,58 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - routes
+
+    # level 0 plus an allow-list: everything except symbol resolution is
+    # ignored by identifier below. What is left is "this class / function /
+    # constant / method is named but does not exist" — the category that
+    # produced eleven live outages in the 2026-08 sweep, and the only one that
+    # is decidable rather than a matter of type inference.
+    #
+    # Deliberately NOT a general quality gate. phpstan.neon (level 5, ~650
+    # findings) stays advisory and is worked down separately; this file exists
+    # to make one specific class of defect impossible to merge.
+    level: 0
+
+    excludePaths:
+        - app/Exceptions/Handler.php
+
+    ignoreErrors:
+        # --- everything that is not symbol resolution -------------------------
+        - identifier: larastan.noEnvCallsOutsideOfConfig
+        - identifier: larastan.noUnnecessaryCollectionCall
+        - identifier: larastan.relationExistence
+        - identifier: array.duplicateKey
+        - identifier: new.static
+        - identifier: arguments.count
+        - identifier: return.missing
+        # Eloquent attributes are served by __get, so property.notFound cannot
+        # distinguish a real typo from a database column. 270 of these at
+        # level 5 were noise; none was ever a genuine missing symbol.
+        - identifier: property.notFound
+        # __call / __callStatic mean a "missing" method may still dispatch.
+        # Verified case by case during the sweep: the real ones were fixed, and
+        # what remains here resolves at runtime.
+        - identifier: method.notFound
+        - identifier: classConstant.notFound
+
+        # --- deliberate absences ---------------------------------------------
+        # Provided by the DixlaseUsers plugin. Core must not name a plugin's
+        # internals, and the call sites gate on class_exists(), so absence is a
+        # no-op. Counts are pinned per file: a new missing class of this shape
+        # fails the build, and if DixlaseUsers ever ships these the count drops
+        # and this entry has to be revisited rather than quietly rotting.
+        -
+            message: '#Class App\\Notifications\\(UserVerificationCompletedNotification|AdminUserVerifiedNotification) not found\.#'
+            path: app/Helpers/EmailVerificationHelper.php
+            count: 2
+        -
+            message: '#Class App\\Notifications\\(UserVerificationCompletedNotification|AdminUserVerifiedNotification) not found\.#'
+            path: app/Traits/AccountVerificationTrait.php
+            count: 2
+
+    treatPhpDocTypesAsCertain: false
