@@ -68,7 +68,7 @@ return [
     'recommended_badge' => 'Recommended',
     'security_warning' => 'For production sites we recommend 12 characters or more; for systems handling sensitive data, 16 or more.',
     'reset_enabled' => 'Enable password reset feature',
-    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own password policies. If a plugin has custom settings enabled, those will take precedence.',
+    'plugin_custom_hint' => 'Plugins can set their own password policies. If a plugin has custom settings enabled, those will take precedence.',
 
     // Password reset feature
     'password_reset_feature' => 'Password Reset Feature',

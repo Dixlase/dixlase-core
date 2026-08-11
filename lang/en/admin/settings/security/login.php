@@ -57,7 +57,7 @@ return [
     'lockout_notification_help' => 'When enabled, administrators will receive email notifications when lockouts occur',
 
     // Hint
-    'plugin_custom_hint' => 'Plugins (such as DixlaseUsers) can set their own login attempt limits. If a plugin has custom settings enabled, those will take precedence.',
+    'plugin_custom_hint' => 'Plugins can set their own login attempt limits. If a plugin has custom settings enabled, those will take precedence.',
 
     // Two-Factor Authentication Detailed Settings
     'two_fa_detailed_settings' => 'Two-Factor Authentication Details',
