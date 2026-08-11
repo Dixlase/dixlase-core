@@ -132,7 +132,17 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
 
     public function trustedDevices()
     {
-        return $this->hasMany(TrustedDevice::class);
+        // MembersTrustedDevice, not TrustedDevice: the model was renamed and
+        // this reference was left behind. It is reached from
+        // DeviceDetectionTrait::isDifferentEnvironment(), which TwoFaHelper
+        // uses to decide whether to demand 2FA — and that call is guarded by
+        // method_exists($user, 'trustedDevices'), which passes. The \Error
+        // therefore landed inside the 2FA decision itself.
+        //
+        // The failure at least pointed the safe way: the branch it aborted is
+        // the one that SKIPS 2FA for a recognised device, so a trusted device
+        // was challenged rather than waved through.
+        return $this->hasMany(MembersTrustedDevice::class);
     }
 
     /**
