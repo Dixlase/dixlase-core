@@ -153,12 +153,13 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
             return 'member';
         }
 
-        // For Mypage, use user guard
-        if (self::pathMatchesSegment($path, 'mypage')) {
-            $this->currentGuard = 'user';
-
-            return 'user';
-        }
+        // A branch mapping the 'mypage' segment to a 'user' guard used to sit
+        // here. Core registers no mypage route and no 'user' guard, and the
+        // only setGuardTable() call is SessionServiceProvider's for 'member',
+        // so the branch never selected a table -- getTable() fell straight back
+        // to the default. Path-to-guard mapping for plugin-owned areas belongs
+        // with the plugin that owns the routes; adding an extension point for
+        // that is the plugin's to request when it needs one.
 
         // Other paths use the default table (sessions)
         // Removed auth state check as it causes circular reference

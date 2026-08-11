@@ -73,10 +73,6 @@ return [
             'driver' => 'session',
             'provider' => 'members',
         ],
-        'user' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
     ],
 
     /*
@@ -100,10 +96,6 @@ return [
         'members' => [
             'driver' => 'eloquent',
             'model' => App\Models\Member::class,
-        ],
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => Plugins\DixlaseUsers\App\Models\DixlaseUsersUser::class,
         ],
     ],
 
@@ -133,13 +125,41 @@ return [
             'expire' => 60,
             'throttle' => env('APP_ENV') === 'local' ? 0 : env('PASSWORD_RESET_THROTTLE', 60),
         ],
-        'users' => [
-            'provider' => 'users',
-            'table' => 'plg_dixlase_users_password_reset_tokens',
-            'expire' => 60,
-            'throttle' => env('APP_ENV') === 'local' ? 0 : env('PASSWORD_RESET_THROTTLE', 60),
-        ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guards, Providers and Brokers Belonging to Plugins
+    |--------------------------------------------------------------------------
+    |
+    | Core declares the `member` guard only. A front-end account system is a
+    | plugin concern, so a plugin that adds one registers its own guard,
+    | provider and password broker from its service provider rather than
+    | having Core name the plugin's model here:
+    |
+    |     config([
+    |         'auth.guards.user'      => ['driver' => 'session', 'provider' => 'users'],
+    |         'auth.providers.users'  => ['driver' => 'eloquent', 'model' => Foo::class],
+    |         'auth.passwords.users'  => ['provider' => 'users', 'table' => '...'],
+    |     ]);
+    |
+    | Core previously carried a `user` guard, a `users` provider pointing at
+    | Plugins\DixlaseUsers\App\Models\DixlaseUsersUser, and a `users` broker
+    | keyed to that plugin's table. Nothing in Core resolved any of them, and
+    | the model reference broke static analysis whenever the plugin was not
+    | checked out. Registering from the plugin keeps the coupling one-way.
+    |
+    | Note that dropping a key from this file does not make it disappear.
+    | Laravel 11+ merges its own config/auth.php underneath this one, so the
+    | framework defaults now show through: a `web` guard, a `users` provider
+    | bound to App\Models\User (which Core does not ship), and a `users` broker
+    | on `password_reset_tokens`. That merge was already happening before the
+    | removal -- `web` has never been declared here, and it has always pointed
+    | at whatever `providers.users` resolved to. Core resolves neither, so both
+    | are inert; a plugin that declares `auth.providers.users` overrides the
+    | framework default rather than colliding with it.
+    |
+    */
 
     /*
     |--------------------------------------------------------------------------
