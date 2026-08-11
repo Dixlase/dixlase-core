@@ -72,7 +72,7 @@ trait LoginTrait
     /**
      * Get user model class name (implement in subclass)
      *
-     * @return string Model class name (e.g., 'App\Models\Member', 'Plugins\DixlaseUsers\App\Models\DixlaseUsersUser')
+     * @return string Model class name (e.g., 'App\Models\Member', or a model supplied by a plugin)
      */
     abstract protected function getUserModelClass(): string;
 

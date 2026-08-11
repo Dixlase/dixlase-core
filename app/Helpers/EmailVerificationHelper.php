@@ -317,8 +317,10 @@ class EmailVerificationHelper
             // and the class_exists() gate at the call site skipped the mail
             // silently instead of failing.
             'admin' => \App\Notifications\MemberVerifiedNotification::class,
-            // 'user' is DixlaseUsers territory and intentionally absent here.
-            'user' => \App\Notifications\UserVerificationCompletedNotification::class,
+            // A 'user' arm naming App\Notifications\UserVerificationCompletedNotification
+            // used to sit here. That class belongs to a front-end account plugin
+            // and has never existed in Core, so the arm only ever resolved to a
+            // name the class_exists() gate at the call site rejected.
             default => \App\Notifications\MemberVerifiedNotification::class,
         };
     }
@@ -333,7 +335,6 @@ class EmailVerificationHelper
     {
         return match ($context) {
             'admin' => \App\Notifications\AdminMemberVerifiedNotification::class,
-            'user' => \App\Notifications\AdminUserVerifiedNotification::class,
             default => \App\Notifications\AdminMemberVerifiedNotification::class,
         };
     }

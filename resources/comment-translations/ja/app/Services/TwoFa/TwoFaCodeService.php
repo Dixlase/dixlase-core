@@ -3,7 +3,7 @@
 return [
     '@internal Core only. Do not reference from plugins/themes' => '@internal コア専用。プラグイン/テーマから参照しないこと',
     'Generate authentication code and save to database' => '認証コードを生成してデータベースに保存',
-    'User model (Member or DixlaseUsersUser)' => 'ユーザーモデル（Member または DixlaseUsersUser）',
+    'User model (Member, or a model supplied by a plugin)' => 'ユーザーモデル（Member、またはプラグインが提供するモデル）',
     'Expiration time (minutes)' => '有効期限（分）',
     'Generated code (plain text)' => '生成されたコード（平文）',
     'Default expiration settings (from security settings)' => 'デフォルトの有効期限設定（セキュリティ設定から）',
@@ -35,7 +35,7 @@ return [
     '_review_status' => [
         '@internal Core only. Do not reference from plugins/themes' => 'machine',
         'Generate authentication code and save to database' => 'machine',
-        'User model (Member or DixlaseUsersUser)' => 'machine',
+        'User model (Member, or a model supplied by a plugin)' => 'machine',
         'Expiration time (minutes)' => 'machine',
         'Generated code (plain text)' => 'machine',
         'Default expiration settings (from security settings)' => 'machine',
