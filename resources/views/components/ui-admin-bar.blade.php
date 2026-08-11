@@ -68,9 +68,12 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
             {{-- Left side: Site name and menu --}}
-            <div class="flex items-center min-w-0 {{ $isAdminLayout ? '' : 'space-x-1 sm:space-x-4' }}">
+            {{-- space-x-1 sm:space-x-4 applies to both layouts: keeps mobile children close so
+                 the right group stays fully on-screen. mr-4 on logo/divider is scoped to sm+
+                 (admin layout) so the desktop appearance is unchanged. --}}
+            <div class="flex items-center min-w-0 space-x-1 sm:space-x-4">
                 {{-- Site name/logo --}}
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity {{ $isAdminLayout ? 'mr-4' : '' }}">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity {{ $isAdminLayout ? 'sm:mr-4' : '' }}">
                     <x-application-logo
                         class="text-gray-900 dark:text-white"
                         :site_name="config('app.name')"
@@ -80,27 +83,31 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                 </a>
 
                 {{-- Divider --}}
-                <div class="h-6 w-px bg-gray-700 hidden sm:block {{ $isAdminLayout ? 'mr-4' : '' }}"></div>
+                <div class="h-6 w-px bg-gray-700 hidden sm:block {{ $isAdminLayout ? 'sm:mr-4' : '' }}"></div>
 
                 {{-- Menu items (always visible) --}}
+                {{-- Nav labels show only at lg+ (1024px). Below lg the sidebar carries the
+                     labels, and stuffing them into the admin bar too was causing the
+                     tablet-width wrap into two rows. whitespace-nowrap is defensive against
+                     narrow container widths at md-lg. --}}
                 <nav class="flex items-center space-x-1">
                     {{-- Dashboard --}}
-                    <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
+                    <a href="{{ route('admin.dashboard') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
                         <i class="fas fa-home mr-1"></i>
-                        <span class="hidden md:inline">{{ __('components/ui-admin-bar.dashboard') }}</span>
+                        <span class="hidden lg:inline">{{ __('components/ui-admin-bar.dashboard') }}</span>
                     </a>
-                    
+
                     {{-- Front page design --}}
-                    <a href="{{ route('admin.front.edit') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
+                    <a href="{{ route('admin.front.edit') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
                         <i class="fas fa-paint-brush mr-1"></i>
-                        <span class="hidden md:inline">{{ __('common.design') }}</span>
+                        <span class="hidden lg:inline">{{ __('common.design') }}</span>
                     </a>
 
                     {{-- Theme settings (displayed only when route exists) --}}
                     @if(Route::has('admin.settings.themes.settings'))
-                        <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm">
+                        <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
                             <i class="fas fa-palette mr-1"></i>
-                            <span class="hidden md:inline">{{ __('components/ui-admin-bar.theme_settings') }}</span>
+                            <span class="hidden lg:inline">{{ __('components/ui-admin-bar.theme_settings') }}</span>
                         </a>
                     @endif
 
@@ -128,19 +135,21 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                         : null;
                 @endphp
 
+                {{-- Badge labels hidden until lg+ to align with the nav labels above and
+                     avoid the tablet-width wrap. Icons alone remain from sm+. --}}
                 <div class="hidden sm:flex items-center space-x-2 ml-2">
                     @if($envHref)
                         <a href="{{ $envHref }}"
                            title="{{ $envTooltip }}"
-                           class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $envBadgeClass }} hover:opacity-80 transition-opacity">
+                           class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap {{ $envBadgeClass }} hover:opacity-80 transition-opacity">
                             <i class="fas fa-server mr-1"></i>
-                            <span class="hidden sm:inline">{{ $envLabel }}</span>
+                            <span class="hidden lg:inline">{{ $envLabel }}</span>
                         </a>
                     @else
                         <span title="{{ $envTooltip }}"
-                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $envBadgeClass }}">
+                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap {{ $envBadgeClass }}">
                             <i class="fas fa-server mr-1"></i>
-                            <span class="hidden sm:inline">{{ $envLabel }}</span>
+                            <span class="hidden lg:inline">{{ $envLabel }}</span>
                         </span>
                     @endif
 
@@ -148,15 +157,15 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                         @if($envHref)
                             <a href="{{ $envHref }}"
                                title="{{ __('components/ui-admin-bar.debug_tooltip') }}"
-                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:opacity-80 transition-opacity">
+                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:opacity-80 transition-opacity">
                                 <i class="fas fa-bug mr-1"></i>
-                                <span class="hidden sm:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
+                                <span class="hidden lg:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
                             </a>
                         @else
                             <span title="{{ __('components/ui-admin-bar.debug_tooltip') }}"
-                                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                                 <i class="fas fa-bug mr-1"></i>
-                                <span class="hidden sm:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
+                                <span class="hidden lg:inline">{{ __('components/ui-admin-bar.debug_label') }}</span>
                             </span>
                         @endif
                     @endif
@@ -164,7 +173,9 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
             </div>
 
             {{-- Right side: User info --}}
-            <div class="flex items-center space-x-4">
+            {{-- space-x-2 sm:space-x-4: tighter gap on mobile so the user avatar/menu trigger
+                 stays fully on-screen alongside the left group in a ~370px viewport. --}}
+            <div class="flex items-center space-x-2 sm:space-x-4">
                 {{-- View site --}}
                 <a href="{{ url('/') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm flex items-center">
                     <i class="fas fa-external-link-alt mr-1"></i>
@@ -187,10 +198,12 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                 @endif
 
                 {{-- Desktop user menu --}}
+                {{-- Display-name span promoted to lg+ so it does not wrap onto a second line
+                     alongside "@if($isAdminLayout)" nav labels on tablet-width viewports. --}}
                 <div class="hidden sm:block relative">
                     <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-user-circle text-xl"></i>
-                        <span class="text-sm hidden sm:inline">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</span>
+                        <span class="text-sm hidden lg:inline whitespace-nowrap">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</span>
                         <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="userMenuOpen"
@@ -236,17 +249,20 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
 
 @if($isAdminLayout)
     {{-- Mobile menu overlay --}}
-    <div x-show="openSidebar || openUserMenu" 
-         @click="openSidebar = false; openUserMenu = false" 
+    {{-- z-index chosen to sit ABOVE the admin bar (inline z-index:9900) so the drawer is
+         visible and interactive on mobile, while staying BELOW the banner stack (z-9999)
+         so maintenance/safe-mode/demo banners still show over everything. --}}
+    <div x-show="openSidebar || openUserMenu"
+         @click="openSidebar = false; openUserMenu = false"
          x-cloak
-         class="fixed inset-0 bg-black/50 z-40"
+         class="fixed inset-0 bg-black/50 z-[9905]"
          aria-hidden="true"></div>
 
     {{-- Left slide-in sidebar (mobile) --}}
-    <div x-cloak 
-         class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-50"
+    <div x-cloak
+         class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-[9910]"
          :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
-        
+
         {{-- Scrollable menu section (including tab buttons) --}}
         <div class="flex-1 h-full ">
             @include('admin.partials.sidebar', [
@@ -256,12 +272,14 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
     </div>
 
     {{-- Right slide-in user menu (mobile) --}}
-    <div x-cloak 
-         class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-50 bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700"
+    <div x-cloak
+         class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-[9910] bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700"
          :class="{ 'translate-x-full': !openUserMenu, 'translate-x-0': openUserMenu }">
-        
+
         {{-- Close button --}}
-        <button @click="openUserMenu = false" class="absolute top-4 right-4 p-2 text-gray-700 dark:text-gray-300">
+        {{-- top-14 places it below the h-12 admin bar so the ✕ tap target isn't hidden
+             behind the (higher-z) admin bar. --}}
+        <button @click="openUserMenu = false" class="absolute top-14 right-4 p-2 text-gray-700 dark:text-gray-300">
             <i class="fas fa-times text-xl"></i>
         </button>
 
