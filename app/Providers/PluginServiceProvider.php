@@ -397,9 +397,24 @@ class PluginServiceProvider extends ServiceProvider
                 $groupStackProperty->setValue($router, []);
 
                 // Register routes
+                // plugin.admin.access is the authorization gate. Without it the
+                // stack below authenticates but never authorizes, so any
+                // verified member of any role reached every plugin admin
+                // endpoint while the plugin's config/admin/roles.php only
+                // governed sidebar visibility. It takes the directory name
+                // because that is what PermissionRegistry resolves roles.php
+                // by, and it cannot be derived from the slug (dixlase-seo ->
+                // DixlaseSEO).
                 $router->group([
                     'prefix' => $adminUrl,
-                    'middleware' => ['web', 'admin.ip', 'auth:member', 'verified', 'log.admin.activity'],
+                    'middleware' => [
+                        'web',
+                        'admin.ip',
+                        'auth:member',
+                        'verified',
+                        'log.admin.activity',
+                        'plugin.admin.access:'.$plugin->directory,
+                    ],
                 ], function () use ($adminRoutePath) {
                     include $adminRoutePath;
                 });
