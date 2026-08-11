@@ -39,7 +39,6 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
-use Illuminate\Routing\RouteServiceProvider;
 
 class AdminVerifyEmailController extends Controller
 {
@@ -49,7 +48,11 @@ class AdminVerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user('members')->hasVerifiedEmail()) {
-            return redirect()->intended('/admin'.RouteServiceProvider::HOME.'?verified=1');
+            // Illuminate\Routing\RouteServiceProvider was removed in Laravel 11,
+            // so ::HOME could only ever fatal here. The already-verified branch
+            // and the just-verified branch below should land in the same place;
+            // this now matches it.
+            return redirect()->intended(route('admin.dashboard', absolute: false).'?verified=1');
         }
 
         if ($request->user('members')->markEmailAsVerified()) {

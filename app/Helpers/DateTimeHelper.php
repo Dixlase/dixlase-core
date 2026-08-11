@@ -67,7 +67,7 @@ class DateTimeHelper
     /**
      * Convert the given datetime into the display timezone and format it
      *
-     * @param  Carbon|DateTimeInterface|string|int|null  $value  Input value (null/empty string returns null)
+     * @param  CarbonImmutable|DateTimeInterface|string|int|null  $value  Input value (null/empty string returns null)
      * @param  string  $format  PHP date format string or a FORMATS key
      */
     public static function display(mixed $value, string $format = 'datetime'): ?string
@@ -86,7 +86,7 @@ class DateTimeHelper
     /**
      * Convert the given datetime into a UTC ISO8601 string (for the HTML <time datetime> attribute)
      *
-     * @param  Carbon|DateTimeInterface|string|int|null  $value
+     * @param  CarbonImmutable|DateTimeInterface|string|int|null  $value
      */
     public static function toIsoUtc(mixed $value): ?string
     {
@@ -118,7 +118,7 @@ class DateTimeHelper
     /**
      * Normalize the input into a CarbonImmutable instance
      *
-     * @param  Carbon|DateTimeInterface|string|int|null  $value
+     * @param  CarbonImmutable|DateTimeInterface|string|int|null  $value
      */
     private static function toCarbon(mixed $value): ?CarbonImmutable
     {
