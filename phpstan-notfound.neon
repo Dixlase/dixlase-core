@@ -40,19 +40,11 @@ parameters:
         - identifier: method.notFound
         - identifier: classConstant.notFound
 
-        # --- deliberate absences ---------------------------------------------
-        # Provided by the DixlaseUsers plugin. Core must not name a plugin's
-        # internals, and the call sites gate on class_exists(), so absence is a
-        # no-op. Counts are pinned per file: a new missing class of this shape
-        # fails the build, and if DixlaseUsers ever ships these the count drops
-        # and this entry has to be revisited rather than quietly rotting.
-        -
-            message: '#Class App\\Notifications\\(UserVerificationCompletedNotification|AdminUserVerifiedNotification) not found\.#'
-            path: app/Helpers/EmailVerificationHelper.php
-            count: 2
-        -
-            message: '#Class App\\Notifications\\(UserVerificationCompletedNotification|AdminUserVerifiedNotification) not found\.#'
-            path: app/Traits/AccountVerificationTrait.php
-            count: 2
+        # There are deliberately no per-symbol exemptions here. An earlier draft
+        # carried two pinned-count entries for App\Notifications classes that
+        # belong to a front-end account plugin; #251 removed the arms that named
+        # them, so Core no longer references a symbol it cannot resolve. Keep it
+        # that way: if this gate needs an exemption to pass, the honest fix is
+        # almost always to stop naming the missing symbol.
 
     treatPhpDocTypesAsCertain: false
