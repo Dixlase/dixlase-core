@@ -48,7 +48,7 @@ class TwoFaCodeService
     /**
      * Generate authentication code and save to database
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      * @param  int|null  $expireMinutes  Expiration time (minutes)
      * @return string Generated code (plain text)
      */
@@ -82,7 +82,7 @@ class TwoFaCodeService
     /**
      * Generate authentication code and send email
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      * @param  string  $mailClass  Mail class name
      * @param  int|null  $expireMinutes  Expiration time (minutes)
      * @param  string  $context  Context (admin, user, etc.)
@@ -129,7 +129,7 @@ class TwoFaCodeService
     /**
      * Verify authentication code
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      * @param  string  $inputCode  Input code
      * @return bool Verification result
      */
@@ -177,7 +177,7 @@ class TwoFaCodeService
     /**
      * Check if a valid code exists
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      */
     public function hasValidCode($user): bool
     {
@@ -189,7 +189,7 @@ class TwoFaCodeService
     /**
      * Get remaining validity time (minutes) of the code
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      * @return int|null Remaining time (minutes), null if no code exists
      */
     public function getRemainingTime($user): ?int
@@ -206,7 +206,7 @@ class TwoFaCodeService
     /**
      * Delete all codes
      *
-     * @param  mixed  $user  User model (Member or DixlaseUsersUser)
+     * @param  mixed  $user  User model (Member, or a model supplied by a plugin)
      * @return int Number of deleted codes
      */
     public function revokeAll($user): int
