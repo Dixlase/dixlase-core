@@ -300,6 +300,42 @@ jobs:
         continue-on-error: true  # アルファ版では警告のみ
 
   # ============================================
+  # Missing Symbols — BLOCKING
+  # ============================================
+  # Deliberately separate from the job above. That one runs at level 5 with
+  # ~650 findings and stays advisory while they are worked down; this one runs
+  # a narrow config that reports only symbols which are named but do not exist,
+  # and it must fail the build.
+  #
+  # The split exists because "wait until everything is green" kept this class
+  # of defect unguarded. A sweep in 2026-08 found eleven features that were
+  # registered but died the moment they ran — plugin download, theme asset
+  # delivery, Markdown rendering, async webhooks, the 2FA trusted-device check
+  # and more. PHPStan had reported every one of them; nobody saw it, because
+  # its CI job could not fail. Some had been broken for months.
+  missing-symbols:
+    name: Missing Symbols (blocking)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      # No --no-dev: larastan itself is a dev dependency, and without it the
+      # Laravel-aware resolution this config relies on is absent.
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Check for references to symbols that do not exist
+        run: ./vendor/bin/phpstan analyse -c phpstan-notfound.neon --memory-limit=2G
+
+  # ============================================
   # Migration Test
   # ============================================
   migration:
