@@ -124,19 +124,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      x-show="show"
      x-cloak
      @keydown.escape.window="handleEscape($event)"
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     x-transition:leave="transition ease-in duration-200"
-     x-transition:leave-start="opacity-100"
-     x-transition:leave-end="opacity-0"
      style="display: none;"
      {{ $attributes }}>
-    <div class="modal-overlay bg-white/80 dark:bg-black/50" 
+    {{-- x-transition intentionally removed from this root: it duplicated the
+         opacity fade on the overlay + container, and compounding opacities
+         is non-linear, so the perceived blur strength jumped in the last
+         frames of the enter animation. The overlay and the container each
+         run their own x-transition below; the root just handles display
+         via x-show. --}}
+    {{-- Overlay carries the backdrop-blur; animated via its own x-transition
+         mirroring the drawer overlay (see ui-admin-bar). The persistent
+         visible state (backdrop-blur-sm) lives in the base class so it does
+         NOT snap off when Alpine strips enter/enter-end classes after the
+         transition — enter-start / leave-end define the animated-away state. --}}
+    <div class="modal-overlay bg-white/70 dark:bg-black/50 backdrop-blur-sm"
+         x-show="show"
+         x-transition:enter="transition-all ease-out duration-300"
+         x-transition:enter-start="opacity-0 backdrop-blur-none"
+         x-transition:leave="transition-all ease-in duration-200"
+         x-transition:leave-end="opacity-0 backdrop-blur-none"
          @click="closeOnBackdrop({{ $dismissible ? 'true' : 'false' }})"></div>
-    <div class="modal-container" 
-         @click.stop
-         style="transition: opacity 300ms ease-out, transform 300ms ease-out;">
+    {{-- Container animates opacity + scale + backdrop-filter together so its
+         own blur (defined as a direct `backdrop-filter: blur(12px)` in
+         ui-modal.scss) does not snap in at the moment the modal reaches
+         full opacity. Uses arbitrary-value utilities `[backdrop-filter:...]`
+         because Tailwind's `backdrop-blur-none` writes the --tw-backdrop-blur
+         CSS custom property (unregistered → not interpolatable) instead of
+         the concrete property — going through the same direct-property
+         pathway on both ends lets the browser interpolate blur(0)→blur(12px)
+         smoothly instead of stepping. --}}
+    <div class="modal-container"
+         x-show="show"
+         x-transition:enter="transition-all ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95 [backdrop-filter:blur(0px)] [-webkit-backdrop-filter:blur(0px)]"
+         x-transition:leave="transition-all ease-in duration-200"
+         x-transition:leave-end="opacity-0 scale-95 [backdrop-filter:blur(0px)] [-webkit-backdrop-filter:blur(0px)]"
+         @click.stop>
         <div class="modal-content">
             {{-- Icon is always displayed --}}
             <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full {{ $iconColorClass }}">
