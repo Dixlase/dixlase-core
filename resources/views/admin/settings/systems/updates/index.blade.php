@@ -137,6 +137,30 @@ file is governed by the AGPL terms below.
                 :title="$tooltipText"
             />
         </form>
+
+        {{-- Shown while the "Check Now" request runs (opened by the form's
+             @submit above). Non-dismissible so the operator cannot start
+             another action mid-check; dismisses when the controller's
+             redirect reloads the page. Rendered here — outside the
+             "updates available" list further down — so it exists even when
+             everything is up to date; otherwise openModal() would no-op. --}}
+        <x-ui-modal
+            id="checkUpdatesInProgressModal"
+            :title="__('admin/settings/systems/updates.checking.title')"
+            message=""
+            icon_type="info"
+            :dismissible="false"
+            :closeOnly="true"
+        >
+            <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
+                {{ __('admin/settings/systems/updates.checking.message') }}
+            </p>
+            <x-slot:footer>
+                <div class="flex items-center justify-center w-full py-1">
+                    <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                </div>
+            </x-slot:footer>
+        </x-ui-modal>
     </div>
 
     {{-- Standalone core update form. Lives outside the bulk-apply form
@@ -720,27 +744,6 @@ file is governed by the AGPL terms below.
                  in style and behaviour. Reused by the per-row single-
                  update flow below — both bulk and single paths open this
                  same modal so the in-flight UX is identical. --}}
-            {{-- Shown while the "Check Now" request runs. Non-dismissible
-                 so the operator cannot start another action mid-check;
-                 dismisses when the controller's redirect reloads the
-                 page. --}}
-            <x-ui-modal
-                id="checkUpdatesInProgressModal"
-                :title="__('admin/settings/systems/updates.checking.title')"
-                message=""
-                icon_type="info"
-                :dismissible="false"
-                :closeOnly="true"
-            >
-                <p class="text-sm text-gray-700 dark:text-gray-300 text-center">
-                    {{ __('admin/settings/systems/updates.checking.message') }}
-                </p>
-                <x-slot:footer>
-                    <div class="flex items-center justify-center w-full py-1">
-                        <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
-                    </div>
-                </x-slot:footer>
-            </x-ui-modal>
 
             <x-ui-modal
                 id="updatesInProgressModal"

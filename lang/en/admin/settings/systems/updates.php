@@ -95,6 +95,7 @@ return [
     // Flash messages
     'messages' => [
         'check_done' => 'Update check completed.',
+        'check_done_with_updates' => 'Update check completed — :count update(s) available.',
         'check_failed' => 'Update check failed: :error',
         'no_selection' => 'No items selected for update.',
         'apply_summary' => ':succeeded of :total succeeded, :failed failed',
