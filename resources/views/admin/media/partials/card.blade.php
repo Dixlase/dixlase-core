@@ -42,7 +42,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
 @endphp
 
-<div class="media-card">
+<div class="media-card"
+     data-media-card-id="{{ $file->id }}"
+     :class="cardClasses({{ $file->id }})"
+     @click="handleCardClick({{ $file->id }}, $event)">
+    <div x-show="selectionMode" x-cloak class="media-card__select">
+        <span class="media-card__check-circle"
+              :class="isSelected({{ $file->id }}) ? 'media-card__check-circle--checked' : ''">
+            <i x-show="isSelected({{ $file->id }})" class="fas fa-check" aria-hidden="true"></i>
+        </span>
+    </div>
     <div class="media-card__preview">
         <a href="{{ route('admin.media.preview', $file->id) }}" target="_blank" aria-label="{{ __('admin/media/index.preview') }} {{ $file->name }}">
             @if(in_array($file->type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']))

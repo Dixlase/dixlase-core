@@ -48,12 +48,25 @@ return [
         'uploaded' => 'File uploaded successfully.',
         'uploaded_count' => ':count file(s) uploaded successfully.',
         'deleted' => 'File deleted successfully.',
+        'deleted_count' => ':count file(s) deleted.',
         'updated' => 'Media information updated successfully.',
     ],
 
     'error' => [
         'save_failed' => 'Failed to save file.',
         'file_not_exists' => 'File does not exist.',
+        'bulk_delete_partial' => ':count file(s) could not be deleted.',
+    ],
+
+    'bulk' => [
+        'enter_select' => 'Select',
+        'exit_select' => 'Done',
+        'select_all' => 'Select all on this page',
+        'clear' => 'Clear',
+        'selected_count' => ':count selected',
+        'delete_selected' => 'Delete selected',
+        'confirm_title' => 'Delete selected files',
+        'confirm_message' => 'Delete <strong>:count</strong> selected file(s)?<br>This action cannot be undone.',
     ],
 
     'search' => [
