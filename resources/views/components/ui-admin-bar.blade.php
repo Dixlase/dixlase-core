@@ -62,9 +62,15 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
 
 @if($isAuthenticated)
 
-<div x-data="adminBar()"
-     x-init="init()"
-     id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-md text-gray-700 dark:text-white bg-white/85 dark:bg-gray-900/85 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
+{{-- Outer wrapper holds the Alpine scope for the whole component. It has NO
+     backdrop-filter and no positioning, so the drawer children below can render
+     as `position: fixed` against the viewport. If backdrop-filter (or any
+     transform/filter/perspective) sat on this element, its `position: fixed`
+     descendants would use it as their containing block and get clipped to its
+     box — which is exactly what happened when the drawers lived inside the
+     bar div directly. The visible bar is now an inner element. --}}
+<div x-data="adminBar()" x-init="init()">
+<div id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-md text-gray-700 dark:text-white bg-white/85 dark:bg-gray-900/85 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
     <div class="w-full mx-auto px-4">
         <div class="flex items-center justify-between h-12">
             {{-- Left side: Site name and menu --}}
@@ -182,20 +188,16 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                     <span class="hidden lg:inline">{{ __('common.view_site') }}</span>
                 </a>
 
-                {{-- Mobile user menu toggle --}}
-                @if($isAdminLayout)
-                    <button @click="openUserMenu = true"
-                            class="sm:hidden inline-flex items-center justify-center rounded-md hover:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition"
-                            aria-label="Open user menu">
-                        <i class="fas fa-user-circle text-2xl" aria-hidden="true"></i>
-                    </button>
-                @else
-                    <a href="{{ route('admin.profile') }}"
-                       class="sm:hidden inline-flex items-center justify-center rounded-md text-gray-800 hover:text-gray-800 hover:bg-gray-800 focus:outline-none transition"
-                       aria-label="Profile">
-                        <i class="fas fa-user-circle text-2xl" aria-hidden="true"></i>
-                    </a>
-                @endif
+                {{-- Mobile user menu toggle.
+                     Unified for admin and front layouts: both open the right slide-in
+                     drawer (which includes the correct logoutAction for each layout),
+                     so front-page mobile users get the same "profile + logout" surface
+                     instead of being punted straight to the admin panel. --}}
+                <button @click="openUserMenu = true"
+                        class="sm:hidden inline-flex items-center justify-center rounded-md hover:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition"
+                        aria-label="Open user menu">
+                    <i class="fas fa-user-circle text-2xl" aria-hidden="true"></i>
+                </button>
 
                 {{-- Desktop user menu --}}
                 {{-- Display-name span promoted to lg+ so it does not wrap onto a second line
@@ -245,74 +247,86 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
             </div>
         </div>
     </div>
-</div>
+</div>{{-- end inner #admin-bar (backdrop-filter layer) --}}
 
-@if($isAdminLayout)
-    {{-- Mobile menu overlay --}}
-    {{-- z-index chosen to sit ABOVE the admin bar (inline z-index:9900) so the drawer is
-         visible and interactive on mobile, while staying BELOW the banner stack (z-9999)
-         so maintenance/safe-mode/demo banners still show over everything. --}}
+    {{-- Mobile drawers — siblings of #admin-bar, still inside x-data="adminBar()"
+         but NOT nested inside the backdrop-filter layer, so their `position: fixed`
+         computes against the viewport rather than getting clipped to the bar's box.
+         An earlier attempt used <template x-teleport="body"> which caused Alpine
+         to initialize adminBar() twice and de-sync the button and drawer scopes
+         on the front layout. Keeping drawers inline avoids that. --}}
+    {{-- Overlay: persistent visible state is encoded in the base class
+         (opacity + backdrop-blur-sm), because Alpine removes enter/enter-end
+         classes once the transition finishes — if the blur only lived in
+         enter-end, it would snap off the moment the animation ended. Only
+         enter-start / leave-end define the animated-away state. --}}
     <div x-show="openSidebar || openUserMenu"
+         x-transition:enter="transition-all ease-out duration-300"
+         x-transition:enter-start="opacity-0 backdrop-blur-none"
+         x-transition:leave="transition-all ease-in duration-200"
+         x-transition:leave-end="opacity-0 backdrop-blur-none"
          @click="openSidebar = false; openUserMenu = false"
          x-cloak
-         class="fixed inset-0 bg-black/50 z-[9905]"
+         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[10005]"
          aria-hidden="true"></div>
 
-    {{-- Left slide-in sidebar (mobile) --}}
-    <div x-cloak
-         class="sm:hidden fixed h-full inset-y-12 left-0 transform transition-transform duration-300 ease-in-out z-[9910]"
-         :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
-
-        {{-- Scrollable menu section (including tab buttons) --}}
-        <div class="flex-1 h-full ">
-            @include('admin.partials.sidebar', [
-                'route_name' => Route::currentRouteName()
-            ])
+    @if($isAdminLayout)
+        {{-- Left slide-in sidebar (mobile, admin layout only). Container spans
+             top-0..h-full so the sidebar's own translucent bg carries all the way
+             to the top of the viewport (matching the right user-menu drawer);
+             the admin bar (z-9900) still shows through its 85% translucent bar
+             bg — the sidebar's bar-area shows the admin bar tinted rather than
+             replacing it. --}}
+        <div x-cloak
+             class="sm:hidden fixed top-0 left-0 h-full transform transition-transform duration-300 ease-in-out z-[10010]"
+             :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
+            <div class="flex-1 h-full ">
+                @include('admin.partials.sidebar', [
+                    'route_name' => Route::currentRouteName()
+                ])
+            </div>
         </div>
-    </div>
+    @endif
 
-    {{-- Right slide-in user menu (mobile) --}}
+    {{-- Right slide-in user menu (mobile, both layouts).
+         Translucent + backdrop-blur "glass" background matches the admin bar
+         itself and the theme's own mobile drawer so all overlays feel like
+         one system. --}}
     <div x-cloak
-         class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-[9910] bg-white dark:bg-black border-l border-gray-300 dark:border-gray-700"
+         class="fixed right-0 top-0 w-64 h-full shadow-lg transform transition-transform duration-300 ease-in-out z-[10010] bg-white/85 dark:bg-gray-900/85 backdrop-blur-md border-l border-gray-300 dark:border-gray-700"
          :class="{ 'translate-x-full': !openUserMenu, 'translate-x-0': openUserMenu }">
+                {{-- Close button below the h-12 admin bar zone so the ✕ tap
+                     target isn't hidden behind the bar. --}}
+                <button @click="openUserMenu = false" class="absolute top-14 right-4 p-2 text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
 
-        {{-- Close button --}}
-        {{-- top-14 places it below the h-12 admin bar so the ✕ tap target isn't hidden
-             behind the (higher-z) admin bar. --}}
-        <button @click="openUserMenu = false" class="absolute top-14 right-4 p-2 text-gray-700 dark:text-gray-300">
-            <i class="fas fa-times text-xl"></i>
-        </button>
+                <div class="pt-16 px-4">
+                    <div class="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                        <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
+                        <div>
+                            <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</div>
+                            <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                        </div>
+                    </div>
 
-        {{-- User menu --}}
-        <div class="pt-16 px-4">
-            {{-- User info --}}
-            <div class="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
-                <div>
-                    <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</div>
-                    <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                    <div class="space-y-2">
+                        <a href="{{ route('admin.profile') }}"
+                           class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
+                            <i class="fas fa-user w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
+                            <span>{{ __('components/ui-admin-bar.profile') }}</span>
+                        </a>
+
+                        <form method="POST" action="{{ $logoutAction }}">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition text-left">
+                                <i class="fas fa-sign-out-alt w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
+                                <span>{{ __('common.logout') }}</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-
-            {{-- Menu items --}}
-            <div class="space-y-2">
-                <a href="{{ route('admin.profile') }}"
-                   class="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition">
-                    <i class="fas fa-user w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
-                    <span>{{ __('components/ui-admin-bar.profile') }}</span>
-                </a>
-
-                {{-- Logout --}}
-                <form method="POST" action="{{ $logoutAction }}">
-                    @csrf
-                    <button type="submit"
-                            class="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition text-left">
-                        <i class="fas fa-sign-out-alt w-5 text-center mr-3 text-gray-500 dark:text-gray-400"></i>
-                        <span>{{ __('common.logout') }}</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-@endif
+</div>{{-- end outer x-data="adminBar()" --}}
 @endif

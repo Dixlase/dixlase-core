@@ -349,6 +349,12 @@ class AdminMediaController extends AdminLoggedInController
         $this->viewParams['media'] = $media;
         $this->viewParams['filePath'] = $filePath;
 
+        // Auto-gen only reaches "Admin Panel > Media Master" because the
+        // "preview" route segment has no translation to resolve into a label.
+        // Append the file name as the leaf so the trail reflects the actual page.
+        $this->addBreadcrumb(null, $media->name);
+        $this->setBreadcrumbs();
+
         return view('admin.media.preview', $this->viewParams);
     }
 
