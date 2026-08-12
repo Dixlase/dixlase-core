@@ -431,13 +431,29 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * Common process for recovery code verification
+     * Common process for recovery code verification.
+     *
+     * Routed through TwoFaService::validateRecoveryCode() rather than calling
+     * TwoFaRecoveryCodeService::validate() directly. The direct call skipped
+     * TwoFaAttemptService::recordAttempt(), so failed recovery-code entries
+     * were never counted. verifyRecoveryCode() checks the lockout before
+     * getting here and its comment says the intent is to keep this from
+     * becoming an un-throttled brute-force channel -- but with nothing
+     * recording the failures, the counter never advanced and the lockout could
+     * not fire no matter how many attempts were made.
+     *
+     * The email and passkey paths already went through TwoFaService, which
+     * records on both success and failure. This was the one method that did
+     * not, and it is the method guarding the fallback credential.
      */
     protected function verifyRecoveryCodeValue($user, string $code): bool
     {
-        $recoveryCodeService = app(\App\Services\TwoFa\TwoFaRecoveryCodeService::class);
+        $twoFaService = app(\App\Services\TwoFa\TwoFaService::class, [
+            'settingModelClass' => $this->getSettingModelClass(),
+            'context' => $this->getContext(),
+        ]);
 
-        return $recoveryCodeService->validate($user, $code);
+        return $twoFaService->validateRecoveryCode($user, $code);
     }
 
     /**
