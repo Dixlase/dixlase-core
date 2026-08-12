@@ -48,12 +48,25 @@ return [
         'uploaded' => 'ファイルがアップロードされました。',
         'uploaded_count' => ':count件のファイルがアップロードされました。',
         'deleted' => 'ファイルが削除されました。',
+        'deleted_count' => ':count件のファイルを削除しました。',
         'updated' => 'メディア情報が更新されました。',
     ],
 
     'error' => [
         'save_failed' => 'ファイルの保存に失敗しました。',
         'file_not_exists' => 'ファイルが存在しません。',
+        'bulk_delete_partial' => ':count件のファイルを削除できませんでした。',
+    ],
+
+    'bulk' => [
+        'enter_select' => '選択',
+        'exit_select' => '完了',
+        'select_all' => 'このページのすべてを選択',
+        'clear' => '選択を解除',
+        'selected_count' => ':count件を選択中',
+        'delete_selected' => '選択したファイルを削除',
+        'confirm_title' => '選択したファイルを削除',
+        'confirm_message' => '<strong>:count</strong>件の選択したファイルを削除しますか？<br>この操作は取り消せません。',
     ],
 
     'search' => [
