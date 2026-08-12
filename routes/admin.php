@@ -193,10 +193,6 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::delete('/media/delete/{media}', [AdminMediaController::class, 'delete'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.delete');
-                // Bulk deletion (iPhone Photos-style multi-select)
-                Route::post('/media/bulk-delete', [AdminMediaController::class, 'bulkDelete'])
-                    ->middleware('check.menu.edit:media')
-                    ->name('media.bulk-delete');
                 // Media download
                 Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
                 // Media preview

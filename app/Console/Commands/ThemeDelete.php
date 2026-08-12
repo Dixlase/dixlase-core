@@ -60,6 +60,27 @@ class ThemeDelete extends Command
     protected $description = 'command.theme_delete.description';
 
     /**
+     * Whether the argument names a directory rather than a path.
+     *
+     * A theme directory is one segment under themes/, so anything carrying a
+     * separator, a traversal, a NUL or a leading dot is not one. Rejecting
+     * reports "not found", which is what a path that is not a theme directory
+     * should look like.
+     */
+    protected function isSinglePathSegment(mixed $candidate): bool
+    {
+        if (! is_string($candidate)) {
+            return false;
+        }
+
+        if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $candidate) !== 1) {
+            return false;
+        }
+
+        return ! str_contains($candidate, '..');
+    }
+
+    /**
      * Execute the console command.
      *
      * @return int
@@ -67,6 +88,19 @@ class ThemeDelete extends Command
     public function handle()
     {
         $themeDirectory = $this->argument('themeDirectory');
+
+        // Same defect as PluginDelete: the directory name arrives from a
+        // request rule that is only `required|string`, and interpolating it
+        // produces a real path -- base_path('themes/../app') normalises to the
+        // application's own app/ directory, which File::exists() confirms and
+        // File::deleteDirectory() would then remove. Contained here because
+        // this is the last point before the recursive delete.
+        if (! $this->isSinglePathSegment($themeDirectory)) {
+            $this->error(__('admin/command/theme-delete.not_found', ['directory' => $themeDirectory]));
+
+            return 1;
+        }
+
         $themePath = base_path('themes/'.$themeDirectory);
 
         // Check if theme directory exists

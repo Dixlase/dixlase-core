@@ -60,7 +60,6 @@ use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
-use App\Services\Plugin\PluginTableInspector;
 use App\Services\SecuritySettingsRegistry;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
@@ -1795,6 +1794,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * 2. Last segment of namespace (e.g. Plugins\MyPlugin → MyPlugin)
      * 3. Last part of package_name (e.g. plugins/my-plugin → my-plugin)
      * 4. null (maintain existing directory name)
+     *
+     * Every candidate is run through sanitisePluginDirectoryName() before it
+     * is returned. The values come from the uploaded plugin.json, so they are
+     * attacker-controlled, and the caller interpolates the result straight
+     * into base_path("plugins/{$dir}") and File::move()s the extracted tree
+     * there.
      */
     protected function resolvePluginDirectoryName(?array $pluginData): ?string
     {
@@ -1805,7 +1810,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // Prioritize explicitly declared package field
         $package = $pluginData['package'] ?? null;
         if (is_string($package) && $package !== '') {
-            return $package;
+            return $this->sanitisePluginDirectoryName($package);
         }
 
         // Prefer the final segment of namespace
@@ -1814,7 +1819,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $parts = explode('\\', trim($namespace, '\\'));
             $lastSegment = end($parts);
             if ($lastSegment !== false && $lastSegment !== '') {
-                return $lastSegment;
+                return $this->sanitisePluginDirectoryName($lastSegment);
             }
         }
 
@@ -1824,11 +1829,57 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $parts = explode('/', $packageName);
             $lastSegment = end($parts);
             if ($lastSegment !== false && $lastSegment !== '') {
-                return $lastSegment;
+                return $this->sanitisePluginDirectoryName($lastSegment);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Constrain a manifest-supplied directory name to a single path segment.
+     *
+     * The values feeding resolvePluginDirectoryName() come out of the uploaded
+     * plugin.json, and the caller does:
+     *
+     *     $correctPath = base_path("plugins/{$correctDir}");
+     *     File::move($destinationPath, $correctPath);
+     *
+     * so `"package": "../public/shell"` resolved to the document root -- the
+     * extracted tree of attacker PHP would land somewhere the web server
+     * executes it. That move happens at UPLOAD time, before the health and
+     * security scan runs at install time, so the plugin safety model never got
+     * a chance to look at it.
+     *
+     * Returning null rather than a corrected name is deliberate: the caller
+     * treats null as "keep the directory the archive already used", which is
+     * the safe outcome. Silently rewriting `../public/shell` into
+     * `publicshell` would install the plugin under a name the manifest never
+     * asked for.
+     */
+    protected function sanitisePluginDirectoryName(string $candidate): ?string
+    {
+        $candidate = trim($candidate);
+
+        // A directory name, not a path: no separators, no traversal, no
+        // absolute paths, no NUL. `.` and `..` are rejected by the pattern.
+        if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $candidate) !== 1) {
+            Log::warning('Refused a plugin directory name that is not a single path segment', [
+                'candidate' => $candidate,
+            ]);
+
+            return null;
+        }
+
+        if (str_contains($candidate, '..')) {
+            Log::warning('Refused a plugin directory name containing traversal', [
+                'candidate' => $candidate,
+            ]);
+
+            return null;
+        }
+
+        return $candidate;
     }
 
     /**
