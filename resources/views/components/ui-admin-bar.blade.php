@@ -71,7 +71,11 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
      bar div directly. The visible bar is now an inner element. --}}
 <div x-data="adminBar()" x-init="init()">
 <div id="admin-bar" class="{{ $isAdminLayout ? 'fixed top-0 left-0 right-0' : 'w-full' }} backdrop-blur-md text-gray-700 dark:text-white bg-white/85 dark:bg-gray-900/85 border-b border-gray-300 dark:border-gray-700 shadow-md" style="z-index: 9900;">
-    <div class="w-full mx-auto px-4">
+    {{-- Extra left padding on mobile only (admin layout), to keep the site logo
+         clear of the sidebar-open tab button that peeks out at x=0..~24 when
+         the drawer is closed (see the `sm:hidden` tab inside
+         admin.partials.sidebar). Front layout keeps the tighter px-4. --}}
+    <div class="w-full mx-auto {{ $isAdminLayout ? 'pl-8 pr-4 sm:px-4' : 'px-4' }}">
         <div class="flex items-center justify-between h-12">
             {{-- Left side: Site name and menu --}}
             {{-- space-x-1 sm:space-x-4 applies to both layouts: keeps mobile children close so
