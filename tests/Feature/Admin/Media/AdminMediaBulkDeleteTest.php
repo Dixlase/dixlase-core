@@ -115,9 +115,10 @@ class AdminMediaBulkDeleteTest extends TestCase
         $response->assertRedirect(route('admin.media.index'));
         $response->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('media', ['id' => $a->id]);
-        $this->assertDatabaseMissing('media', ['id' => $c->id]);
-        $this->assertDatabaseHas('media', ['id' => $b->id]);
+        // Media uses SoftDeletes: the row stays in the table with deleted_at set.
+        $this->assertSoftDeleted('media', ['id' => $a->id]);
+        $this->assertSoftDeleted('media', ['id' => $c->id]);
+        $this->assertDatabaseHas('media', ['id' => $b->id, 'deleted_at' => null]);
     }
 
     public function test_bulk_delete_removes_files_from_storage(): void
@@ -166,6 +167,6 @@ class AdminMediaBulkDeleteTest extends TestCase
 
         $response->assertRedirect(route('admin.media.index'));
         $response->assertSessionHas('success');
-        $this->assertDatabaseMissing('media', ['id' => $real->id]);
+        $this->assertSoftDeleted('media', ['id' => $real->id]);
     }
 }
