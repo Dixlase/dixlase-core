@@ -228,6 +228,15 @@ trait PasskeyLoginTrait
             // Login successful
             $guardName = $this->getGuardName();
             Auth::guard($guardName)->login($user, true);
+
+            // Rotate the session ID on privilege change. Password login
+            // (LoginTrait) and 2FA completion (TwoFaAuthenticationTrait) both
+            // do this; passkey login was the one authentication path that did
+            // not, so a session ID an attacker had managed to fix in the
+            // victim's browser survived the upgrade to authenticated and
+            // remained usable by them.
+            $request->session()->regenerate();
+
             session()->forget([$sessionKey, 'passkey_challenge_id']);
 
             // Record passkey authentication
