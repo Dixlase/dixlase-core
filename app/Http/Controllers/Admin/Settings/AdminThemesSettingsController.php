@@ -1671,7 +1671,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         // Prioritize explicit package field first
         $package = $themeData['package'] ?? null;
         if (is_string($package) && $package !== '') {
-            return $package;
+            return $this->sanitiseThemeDirectoryName($package);
         }
 
         // Prioritize final segment of namespace
@@ -1680,7 +1680,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $parts = explode('\\', trim($namespace, '\\'));
             $lastSegment = end($parts);
             if ($lastSegment !== false && $lastSegment !== '') {
-                return $lastSegment;
+                return $this->sanitiseThemeDirectoryName($lastSegment);
             }
         }
 
@@ -1690,10 +1690,47 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $parts = explode('/', $packageName);
             $lastSegment = end($parts);
             if ($lastSegment !== false && $lastSegment !== '') {
-                return $lastSegment;
+                return $this->sanitiseThemeDirectoryName($lastSegment);
             }
         }
 
         return null;
+    }
+
+    /**
+     * Constrain a manifest-supplied directory name to a single path segment.
+     *
+     * Same defect and same reasoning as
+     * AdminPluginsSettingsController::sanitisePluginDirectoryName(): the value
+     * comes from the uploaded theme.json and the caller interpolates it into a
+     * base_path()/File::move() destination, so `"package": "../public/shell"`
+     * relocated the extracted tree into the document root -- and it happens at
+     * upload time, before any scan runs.
+     *
+     * Returning null means "keep the directory the archive already used",
+     * which is the safe outcome; rewriting the name would install the theme
+     * somewhere its manifest never asked for.
+     */
+    protected function sanitiseThemeDirectoryName(string $candidate): ?string
+    {
+        $candidate = trim($candidate);
+
+        if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $candidate) !== 1) {
+            Log::warning('Refused a theme directory name that is not a single path segment', [
+                'candidate' => $candidate,
+            ]);
+
+            return null;
+        }
+
+        if (str_contains($candidate, '..')) {
+            Log::warning('Refused a theme directory name containing traversal', [
+                'candidate' => $candidate,
+            ]);
+
+            return null;
+        }
+
+        return $candidate;
     }
 }
