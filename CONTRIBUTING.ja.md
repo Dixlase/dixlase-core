@@ -1,6 +1,8 @@
 # Dixlase へのコントリビューション
 
-Dixlase にご関心をお寄せいただきありがとうございます。英語版は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。
+For English, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+Dixlase にご関心をお寄せいただきありがとうございます。
 
 ## 現在の受付状況 (v0.x)
 

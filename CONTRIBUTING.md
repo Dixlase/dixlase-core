@@ -1,5 +1,7 @@
 # Contributing to Dixlase
 
+For Japanese, see [CONTRIBUTING.ja.md](./CONTRIBUTING.ja.md).
+
 Thank you for your interest in Dixlase.
 
 ## Current Status (v0.x)

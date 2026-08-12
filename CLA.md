@@ -1,5 +1,7 @@
 # Dixlase Contributor License Agreement (In Preparation)
 
+For Japanese, see [CLA.ja.md](./CLA.ja.md).
+
 The Dixlase Contributor License Agreement (CLA) has been through legal review and its
 terms are close to final. Opening external code contributions, however, is not
 conditioned on the CLA alone: we will open contributions after assessing the stability
