@@ -43,6 +43,7 @@ use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
@@ -873,17 +874,17 @@ HTML;
      *
      * @param  array<string, mixed>  $result
      */
-    protected function buildUpdateCompleteFlash(array $result): string
+    protected function buildUpdateCompleteFlash(array $result): HtmlString
     {
         if (($result['kind'] ?? '') === 'core') {
             $key = (($result['operation'] ?? null) === 'rollback')
                 ? 'admin/settings/systems/updates.messages.core_rollback_complete'
                 : 'admin/settings/systems/updates.messages.core_update_complete';
 
-            return __($key, [
+            return new HtmlString(__($key, [
                 'from' => (string) ($result['from'] ?? ''),
                 'to' => (string) ($result['to'] ?? ''),
-            ]);
+            ]));
         }
 
         $plugins = is_array($result['updated_plugins'] ?? null) ? $result['updated_plugins'] : [];
@@ -908,15 +909,21 @@ HTML;
 
         // Append a rollback hint pointing at where the rollback control lives.
         // The extension update just took a pre-update backup, so a rollback is
-        // available. The whole flash is rendered unescaped ({!! !!}), so build
-        // real <a> links here; only the route URLs (safe) and static lang
-        // labels go into them.
+        // available.
+        //
+        // This method returns HtmlString because the hint contains real <a>
+        // links. The flash component now renders with {{ }}, which escapes
+        // plain strings and passes Htmlable through untouched -- so a flash
+        // that genuinely needs markup opts in by saying so, while the ~78 call
+        // sites that interpolate $e->getMessage() into a flash are escaped by
+        // default. Only route URLs (safe) and static lang labels go into these
+        // links.
         $hint = $this->buildRollbackHint($result);
         if ($hint !== '') {
             $message .= ' '.$hint;
         }
 
-        return $message;
+        return new HtmlString($message);
     }
 
     /**
