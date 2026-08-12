@@ -90,7 +90,20 @@ interface TwoFaPasskeyServiceInterface
     public function registerCredential(TwoFaInterface $user, array $credentialData, ?string $deviceName = null);
 
     /**
-     * Verify WebAuthn authentication
+     * Not implemented. Use verifyLoginChallenge() instead.
+     *
+     * The shipped implementation never verified the assertion signature: it
+     * compared the challenge in clientDataJSON against the session and
+     * returned true, ignoring the public key, the signature, the RP ID hash,
+     * the UP/UV flags and the signature counter. It now throws rather than
+     * accepting an unsigned assertion.
+     *
+     * The method stays on the contract so an implementer is told what NOT to
+     * do here; removing it would silently drop the warning along with the
+     * signature. Verification belongs in verifyLoginChallenge(), which runs
+     * Laragear's AssertionValidator pipeline.
+     *
+     * @throws \LogicException always, in the Core implementation
      */
     public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool;
 

@@ -257,42 +257,39 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * Verify WebAuthn authentication
+     * Not implemented. Use verifyLoginChallenge() instead.
+     *
+     * This method used to return true after checking only that the challenge
+     * in clientDataJSON matched the one in the session. The public key and the
+     * signature were accepted as arguments and never compared; the RP ID hash,
+     * the UP/UV flags and the signature counter in authenticatorData were not
+     * examined either, nor were the `type` and `origin` fields of
+     * clientDataJSON. Anyone able to name a credential ID and replay the
+     * challenge the server had just issued would have passed.
+     *
+     * Nothing in Core called it -- verifyPasskeyCredential(), its only route
+     * in, has no callers anywhere in the repository, and Core registers no 2FA
+     * passkey challenge route. Admin passkey *login* is a separate path
+     * (verifyLoginChallenge below) that runs Laragear's AssertionValidator
+     * pipeline and is sound.
+     *
+     * It is left throwing rather than deleted because the class carries `@api`
+     * and appears in PLUGIN-API.md, so a plugin may already have been written
+     * against the name. Throwing turns "silently accepts an unsigned
+     * assertion" into an immediate, obvious failure at the point of use --
+     * which is what a plugin author needs, since the old behaviour looked
+     * correct: the name promised verification, the signature was in the
+     * signature, and the return value was true.
+     *
+     * @throws \LogicException always
      */
     public function verifyAssertion(TwoFaInterface $user, array $assertionData): bool
     {
-        $credential = $user->twoFaPasskeys()
-            ->where('id', $assertionData['id'])
-            ->first();
-
-        if (! $credential) {
-            Log::warning("[Passkey] Credential not found: User ID {$user->getId()}");
-
-            return false;
-        }
-
-        $response = $assertionData['response'] ?? [];
-
-        if (empty($response['signature']) || empty($response['authenticatorData']) || empty($response['clientDataJSON'])) {
-            Log::warning("[Passkey] Incomplete response data: User ID {$user->getId()}");
-
-            return false;
-        }
-
-        $isValid = $this->verifySignature(
-            $credential->public_key,
-            $response['signature'],
-            $response['authenticatorData'],
-            $response['clientDataJSON']
+        throw new \LogicException(
+            'TwoFaPasskeyService::verifyAssertion() is not implemented and never verified the '
+            .'assertion signature. Use verifyLoginChallenge(), which runs the Laragear '
+            .'AssertionValidator pipeline (challenge, origin, RP ID, signature, counter).'
         );
-
-        if ($isValid) {
-            Log::info("[Passkey] Authentication successful: User ID {$user->getId()}");
-        } else {
-            Log::warning("[Passkey] Authentication failed: User ID {$user->getId()}");
-        }
-
-        return $isValid;
     }
 
     /**
@@ -421,47 +418,19 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     }
 
     /**
-     * Verify signature (simplified version)
+     * Removed. It was labelled "simplified"; it verified no signature at all.
+     *
+     * The body compared the challenge from clientDataJSON against the one in
+     * the session and then returned true, logging "Signature verification
+     * succeeded (simplified)". $publicKey and $signature were parameters it
+     * never read. A caller could therefore authenticate with any signature
+     * bytes.
+     *
+     * The real implementation is verifyLoginChallenge(), which hands the
+     * assertion to Laragear's AssertionValidator. There is no reason to keep a
+     * second, weaker one next to it -- the name is what made the original
+     * dangerous, so the name does not come back.
      */
-    private function verifySignature(string $publicKey, string $signature, string $authenticatorData, string $clientDataJSON): bool
-    {
-        try {
-            $storedChallenge = session('webauthn_challenge');
-            if (! $storedChallenge) {
-                Log::warning('[Passkey] Challenge does not exist in session');
-
-                return false;
-            }
-
-            $clientData = json_decode(base64_decode($clientDataJSON), true);
-            if (! $clientData) {
-                Log::warning('[Passkey] Failed to decode clientDataJSON');
-
-                return false;
-            }
-
-            $receivedChallenge = $clientData['challenge'] ?? '';
-
-            $normalizedStored = str_replace(['+', '/', '='], ['-', '_', ''], $storedChallenge);
-            $normalizedReceived = str_replace(['+', '/', '='], ['-', '_', ''], $receivedChallenge);
-
-            if ($normalizedStored !== $normalizedReceived) {
-                Log::warning('[Passkey] Challenge does not match');
-
-                return false;
-            }
-
-            session()->forget('webauthn_challenge');
-
-            Log::info('[Passkey] Signature verification succeeded (simplified)');
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('[Passkey] Signature verification error: '.$e->getMessage());
-
-            return false;
-        }
-    }
 
     // ========================================
     // Trusted device management

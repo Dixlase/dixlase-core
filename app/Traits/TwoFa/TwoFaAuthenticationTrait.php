@@ -406,7 +406,22 @@ trait TwoFaAuthenticationTrait
     }
 
     /**
-     * Common process for passkey verification
+     * Common process for passkey verification.
+     *
+     * Delegates to TwoFaPasskeyService::verifyAssertion(), which now throws:
+     * that method never verified the assertion signature, and this trait
+     * method was its only route in. Nothing calls this one either -- Core
+     * registers no 2FA passkey challenge route, so the whole path was
+     * unreachable rather than deliberately guarded.
+     *
+     * Kept, rather than deleted with the service method, because the trait is
+     * what a plugin building a 2FA flow would reach for. It now fails loudly
+     * at the point of use instead of waving an unsigned assertion through.
+     * Whoever wires up 2FA passkey verification should route it through the
+     * validated path (TwoFaPasskeyService::verifyLoginChallenge()) or add a
+     * proper implementation to the service.
+     *
+     * @throws \LogicException always, via the service
      */
     protected function verifyPasskeyCredential($user, array $credential): bool
     {
