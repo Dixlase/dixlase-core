@@ -38,6 +38,7 @@
 namespace App\Services\Core;
 
 use App\Contracts\Backup\BackupServiceInterface;
+use App\Helpers\ComposerLocalHelper;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Models\Theme;
@@ -302,6 +303,19 @@ class CoreUpdater
                 $this->vendorManager->swap($payloadRoot);
                 $vendorSwapped = true;
                 $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
+
+                // The swapped-in vendor/composer/autoload_psr4.php is the
+                // release's pristine copy; it does NOT carry the site-local
+                // theme/plugin PSR-4 (Themes\<Dir>\App\, Plugins\<Dir>\App\)
+                // the installer persisted there. Re-persist them now, or every
+                // extension admin/settings page 500s with a ReflectionException
+                // after the update. syncAutoload() rewrites composer.local.json
+                // and runs composer dump-autoload; non-fatal (returns false and
+                // logs if Composer is unavailable).
+                $log('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
+                if (! ComposerLocalHelper::syncAutoload()) {
+                    $log('WARNING: extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                }
             }
 
             // A release ZIP MAY carry a manifest declaring theme
