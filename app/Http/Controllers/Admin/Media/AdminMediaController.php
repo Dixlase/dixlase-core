@@ -262,6 +262,43 @@ class AdminMediaController extends AdminLoggedInController
         return redirect()->route('admin.media.index')->with('success', __('admin/media/index.success.deleted'));
     }
 
+    /**
+     * Delete multiple media files at once. Runs each deletion through DeleteMediaAction
+     * so the audit trail and permission gate stay identical to single-file delete.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $actor = new MemberActor(AdminHelper::getMember());
+        $items = Media::whereIn('id', $validated['ids'])->get();
+
+        $deleted = 0;
+        $failed = 0;
+        foreach ($items as $media) {
+            try {
+                (new DeleteMediaAction($media))->execute($actor, []);
+                $deleted++;
+            } catch (\Throwable $e) {
+                $failed++;
+                report($e);
+            }
+        }
+
+        $redirect = redirect()->route('admin.media.index');
+        if ($deleted > 0) {
+            $redirect = $redirect->with('success', __('admin/media/index.success.deleted_count', ['count' => $deleted]));
+        }
+        if ($failed > 0) {
+            $redirect = $redirect->with('error', __('admin/media/index.error.bulk_delete_partial', ['count' => $failed]));
+        }
+
+        return $redirect;
+    }
+
     public function download(Media $media)
     {
         $disk = config('admin.files.storageDisk', 'public');
