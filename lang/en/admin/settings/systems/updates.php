@@ -192,4 +192,10 @@ return [
         'hide' => 'Hide release notes',
         'empty' => 'No release notes were published with this release.',
     ],
+
+    // Inline badge shown on a plugin/theme row whose last update attempt
+    // failed (the full failure reason is in the badge's title tooltip).
+    'failure' => [
+        'previous_failure' => 'Previous update failed (:date)',
+    ],
 ];
