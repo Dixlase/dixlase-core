@@ -27,6 +27,32 @@
 window.mediaSelectorData = window.mediaSelectorData || {};
 
 /**
+ * Escape a value for interpolation into a double-quoted HTML attribute.
+ *
+ * Media names come from the uploaded file name. UploadMediaAction stores
+ * `$file->getClientOriginalName()` unchanged, and that only applies
+ * basename() -- path separators go, HTML metacharacters stay. So a file
+ * uploaded as
+ *
+ *     "><img src=x onerror=alert(1)>.png
+ *
+ * kept those characters, and interpolating it into `alt="${media.name}"`
+ * inside an innerHTML template closed the attribute and injected an element.
+ * It fired in the browser of whichever admin opened the media picker, not the
+ * uploader's -- a stored XSS across the admin trust boundary.
+ *
+ * URLs are escaped for the same reason: they are derived from the stored name.
+ */
+function escapeAttribute(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
  * Open media selector modal
  */
 window.openMediaSelector = function (modalId, inputId, previewId, multiple = false, aspectRatio = 'original') {
@@ -126,7 +152,7 @@ function renderMediaGrid(modalId, mediaItems) {
                  data-media-json="${encodeURIComponent(JSON.stringify(media))}">
                 <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all">
                     ${isImage
-                ? `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover">`
+                ? `<img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.name)}" class="w-full h-full object-cover">`
                 : `<div class="flex items-center justify-center w-full h-full">
                              <i class="fas fa-file-alt text-4xl text-gray-400"></i>
                            </div>`
@@ -261,7 +287,7 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
         if (multiple) {
             preview.innerHTML = selectedMedia.map(m => `
                 <div class="relative inline-block mr-2 mb-2">
-                    <img src="${m.url}" alt="${m.name}" class="w-20 h-20 object-cover rounded">
+                    <img src="${escapeAttribute(m.url)}" alt="${escapeAttribute(m.name)}" class="w-20 h-20 object-cover rounded">
                     <button type="button" class="media-remove-btn absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700"
                             data-input-id="${inputId}" data-preview-id="${previewId}" data-media-id="${m.id}">
                         <i class="fas fa-times text-xs"></i>
@@ -271,7 +297,7 @@ window.confirmMediaSelection = function (modalId, inputId, previewId, multiple) 
         } else {
             preview.innerHTML = `
                 <div class="relative inline-block">
-                    <img src="${selectedMedia.url}" alt="${selectedMedia.name}" class="w-64 ${aspectClasses} rounded border border-gray-300 dark:border-gray-600">
+                    <img src="${escapeAttribute(selectedMedia.url)}" alt="${escapeAttribute(selectedMedia.name)}" class="w-64 ${aspectClasses} rounded border border-gray-300 dark:border-gray-600">
                     <button type="button" class="media-remove-btn absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                             data-input-id="${inputId}" data-preview-id="${previewId}">
                         <i class="fas fa-times"></i>
