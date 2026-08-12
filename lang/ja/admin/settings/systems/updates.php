@@ -95,6 +95,7 @@ return [
     // フラッシュメッセージ
     'messages' => [
         'check_done' => 'アップデートチェックを完了しました。',
+        'check_done_with_updates' => 'アップデートチェックを完了しました。:count 件のアップデートがあります。',
         'check_failed' => 'アップデートチェックに失敗しました: :error',
         'no_selection' => '更新対象が選択されていません。',
         'apply_summary' => ':total 件中 :succeeded 件成功 / :failed 件失敗',
