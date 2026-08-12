@@ -22,6 +22,7 @@
 
 namespace App\Console\Commands\Backup;
 
+use App\Helpers\ComposerLocalHelper;
 use App\Models\BackupRecord;
 use App\Models\CoreVersionHistory;
 use App\Services\Backup\CoreRestoreService;
@@ -131,6 +132,14 @@ class BackupRestoreCommand extends Command
 
                 try {
                     $vendorManager->refetchAndSwap($version, fn (string $line) => $this->line('[vendor] '.$line));
+
+                    // Re-persist the site-local theme/plugin PSR-4 that the
+                    // vendor swap wiped (see CoreUpdater); otherwise extension
+                    // admin/settings pages 500 after a --refetch-vendor restore.
+                    // Non-fatal.
+                    if (! ComposerLocalHelper::syncAutoload()) {
+                        $this->warn('[vendor] Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                    }
                 } catch (\Throwable $e) {
                     $this->error('Vendor re-fetch failed: '.$e->getMessage());
                     $this->line('Source/DB are rolled back but vendor/ still matches the newer release.');
