@@ -206,10 +206,21 @@ class AdminSystemUpdatesController extends AdminLoggedInController
     public function check(ExtensionSourceManager $manager)
     {
         try {
-            $manager->checkUpdates();
+            $result = $manager->checkUpdates();
+
+            // Count updates detected by THIS check (from the return value) so
+            // the flash reports exactly what was just found, rather than a
+            // possibly stale DB tally.
+            $count = count($result['plugins'] ?? [])
+                + count($result['themes'] ?? [])
+                + (($result['core'] ?? null) !== null ? 1 : 0);
+
+            $message = $count > 0
+                ? __('admin/settings/systems/updates.messages.check_done_with_updates', ['count' => $count])
+                : __('admin/settings/systems/updates.messages.check_done');
 
             return redirect()->route('admin.settings.systems.updates.index')
-                ->with('success', __('admin/settings/systems/updates.messages.check_done'));
+                ->with('success', $message);
         } catch (\Throwable $e) {
             report($e);
 
