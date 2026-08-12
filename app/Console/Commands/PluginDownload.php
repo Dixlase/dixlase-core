@@ -90,15 +90,54 @@ class PluginDownload extends Command
             return self::FAILURE;
         }
 
-        $pluginDir = base_path("plugins/{$this->slugToName($slug)}");
-        File::ensureDirectoryExists($pluginDir);
-
-        $zip->extractTo($pluginDir);
+        // Extract to a staging dir first. Release ZIPs wrap the plugin
+        // under a single top-level directory (e.g. DixlaseCookie/), so
+        // extracting straight into plugins/<Name>/ would double-nest to
+        // plugins/<Name>/<Name>/ and leave the plugin unloadable. Locate
+        // the payload root (the directory holding plugin.json) and install
+        // that. Mirrors InstallThemeDownloader's extract handling.
+        $stagingDir = storage_path('app/private/plugin-download/'.uniqid('extract_', true));
+        File::ensureDirectoryExists($stagingDir);
+        $zip->extractTo($stagingDir);
         $zip->close();
 
-        $this->info("Extracted to: {$pluginDir}");
+        try {
+            $entries = array_values(array_filter(
+                scandir($stagingDir) ?: [],
+                fn ($e) => $e !== '.' && $e !== '..'
+            ));
+            $payloadRoot = (count($entries) === 1 && is_dir($stagingDir.'/'.$entries[0]))
+                ? $stagingDir.'/'.$entries[0]
+                : $stagingDir;
 
-        return self::SUCCESS;
+            if (! is_file($payloadRoot.'/plugin.json')) {
+                $this->error('Downloaded archive does not contain a plugin.json.');
+
+                return self::FAILURE;
+            }
+
+            $pluginDir = base_path("plugins/{$this->slugToName($slug)}");
+            if (File::isDirectory($pluginDir)) {
+                File::deleteDirectory($pluginDir);
+            }
+            File::ensureDirectoryExists(dirname($pluginDir));
+
+            // copyDirectory, not moveDirectory: moveDirectory only calls
+            // rename(), which fails with EXDEV when the staging dir and
+            // plugins/ live on different filesystems (e.g. a bind-mounted
+            // plugins/ in Docker). The staging dir is removed in finally.
+            if (! File::copyDirectory($payloadRoot, $pluginDir)) {
+                $this->error("Failed to install the plugin into plugins/{$this->slugToName($slug)}.");
+
+                return self::FAILURE;
+            }
+
+            $this->info("Extracted to: {$pluginDir}");
+
+            return self::SUCCESS;
+        } finally {
+            File::deleteDirectory($stagingDir);
+        }
     }
 
     /**
