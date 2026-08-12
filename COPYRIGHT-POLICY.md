@@ -1,11 +1,11 @@
 # Dixlase Copyright Policy
 
+For Japanese, see [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the **Japanese version shall prevail**.
+
 **Version:** 1.0
 **Effective Date:** 2026-04-25
 
 This Copyright Policy ("Policy") explains the licensing structure of the Dixlase project, operated by exc-D inc. ("exc-D"), and how rights in contributions to it are handled. It is a high-level stance document. The legally operative instruments are referenced in Section 5.
-
-The Japanese version of this Policy is published as [COPYRIGHT-POLICY.ja.md](./COPYRIGHT-POLICY.ja.md). In case of any inconsistency between the English and Japanese versions, the **Japanese version shall prevail**.
 
 ---
 

@@ -1,5 +1,7 @@
 # Security Policy
 
+For Japanese, see [SECURITY.ja.md](./SECURITY.ja.md).
+
 The Dixlase team takes security seriously. Dixlase is designed with a "security-first" philosophy, and we rely on our community and security researchers to help us maintain that standard.
 
 ## Supported Versions
