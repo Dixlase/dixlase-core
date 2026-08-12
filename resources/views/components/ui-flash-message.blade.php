@@ -40,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-info-circle text-blue-500 dark:text-blue-400 text-sm"></i>
             </div>
             <div class="ml-2 flex-1 font-medium">
-                {!! session('status') !!}
+                {{ session("status") }}
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-check-circle text-green-500 dark:text-green-400 text-sm"></i>
             </div>
             <div class="ml-2 flex-1 font-bold">
-                {!! session('success') !!}
+                {{ session("success") }}
             </div>
         </div>
     </div>
@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-sm"></i>
             </div>
             <div class="ml-2 flex-1 font-medium">
-                {!! session('error') !!}
+                {{ session("error") }}
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="ml-2 flex-1 font-medium">
                 <ul class="list-disc list-inside">
                     @foreach ($errors->all() as $error)
-                        <li>{!! $error !!}</li>
+                        <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
