@@ -300,7 +300,23 @@ class PageContentService
         // whose tagfilter neutralises <script>, <iframe> and <style> while
         // letting ordinary inline HTML through. That preserves the intent of
         // the old `setSafeMode(false)` ("allow HTML tags") on a safer footing.
-        return Str::markdown($this->normalizeMarkdown($content));
+        //
+        // allow_unsafe_links is off because it costs nothing here. Measured on
+        // this converter:
+        //
+        //   [click](javascript:alert(1))  ->  <a>click</a>          (stripped)
+        //   ![x](javascript:alert(1))     ->  <img src="" alt="x">  (stripped)
+        //   <b>bold</b>                   ->  <b>bold</b>           (unchanged)
+        //
+        // It only filters URLs written with Markdown link/image syntax; raw
+        // HTML still passes through exactly as before, so the "authors may
+        // write HTML" contract above is untouched. Note html_input is
+        // deliberately NOT set to 'escape' -- that would break that contract.
+        // The admin release-notes renderer does escape, because release notes
+        // come from a remote source rather than from a trusted author.
+        return Str::markdown($this->normalizeMarkdown($content), [
+            'allow_unsafe_links' => false,
+        ]);
     }
 
     /**
