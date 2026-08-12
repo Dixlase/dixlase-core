@@ -37,6 +37,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\ComposerLocalHelper;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
@@ -235,6 +236,16 @@ class CoreRollback extends Command
                 $this->line("Re-fetching vendor/ to match v{$from}...");
                 $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l));
                 $this->info('vendor/ restored to match the rolled-back source.');
+
+                // The re-fetched vendor/composer/autoload_psr4.php is the old
+                // release's pristine copy and lacks the site-local theme/plugin
+                // PSR-4 the installer persisted; re-persist it or extension
+                // admin/settings pages 500 after rollback (same as the update
+                // path). Non-fatal.
+                $this->line('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
+                if (! ComposerLocalHelper::syncAutoload()) {
+                    $this->warn('Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                }
             }
 
             $this->line('Clearing caches...');
