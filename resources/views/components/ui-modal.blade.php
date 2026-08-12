@@ -132,7 +132,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      x-transition:leave-end="opacity-0"
      style="display: none;"
      {{ $attributes }}>
-    <div class="modal-overlay bg-white/80 dark:bg-black/50" 
+    {{-- Overlay carries the backdrop-blur; animated via its own x-transition
+         mirroring the drawer overlay (see ui-admin-bar). The persistent
+         visible state (backdrop-blur-sm) lives in the base class so it does
+         NOT snap off when Alpine strips enter/enter-end classes after the
+         transition — enter-start / leave-end define the animated-away state. --}}
+    <div class="modal-overlay bg-white/70 dark:bg-black/50 backdrop-blur-sm"
+         x-show="show"
+         x-transition:enter="transition-all ease-out duration-300"
+         x-transition:enter-start="opacity-0 backdrop-blur-none"
+         x-transition:leave="transition-all ease-in duration-200"
+         x-transition:leave-end="opacity-0 backdrop-blur-none"
          @click="closeOnBackdrop({{ $dismissible ? 'true' : 'false' }})"></div>
     <div class="modal-container" 
          @click.stop

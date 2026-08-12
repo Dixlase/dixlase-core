@@ -36,7 +36,13 @@
     }
 
     &-container {
-        @apply relative top-20 mx-auto border border-gray-200 dark:border-gray-700 w-[95vw] max-w-lg shadow-lg rounded-xl bg-white dark:bg-black z-10;
+        // Translucent + backdrop-blur "glass" panel, matching the admin bar
+        // and the mobile drawer treatment so overlays feel like one system.
+        // Opacity kept lower than the bar/drawer (/85) because the modal sits
+        // on top of an already darkened+blurred overlay, so a higher fill
+        // reads as fully opaque; 70% + backdrop-blur-md is where the through-
+        // blur actually starts to be visible without losing readability.
+        @apply relative top-20 mx-auto border border-gray-200 dark:border-gray-700 w-[95vw] max-w-lg shadow-lg rounded-xl bg-white/30 dark:bg-black/30 backdrop-blur-md z-10;
         max-height: calc(100vh - 6rem);
         display: flex;
         flex-direction: column;
