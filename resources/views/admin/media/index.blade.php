@@ -34,8 +34,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
-<div class="mx-auto">
-    <div class="flex justify-start mb-4">
+@php
+    // Editable menu access unlocks the destructive bulk-delete UI.
+    // Read-only viewers still see cards but never the Select / Delete controls.
+    $bulkEditable = ($menuEditable ?? true);
+@endphp
+<div class="mx-auto" x-data="mediaIndex">
+    <span id="mediaBulkStrings"
+          data-selected-tpl="{{ __('admin/media/index.bulk.selected_count', ['count' => ':count']) }}"
+          hidden></span>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
         <x-form-button
             type="link"
             :href="route('admin.media.upload')"
@@ -43,6 +52,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             variant="primary"
             icon="fas fa-plus"
         />
+
+        @if($bulkEditable && $media->count() > 0)
+            <div class="media-bulk-toolbar">
+                <button type="button"
+                        x-show="!selectionMode"
+                        @click="enterSelectMode()"
+                        class="media-bulk-toolbar__enter">
+                    <i class="fas fa-check-square" aria-hidden="true"></i>
+                    {{ __('admin/media/index.bulk.enter_select') }}
+                </button>
+
+                <div x-show="selectionMode" x-cloak class="media-bulk-toolbar__panel">
+                    <span class="media-bulk-toolbar__count" x-text="selectedCountLabel()"></span>
+                    <button type="button" @click="selectAllOnPage()" class="media-bulk-toolbar__link">
+                        {{ __('admin/media/index.bulk.select_all') }}
+                    </button>
+                    <button type="button"
+                            @click="clearSelection()"
+                            :disabled="selectedIds.length === 0"
+                            class="media-bulk-toolbar__link">
+                        {{ __('admin/media/index.bulk.clear') }}
+                    </button>
+                    <button type="button"
+                            @click="openBulkDeleteModal()"
+                            :disabled="selectedIds.length === 0"
+                            class="media-bulk-toolbar__delete">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                        {{ __('admin/media/index.bulk.delete_selected') }}
+                    </button>
+                    <button type="button" @click="exitSelectMode()" class="media-bulk-toolbar__done">
+                        {{ __('admin/media/index.bulk.exit_select') }}
+                    </button>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- 検索フォーム -->
@@ -202,6 +246,28 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @method('DELETE')
 </form>
 
+@if($bulkEditable)
+    <!-- 一括削除確認モーダル -->
+    <x-ui-modal
+        id="bulkDeleteModal"
+        data-confirm-message="{{ __('admin/media/index.bulk.confirm_message', ['count' => ':count']) }}"
+        :title="__('admin/media/index.bulk.confirm_title')"
+        message=""
+        :confirm_label="__('common.delete')"
+        :cancel_label="__('common.cancel')"
+        icon_type="danger"
+        confirm_color="red"
+        form="bulkDeleteForm"
+    />
+
+    <!-- 一括削除フォーム: ids[] は Alpine が動的に注入 -->
+    <form id="bulkDeleteForm"
+          action="{{ route('admin.media.bulk-delete') }}"
+          method="POST"
+          style="display: none;">
+        @csrf
+    </form>
+@endif
 
 </div>
 
