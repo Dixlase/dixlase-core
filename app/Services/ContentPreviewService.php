@@ -77,7 +77,13 @@ class ContentPreviewService
         try {
             $html = match ($editorType) {
                 ContentEditorType::GUI => $this->editorManager->renderContent('gui', $content),
-                ContentEditorType::MARKDOWN => Str::markdown($this->normalizeMarkdown($content)),
+                // allow_unsafe_links matches PageContentService::renderMarkdown().
+                // Preview has to render what the page will actually render --
+                // an author who sees a working javascript: link here would
+                // reasonably assume it works on the published page.
+                ContentEditorType::MARKDOWN => Str::markdown($this->normalizeMarkdown($content), [
+                    'allow_unsafe_links' => false,
+                ]),
                 ContentEditorType::BLADE => Blade::render($content),
                 ContentEditorType::HTML => $content,
             };
