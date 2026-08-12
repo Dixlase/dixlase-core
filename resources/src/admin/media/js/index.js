@@ -142,14 +142,16 @@ document.addEventListener('alpine:init', () => {
         },
 
         handleCardClick(id, event) {
+            // Runs in the capture phase (see @click.capture on .media-card),
+            // so we intercept clicks before <a href> navigation, before the
+            // action buttons' own @click handlers, and before the preview
+            // <a>'s target=_blank kicks in. Bail immediately when we are
+            // not in selection mode so normal card interactions stay intact.
             if (!this.selectionMode) {
                 return;
             }
-            const target = event.target;
-            if (target && (target.closest('.action-btn') || target.closest('a[href]'))) {
-                return;
-            }
             event.preventDefault();
+            event.stopPropagation();
             this.toggleSelect(id);
         },
 

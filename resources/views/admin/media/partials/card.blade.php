@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="media-card"
      data-media-card-id="{{ $file->id }}"
      :class="cardClasses({{ $file->id }})"
-     @click="handleCardClick({{ $file->id }}, $event)">
+     @click.capture="handleCardClick({{ $file->id }}, $event)">
     <div x-show="selectionMode" x-cloak class="media-card__select">
         <span class="media-card__check-circle"
               :class="isSelected({{ $file->id }}) ? 'media-card__check-circle--checked' : ''">
