@@ -46,6 +46,17 @@ return [
     // cURL aborts a partial download with error 28.
     'download_timeout' => (int) env('EXTENSION_DOWNLOAD_TIMEOUT', 600),
 
+    // Ed25519 public key (base64) used to verify the signature on an official
+    // extension source manifest.
+    //
+    // Read here rather than with env() at the call site. SourceVerifier used to
+    // call env('EXTENSION_SOURCE_PUBLIC_KEY') directly, and once an operator
+    // runs `php artisan config:cache` -- which the deploy documentation tells
+    // them to -- .env is no longer loaded, so env() returns null and the
+    // verifier answers 'no_key' for every source. Signature checking silently
+    // stopped happening in exactly the environment it matters in.
+    'public_key' => env('EXTENSION_SOURCE_PUBLIC_KEY'),
+
     // Provider type registry
     'providers' => [
         'github' => \App\Services\Extension\GitHubSourceProvider::class,

@@ -101,8 +101,10 @@ class SourceVerifierTest extends TestCase
         $privateKeyBase64 = sodium_bin2base64($privateKey, SODIUM_BASE64_VARIANT_ORIGINAL);
         $publicKeyBase64 = sodium_bin2base64($publicKey, SODIUM_BASE64_VARIANT_ORIGINAL);
 
-        // Set the public key env for verification
-        putenv("EXTENSION_SOURCE_PUBLIC_KEY={$publicKeyBase64}");
+        // Set the public key through config: the verifier reads
+        // config('extension-sources.public_key'), not env(), so that the key
+        // still resolves once an operator has run config:cache.
+        config(['extension-sources.public_key' => $publicKeyBase64]);
 
         $source = ExtensionSource::query()->create([
             'name' => 'Sign Test',
@@ -125,7 +127,7 @@ class SourceVerifierTest extends TestCase
         $this->assertTrue($result['verified']);
         $this->assertEquals('valid', $result['status']);
 
-        putenv('EXTENSION_SOURCE_PUBLIC_KEY');
+        config(['extension-sources.public_key' => null]);
     }
 
     public function test_verify_with_wrong_key_returns_invalid(): void
@@ -147,7 +149,7 @@ class SourceVerifierTest extends TestCase
             SODIUM_BASE64_VARIANT_ORIGINAL
         );
 
-        putenv("EXTENSION_SOURCE_PUBLIC_KEY={$publicKeyBase64}");
+        config(['extension-sources.public_key' => $publicKeyBase64]);
 
         $source = ExtensionSource::query()->create([
             'name' => 'Wrong Key Test',
@@ -166,7 +168,7 @@ class SourceVerifierTest extends TestCase
         $this->assertFalse($result['verified']);
         $this->assertEquals('invalid', $result['status']);
 
-        putenv('EXTENSION_SOURCE_PUBLIC_KEY');
+        config(['extension-sources.public_key' => null]);
     }
 
     public function test_verify_with_no_public_key_returns_no_key(): void
@@ -175,7 +177,7 @@ class SourceVerifierTest extends TestCase
             $this->markTestSkipped('sodium extension required');
         }
 
-        putenv('EXTENSION_SOURCE_PUBLIC_KEY');
+        config(['extension-sources.public_key' => null]);
 
         $source = ExtensionSource::query()->create([
             'name' => 'No Key Test',
