@@ -67,6 +67,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use ZipArchive;
 
@@ -1558,15 +1559,17 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * add page if Vite HMR bounced the navigation back mid-download)
      * the CTA still reaches the same destination.
      */
-    protected function buildJustAddedFlash(string $sentence, string $directory, string $displayName): string
+    protected function buildJustAddedFlash(string $sentence, string $directory, string $displayName): HtmlString
     {
         $url = route('admin.settings.plugins.index', ['just_added' => $directory])
             .'#just-added-plugin-'.$directory;
         $ctaLabel = __('admin/settings/plugins/index.messages.download_complete_cta', ['name' => $displayName]);
 
-        return e($sentence)
+        return new HtmlString(
+            e($sentence)
             .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'
-            .e($ctaLabel).'</a>';
+            .e($ctaLabel).'</a>'
+        );
     }
 
     /**
@@ -1577,14 +1580,16 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * ring highlight) instead of the newly-added card that was the
      * subject of the download flash.
      */
-    protected function buildJustInstalledFlash(string $sentence, int $pluginId, string $displayName): string
+    protected function buildJustInstalledFlash(string $sentence, int $pluginId, string $displayName): HtmlString
     {
         $url = route('admin.settings.plugins.index').'#installed-plugin-'.$pluginId;
         $ctaLabel = __('admin/settings/plugins/index.messages.enable_cta', ['name' => $displayName]);
 
-        return e($sentence)
+        return new HtmlString(
+            e($sentence)
             .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'
-            .e($ctaLabel).'</a>';
+            .e($ctaLabel).'</a>'
+        );
     }
 
     /**
