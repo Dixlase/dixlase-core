@@ -164,8 +164,16 @@ class SourceVerifier
      */
     protected function resolvePublicKey(): ?string
     {
-        $keyBase64 = env('EXTENSION_SOURCE_PUBLIC_KEY');
-        if ($keyBase64 === null) {
+        // Resolved through config, not env(). A direct env() call returns null
+        // once `php artisan config:cache` has run, because .env is not loaded
+        // in that state -- so on any deployment following the documented
+        // caching step, this method answered null and verify() reported
+        // 'no_key' for every source. The failure is safe (nothing is treated
+        // as verified) but silent: signature checking was simply not running
+        // in production while appearing to be configured.
+        $keyBase64 = config('extension-sources.public_key');
+
+        if (! is_string($keyBase64) || $keyBase64 === '') {
             return null;
         }
 

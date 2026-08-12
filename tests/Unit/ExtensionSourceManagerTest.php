@@ -131,7 +131,7 @@ class ExtensionSourceManagerTest extends TestCase
         $privateKeyBase64 = sodium_bin2base64($privateKey, SODIUM_BASE64_VARIANT_ORIGINAL);
         $publicKeyBase64 = sodium_bin2base64($publicKey, SODIUM_BASE64_VARIANT_ORIGINAL);
 
-        putenv("EXTENSION_SOURCE_PUBLIC_KEY={$publicKeyBase64}");
+        config(['extension-sources.public_key' => $publicKeyBase64]);
 
         $source = ExtensionSource::query()->create([
             'name' => 'Verify Test',
@@ -152,7 +152,7 @@ class ExtensionSourceManagerTest extends TestCase
         $this->assertTrue($result['verified']);
         $this->assertTrue($source->is_official);
 
-        putenv('EXTENSION_SOURCE_PUBLIC_KEY');
+        config(['extension-sources.public_key' => null]);
     }
 
     public function test_list_available_plugins_aggregates_across_sources(): void
