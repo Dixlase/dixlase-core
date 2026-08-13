@@ -93,7 +93,7 @@ class SystemErrorNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
 
         // Get color based on log level
         $logLevel = $this->context['log_level'] ?? 'Error';
