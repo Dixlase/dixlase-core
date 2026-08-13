@@ -315,7 +315,10 @@ class ThemeInstall extends Command
         // theme (relevant for re-install / --force re-install where the
         // .blade.php files were replaced). Update / rollback paths clear the
         // view cache too — this keeps install consistent with them.
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        // Paired with view:cache in CompiledViewCacheRebuilder so the next
+        // request does not write to storage/framework/views/ mid-navigation
+        // (Vite cancels the navigation in dev — see the helper's class docblock).
+        \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
         $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
         $this->info(__('admin/command/theme-install.activate_help', ['themeName' => $themeName]));
