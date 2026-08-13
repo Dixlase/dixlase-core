@@ -51,9 +51,32 @@ class PreventAdminResponseCachingTest extends TestCase
 {
     private function pipe(Response $seed): Response
     {
-        return (new PreventAdminResponseCaching)->handle(
+        return (new PreventAdminResponseCaching())->handle(
             Request::create('/admin/dashboard'),
             fn () => $seed,
+        );
+    }
+
+    /**
+     * Assert on the directives rather than the serialised header.
+     *
+     * Symfony's ResponseHeaderBag re-serialises Cache-Control in
+     * alphabetical order, so the middleware's own ordering never survives:
+     * setting 'no-store, no-cache, must-revalidate, private, max-age=0'
+     * reads back as 'max-age=0, must-revalidate, no-cache, no-store,
+     * private'. Which directives are present is the middleware's decision;
+     * the order they are written in is not.
+     *
+     * @param  list<string>  $expected
+     */
+    private function assertCacheControlDirectives(array $expected, ?string $header): void
+    {
+        $actual = array_map('trim', explode(',', (string) $header));
+
+        $this->assertEqualsCanonicalizing(
+            $expected,
+            $actual,
+            'The admin response must carry exactly these Cache-Control directives.'
         );
     }
 
@@ -61,8 +84,8 @@ class PreventAdminResponseCachingTest extends TestCase
     {
         $response = $this->pipe(new Response('body'));
 
-        $this->assertSame(
-            'no-store, no-cache, must-revalidate, private, max-age=0',
+        $this->assertCacheControlDirectives(
+            ['no-store', 'no-cache', 'must-revalidate', 'private', 'max-age=0'],
             $response->headers->get('Cache-Control'),
         );
         $this->assertSame('no-cache', $response->headers->get('Pragma'));
@@ -82,9 +105,14 @@ class PreventAdminResponseCachingTest extends TestCase
 
         $response = $this->pipe($seed);
 
-        $this->assertSame(
-            'no-store, no-cache, must-revalidate, private, max-age=0',
+        $this->assertCacheControlDirectives(
+            ['no-store', 'no-cache', 'must-revalidate', 'private', 'max-age=0'],
             $response->headers->get('Cache-Control'),
+        );
+        $this->assertStringNotContainsString(
+            'public',
+            (string) $response->headers->get('Cache-Control'),
+            'The downstream public directive must not survive.'
         );
     }
 
