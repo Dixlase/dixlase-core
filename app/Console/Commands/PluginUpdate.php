@@ -46,7 +46,6 @@ use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
@@ -254,8 +253,13 @@ class PluginUpdate extends Command
             // Same rationale as PluginRollback / ThemeRollback (which already
             // do this): the swap changed .blade.php files, but the compiled
             // storage/framework/views/*.php cache still points at the pre-swap
-            // shape until it is dropped.
-            Artisan::call('view:clear');
+            // shape until it is dropped. Paired with view:cache in
+            // CompiledViewCacheRebuilder so the next request does not
+            // write to storage/framework/views/ mid-navigation (Vite,
+            // watching that directory in dev with `npm run dev`, cancels
+            // the navigation on a mid-flight write — the "click a menu,
+            // land back on the same page" symptom).
+            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
