@@ -65,21 +65,21 @@ class GuestLayout extends Component
             // config('app.installed') is consulted first because env() returns
             // null after Laravel's config cache is built.
             if (! file_exists(base_path('.env')) || ! (config('app.installed', false) ?: env('INSTALLED', false))) {
-                $this->site_name = env('APP_NAME', 'Dixlase');
+                $this->site_name = config('app.name');
                 $this->theme = Config::get('admin.theme', 'light');
             } elseif (! Schema::hasTable('global_settings') || ! Schema::hasTable('site_settings')) {
                 // Fall back to default if settings table does not exist (e.g. immediately after installation)
-                $this->site_name = env('APP_NAME', 'Dixlase');
+                $this->site_name = config('app.name');
                 $this->theme = Config::get('admin.theme', 'light');
             } else {
                 // Retrieve via SettingResolver (site_name is PerSite, admin_theme is Global)
                 $resolver = app(SettingResolver::class);
-                $this->site_name = $resolver->get('site_name') ?: env('APP_NAME', 'Dixlase');
+                $this->site_name = $resolver->get('site_name') ?: config('app.name');
                 $this->theme = $resolver->get('admin_theme') ?: Config::get('admin.theme', 'light');
             }
         } catch (\Throwable $e) {
             // Use default values in case of database connection error, etc.
-            $this->site_name = env('APP_NAME', 'Dixlase');
+            $this->site_name = config('app.name');
             $this->theme = Config::get('admin.theme', 'light');
         }
 
