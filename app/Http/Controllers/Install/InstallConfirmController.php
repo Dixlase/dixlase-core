@@ -35,10 +35,12 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\Contracts\Site\SiteContextInterface;
 use App\DTO\Core\CoreIntegrityResult;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Models\Site;
 use App\Models\ThemeAudit;
 use App\Services\Core\CoreIntegrityVerifier;
 use App\Services\Csp\CspComplianceScanner;
@@ -640,6 +642,21 @@ class InstallConfirmController extends BaseInstallController
             $resolver->set($name, $value);
             Log::channel('install')->info("initializeDatabase - {$name}: {$value}");
         }
+
+        // Sync the canonical Site.name column. SitesSeeder creates the row
+        // with a placeholder before this point, and nothing used to replace
+        // it, so every installation started with Site::name = 'Main Site'
+        // while the operator's own name lived only in .env and the settings
+        // tables -- canonical in the definition comment, and wrong in the
+        // database from the first request onwards.
+        //
+        // Same shape as the locale sync in AdminBaseSiteController: the
+        // column is authoritative and the site_name setting written above is
+        // the legacy shadow kept for backward-compatible reads.
+        Site::query()
+            ->whereKey(app(SiteContextInterface::class)->currentSiteId())
+            ->update(['name' => $data['site_name']]);
+        Log::channel('install')->info('initializeDatabase - sites.name: '.$data['site_name']);
 
         // Admin panel URL (admin_url is Global scope so goes to global_settings)
         $resolver->set('admin_url', $data['admin_url']);
