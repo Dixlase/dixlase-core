@@ -364,6 +364,26 @@ class CoreUpdater
             ]);
             $log('Migrations complete.');
 
+            // Run the core UpdateSeeder if the class exists — the
+            // opt-in convention for update-time seed logic. Kept
+            // separate from DatabaseSeeder (which the web installer
+            // runs on fresh install) so an install-time seeder that
+            // inserts demo data does not accidentally re-run on
+            // every core update and duplicate rows. Any operation
+            // in UpdateSeeder must be safe to re-run on every core
+            // upgrade — typically insertOrIgnore / updateOrCreate
+            // against settings tables to backfill newly-declared
+            // defaults. Silent no-op when the class is absent.
+            if (class_exists(\Database\Seeders\UpdateSeeder::class)) {
+                $log('Running core UpdateSeeder...');
+                Artisan::call('db:seed', [
+                    '--class' => \Database\Seeders\UpdateSeeder::class,
+                    '--force' => true,
+                    '--no-interaction' => true,
+                ]);
+                $log('Core UpdateSeeder complete.');
+            }
+
             $log('Clearing caches...');
             Artisan::call('config:clear');
             Artisan::call('route:clear');

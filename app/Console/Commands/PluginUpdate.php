@@ -194,6 +194,27 @@ class PluginUpdate extends Command
             $migrator->migrate($plugin->directory);
             $this->info('Plugin migrations complete.');
 
+            // Run the plugin's UpdateSeeder if the class exists — the
+            // opt-in convention for update-time seed logic. Kept
+            // separate from DatabaseSeeder (which runs on install)
+            // so an install-time seeder that inserts demo data does
+            // not accidentally re-run on every update and duplicate
+            // rows. Extension authors write UpdateSeeder for the
+            // subset of seed operations that are safe to re-run
+            // (typically insertOrIgnore / updateOrCreate against
+            // settings tables to backfill newly-declared defaults).
+            // Silent no-op when the class is absent — existing
+            // plugins are unaffected until they opt in.
+            $updateSeederClass = "Plugins\\{$plugin->directory}\\Database\\Seeders\\UpdateSeeder";
+            if (class_exists($updateSeederClass)) {
+                $this->info('Running plugin UpdateSeeder...');
+                $this->call('dls:plugin:seed', [
+                    'plugin' => $plugin->directory,
+                    '--class' => 'UpdateSeeder',
+                    '--force' => true,
+                ]);
+            }
+
             $plugin->update([
                 'version' => $release->version,
                 'available_version' => null,

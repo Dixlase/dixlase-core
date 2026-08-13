@@ -191,6 +191,27 @@ class ThemeUpdate extends Command
             $migrator->migrate($theme->directory);
             $this->info('Theme migrations complete.');
 
+            // Run the theme's UpdateSeeder if the class exists — the
+            // opt-in convention for update-time seed logic. Kept
+            // separate from DatabaseSeeder (which runs on install)
+            // so an install-time seeder that inserts demo data does
+            // not accidentally re-run on every update and duplicate
+            // rows. Theme authors write UpdateSeeder for the subset
+            // of seed operations that are safe to re-run (typically
+            // insertOrIgnore / updateOrCreate against settings
+            // tables to backfill newly-declared defaults). Silent
+            // no-op when the class is absent — existing themes are
+            // unaffected until they opt in.
+            $updateSeederClass = "Themes\\{$theme->directory}\\Database\\Seeders\\UpdateSeeder";
+            if (class_exists($updateSeederClass)) {
+                $this->info('Running theme UpdateSeeder...');
+                $this->call('dls:theme:seed', [
+                    'theme' => $theme->directory,
+                    '--class' => 'UpdateSeeder',
+                    '--force' => true,
+                ]);
+            }
+
             $theme->update([
                 'version' => $release->version,
                 'available_version' => null,
