@@ -138,42 +138,11 @@ class PermissionRegistry
      */
     protected static function getDefaultFromNestedConfig(string $menuKey): ?array
     {
-        $permissions = config('roles.permissions', []);
-        $parts = explode('.', $menuKey);
-
-        $current = $permissions;
-        foreach ($parts as $part) {
-            if (! is_array($current)) {
-                return null;
-            }
-
-            // If direct key exists
-            if (isset($current[$part])) {
-                // If access_roles exists, it's a permission definition
-                if (isset($current[$part]['access_roles'])) {
-                    return $current[$part];
-                }
-                // If children exists, go deeper
-                if (isset($current[$part]['children'])) {
-                    $current = $current[$part]['children'];
-
-                    continue;
-                }
-                // Otherwise, go to next level
-                $current = $current[$part];
-
-                continue;
-            }
-
-            return null;
-        }
-
-        // Finally, if access_roles exists, it's a permission definition
-        if (is_array($current) && isset($current['access_roles'])) {
-            return $current;
-        }
-
-        return null;
+        // Core and plugin permissions use the same nested shape and differ
+        // only in where the array comes from. This used to be a byte-for-byte
+        // copy of getDefaultFromNestedArray(), which is the kind of duplicate
+        // that gets fixed on one side only.
+        return self::getDefaultFromNestedArray(config('roles.permissions', []), $menuKey);
     }
 
     /**
@@ -281,32 +250,45 @@ class PermissionRegistry
     protected static function getDefaultFromNestedArray(array $permissions, string $menuKey): ?array
     {
         $parts = explode('.', $menuKey);
+        $lastIndex = array_key_last($parts);
 
         $current = $permissions;
-        foreach ($parts as $part) {
+        foreach ($parts as $index => $part) {
             if (! is_array($current)) {
                 return null;
             }
 
-            // If direct key exists
-            if (isset($current[$part])) {
-                // If access_roles exists, it's a permission definition
-                if (isset($current[$part]['access_roles'])) {
-                    return $current[$part];
-                }
-                // If children exists, go deeper
-                if (isset($current[$part]['children'])) {
-                    $current = $current[$part]['children'];
+            if (! isset($current[$part])) {
+                return null;
+            }
 
-                    continue;
-                }
-                // Otherwise, go to next level
-                $current = $current[$part];
+            $node = $current[$part];
+
+            // A node can be a route in its own right AND the parent of
+            // sub-actions that need different roles -- a trash screen an
+            // editor may open, holding a permanent-delete action only an
+            // admin may run. While key segments remain, descend into
+            // children instead of answering with this node. Returning here
+            // would hand the parent's roles to every sub-action, and the
+            // config would read as if it restricted them while it did not.
+            if ($index !== $lastIndex && isset($node['children'])) {
+                $current = $node['children'];
 
                 continue;
             }
 
-            return null;
+            // If access_roles exists, it's a permission definition
+            if (isset($node['access_roles'])) {
+                return $node;
+            }
+            // If children exists, go deeper
+            if (isset($node['children'])) {
+                $current = $node['children'];
+
+                continue;
+            }
+            // Otherwise, go to next level
+            $current = $node;
         }
 
         // Finally, if access_roles exists, it's a permission definition
