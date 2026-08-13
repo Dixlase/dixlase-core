@@ -135,10 +135,23 @@ class SvgSanitizerService
     ];
 
     /**
-     * Sanitize SVG content
+     * Sanitize SVG content.
+     *
+     * Fast path: if isSafe() confirms nothing would be stripped, return the
+     * caller's bytes verbatim — the DOMDocument::saveXML() round-trip
+     * otherwise normalises the XML declaration, quote style, attribute
+     * order, whitespace, self-closing form, and CDATA/comment layout, so a
+     * clean SVG from Illustrator / Figma / Inkscape ends up looking
+     * "silently rewritten" even though nothing dangerous was found. Since
+     * isSafe() is a superset check of what sanitize would remove (see
+     * checkNodeSafety), this shortcut is safe.
      */
     public function sanitize(string $svgContent): string
     {
+        if ($this->isSafe($svgContent)) {
+            return $svgContent;
+        }
+
         // Parse as XML
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
@@ -421,7 +434,13 @@ class SvgSanitizerService
     }
 
     /**
-     * Sanitize and save file
+     * Sanitize and save file.
+     *
+     * When sanitize() returns bytes identical to the input (clean SVG
+     * fast-path), the in-place case skips the write entirely — no need to
+     * update mtime or rewrite the file when we haven't changed anything.
+     * The explicit outputPath case still writes, since the caller asked
+     * for a copy at a different path.
      */
     public function sanitizeFile(string $inputPath, ?string $outputPath = null): bool
     {
@@ -440,6 +459,10 @@ class SvgSanitizerService
         }
 
         $targetPath = $outputPath ?? $inputPath;
+
+        if ($outputPath === null && $sanitized === $content) {
+            return true;
+        }
 
         return file_put_contents($targetPath, $sanitized) !== false;
     }
@@ -470,7 +493,19 @@ class SvgSanitizerService
     }
 
     /**
-     * Recursively check node safety
+     * Recursively check node safety.
+     *
+     * Kept as a strict superset of what sanitize() would remove — if this
+     * returns true, the sanitizer would not modify semantic content and
+     * sanitize() can safely return the caller's original bytes verbatim.
+     * Rules mirrored here from sanitize()'s traversal:
+     *   • element must be in $allowedElements and not in $forbiddenElements
+     *     (sanitize drops non-allowed elements just as it drops forbidden ones)
+     *   • no forbidden attribute name / on* handler
+     *   • no forbidden attribute-value pattern (javascript:, expression(), …)
+     *   • no external href / xlink:href (only #fragment and image data URIs
+     *     survive removeExternalReferences)
+     *   • <style> CSS matches its sanitizer round-trip
      */
     protected function checkNodeSafety(\DOMNode $node): bool
     {
@@ -483,6 +518,13 @@ class SvgSanitizerService
 
         // Unsafe if forbidden elements exist
         if (in_array($nodeName, $this->forbiddenElements)) {
+            return false;
+        }
+
+        // Also unsafe if the element is outside the allowlist — sanitize()
+        // strips those the same way it strips forbidden elements, so treat
+        // them the same in the safety check.
+        if (! in_array($nodeName, $this->allowedElements)) {
             return false;
         }
 
@@ -500,6 +542,25 @@ class SvgSanitizerService
                     return false;
                 }
             }
+        }
+
+        // External-reference check, mirroring removeExternalReferences():
+        // href / xlink:href are only allowed as same-document #fragments or as
+        // base64 image data URIs. Anything else (http://, //, non-image
+        // data:) would be stripped by sanitize, so mark unsafe.
+        foreach (['href', 'xlink:href'] as $hrefAttr) {
+            if (! $node->hasAttribute($hrefAttr)) {
+                continue;
+            }
+            $value = $node->getAttribute($hrefAttr);
+            if (str_starts_with($value, '#')) {
+                continue;
+            }
+            if (str_starts_with($value, 'data:image/')
+                && preg_match('/^data:image\/(png|jpeg|gif|webp);base64,/i', $value)) {
+                continue;
+            }
+            return false;
         }
 
         // <style> CSS content is validated by round-tripping through the

@@ -232,4 +232,96 @@ class SvgSanitizerServiceTest extends TestCase
         $this->assertStringNotContainsString('@import', $out);
         $this->assertStringNotContainsString('@keep', $out);
     }
+
+    // ---------------------------------------------------------------------
+    // Fast-path: clean SVGs must round-trip byte-for-byte so that
+    // Illustrator / Figma / Inkscape exports don't come back "silently
+    // rewritten" (quote style / attribute order / whitespace / XML decl
+    // changes from the DOMDocument serialiser).
+    // ---------------------------------------------------------------------
+
+    public function test_clean_minimal_svg_is_returned_byte_identical(): void
+    {
+        // Single quotes on purpose — the sanitiser would normalise them to
+        // double quotes if it went through the serialiser.
+        $svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><path d='M0 0h10v10H0z'/></svg>";
+
+        $this->assertSame($svg, $this->service->sanitize($svg));
+    }
+
+    public function test_clean_illustrator_style_svg_is_returned_byte_identical(): void
+    {
+        // Style tag + CDATA + comment + attribute order that the DOM
+        // serialiser would rearrange. All safe → must survive verbatim.
+        $svg = <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <!-- brand mark -->
+    <defs>
+        <style><![CDATA[
+            .st0 { fill: #fff; stroke: #000; stroke-width: 2; }
+        ]]></style>
+    </defs>
+    <path class="st0" d="M10,10h80v80H10z"/>
+</svg>
+XML;
+
+        $this->assertSame($svg, $this->service->sanitize($svg));
+    }
+
+    public function test_svg_with_script_is_not_byte_identical(): void
+    {
+        $svg = $this->wrap('<script>alert(1)</script><path d="M0 0"/>');
+
+        $out = $this->service->sanitize($svg);
+
+        $this->assertNotSame($svg, $out);
+        $this->assertStringNotContainsString('script', $out);
+    }
+
+    public function test_svg_with_external_href_is_not_byte_identical(): void
+    {
+        // Sanitize strips the external xlink:href from removeExternalReferences;
+        // isSafe must catch this too so the fast-path does not accidentally
+        // let it through unmodified.
+        $svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 10 10\"><image xlink:href=\"http://attacker.example.com/x.png\" width=\"10\" height=\"10\"/></svg>";
+
+        $out = $this->service->sanitize($svg);
+
+        $this->assertNotSame($svg, $out);
+        $this->assertStringNotContainsString('attacker.example.com', $out);
+    }
+
+    public function test_svg_with_unknown_element_is_not_byte_identical(): void
+    {
+        // Elements outside the allowlist (e.g. HTML tags leaked into the SVG
+        // namespace) are stripped by sanitize — isSafe must agree, so the
+        // fast-path does not let them through.
+        $svg = $this->wrap('<div>hi</div><path d="M0 0"/>');
+
+        $out = $this->service->sanitize($svg);
+
+        $this->assertNotSame($svg, $out);
+        $this->assertStringNotContainsString('<div', $out);
+    }
+
+    public function test_sanitize_file_does_not_rewrite_a_clean_file_in_place(): void
+    {
+        $svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><path d='M0 0h10v10H0z'/></svg>";
+        $path = tempnam(sys_get_temp_dir(), 'svg-clean-').'.svg';
+        file_put_contents($path, $svg);
+        $mtimeBefore = filemtime($path);
+
+        // Ensure any write would actually change mtime.
+        sleep(1);
+
+        $ok = $this->service->sanitizeFile($path);
+        $mtimeAfter = filemtime($path);
+
+        $this->assertTrue($ok);
+        $this->assertSame($svg, file_get_contents($path));
+        $this->assertSame($mtimeBefore, $mtimeAfter, 'clean SVG must not be rewritten in place');
+
+        unlink($path);
+    }
 }
