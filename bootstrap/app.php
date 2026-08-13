@@ -170,6 +170,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class, // Authentication
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // Email verification
             'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IP address filter
+            'admin.no-cache' => \App\Http\Middleware\PreventAdminResponseCaching::class, // Force browsers not to cache authenticated admin responses
             'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // Front IP filter
             'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // Admin panel operation log
             'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // Admin panel menu access permission
@@ -243,6 +244,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Authenticate::class.':member', // Enforce authentication
             \App\Http\Middleware\AdminIpFilter::class, // Enforce IP restriction
+            \App\Http\Middleware\PreventAdminResponseCaching::class, // Force browsers not to cache authenticated plugin-admin responses
         ]);
     })
 
