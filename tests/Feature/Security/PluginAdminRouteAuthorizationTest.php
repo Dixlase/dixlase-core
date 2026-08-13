@@ -38,6 +38,7 @@ namespace Tests\Feature\Security;
 use App\Enums\MemberRole;
 use App\Http\Middleware\EnsurePluginAdminAccess;
 use App\Models\Member;
+use App\Services\PermissionRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -60,10 +61,57 @@ use Tests\TestCase;
  * than issuing HTTP requests because the route table depends on which plugins
  * happen to be installed and enabled in the database, which is not something a
  * security regression test should be at the mercy of.
+ *
+ * For the same reason they judge a registered fixture rather than a real
+ * plugin's roles.php. An earlier version asserted against DixlasePages, which
+ * made this file fail whenever that plugin's declarations changed -- and since
+ * plugin CI checks Core out at main and Core CI checks plugins out at main, a
+ * paired change could not go green on either side until the other had merged.
+ * What a plugin grants belongs to that plugin's own tests; what the gate does
+ * with a declaration belongs here.
+ *
+ * Note that registerPlugin() is looked up by exact key, so these tests cover
+ * the gate's own walk from the most specific route segment to the least, not
+ * the nested-array walk that reads a roles.php from disk. That one is covered
+ * directly in PermissionRegistryNestedKeyTest.
  */
 class PluginAdminRouteAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * A directory name with no plugins/ directory behind it, so
+     * resolvePluginRolesPath() finds nothing and only the registered map
+     * below is consulted.
+     */
+    private const FIXTURE = 'FixtureAuthorizationPlugin';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Shaped like a real plugin: read screens and authoring an editor may
+        // reach, a parent screen that is itself a route, a destructive child
+        // under that parent, and a settings key only a super admin may edit.
+        PermissionRegistry::registerPlugin(self::FIXTURE, [
+            'things.index' => ['access_roles' => MemberRole::EDITOR->value, 'view_roles' => MemberRole::EDITOR->value],
+            'things.create' => ['access_roles' => MemberRole::EDITOR->value, 'view_roles' => MemberRole::EDITOR->value],
+            'things.store' => ['access_roles' => MemberRole::EDITOR->value, 'view_roles' => MemberRole::EDITOR->value],
+            'things.destroy' => ['access_roles' => MemberRole::EDITOR->value, 'view_roles' => MemberRole::EDITOR->value],
+            'things.trash' => ['access_roles' => MemberRole::EDITOR->value, 'view_roles' => MemberRole::EDITOR->value],
+            'things.trash.empty' => ['access_roles' => MemberRole::ADMIN->value, 'view_roles' => MemberRole::ADMIN->value],
+            'things.settings' => ['access_roles' => MemberRole::SUPER_ADMIN->value, 'view_roles' => MemberRole::ADMIN->value],
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // registerPlugin() writes to a static, which would otherwise leak into
+        // every test that runs after this one in the same process.
+        PermissionRegistry::unregisterPlugin(self::FIXTURE);
+
+        parent::tearDown();
+    }
 
     /**
      * Run a fabricated plugin admin route through the gate.
@@ -94,28 +142,28 @@ class PluginAdminRouteAuthorizationTest extends TestCase
     public function test_unauthenticated_request_is_refused(): void
     {
         $this->assertFalse(
-            $this->passesGate('dixlase-pages::admin.pages.index', 'GET', 'DixlasePages'),
+            $this->passesGate('fixture::admin.things.index', 'GET', self::FIXTURE),
             'An unauthenticated request must never pass the plugin admin gate.'
         );
     }
 
     /**
      * The headline regression: a low-privilege member reaching a plugin write
-     * endpoint. DixlasePages::store is the one that mattered most, because the
-     * same controller exposes a preview action that renders Blade from request
-     * input -- an authorization gap there is a path to code execution, not just
-     * unwanted edits.
+     * endpoint. A store action was the one that mattered most in practice,
+     * because DixlasePages exposed a preview action on the same controller
+     * that rendered Blade from request input -- an authorization gap there is
+     * a path to code execution, not just unwanted edits.
      *
-     * @return list<array{0: string, 1: string}>
+     * @return array<string, array{0: string, 1: string}>
      */
     public static function lowPrivilegeRoutes(): array
     {
         return [
-            'pages list' => ['dixlase-pages::admin.pages.index', 'GET'],
-            'pages create form' => ['dixlase-pages::admin.pages.create', 'GET'],
-            'pages store' => ['dixlase-pages::admin.pages.store', 'POST'],
-            'pages destroy' => ['dixlase-pages::admin.pages.destroy', 'DELETE'],
-            'pages preview' => ['dixlase-pages::admin.pages.preview', 'POST'],
+            'list' => ['fixture::admin.things.index', 'GET'],
+            'create form' => ['fixture::admin.things.create', 'GET'],
+            'store' => ['fixture::admin.things.store', 'POST'],
+            'destroy' => ['fixture::admin.things.destroy', 'DELETE'],
+            'empty trash' => ['fixture::admin.things.trash.empty', 'POST'],
         ];
     }
 
@@ -125,7 +173,7 @@ class PluginAdminRouteAuthorizationTest extends TestCase
         Auth::login(Member::factory()->create(['role' => MemberRole::CONTRIBUTOR]));
 
         $this->assertFalse(
-            $this->passesGate($routeName, $method, 'DixlasePages'),
+            $this->passesGate($routeName, $method, self::FIXTURE),
             "A contributor must not reach {$routeName}."
         );
     }
@@ -136,37 +184,36 @@ class PluginAdminRouteAuthorizationTest extends TestCase
 
         foreach (self::lowPrivilegeRoutes() as $label => [$routeName, $method]) {
             $this->assertTrue(
-                $this->passesGate($routeName, $method, 'DixlasePages'),
+                $this->passesGate($routeName, $method, self::FIXTURE),
                 "The gate must not lock an ADMIN out of {$label}."
             );
         }
     }
 
     /**
-     * When the gate landed, DixlasePages declared only its read screens, so an
-     * editor could open the page list and the create form and then take a 403
-     * on save. The plugin has since declared its write routes, which is the
-     * way the asymmetry was always meant to be resolved: the plugin says what
-     * an editor may do, rather than the gate guessing which read key a POST
-     * belongs to.
+     * When the gate landed, plugins declared only their read screens, so an
+     * editor could open a list and a create form and then take a 403 on save.
+     * The way out was always for the plugin to declare its write routes --
+     * the plugin says what an editor may do, rather than the gate guessing
+     * which read key a POST belongs to.
      *
-     * The boundary moved rather than disappeared. Authoring and the deletions
-     * that land in the trash are EDITOR; permanent deletion is not.
+     * What this pins is that a declaration on a write route is honoured at
+     * all. Whether a given plugin should grant one is that plugin's decision,
+     * tested in that plugin's repository.
      */
     public function test_editor_reaches_declared_authoring_routes(): void
     {
         Auth::login(Member::factory()->create(['role' => MemberRole::EDITOR]));
 
         foreach ([
-            ['dixlase-pages::admin.pages.index', 'GET'],
-            ['dixlase-pages::admin.pages.store', 'POST'],
-            ['dixlase-pages::admin.pages.update', 'PUT'],
-            ['dixlase-pages::admin.pages.destroy', 'DELETE'],
-            ['dixlase-pages::admin.pages.trash.restore', 'POST'],
+            ['fixture::admin.things.index', 'GET'],
+            ['fixture::admin.things.store', 'POST'],
+            ['fixture::admin.things.destroy', 'DELETE'],
+            ['fixture::admin.things.trash', 'GET'],
         ] as [$routeName, $method]) {
             $this->assertTrue(
-                $this->passesGate($routeName, $method, 'DixlasePages'),
-                "{$routeName} is declared EDITOR in the plugin roles.php; the gate must honour it."
+                $this->passesGate($routeName, $method, self::FIXTURE),
+                "{$routeName} is declared EDITOR; the gate must honour it, on writes as well as reads."
             );
         }
     }
@@ -182,13 +229,13 @@ class PluginAdminRouteAuthorizationTest extends TestCase
         Auth::login(Member::factory()->create(['role' => MemberRole::EDITOR]));
 
         foreach ([
-            ['dixlase-pages::admin.pages.trash.empty', 'POST'],
-            ['dixlase-pages::admin.pages.trash.force-destroy', 'DELETE'],
-            ['dixlase-pages::admin.pages.revisions.protect', 'POST'],
-            ['dixlase-pages::admin.pages.settings.update', 'PUT'],
+            // Declared ADMIN, and sitting under a parent the editor may open.
+            ['fixture::admin.things.trash.empty', 'POST'],
+            // Undeclared, so it inherits things.settings (SUPER_ADMIN to edit).
+            ['fixture::admin.things.settings.update', 'PUT'],
         ] as [$routeName, $method]) {
             $this->assertFalse(
-                $this->passesGate($routeName, $method, 'DixlasePages'),
+                $this->passesGate($routeName, $method, self::FIXTURE),
                 "{$routeName} destroys data or widens rights and must stay above EDITOR."
             );
         }
