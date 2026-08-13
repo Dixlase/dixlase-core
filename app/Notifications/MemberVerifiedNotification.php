@@ -58,7 +58,7 @@ class MemberVerifiedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
         $frontUrl = url('/');
         $adminUrl = route('admin.login');
 

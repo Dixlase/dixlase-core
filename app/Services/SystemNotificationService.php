@@ -224,7 +224,7 @@ class SystemNotificationService
      */
     private function buildNotificationMail(string $subject, string $message, array $context = []): MailMessage
     {
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
 
         $mailMessage = new MailMessage();
         $mailMessage->subject("[{$appName}] {$subject}");
@@ -257,7 +257,7 @@ class SystemNotificationService
      */
     private function buildErrorNotificationMail(string $subject, string $message, array $context = []): MailMessage
     {
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
 
         // Get color based on log level
         $logLevel = $context['log_level'] ?? 'Error';

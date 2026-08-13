@@ -91,9 +91,19 @@ trait AdminInterfaceTrait
 
     protected function getSiteName()
     {
-        // env > config > resolver (PerSite via SettingResolver) > fallback
-        $this->siteName = env('APP_NAME')
-            ?? config('app.name')
+        // config > resolver (PerSite via SettingResolver) > fallback
+        //
+        // env('APP_NAME') used to lead this chain. It could only ever return
+        // the same value config('app.name') does, or null once the config
+        // cache is built -- so it changed nothing except making the admin
+        // header depend on whether config:cache had run.
+        //
+        // Note that config('app.name') falls back to 'Dixlase' in
+        // config/app.php, so it never returns null and the resolver arm below
+        // is unreachable. Left as-is: giving the per-site name precedence is
+        // a behaviour change, not a cache fix. See the guest layout, which
+        // resolves the other way round.
+        $this->siteName = config('app.name')
             ?? app(SettingResolver::class)->get('site_name')
             ?? 'Dixlase';
         $this->viewParams['site_name'] = $this->siteName;

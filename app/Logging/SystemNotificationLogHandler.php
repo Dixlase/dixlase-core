@@ -150,7 +150,7 @@ class SystemNotificationLogHandler extends AbstractProcessingHandler
     private function generateSubject(LogRecord $record): string
     {
         $levelName = $record->level->name;
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
 
         return __('logging/system_notification_log_handler.system_error_occurred_app_name', ['levelName' => $levelName, 'appName' => $appName]);
     }

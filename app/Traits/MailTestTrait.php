@@ -204,7 +204,7 @@ trait MailTestTrait
         Config::set('mail.mailers.smtp.password', $mailSettings['mail_password'] ?? '');
         Config::set('mail.mailers.smtp.encryption', $mailSettings['mail_encryption'] ?? '');
         Config::set('mail.from.address', $mailSettings['mail_from_address'] ?? '');
-        Config::set('mail.from.name', env('APP_NAME', 'MySoftware'));
+        Config::set('mail.from.name', config('app.name'));
     }
 
     /**
@@ -220,7 +220,7 @@ trait MailTestTrait
         Config::set('mail.mailers.smtp.password', $mailSettings['mail_password'] ?? '');
         Config::set('mail.mailers.smtp.encryption', $mailSettings['mail_encryption'] ?? '');
         Config::set('mail.from.address', $mailSettings['mail_from_address']);
-        Config::set('mail.from.name', $mailSettings['mail_from_name'] ?? env('APP_NAME', 'Dixlase'));
+        Config::set('mail.from.name', $mailSettings['mail_from_name'] ?? config('app.name'));
 
         // Generate verification token
         $verificationToken = \Str::random(64);
@@ -249,7 +249,7 @@ trait MailTestTrait
 
         // Send test email
         try {
-            $fromName = $mailSettings['mail_from_name'] ?? env('APP_NAME', 'Dixlase');
+            $fromName = $mailSettings['mail_from_name'] ?? config('app.name');
 
             Mail::send([], [], function ($message) use ($toEmail, $mailSettings, $fromName, $mailMessage) {
                 $message->to($toEmail)
@@ -407,7 +407,7 @@ trait MailTestTrait
             }
 
             // Get application name
-            $appName = env('APP_NAME', 'Dixlase');
+            $appName = config('app.name');
 
             // Get mail content
             $subject = __('mail-server/test.test_mail.subject');

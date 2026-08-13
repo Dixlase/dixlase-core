@@ -72,7 +72,7 @@ class AdminMemberVerifiedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = env('APP_NAME', 'Dixlase');
+        $appName = config('app.name');
 
         return (new MailMessage())
             ->subject("[{$appName}] ".__('mail.member-notification.admin_notification.member_verified.subject'))
