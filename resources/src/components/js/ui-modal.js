@@ -145,37 +145,50 @@ window.modal = function () {
 window.openModal = function (modalId) {
     const modalElement = document.getElementById(modalId);
 
-    if (modalElement) {
-        // Alpine.jsが初期化されているか確認
-        if (typeof Alpine !== 'undefined' && modalElement._x_dataStack) {
-            // Alpine.jsのデータスタックから最初のコンテキストを取得
-            const alpineData = modalElement._x_dataStack[0];
+    // A missing element is the usual cause of a "the button does nothing"
+    // bug: the trigger is rendered but its modal sits behind a Blade @if
+    // that is currently false, so it is absent from the DOM. Warn instead
+    // of silently no-opping so the mismatch is visible in the console.
+    if (!modalElement) {
+        console.warn(`[ui-modal] openModal('${modalId}'): no element with that id is in the DOM. Its trigger is rendered but the modal is not — check that both share the same Blade @if condition.`);
+        return;
+    }
 
-            if (alpineData && typeof alpineData.open === 'function') {
-                alpineData.open();
-            }
+    // Alpine.jsが初期化されているか確認
+    if (typeof Alpine !== 'undefined' && modalElement._x_dataStack) {
+        // Alpine.jsのデータスタックから最初のコンテキストを取得
+        const alpineData = modalElement._x_dataStack[0];
+
+        if (alpineData && typeof alpineData.open === 'function') {
+            alpineData.open();
+            return;
         }
     }
+
+    console.warn(`[ui-modal] openModal('${modalId}'): element found but its Alpine modal() component is not initialised (open() unavailable).`);
 };
 
 window.closeModal = function (modalId) {
     const modalElement = document.getElementById(modalId);
 
-    if (modalElement) {
-        if (typeof Alpine !== 'undefined' && modalElement._x_dataStack) {
-            const alpineData = modalElement._x_dataStack[0];
-            if (alpineData) {
-                // Force-close: skip the `submitting` guard that close()
-                // applies. That guard exists to stop user-driven close
-                // paths (backdrop click, ESC key) from racing with an
-                // in-flight form submit, and remains in place for those.
-                // Programmatic callers of closeModal() — e.g. a form's
-                // @submit handler that swaps the confirm modal for an
-                // in-progress modal — are deliberately requesting close,
-                // so honour it unconditionally.
-                alpineData.submitting = false;
-                alpineData.show = false;
-            }
+    if (!modalElement) {
+        console.warn(`[ui-modal] closeModal('${modalId}'): no element with that id is in the DOM.`);
+        return;
+    }
+
+    if (typeof Alpine !== 'undefined' && modalElement._x_dataStack) {
+        const alpineData = modalElement._x_dataStack[0];
+        if (alpineData) {
+            // Force-close: skip the `submitting` guard that close()
+            // applies. That guard exists to stop user-driven close
+            // paths (backdrop click, ESC key) from racing with an
+            // in-flight form submit, and remains in place for those.
+            // Programmatic callers of closeModal() — e.g. a form's
+            // @submit handler that swaps the confirm modal for an
+            // in-progress modal — are deliberately requesting close,
+            // so honour it unconditionally.
+            alpineData.submitting = false;
+            alpineData.show = false;
         }
     }
 };
@@ -209,11 +222,13 @@ window.submitModalForm = function (formId) {
     // Firefox 75+, Safari 16+); fall back to submit() if the runtime
     // is older to preserve the previous behaviour rather than no-op.
     const form = document.getElementById(formId);
-    if (form) {
-        if (typeof form.requestSubmit === 'function') {
-            form.requestSubmit();
-        } else {
-            form.submit();
-        }
+    if (!form) {
+        console.warn(`[ui-modal] submitModalForm('${formId}'): no form with that id is in the DOM.`);
+        return;
+    }
+    if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+    } else {
+        form.submit();
     }
 };
