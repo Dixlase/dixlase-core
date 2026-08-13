@@ -236,6 +236,20 @@ class PluginUpdate extends Command
             // `declares.tailwind_content` paths in its new plugin.json.
             app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
+            // Backfill any settings defaults the new plugin version added.
+            // Plugins that opt into ProvidesSettingsDefaultsInterface get
+            // their new keys inserted (insertOrIgnore, so operator-edited
+            // values are untouched); plugins that do not opt in are a no-op.
+            $sync = app(\App\Services\Extension\ExtensionSettingsDefaultsSync::class)
+                ->syncForExtension($livePath, 'plugin');
+            if ($sync['synced_keys'] !== []) {
+                $this->line(sprintf(
+                    'Settings defaults synced into %s: %d key(s).',
+                    $sync['table'],
+                    count($sync['synced_keys']),
+                ));
+            }
+
             // Discard any Blade views compiled against the previous version.
             // Same rationale as PluginRollback / ThemeRollback (which already
             // do this): the swap changed .blade.php files, but the compiled
