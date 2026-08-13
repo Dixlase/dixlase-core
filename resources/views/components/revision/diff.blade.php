@@ -47,6 +47,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 - $restoreRouteName: string — 復元アクションのルート名
 - $noteRouteName: string — メモ更新のルート名
 - $protectRouteName: string — 保護トグルのルート名
+- $canProtect: bool — whether the current member may toggle protection (default true).
+  Pass false when protection requires a stricter role than the screen itself.
 - $parentParams: array — ルートに prepend する親パラメータ
 - $translationPrefix: string — 翻訳キープレフィックス
 --}}
@@ -61,6 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'restoreRouteName',
     'noteRouteName',
     'protectRouteName',
+    'canProtect' => true,
     'parentParams' => [],
     'translationPrefix' => 'admin/front/revisions',
 ])
@@ -70,6 +73,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     // CheckMenuAccess contract as revision/list.blade.php.
     $viewOnly = ! ($menuEditable ?? true);
     $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+
+    // Protection can require a stricter role than the screen it sits on --
+    // see revision/list.blade.php for the reasoning. Defaults to true, so
+    // existing callers are unaffected.
+    $protectDisabled = $viewOnly || ! $canProtect;
+    $protectTooltip = $protectDisabled ? __('common.view_only_action_disabled') : '';
 @endphp
 
 @once
@@ -108,8 +117,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <form action="{{ route($protectRouteName, [...$parentParams, $revision->id]) }}" method="POST">
                 @csrf
                 <button type="submit"
-                        @if($viewOnly) disabled @endif
-                        @if($viewOnly) title="{{ $tooltipText }}" @endif
+                        @if($protectDisabled) disabled @endif
+                        @if($protectDisabled) title="{{ $protectTooltip }}" @endif
                         class="inline-flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed {{ $revision->is_protected
                             ? 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-400 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800'
                             : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700' }}">

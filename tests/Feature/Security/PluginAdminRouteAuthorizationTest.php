@@ -143,26 +143,55 @@ class PluginAdminRouteAuthorizationTest extends TestCase
     }
 
     /**
-     * DixlasePages grants EDITOR the page list and the create form in its
-     * roles.php. The gate resolves the declared key for those, so the grant
-     * survives; the write endpoints carry no declaration and therefore fall
-     * back to ADMIN. That asymmetry is deliberate for now -- restoring EDITOR
-     * writes means the plugin declaring permissions for its write routes, not
-     * the gate guessing which read key a POST belongs to.
+     * When the gate landed, DixlasePages declared only its read screens, so an
+     * editor could open the page list and the create form and then take a 403
+     * on save. The plugin has since declared its write routes, which is the
+     * way the asymmetry was always meant to be resolved: the plugin says what
+     * an editor may do, rather than the gate guessing which read key a POST
+     * belongs to.
+     *
+     * The boundary moved rather than disappeared. Authoring and the deletions
+     * that land in the trash are EDITOR; permanent deletion is not.
      */
-    public function test_editor_keeps_declared_read_access_but_not_undeclared_writes(): void
+    public function test_editor_reaches_declared_authoring_routes(): void
     {
         Auth::login(Member::factory()->create(['role' => MemberRole::EDITOR]));
 
-        $this->assertTrue(
-            $this->passesGate('dixlase-pages::admin.pages.index', 'GET', 'DixlasePages'),
-            'EDITOR is granted pages.index in the plugin roles.php; the gate must honour it.'
-        );
+        foreach ([
+            ['dixlase-pages::admin.pages.index', 'GET'],
+            ['dixlase-pages::admin.pages.store', 'POST'],
+            ['dixlase-pages::admin.pages.update', 'PUT'],
+            ['dixlase-pages::admin.pages.destroy', 'DELETE'],
+            ['dixlase-pages::admin.pages.trash.restore', 'POST'],
+        ] as [$routeName, $method]) {
+            $this->assertTrue(
+                $this->passesGate($routeName, $method, 'DixlasePages'),
+                "{$routeName} is declared EDITOR in the plugin roles.php; the gate must honour it."
+            );
+        }
+    }
 
-        $this->assertFalse(
-            $this->passesGate('dixlase-pages::admin.pages.store', 'POST', 'DixlasePages'),
-            'pages.store carries no declaration, so it must require ADMIN.'
-        );
+    /**
+     * Deletions an editor can take back are theirs; the ones that destroy data
+     * outright are not. These sit under `pages.trash`, which an editor may
+     * open, so they are the pair most likely to drift back to EDITOR by
+     * inheritance.
+     */
+    public function test_editor_cannot_delete_permanently(): void
+    {
+        Auth::login(Member::factory()->create(['role' => MemberRole::EDITOR]));
+
+        foreach ([
+            ['dixlase-pages::admin.pages.trash.empty', 'POST'],
+            ['dixlase-pages::admin.pages.trash.force-destroy', 'DELETE'],
+            ['dixlase-pages::admin.pages.revisions.protect', 'POST'],
+            ['dixlase-pages::admin.pages.settings.update', 'PUT'],
+        ] as [$routeName, $method]) {
+            $this->assertFalse(
+                $this->passesGate($routeName, $method, 'DixlasePages'),
+                "{$routeName} destroys data or widens rights and must stay above EDITOR."
+            );
+        }
     }
 
     /**
