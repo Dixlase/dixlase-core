@@ -235,6 +235,13 @@ class PluginUpdate extends Command
             // `declares.tailwind_content` paths in its new plugin.json.
             app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
+            // Discard any Blade views compiled against the previous version.
+            // Same rationale as PluginRollback / ThemeRollback (which already
+            // do this): the swap changed .blade.php files, but the compiled
+            // storage/framework/views/*.php cache still points at the pre-swap
+            // shape until it is dropped.
+            Artisan::call('view:clear');
+
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
             // Refresh the audit so health / permissions / CSP reflect the new
