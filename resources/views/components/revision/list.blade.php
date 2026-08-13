@@ -47,6 +47,8 @@ Can be reused from plugin/theme by passing the following properties:
 - $showRouteName: string — route name for diff detail screen (e.g. admin.front.revisions.show)
 - $restoreRouteName: string — route name for restore action
 - $protectRouteName: string — route name for protect toggle
+- $canProtect: bool — whether the current member may toggle protection (default true).
+  Pass false when protection requires a stricter role than the screen itself.
 - $parentParams: array — parent parameters to prepend to each route (supports multiple levels)
 - $translationPrefix: string — translation key prefix (e.g. admin/front/revisions)
 --}}
@@ -61,6 +63,7 @@ Can be reused from plugin/theme by passing the following properties:
     'showRouteName',
     'restoreRouteName',
     'protectRouteName',
+    'canProtect' => true,
     'parentParams' => [],
     'translationPrefix' => 'admin/front/revisions',
 ])
@@ -73,6 +76,14 @@ Can be reused from plugin/theme by passing the following properties:
     // submit to; this only handles the UI layer.
     $viewOnly = ! ($menuEditable ?? true);
     $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+
+    // The protect toggle can require a stricter role than the screen it sits
+    // on -- Pages lets an editor read revisions but keeps protection with
+    // ADMIN, because it decides what retention may prune later. $menuEditable
+    // answers for the current route, so it cannot express that on its own.
+    // Defaults to true, so existing callers are unaffected.
+    $protectDisabled = $viewOnly || ! $canProtect;
+    $protectTooltip = $protectDisabled ? __('common.view_only_action_disabled') : '';
 @endphp
 
 <div class="mx-auto">
@@ -137,9 +148,9 @@ Can be reused from plugin/theme by passing the following properties:
                                 <form action="{{ route($protectRouteName, [...$parentParams, $revision->id]) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit"
-                                            @if($viewOnly) disabled @endif
+                                            @if($protectDisabled) disabled @endif
                                             class="{{ $revision->is_protected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 hover:text-blue-600 dark:text-gray-500 dark:hover:text-blue-400' }} disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title="{{ $viewOnly ? $tooltipText : ($revision->is_protected ? __($translationPrefix.'.protect_disable') : __($translationPrefix.'.protect_enable')) }}">
+                                            title="{{ $protectDisabled ? $protectTooltip : ($revision->is_protected ? __($translationPrefix.'.protect_disable') : __($translationPrefix.'.protect_enable')) }}">
                                         <i class="fas {{ $revision->is_protected ? 'fa-shield-halved' : 'fa-shield' }}"></i>
                                         <span class="sr-only">{{ $revision->is_protected ? __($translationPrefix.'.protect_label_on') : __($translationPrefix.'.protect_label_off') }}</span>
                                     </button>
