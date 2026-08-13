@@ -233,6 +233,22 @@ class PluginInstall extends Command
         // assets are already compiled (re-install / unchanged sources).
         $this->buildExtensionAssets($pluginPath, $this->resolveAssetBuildMode());
 
+        // Backfill any settings defaults the plugin declares via
+        // ProvidesSettingsDefaultsInterface. On a fresh install this is
+        // typically a no-op (the plugin's own DatabaseSeeder above already
+        // filled the table) but the contract makes install / update
+        // symmetric, and covers re-installs / --force where the seeder
+        // was skipped or the table was hand-modified. Idempotent by design.
+        $sync = app(\App\Services\Extension\ExtensionSettingsDefaultsSync::class)
+            ->syncForExtension($pluginPath, 'plugin');
+        if ($sync['synced_keys'] !== []) {
+            $this->line(sprintf(
+                'Settings defaults synced into %s: %d key(s).',
+                $sync['table'],
+                count($sync['synced_keys']),
+            ));
+        }
+
         // Confirm plugin activation (only if --enable option is not specified)
         // When running via web, interactive input is not possible, so judge only by presence of --enable option
         if ($this->option('enable')) {

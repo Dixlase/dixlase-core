@@ -236,6 +236,23 @@ class ThemeUpdate extends Command
                 ]);
             }
 
+            // Backfill any settings defaults the new theme version added.
+            // Themes that opt into ProvidesSettingsDefaultsInterface get
+            // their new keys inserted (insertOrIgnore, so operator-edited
+            // values are untouched); themes that do not opt in are a no-op.
+            // Root fix for the dixlase-onepage v0.1.1 → v0.1.2 500 where
+            // new hero_gradient_color_dark keys were declared in code but
+            // never landed as DB rows on already-installed sites.
+            $sync = app(\App\Services\Extension\ExtensionSettingsDefaultsSync::class)
+                ->syncForExtension($livePath, 'theme');
+            if ($sync['synced_keys'] !== []) {
+                $this->line(sprintf(
+                    'Settings defaults synced into %s: %d key(s).',
+                    $sync['table'],
+                    count($sync['synced_keys']),
+                ));
+            }
+
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");
 
             // Refresh the audit so health / permissions / CSP reflect the new
