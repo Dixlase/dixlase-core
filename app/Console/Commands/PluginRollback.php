@@ -129,7 +129,11 @@ class PluginRollback extends Command
             // Keep the recorded version in step with the restored plugin.json.
             $this->syncPluginVersion($plugin, $livePath);
 
-            Artisan::call('view:clear');
+            // Discard compiled Blade against the (now-replaced) source and
+            // pre-compile the restored version so the next request does not
+            // write to storage/framework/views/ mid-navigation (Vite cancels
+            // it in dev — see the helper's class docblock).
+            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
             $this->info("Plugin '{$slug}' rolled back to backup ".basename($backupPath).'.');
             $this->line("Previous (pre-rollback) tree kept at: {$asidePath}");

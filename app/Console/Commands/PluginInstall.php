@@ -43,7 +43,6 @@ use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -254,7 +253,11 @@ class PluginInstall extends Command
         // plugin (relevant for re-install / --force re-install where the
         // .blade.php files were replaced). Update / rollback paths clear the
         // view cache too — this keeps install consistent with them.
-        Artisan::call('view:clear');
+        // Paired with view:cache in CompiledViewCacheRebuilder so the
+        // next request does not write to storage/framework/views/
+        // mid-navigation (Vite cancels the navigation in dev — see
+        // the helper's class docblock).
+        \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
         // Confirm plugin activation (only if --enable option is not specified)
         // When running via web, interactive input is not possible, so judge only by presence of --enable option
