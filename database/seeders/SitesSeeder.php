@@ -47,24 +47,37 @@ class SitesSeeder extends Seeder
      *
      * In v0.1.0 the installation has a single primary site. Additional
      * sites can be created via dls:site:create in later phases.
+     *
+     * Insert-only by design. This used to be an updateOrInsert() that passed
+     * every column, so re-running db:seed on a live installation reset the
+     * site name, slug, host, locale and timezone back to their defaults --
+     * measured: a site named "運用中のサイト名" in Asia/Tokyo came back as
+     * "Main Site" in UTC. Seeders are expected to be re-runnable, so the row
+     * has to be left alone once it exists.
+     *
+     * The name written here is a placeholder for the pre-install window. The
+     * installer overwrites it with the operator's own site name, and
+     * Site::name is the canonical site name from that point on.
      */
     public function run(): void
     {
-        DB::table('sites')->updateOrInsert(
-            ['id' => 1],
-            [
-                'slug' => 'main',
-                'name' => 'Main Site',
-                'description' => null,
-                'host' => null,
-                'path_prefix' => null,
-                'primary_locale' => config('app.locale', 'en'),
-                'timezone' => config('app.timezone', 'UTC'),
-                'is_primary' => true,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
+        if (DB::table('sites')->where('id', 1)->exists()) {
+            return;
+        }
+
+        DB::table('sites')->insert([
+            'id' => 1,
+            'slug' => 'main',
+            'name' => 'Main Site',
+            'description' => null,
+            'host' => null,
+            'path_prefix' => null,
+            'primary_locale' => config('app.locale', 'en'),
+            'timezone' => config('app.timezone', 'UTC'),
+            'is_primary' => true,
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
