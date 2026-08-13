@@ -70,7 +70,11 @@ use Illuminate\Support\Facades\Route;
 $adminUrl = AdminHelper::getAdminUrl();
 
 Route::prefix($adminUrl)->name('admin.')
-    ->middleware(['admin.ip']) // Apply only the IP address filter first
+    // `admin.no-cache` is applied at the outer group so it covers
+    // login / password-reset / verification endpoints as well as the
+    // authenticated inner group. Those pages carry CSRF tokens and
+    // per-request state that must not be reused across visits.
+    ->middleware(['admin.ip', 'admin.no-cache'])
     ->group(function () {
         Route::get('/', function () {
             $member = Auth::guard('member')->user();
