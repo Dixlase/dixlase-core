@@ -259,8 +259,12 @@ class ThemeUpdate extends Command
             // storage/framework/views/*.php cache still points at the pre-swap
             // shape until it is dropped. Operators saw the pre-update sidebar
             // after a theme update because of this — filed as the sandbox
-            // 2026-08-13 stale-view incident.
-            Artisan::call('view:clear');
+            // 2026-08-13 stale-view incident. Paired with view:cache
+            // in CompiledViewCacheRebuilder so the next request does
+            // not write to storage/framework/views/ mid-navigation
+            // (Vite cancels the navigation in dev — see the helper's
+            // class docblock).
+            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");
 

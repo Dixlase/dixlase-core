@@ -251,7 +251,12 @@ class CoreRollback extends Command
             $this->line('Clearing caches...');
             Artisan::call('config:clear');
             Artisan::call('route:clear');
-            Artisan::call('view:clear');
+            // view:clear + view:cache via the shared helper. The rebuild
+            // step avoids the dev-env "click a menu, land back on the
+            // same page" symptom (Vite watches storage/framework/views/
+            // during `npm run dev` and cancels any navigation whose
+            // Blade view compiles on demand mid-flight).
+            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
             Artisan::call('cache:clear');
 
             // Round 5 Finding D residual: refresh the PHP-FPM SAPI
