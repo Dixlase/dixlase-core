@@ -295,6 +295,22 @@ class ThemeInstall extends Command
             'theme' => $themeDirName,
         ]);
 
+        // Backfill any settings defaults the theme declares via
+        // ProvidesSettingsDefaultsInterface. On a fresh install this is
+        // typically a no-op (the theme's own DatabaseSeeder above already
+        // filled the table) but the contract makes install / update
+        // symmetric, and covers re-installs / --force where the seeder
+        // was skipped or the table was hand-modified. Idempotent by design.
+        $sync = app(\App\Services\Extension\ExtensionSettingsDefaultsSync::class)
+            ->syncForExtension($themeDir, 'theme');
+        if ($sync['synced_keys'] !== []) {
+            $this->line(sprintf(
+                'Settings defaults synced into %s: %d key(s).',
+                $sync['table'],
+                count($sync['synced_keys']),
+            ));
+        }
+
         $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
         $this->info(__('admin/command/theme-install.activate_help', ['themeName' => $themeName]));
 

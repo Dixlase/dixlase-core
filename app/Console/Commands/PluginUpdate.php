@@ -235,6 +235,20 @@ class PluginUpdate extends Command
             // `declares.tailwind_content` paths in its new plugin.json.
             app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
 
+            // Backfill any settings defaults the new plugin version added.
+            // Plugins that opt into ProvidesSettingsDefaultsInterface get
+            // their new keys inserted (insertOrIgnore, so operator-edited
+            // values are untouched); plugins that do not opt in are a no-op.
+            $sync = app(\App\Services\Extension\ExtensionSettingsDefaultsSync::class)
+                ->syncForExtension($livePath, 'plugin');
+            if ($sync['synced_keys'] !== []) {
+                $this->line(sprintf(
+                    'Settings defaults synced into %s: %d key(s).',
+                    $sync['table'],
+                    count($sync['synced_keys']),
+                ));
+            }
+
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
             // Refresh the audit so health / permissions / CSP reflect the new
