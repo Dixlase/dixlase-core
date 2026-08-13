@@ -253,6 +253,15 @@ class ThemeUpdate extends Command
                 ));
             }
 
+            // Discard any Blade views compiled against the previous version.
+            // Same rationale as PluginRollback / ThemeRollback (which already
+            // do this): the swap changed .blade.php files, but the compiled
+            // storage/framework/views/*.php cache still points at the pre-swap
+            // shape until it is dropped. Operators saw the pre-update sidebar
+            // after a theme update because of this — filed as the sandbox
+            // 2026-08-13 stale-view incident.
+            Artisan::call('view:clear');
+
             $this->info("Theme '{$slug}' updated to v{$release->version} successfully.");
 
             // Refresh the audit so health / permissions / CSP reflect the new

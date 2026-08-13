@@ -311,6 +311,12 @@ class ThemeInstall extends Command
             ));
         }
 
+        // Discard any Blade views compiled against a prior version of this
+        // theme (relevant for re-install / --force re-install where the
+        // .blade.php files were replaced). Update / rollback paths clear the
+        // view cache too — this keeps install consistent with them.
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+
         $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
         $this->info(__('admin/command/theme-install.activate_help', ['themeName' => $themeName]));
 

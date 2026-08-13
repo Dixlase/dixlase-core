@@ -38,7 +38,6 @@
 namespace App\Traits;
 
 use App\Contracts\Repositories\SiteSettingRepositoryInterface;
-use App\Services\Site\SettingResolver;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -91,21 +90,17 @@ trait AdminInterfaceTrait
 
     protected function getSiteName()
     {
-        // config > resolver (PerSite via SettingResolver) > fallback
+        // The admin chrome shows the *application* name, which is what the
+        // "Application Name" field in Settings > Base writes. Site-facing
+        // display names are Site::name, per the scope comments on both
+        // settings in CoreSettingDefinitions.
         //
-        // env('APP_NAME') used to lead this chain. It could only ever return
-        // the same value config('app.name') does, or null once the config
-        // cache is built -- so it changed nothing except making the admin
-        // header depend on whether config:cache had run.
-        //
-        // Note that config('app.name') falls back to 'Dixlase' in
-        // config/app.php, so it never returns null and the resolver arm below
-        // is unreachable. Left as-is: giving the per-site name precedence is
-        // a behaviour change, not a cache fix. See the guest layout, which
-        // resolves the other way round.
-        $this->siteName = config('app.name')
-            ?? app(SettingResolver::class)->get('site_name')
-            ?? 'Dixlase';
+        // This chain used to read env('APP_NAME') and then a per-site
+        // site_name from SettingResolver. Neither arm could ever run:
+        // config/app.php gives 'app.name' a 'Dixlase' fallback, so it never
+        // returns null and the ?? chain stops on the first term. Keeping the
+        // arms suggested a per-site precedence that was never in effect.
+        $this->siteName = config('app.name');
         $this->viewParams['site_name'] = $this->siteName;
     }
 

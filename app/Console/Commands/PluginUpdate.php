@@ -46,6 +46,7 @@ use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
@@ -248,6 +249,13 @@ class PluginUpdate extends Command
                     count($sync['synced_keys']),
                 ));
             }
+
+            // Discard any Blade views compiled against the previous version.
+            // Same rationale as PluginRollback / ThemeRollback (which already
+            // do this): the swap changed .blade.php files, but the compiled
+            // storage/framework/views/*.php cache still points at the pre-swap
+            // shape until it is dropped.
+            Artisan::call('view:clear');
 
             $this->info("Plugin '{$slug}' updated to v{$release->version} successfully.");
 
