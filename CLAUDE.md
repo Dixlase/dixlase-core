@@ -115,6 +115,11 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - If `git log HEAD..origin/<base>` has unfetched commits, fast-forward / rebase the local base first, then branch
 - Skipping this step is the #1 cause of duplicate-implementation PRs that re-do already-merged changes
 
+### Pull Request Number in Merge / Squash Commits
+- When a change lands through a pull request, the **PR number (`#N`) must appear in the resulting merge or squash commit subject** — every commit in `main`'s history should be traceable back to its PR by number.
+  - GitHub's *Create a merge commit* (`Merge pull request #N from …`) and *Squash and merge* (`<subject> (#N)`) both include `#N` by default. Keep that default; never strip it or rewrite the subject without it.
+  - When you merge a PR's branch locally instead (`git merge <branch>`), add the number to the message yourself — a trailing `(#N)` on the subject, or a `PR #N` / `Closes #N` line in the body.
+
 ### Git Investigation Tools — `git log -S` does not detect in-file moves
 - When investigating "who recently changed X", `git log -S '<term>'` (pickaxe) only catches commits where the **occurrence count** of the string changed
 - If a config entry simply **moved within the same file** (e.g., an SPDX identifier moved from the refused list to the accepted list), `-S` shows nothing — the occurrence count is unchanged
