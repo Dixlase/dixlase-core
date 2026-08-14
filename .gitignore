@@ -47,7 +47,9 @@ composer.local.json
 # dls:claude:setup. Tracking it also makes rule changes reviewable as diffs —
 # a wrong rule once propagated to 13 plugins unnoticed because it was not.
 # .claude/ and .mcp.json stay ignored: they carry symlinks and machine paths.
-# CLAUDE.ja.md is covered by the *.ja.md rule below.
+# CLAUDE.ja.md is tracked too (allowlisted below) so Japanese-reading
+# contributors get the same conventions; keep it in sync with CLAUDE.md via
+# dls:claude:setup --lang=all.
 CLAUDE.local.md
 AGENTS.md
 PLUGIN-API.md
@@ -76,6 +78,7 @@ PLUGIN-API.md
 !TRADEMARK-POLICY.ja.md
 !README.ja.md
 !SECURITY.ja.md
+!CLAUDE.ja.md
 
 # Dixlase custom
 # Directory for custom override files
