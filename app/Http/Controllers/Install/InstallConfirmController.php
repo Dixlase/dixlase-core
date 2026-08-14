@@ -768,7 +768,14 @@ class InstallConfirmController extends BaseInstallController
             ]
         );
 
-        $currentVersion = (string) config('app.version', '0.1.0');
+        // Baseline the ledger to the actual on-disk VERSION file, not
+        // config('app.version'). The latter is unset in shipped releases,
+        // so it collapsed to the '0.1.0' default and recorded a bogus
+        // baseline: the admin then showed the wrong "current version" and
+        // VersionDriftService flagged drift (VERSION 0.3.x vs ledger 0.1.0).
+        // Fall back to config only when no VERSION file is present.
+        $currentVersion = \App\Services\Core\CoreUpdater::readVersionFromDisk()
+            ?? (string) config('app.version', '0.1.0');
         DB::table('core_version_history')->insert([
             'old_version' => null,
             'new_version' => $currentVersion,
