@@ -363,8 +363,13 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      *
      * Mirrors PluginSigner's parser: a line beginning with `!` is a
      * re-include that overrides a previously-matched exclude pattern,
-     * matching git's own semantics (e.g. `/resources/assets/*` followed
-     * by `!/resources/assets/thumbnail.*` re-includes the thumbnail).
+     * matching git's own semantics (e.g. `/build/*` followed by
+     * `!/build/keep.txt` re-includes the whitelisted file). Handy for
+     * the "ignore an output directory but keep one hand-authored file
+     * inside it" pattern, though extensions should generally place
+     * hand-authored files outside build-output directories to avoid
+     * the exception dance entirely (see the extension thumbnail path
+     * convention).
      *
      * @return array{exclude: array<string>, include: array<string>}
      */
