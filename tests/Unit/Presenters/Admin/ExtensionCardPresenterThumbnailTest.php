@@ -30,14 +30,19 @@ use Tests\TestCase;
 /**
  * Pins the thumbnail-URL contract in ExtensionCardPresenter.
  *
- * The presenter checks for `thumbnail.{webp,png,jpg,jpeg}` inside an
- * extension's `resources/assets/` directory and returns the URL to the
- * admin thumbnail endpoint when any format is present; otherwise the
- * bundled default SVG is returned so the card view still renders a
- * generic placeholder.
+ * The presenter checks for `thumbnail.{webp,png,jpg,jpeg}` at TWO
+ * source locations inside an extension's directory:
+ *
+ *   1. `{type}/{directory}/thumbnail.<ext>` (recommended, ext root)
+ *   2. `{type}/{directory}/resources/assets/thumbnail.<ext>` (legacy)
+ *
+ * When any format is present in either location the URL to the admin
+ * thumbnail endpoint is returned; otherwise the bundled default SVG is
+ * returned so the card view still renders a generic placeholder.
  *
  * The endpoint URL is intentionally format-agnostic — extension picking
- * (webp > png > jpg > jpeg) is a controller-side concern pinned by
+ * (webp > png > jpg > jpeg) AND source-location picking (root wins over
+ * legacy when both exist) are controller-side concerns pinned by
  * `AdminExtensionThumbnailControllerFormatPriorityTest`.
  */
 class ExtensionCardPresenterThumbnailTest extends TestCase
@@ -118,19 +123,68 @@ class ExtensionCardPresenterThumbnailTest extends TestCase
         $this->assertStringEndsWith('assets/images/plugin-default.svg', $url);
     }
 
-    public function test_probes_resources_assets_not_extension_root(): void
+    public function test_recognises_extension_root_location(): void
     {
+        // The recommended thumbnail location — sits alongside plugin.json
+        // / theme.json at the extension root, safe from vite / other
+        // build tools that empty resources/assets/ before writing new
+        // build output. Must be recognised by the presenter as a
+        // "thumbnail available" signal in its own right, independent
+        // of anything in resources/assets/.
         $rootFile = base_path('plugins/'.self::PLUGIN_FIXTURE.'/thumbnail.png');
         $this->ensureDirectory(dirname($rootFile));
         file_put_contents($rootFile, 'png-bytes');
 
         $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
 
-        $this->assertStringEndsWith(
-            'assets/images/plugin-default.svg',
+        $this->assertSame(
+            route('admin.settings.extension-thumbnail', ['type' => 'plugins', 'directory' => self::PLUGIN_FIXTURE]),
             $url,
-            'a thumbnail.png placed at the extension root must not be matched; only resources/assets/ counts',
+            'thumbnail.png at the extension root must be recognised as available (recommended location)',
         );
+    }
+
+    public function test_root_location_takes_precedence_over_legacy_within_same_format(): void
+    {
+        // When BOTH the recommended (extension root) and legacy
+        // (resources/assets/) locations carry a thumbnail of the same
+        // format, the presenter returns the same route URL either way
+        // (the URL is format-agnostic and location-agnostic), but the
+        // controller — which reads the actual bytes — picks the root
+        // location. Presenter-side we only assert "URL was emitted".
+        // Precedence at the byte level lives in the controller test.
+        $this->writePluginThumbnail('png');
+        $rootFile = base_path('plugins/'.self::PLUGIN_FIXTURE.'/thumbnail.png');
+        file_put_contents($rootFile, 'png-bytes-root');
+
+        $url = $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg');
+
+        $this->assertSame(
+            route('admin.settings.extension-thumbnail', ['type' => 'plugins', 'directory' => self::PLUGIN_FIXTURE]),
+            $url,
+            'either location present is enough for the presenter to emit the endpoint URL',
+        );
+    }
+
+    public function test_recognises_every_supported_format_at_extension_root(): void
+    {
+        $expected = route('admin.settings.extension-thumbnail', [
+            'type' => 'plugins',
+            'directory' => self::PLUGIN_FIXTURE,
+        ]);
+
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $format) {
+            $this->removeFixtures();
+            $rootFile = base_path('plugins/'.self::PLUGIN_FIXTURE.'/thumbnail.'.$format);
+            $this->ensureDirectory(dirname($rootFile));
+            file_put_contents($rootFile, "fixture:{$format}");
+
+            $this->assertSame(
+                $expected,
+                $this->callResolver('plugins', self::PLUGIN_FIXTURE, 'assets/images/plugin-default.svg'),
+                "extension-root thumbnail.{$format} must be recognised on its own",
+            );
+        }
     }
 
     public function test_resolves_themes_with_their_own_default_svg(): void
