@@ -536,9 +536,8 @@ class ExtensionCardPresenter
 
     /**
      * Resolve the thumbnail URL for an installed extension by probing
-     * common image formats inside `{type}/{directory}/resources/assets/`.
-     * Falls back to the bundled default SVG when none of the candidates
-     * exist on disk.
+     * common image formats. Falls back to the bundled default SVG when
+     * none of the candidates exist on disk.
      *
      * The URL points at the `settings.extension-thumbnail` route — a
      * dedicated admin endpoint that streams the image file directly. The
@@ -549,8 +548,22 @@ class ExtensionCardPresenter
      * (or freshly-installed-not-yet-enabled) extension on the card list.
      * Serving the thumbnail through a controller decouples the two.
      *
-     * Extension priority — modern/small first so authors get the smaller
-     * download when they ship multiple formats:
+     * Source locations are probed in this order:
+     *
+     *   1. `{type}/{directory}/thumbnail.{ext}`
+     *      Recommended — the file sits alongside `plugin.json` /
+     *      `theme.json` at the extension root, is never touched by any
+     *      build tool (vite/webpack empty their outDir, which was
+     *      historically the same directory as the legacy path below),
+     *      and uses the same convention for plugins and themes.
+     *   2. `{type}/{directory}/resources/assets/thumbnail.{ext}`
+     *      Legacy — kept for backward compatibility so existing
+     *      extensions that ship the thumbnail under the built-assets
+     *      directory continue to render. Extensions using this path
+     *      should migrate to the root location when convenient.
+     *
+     * Image format priority — modern/small first so authors get the
+     * smaller download when they ship multiple formats:
      *
      *   webp > png > jpg > jpeg
      *
@@ -561,12 +574,16 @@ class ExtensionCardPresenter
     private static function resolveExtensionThumbnailUrl(string $type, string $directory, string $defaultSvg): string
     {
         foreach (['webp', 'png', 'jpg', 'jpeg'] as $extension) {
-            $relativePath = "{$type}/{$directory}/resources/assets/thumbnail.{$extension}";
-            if (file_exists(base_path($relativePath))) {
-                return route('admin.settings.extension-thumbnail', [
-                    'type' => $type,
-                    'directory' => $directory,
-                ]);
+            foreach ([
+                "{$type}/{$directory}/thumbnail.{$extension}",                 // recommended (extension root)
+                "{$type}/{$directory}/resources/assets/thumbnail.{$extension}", // legacy (built-assets dir)
+            ] as $relativePath) {
+                if (file_exists(base_path($relativePath))) {
+                    return route('admin.settings.extension-thumbnail', [
+                        'type' => $type,
+                        'directory' => $directory,
+                    ]);
+                }
             }
         }
 
