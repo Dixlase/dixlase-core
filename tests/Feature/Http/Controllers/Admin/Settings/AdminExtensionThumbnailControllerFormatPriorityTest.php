@@ -86,6 +86,61 @@ class AdminExtensionThumbnailControllerFormatPriorityTest extends TestCase
         $this->assertSame($expectedMime, $response->headers->get('Content-Type'));
     }
 
+    public function test_serves_extension_root_thumbnail_when_only_root_present(): void
+    {
+        // Recommended location — sits alongside plugin.json / theme.json,
+        // safe from build tools that empty resources/assets/ before writing
+        // new build output. Must be served even when resources/assets/
+        // does not exist at all.
+        $this->writePluginRootThumbnail('png', 'root-bytes');
+
+        $response = $this->invokeShow('plugins', self::PLUGIN_FIXTURE);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('image/png', $response->headers->get('Content-Type'));
+        // BinaryFileResponse streams from disk; the bytes must be the
+        // ones we wrote at the recommended location, not the legacy one.
+        $bytes = $this->readResponseBody($response);
+        $this->assertSame('root-bytes', $bytes);
+    }
+
+    public function test_extension_root_wins_over_legacy_resources_assets(): void
+    {
+        // Both locations carry a thumbnail of the same format. Controller
+        // must prefer the recommended location — the byte content proves
+        // which file was actually opened. Same-format-both-locations is
+        // the typical migration state (extension author dropped the new
+        // file at the root, has not yet removed the old one).
+        $this->writePluginRootThumbnail('png', 'root-bytes');
+        $this->writePluginThumbnail('png', 'legacy-bytes');
+
+        $response = $this->invokeShow('plugins', self::PLUGIN_FIXTURE);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('image/png', $response->headers->get('Content-Type'));
+        $this->assertSame(
+            'root-bytes',
+            $this->readResponseBody($response),
+            'recommended (extension root) location must win over legacy (resources/assets/) location',
+        );
+    }
+
+    public function test_format_priority_holds_across_locations(): void
+    {
+        // A webp at the legacy path outranks a png at the recommended
+        // path — format priority is the OUTER loop, source location is
+        // the INNER loop, so webp always beats png regardless of where
+        // each format sits. Pins the loop nesting.
+        $this->writePluginRootThumbnail('png', 'root-png-bytes');
+        $this->writePluginThumbnail('webp', 'legacy-webp-bytes');
+
+        $response = $this->invokeShow('plugins', self::PLUGIN_FIXTURE);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('image/webp', $response->headers->get('Content-Type'));
+        $this->assertSame('legacy-webp-bytes', $this->readResponseBody($response));
+    }
+
     public function test_returns_404_when_no_thumbnail_file_present(): void
     {
         // No fixture files written — the directory itself doesn't exist.
@@ -139,7 +194,7 @@ class AdminExtensionThumbnailControllerFormatPriorityTest extends TestCase
         return $controller->show($request, $type, $directory);
     }
 
-    private function writePluginThumbnail(string $extension): void
+    private function writePluginThumbnail(string $extension, string $body = null): void
     {
         $dir = base_path('plugins/'.self::PLUGIN_FIXTURE.'/resources/assets');
         if (! is_dir($dir)) {
@@ -147,7 +202,34 @@ class AdminExtensionThumbnailControllerFormatPriorityTest extends TestCase
         }
         // A minimal PNG-ish body is fine — the controller streams bytes
         // as-is; content validity is not asserted, only the selection.
-        file_put_contents("{$dir}/thumbnail.{$extension}", "fixture:{$extension}");
+        file_put_contents("{$dir}/thumbnail.{$extension}", $body ?? "fixture:{$extension}");
+    }
+
+    /**
+     * Write a thumbnail at the RECOMMENDED extension-root location
+     * (alongside plugin.json) rather than the legacy resources/assets/
+     * path. Used to pin the "root wins over legacy" precedence.
+     */
+    private function writePluginRootThumbnail(string $extension, string $body = null): void
+    {
+        $dir = base_path('plugins/'.self::PLUGIN_FIXTURE);
+        if (! is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+        file_put_contents("{$dir}/thumbnail.{$extension}", $body ?? "fixture-root:{$extension}");
+    }
+
+    /**
+     * Read the streamed body of a BinaryFileResponse without leaving
+     * bytes on stdout. sendContent() writes to PHP's output buffer,
+     * so we wrap it in ob_start / ob_get_clean to capture and return.
+     */
+    private function readResponseBody(\Symfony\Component\HttpFoundation\Response $response): string
+    {
+        ob_start();
+        $response->sendContent();
+
+        return (string) ob_get_clean();
     }
 
     private function removeFixtures(): void

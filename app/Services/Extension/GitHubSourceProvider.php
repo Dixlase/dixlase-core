@@ -531,10 +531,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     /**
      * Fetch the raw thumbnail bytes for an extension in this GitHub source.
      *
-     * Probes `resources/assets/thumbnail.{ext}` first (where installed
-     * extensions ship their thumbnail) and only then a manifest-declared
-     * path or the legacy repo-root `thumbnail.{ext}` / `screenshot.{ext}`
-     * fallback, so a plugin author who follows the standard layout does
+     * Probes `thumbnail.{ext}` at the repo root first (recommended —
+     * matches the extension-root location the installed
+     * AdminExtensionThumbnailController now prefers) and only then a
+     * manifest-declared path or the legacy `resources/assets/thumbnail.{ext}`
+     * layout, so a plugin author who follows the standard layout does
      * not need to declare anything. Extensions are checked in `webp,
      * png, jpg, jpeg` priority order — modern/small first.
      *
@@ -555,10 +556,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         // Candidate paths, in priority order.
         $candidates = [];
 
-        // Standard installed-layout path — same location the local
-        // AdminExtensionThumbnailController reads from.
+        // Recommended location — extension repo root, alongside
+        // plugin.json / theme.json. Safe from every build tool's
+        // outDir wipe (nothing writes to the repo root during build).
         foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-            $candidates[] = "resources/assets/thumbnail.{$ext}";
+            $candidates[] = "thumbnail.{$ext}";
         }
 
         // Manifest-declared override (`plugin.json` / `theme.json`).
@@ -569,10 +571,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             $candidates[] = $declared;
         }
 
-        // Legacy root fallback — the previous URL scheme pointed here
-        // and some existing repos still ship the image at the root.
+        // Legacy location — same built-assets path older extensions
+        // ship the thumbnail under. Kept probed so existing repos do
+        // not need to move the file before the next release.
         foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-            $candidates[] = "thumbnail.{$ext}";
+            $candidates[] = "resources/assets/thumbnail.{$ext}";
         }
         if ($extensionType === 'theme') {
             foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
