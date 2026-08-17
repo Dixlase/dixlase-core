@@ -2,7 +2,7 @@
     "name": "Dixlase CMS",
     "package_name": "dixlase/dixlase",
     "slug": "dixlase",
-    "version": "0.1.0",
+    "version": "0.3.26",
     "description": {
         "ja": "モダンで拡張性の高いPHP製CMSフレームワーク",
         "en": "Modern and extensible PHP CMS framework"

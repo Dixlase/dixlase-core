@@ -31,8 +31,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Serve `resources/assets/thumbnail.{webp,png,jpg,jpeg}` for an installed
- * plugin or theme, decoupled from the `public/assets/{plugins,themes}/{Dir}`
+ * Serve `thumbnail.{webp,png,jpg,jpeg}` for an installed plugin or
+ * theme, decoupled from the `public/assets/{plugins,themes}/{Dir}`
  * symlink whose lifecycle is tied to enable/disable.
  *
  * The plugin / theme admin lists want to show the extension's bundled
@@ -40,9 +40,21 @@ use Symfony\Component\HttpFoundation\Response;
  * for the whole time it is disabled — but the enable/disable symlink is
  * intentionally scoped to runtime asset exposure (JS / CSS from a disabled
  * plugin should stop being web-served). Reading the file directly from
- * `plugins/{Dir}/resources/assets/thumbnail.*` sidesteps the symlink and
- * lets the card image stay visible for every installed extension without
- * changing that runtime posture.
+ * the extension's own directory sidesteps the symlink and lets the card
+ * image stay visible for every installed extension without changing that
+ * runtime posture.
+ *
+ * Source locations are probed in this order:
+ *
+ *   1. `plugins/{Dir}/thumbnail.<ext>` — recommended (extension root)
+ *   2. `plugins/{Dir}/resources/assets/thumbnail.<ext>` — legacy
+ *
+ * The root-level location is preferred because `resources/assets/` is
+ * the vite `outDir` for themes and equivalent for plugins, which build
+ * tools empty before writing new output. Placing the thumbnail at the
+ * extension root keeps it safe across every `npm run build` and works
+ * for extensions with no build step at all. The legacy path stays
+ * probed so existing extensions do not need to migrate.
  *
  * Only image files named exactly `thumbnail.<ext>` are served. Anything
  * else — `plugin.json`, `composer.json`, `signature.sig`, arbitrary
@@ -73,8 +85,23 @@ class AdminExtensionThumbnailController extends Controller
         }
 
         foreach (self::EXTENSIONS as $extension) {
-            $absolute = base_path("{$type}/{$directory}/resources/assets/thumbnail.{$extension}");
-            if (! is_file($absolute)) {
+            // Recommended (extension root) first, then legacy
+            // built-assets path for backward compatibility. Kept in
+            // sync with ExtensionCardPresenter::resolveExtensionThumbnailUrl
+            // so the presenter that decided a thumbnail is available
+            // and this controller that streams the bytes probe the
+            // same paths in the same order.
+            $absolute = null;
+            foreach ([
+                base_path("{$type}/{$directory}/thumbnail.{$extension}"),
+                base_path("{$type}/{$directory}/resources/assets/thumbnail.{$extension}"),
+            ] as $candidate) {
+                if (is_file($candidate)) {
+                    $absolute = $candidate;
+                    break;
+                }
+            }
+            if ($absolute === null) {
                 continue;
             }
 
