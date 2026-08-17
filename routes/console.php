@@ -61,6 +61,28 @@ Schedule::command('dls:integrity:scan --scheduled')
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/integrity-scan.log'));
 
+// Audit log hash chain (runs hourly)
+//
+// Links pending audit log entries into the hash chain. Entries stay unprotected
+// until they are chained, so this interval is the tamper-detection blind spot.
+Schedule::command('audit:integrity build')
+    ->hourly()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/audit-integrity.log'));
+
+// Audit log daily seal (runs daily at 3:30 AM)
+//
+// Signs each completed day with an HMAC seal. Runs after the file integrity scan
+// so the two integrity jobs do not overlap. Days already sealed are skipped, and
+// any unchained entries for the target day are chained first, so a missed run is
+// recovered on the next one.
+Schedule::command('audit:integrity seal')
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/audit-integrity.log'));
+
 // Maintenance mode auto-release check (runs every minute)
 Schedule::command('maintenance:check-auto-release')
     ->everyMinute()
