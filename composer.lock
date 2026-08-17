@@ -667,12 +667,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Dixlase/theme-dixlase-onepage.git",
-                "reference": "b216d00ab7abd285dfde365113d13fb62e89d8a8"
+                "reference": "b63b0ae61b4dfc834f1980c21b720cb45d992c96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/b216d00ab7abd285dfde365113d13fb62e89d8a8",
-                "reference": "b216d00ab7abd285dfde365113d13fb62e89d8a8",
+                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/b63b0ae61b4dfc834f1980c21b720cb45d992c96",
+                "reference": "b63b0ae61b4dfc834f1980c21b720cb45d992c96",
                 "shasum": ""
             },
             "require": {
@@ -707,10 +707,10 @@
             ],
             "description": "Dixlase OnePage theme - Plugin-driven single page / landing page theme",
             "support": {
-                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/main",
+                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/v0.1.4",
                 "issues": "https://github.com/Dixlase/theme-dixlase-onepage/issues"
             },
-            "time": "2026-08-16T16:03:22+00:00"
+            "time": "2026-08-17T12:17:47+00:00"
         },
         {
             "name": "doctrine/inflector",
