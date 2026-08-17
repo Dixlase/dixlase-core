@@ -1,15 +1,15 @@
 {
-    "name": "Dixlase CMS",
-    "package_name": "dixlase/dixlase",
+    "name": "Dixlase",
+    "package_name": "dixlase/dixlase-core",
     "slug": "dixlase",
     "version": "0.3.26",
     "description": {
-        "ja": "モダンで拡張性の高いPHP製CMSフレームワーク",
-        "en": "Modern and extensible PHP CMS framework"
+        "ja": "日本発のオープンソース CMS。守りはコアで固め、表現はプラグイン・テーマで自由に伸ばす、長期運用向けの設計。",
+        "en": "Open-source CMS from Japan. Hardened defenses in the core, free expression through plugins and themes, designed around long-term operation."
     },
     "author": "exc-D inc.",
     "email": "info@dixlase.org",
-    "url": "https://exc-d.com",
+    "url": "https://dixlase.org",
     "license": "AGPL-3.0-or-later WITH Dixlase-Plugin-Exception-1.0",
     "license_name": "GNU Affero General Public License v3.0 with Dixlase Plugin and Theme Exception",
     "license_url": "https://www.gnu.org/licenses/agpl-3.0.html",
@@ -26,14 +26,17 @@
         "admin_panel": true,
         "two_factor_auth": true,
         "webauthn": true,
-        "captcha": true
+        "captcha": true,
+        "audit_log": true,
+        "site_health": true,
+        "on_premise": true,
+        "signature_verification": true
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/exc-d/dixlase"
+        "url": "https://github.com/Dixlase/dixlase-core"
     },
     "support": {
-        "docs": "https://docs.dixlase.com",
-        "issues": "https://github.com/exc-d/dixlase/issues"
+        "issues": "https://github.com/Dixlase/dixlase-core/issues"
     }
 }
