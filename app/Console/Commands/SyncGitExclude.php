@@ -72,6 +72,34 @@ class SyncGitExclude extends Command
     }
 
     /**
+     * Whether .git/info/exclude can be written.
+     *
+     * On deployments that keep .git owned by the host user — e.g. the Docker
+     * installer chowns the app tree to www-data but excludes .git so
+     * host-side `git` keeps working — the app process cannot write
+     * .git/info/exclude. That is an expected condition, not an error: the
+     * .gitignore fallback (GitIgnoreHelper) covers the same extension
+     * exclusion hygiene.
+     */
+    protected function isExcludeWritable(): bool
+    {
+        $path = $this->getExcludeFilePath();
+
+        if (File::exists($path)) {
+            return is_writable($path);
+        }
+
+        // The file would be created; the nearest existing ancestor dir must
+        // be writable for that to succeed.
+        $dir = dirname($path);
+        while (! File::exists($dir)) {
+            $dir = dirname($dir);
+        }
+
+        return is_writable($dir);
+    }
+
+    /**
      * Execute the console command.
      */
     public function handle(): int
@@ -81,6 +109,19 @@ class SyncGitExclude extends Command
             $this->error(__('admin/command/git-sync.git_not_found'));
 
             return self::FAILURE;
+        }
+
+        // Skip quietly when .git/info/exclude is not writable. This is normal
+        // on deployments that keep .git owned by the host user (so host-side
+        // git still works); the .gitignore fallback covers the same exclusion
+        // hygiene. Return SUCCESS and log at info level so an extension
+        // install/update/delete does not log an ERROR — which would fire a
+        // system-error notification — over a non-critical, expected write.
+        if (! $this->isExcludeWritable()) {
+            $this->warn(__('admin/command/git-sync.exclude_not_writable'));
+            Log::info('Skipped .git/info/exclude sync: not writable (host-owned .git); .gitignore fallback covers exclusion.');
+
+            return self::SUCCESS;
         }
 
         // Single operation mode

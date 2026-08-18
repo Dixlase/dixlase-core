@@ -35,6 +35,7 @@
 
 return [
     'git_not_found' => 'Git repository not found. .git directory does not exist.',
+    'exclude_not_writable' => '.git/info/exclude is not writable (host-owned .git); skipping. The .gitignore fallback covers extension exclusion.',
     'gitignore_not_found' => '.gitignore file not found.',
     'scanning' => 'Scanning directories...',
     'plugins_found' => 'Plugin directories found:',
