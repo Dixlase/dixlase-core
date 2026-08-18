@@ -35,6 +35,7 @@
 
 return [
     'git_not_found' => 'Gitリポジトリが見つかりません。.gitディレクトリが存在しません。',
+    'exclude_not_writable' => '.git/info/exclude に書き込めません（.git がホスト所有）。スキップします。拡張機能の除外は .gitignore フォールバックで担保されます。',
     'gitignore_not_found' => '.gitignoreファイルが見つかりません。',
     'scanning' => 'ディレクトリをスキャン中...',
     'plugins_found' => 'プラグインディレクトリ:',
