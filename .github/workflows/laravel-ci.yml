@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Composer（PHP）セットアップ
       - name: Setup PHP
@@ -53,7 +53,7 @@ jobs:
           extensions: mbstring, intl, pdo_mysql, fileinfo, ctype, curl, dom, json, openssl, tokenizer, xml
 
       - name: Cache Composer
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.composer/cache/files
@@ -69,13 +69,13 @@ jobs:
 
       # Node（Vite/Tailwind）セットアップ
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache npm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.npm
@@ -157,7 +157,7 @@ jobs:
           ls -lh "$ZIP_NAME"
 
       - name: Upload artifact (for CI browsing)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ env.ZIP_NAME }}
           path: ${{ env.ZIP_NAME }}
@@ -166,7 +166,7 @@ jobs:
 
       # GitHub Release 作成＋ZIP 添付
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.version != '' && inputs.version || github.ref_name }}
           name: ${{ inputs.version != '' && inputs.version || github.ref_name }}
@@ -189,7 +189,7 @@ jobs:
         \  ssh-keyscan -p \"${{ secrets.SSH_PORT }}\" \"${{ secrets.SSH_HOST }}\"\
         \ >> ~/.ssh/known_hosts 2>/dev/null\nfi"
     - name: Download release artifact (ZIP)
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         pattern: '*.zip'
         merge-multiple: true
