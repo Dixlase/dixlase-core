@@ -140,6 +140,13 @@ class BackupRestoreCommand extends Command
                     if (! ComposerLocalHelper::syncAutoload()) {
                         $this->warn('[vendor] Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
                     }
+
+                    // Same as core update / rollback: rebuild the discovery
+                    // manifest so it matches the re-fetched vendor/. See
+                    // ComposerLocalHelper::rebuildPackageManifest().
+                    if (! ComposerLocalHelper::rebuildPackageManifest()) {
+                        $this->warn('[vendor] Package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                    }
                 } catch (\Throwable $e) {
                     $this->error('Vendor re-fetch failed: '.$e->getMessage());
                     $this->line('Source/DB are rolled back but vendor/ still matches the newer release.');

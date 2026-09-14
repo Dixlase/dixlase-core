@@ -37,6 +37,7 @@
 
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
@@ -105,6 +106,52 @@ class ComposerLocalHelper
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to sync composer.local.json: '.$e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Rebuild bootstrap/cache/packages.php after vendor/ has been swapped
+     *
+     * Laravel's package-discovery manifest lists the service providers of
+     * every auto-discovered package in vendor/. Core update, core rollback
+     * and a --refetch-vendor backup restore all replace vendor/ wholesale,
+     * so a package the old tree had and the new one lacks stays listed —
+     * for example a dev-only package on a baseline installed with dev
+     * dependencies, swapped for a release's --no-dev vendor/. The next boot
+     * then dies with `Class "...ServiceProvider" not found` and the whole
+     * site returns 500.
+     *
+     * This must run in-process through Artisan::call(), never as a new
+     * `php artisan` process. PackageManifest::build() only reads
+     * vendor/composer/installed.json and never instantiates a provider, so
+     * it succeeds here; a fresh process would boot the framework from the
+     * stale manifest and die on the missing provider before the command ran.
+     * bootstrap/cache/services.php needs no handling: ProviderRepository
+     * recompiles it on the next boot once the provider list has changed.
+     *
+     * @return bool Whether it succeeded (failures are logged, not thrown)
+     */
+    public static function rebuildPackageManifest(): bool
+    {
+        try {
+            $exitCode = Artisan::call('package:discover', ['--no-interaction' => true]);
+
+            if ($exitCode !== 0) {
+                Log::warning('package:discover failed after vendor swap', [
+                    'exit_code' => $exitCode,
+                    'output' => Artisan::output(),
+                ]);
+
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::warning('Failed to rebuild the package manifest after vendor swap', [
+                'error' => $e->getMessage(),
+            ]);
 
             return false;
         }
