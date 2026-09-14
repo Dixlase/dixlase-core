@@ -120,6 +120,13 @@
   - GitHub の *Create a merge commit*（`Merge pull request #N from …`）と *Squash and merge*（`<件名> (#N)`）は既定で `#N` を含む。この既定を維持し、`#N` を削ったり件名から外して書き換えたりしない。
   - PR のブランチをローカルで `git merge <branch>` する場合は、メッセージに自分で番号を入れる — 件名末尾の `(#N)`、または本文の `PR #N` / `Closes #N` 行。
 
+### コアのバージョン更新方針
+- Dixlase コアのディスク上のバージョンは **2 つ**のファイルにあり、常に一致していなければならない: `VERSION` と `dixlase.json` の `version`
+- 更新は必ず `php scripts/bump-version.php <x.y.z>` で両方同時に行う — 片方だけを手で書き換えない
+- 2 つが食い違うと CI（`tests/Unit/VersionManifestConsistencyTest.php`）が失敗する
+- コア更新パイプラインは両ファイルを適用し（`CoreSourceSnapshot::SOURCE_FILES`）、ロールバックでも両方が戻る。稼働中の食い違いは `VersionDriftService` が `manifest_drifted` として報告する
+- テーマ・プラグインにも同種の組（`theme.json` / `plugin.json` ↔ `composer.json`）がある。同等のガードが入るまでは、手動でバージョンを揃えること
+
 ### Git 調査ツール — `git log -S` はファイル内の "移動" を検出しない
 - 「最近 X を変更した人がいるか」を調査する際、`git log -S '<term>'`（pickaxe）はその文字列の**出現回数が変わった**コミットしか検出しない
 - 設定エントリが**同じファイル内で単に移動**した場合（例: SPDX 識別子が refused リストから accepted リストに移動）、`-S` には何も映らない — 出現回数は同じだから
