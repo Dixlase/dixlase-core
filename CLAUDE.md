@@ -120,6 +120,13 @@ The database is not the only thing a test run can destroy. Tests that exercise f
   - GitHub's *Create a merge commit* (`Merge pull request #N from …`) and *Squash and merge* (`<subject> (#N)`) both include `#N` by default. Keep that default; never strip it or rewrite the subject without it.
   - When you merge a PR's branch locally instead (`git merge <branch>`), add the number to the message yourself — a trailing `(#N)` on the subject, or a `PR #N` / `Closes #N` line in the body.
 
+### Core Version Bump Policy
+- In Dixlase core, the on-disk version lives in **two** files that must always match: `VERSION` and the `version` field of `dixlase.json`
+- Always bump both together with `php scripts/bump-version.php <x.y.z>` — never hand-edit only one of them
+- CI (`tests/Unit/VersionManifestConsistencyTest.php`) fails when the two disagree
+- The core update pipeline applies both files (`CoreSourceSnapshot::SOURCE_FILES`) and a rollback restores both; on a live instance, `VersionDriftService` reports a mismatch as `manifest_drifted`
+- Themes and plugins carry the same kind of pair (`theme.json` / `plugin.json` ↔ `composer.json`); until an equivalent guard exists for them, keep those versions in step by hand
+
 ### Git Investigation Tools — `git log -S` does not detect in-file moves
 - When investigating "who recently changed X", `git log -S '<term>'` (pickaxe) only catches commits where the **occurrence count** of the string changed
 - If a config entry simply **moved within the same file** (e.g., an SPDX identifier moved from the refused list to the accepted list), `-S` shows nothing — the occurrence count is unchanged
