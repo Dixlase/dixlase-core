@@ -246,6 +246,14 @@ class CoreRollback extends Command
                 if (! ComposerLocalHelper::syncAutoload()) {
                     $this->warn('Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
                 }
+
+                // Same as the update path: the re-fetched vendor/ can lack a
+                // package the stale bootstrap/cache/packages.php still lists.
+                // See ComposerLocalHelper::rebuildPackageManifest().
+                $this->line('Rebuilding the package-discovery manifest after vendor swap...');
+                if (! ComposerLocalHelper::rebuildPackageManifest()) {
+                    $this->warn('Package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                }
             }
 
             $this->line('Clearing caches...');
