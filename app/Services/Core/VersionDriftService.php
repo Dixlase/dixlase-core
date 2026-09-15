@@ -62,9 +62,9 @@ use App\Models\CoreVersionHistory;
 class VersionDriftService
 {
     /**
-     * Read the real on-disk / ledger values and classify the drift
-     * between them. This is the production entrypoint — controllers and
-     * commands call this with no arguments.
+     * Read the real on-disk / ledger / manifest values and classify the
+     * drift between them. This is the production entrypoint — controllers
+     * and commands call this with no arguments.
      *
      * @return array{
      *   on_disk: ?string,
@@ -72,6 +72,8 @@ class VersionDriftService
      *   known: bool,
      *   drifted: bool,
      *   kind: 'ahead'|'behind'|'same'|'unknown',
+     *   manifest: ?string,
+     *   manifest_drifted: bool,
      * }
      */
     public function detect(): array
@@ -79,16 +81,51 @@ class VersionDriftService
         return $this->classify(
             CoreUpdater::readVersionFromDisk(),
             CoreVersionHistory::currentVersion(),
+            self::readManifestVersionFromDisk(),
         );
     }
 
     /**
-     * Pure classification of the two version values, exposed as its own
+     * Read the "version" declared by dixlase.json at the repo root.
+     *
+     * dixlase.json is the second on-disk version authority (#286) and must
+     * always match the VERSION file. Returns null when the file is missing,
+     * unreadable, not valid JSON, or has no non-empty string "version", so
+     * the manifest check stays silent instead of raising a warning the
+     * operator cannot act on.
+     */
+    public static function readManifestVersionFromDisk(?string $basePath = null): ?string
+    {
+        $basePath ??= base_path();
+        $path = $basePath.DIRECTORY_SEPARATOR.'dixlase.json';
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        if ($raw === false) {
+            return null;
+        }
+
+        $decoded = json_decode($raw, true);
+        if (! is_array($decoded) || ! is_string($decoded['version'] ?? null)) {
+            return null;
+        }
+
+        $version = trim($decoded['version']);
+
+        return $version !== '' ? $version : null;
+    }
+
+    /**
+     * Pure classification of the version values, exposed as its own
      * method so tests can exercise every branch (including explicit
      * nulls on either side) without needing to stub the file / DB reads.
-     * Consumers who already know the two values — e.g. a caller who has
+     * Consumers who already know the values — e.g. a caller who has
      * cached them for the request — can call this directly and skip the
-     * repeated reads.
+     * repeated reads. `$manifest` is optional so existing two-argument
+     * callers keep working; they simply get no manifest verdict.
      *
      * @return array{
      *   on_disk: ?string,
@@ -96,10 +133,21 @@ class VersionDriftService
      *   known: bool,
      *   drifted: bool,
      *   kind: 'ahead'|'behind'|'same'|'unknown',
+     *   manifest: ?string,
+     *   manifest_drifted: bool,
      * }
      */
-    public function classify(?string $onDisk, ?string $ledger): array
+    public function classify(?string $onDisk, ?string $ledger, ?string $manifest = null): array
     {
+        // The manifest check is deliberately kept apart from `drifted`.
+        // `drifted` means "VERSION disagrees with the ledger": it drives the
+        // Updates-page banner and is exactly what `dls:core:reconcile`
+        // repairs by writing a ledger row. A dixlase.json that disagrees
+        // with VERSION is a different fault — a partially applied update or
+        // a hand edit — that no ledger row can fix, so it gets its own flag.
+        // Only meaningful when both files are readable.
+        $manifestDrifted = $manifest !== null && $onDisk !== null && $manifest !== $onDisk;
+
         // Drift is only meaningful when BOTH values are known. If either
         // side is null (very early install with no VERSION file, or a
         // brand-new install with no history rows yet), report
@@ -112,6 +160,8 @@ class VersionDriftService
                 'known' => false,
                 'drifted' => false,
                 'kind' => 'unknown',
+                'manifest' => $manifest,
+                'manifest_drifted' => $manifestDrifted,
             ];
         }
 
@@ -128,6 +178,8 @@ class VersionDriftService
             'known' => true,
             'drifted' => $kind !== 'same',
             'kind' => $kind,
+            'manifest' => $manifest,
+            'manifest_drifted' => $manifestDrifted,
         ];
     }
 }

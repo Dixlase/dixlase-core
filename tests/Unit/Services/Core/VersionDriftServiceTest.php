@@ -114,4 +114,68 @@ class VersionDriftServiceTest extends TestCase
         // On-disk `0.3.1-dryrun-6` is OLDER than ledger `0.3.1` per semver.
         $this->assertSame('behind', $result['kind']);
     }
+
+    public function test_two_argument_calls_report_no_manifest(): void
+    {
+        // Existing callers pass only VERSION and the ledger; the manifest
+        // keys must default to "nothing known", never to a false alarm.
+        $result = (new VersionDriftService())->classify(onDisk: '0.3.27', ledger: '0.3.27');
+
+        $this->assertNull($result['manifest']);
+        $this->assertFalse($result['manifest_drifted']);
+    }
+
+    public function test_flags_manifest_that_disagrees_with_version_file(): void
+    {
+        // Round 2 Finding #1 shape: the update wrote VERSION=0.3.27 and the
+        // ledger agrees, but dixlase.json was left at 0.3.26.
+        $result = (new VersionDriftService())->classify(onDisk: '0.3.27', ledger: '0.3.27', manifest: '0.3.26');
+
+        $this->assertTrue($result['manifest_drifted']);
+        $this->assertSame('0.3.26', $result['manifest']);
+        // Ledger drift is a separate fault with a separate fix (reconcile);
+        // a manifest mismatch must not masquerade as one.
+        $this->assertFalse($result['drifted']);
+        $this->assertSame('same', $result['kind']);
+    }
+
+    public function test_matching_manifest_is_not_flagged(): void
+    {
+        $result = (new VersionDriftService())->classify(onDisk: '0.3.27', ledger: '0.3.26', manifest: '0.3.27');
+
+        $this->assertFalse($result['manifest_drifted']);
+        $this->assertTrue($result['drifted']);
+    }
+
+    public function test_manifest_is_not_flagged_when_version_file_is_unknown(): void
+    {
+        $result = (new VersionDriftService())->classify(onDisk: null, ledger: '0.3.27', manifest: '0.3.26');
+
+        $this->assertFalse($result['manifest_drifted']);
+        $this->assertSame('0.3.26', $result['manifest']);
+    }
+
+    public function test_reads_manifest_version_from_disk(): void
+    {
+        // Throwaway directory under storage/framework/testing — never the
+        // repository's real dixlase.json.
+        $dir = storage_path('framework/testing/version-drift-'.uniqid());
+        mkdir($dir, 0777, true);
+
+        try {
+            $this->assertNull(VersionDriftService::readManifestVersionFromDisk($dir), 'missing file');
+
+            file_put_contents($dir.'/dixlase.json', '{"name": "dixlase", "version": " 0.3.27 "}');
+            $this->assertSame('0.3.27', VersionDriftService::readManifestVersionFromDisk($dir));
+
+            file_put_contents($dir.'/dixlase.json', '{not json');
+            $this->assertNull(VersionDriftService::readManifestVersionFromDisk($dir), 'invalid JSON');
+
+            file_put_contents($dir.'/dixlase.json', '{"version": ""}');
+            $this->assertNull(VersionDriftService::readManifestVersionFromDisk($dir), 'empty version');
+        } finally {
+            @unlink($dir.'/dixlase.json');
+            @rmdir($dir);
+        }
+    }
 }
