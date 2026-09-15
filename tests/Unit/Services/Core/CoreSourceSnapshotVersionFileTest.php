@@ -68,4 +68,28 @@ class CoreSourceSnapshotVersionFileTest extends TestCase
             .'version reaches disk.'
         );
     }
+
+    public function test_dixlase_json_is_listed_in_source_files(): void
+    {
+        $this->assertContains(
+            'dixlase.json',
+            CoreSourceSnapshot::SOURCE_FILES,
+            'dixlase.json must be listed in CoreSourceSnapshot::SOURCE_FILES so '
+            .'applyToLiveTree() copies it during a core update and the snapshot '
+            .'captures it for rollback. Without this entry an update writes the '
+            .'release VERSION but leaves the previous dixlase.json on disk, '
+            .'breaking the VERSION <-> dixlase.json invariant from #286 on live '
+            .'instances (Round 2 sandbox verification, Finding #1).'
+        );
+    }
+
+    public function test_dixlase_json_is_not_in_protected_paths(): void
+    {
+        $this->assertNotContains(
+            'dixlase.json',
+            CoreSourceSnapshot::PROTECTED_PATHS,
+            'dixlase.json must NOT appear in PROTECTED_PATHS — a core update '
+            .'must be able to overwrite it so the new release version reaches disk.'
+        );
+    }
 }
