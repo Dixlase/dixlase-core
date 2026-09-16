@@ -101,6 +101,15 @@ class CoreSourceSnapshot
         // update and the on-disk guard never fires. Sandbox verification
         // 2026-07-31 (issue #171 Finding A) confirmed the omission.
         'VERSION',
+        // Second on-disk version authority since #286; it must always equal
+        // VERSION (scripts/bump-version.php writes both and
+        // VersionManifestConsistencyTest enforces it in CI). It was missing
+        // here, so an update wrote the release's VERSION but left the old
+        // dixlase.json on disk — a silent live drift VersionDriftService
+        // could not see (Round 2 sandbox verification, Finding #1). Listing
+        // it makes applyToLiveTree() copy it and the snapshot capture it, so
+        // a rollback restores it too.
+        'dixlase.json',
     ];
 
     /**
