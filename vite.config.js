@@ -134,20 +134,45 @@ export default defineConfig(({ command }) => ({
                 'mail-server-verification-error': path.resolve(__dirname, 'resources/src/components/mail-server/js/verification-error.js'),
             },
             output: {
+                // Content-hash JS/CSS entry and chunk filenames so each
+                // build that changes bytes gets a new URL. Rationale
+                // (dixlase-brand 2026-09-16 incident):
+                // `load_assets_from_manifest` resolves front / admin /
+                // install / auth / mail-server tags through manifest.json,
+                // but under the previous stable-URL scheme the resolved
+                // URL never changed across deploys. Nginx also does not
+                // set Cache-Control on `/assets/build/*`, so browsers
+                // fell back to heuristic caching — iOS Safari in
+                // particular held old `common.css` / `admin.css` /
+                // `style.css` across "Clear History and Website Data",
+                // and returning visitors got new HTML plus pre-change
+                // CSS. Content-hashing gives every changed build a new
+                // URL, so returning browsers fetch it fresh. Identical
+                // builds still hash to the same filename (Vite's
+                // `[hash]` is a content hash, not a build timestamp),
+                // so no-op rebuilds do not churn URLs. Fonts / images
+                // stay stable so the browser's font cache is not
+                // invalidated on every rebuild (Vite still rewrites the
+                // URL references inside built CSS if a font changes, so
+                // stale font content cannot silently ship).
+                //
                 // JavaScript ファイル名。入力キーの末尾 `_js` は出力時に剥がす
-                // (例: `admin_js` → `js/admin.js`)。
+                // (例: `admin_js` → `js/admin-<hash>.js`)。
                 entryFileNames: ({ name }) => {
                     const cleaned = (name ?? '').replace(/_js$/, '');
-                    return `js/${cleaned}.js`;
+                    return `js/${cleaned}-[hash].js`;
                 },
-                chunkFileNames: 'js/[name].js',  // 動的 import 等のチャンクファイル
+                chunkFileNames: 'js/[name]-[hash].js',  // 動的 import 等のチャンクファイル
                 // CSS / その他アセットのファイル名。CSS は末尾 `_css` を剥がして出力
-                // (例: `admin_css.css` → `css/admin.css`)。
+                // (例: `admin_css.css` → `css/admin-<hash>.css`)。
                 assetFileNames: ({ name }) => {
                     const safeName = name ?? '';
                     if (/\.css$/.test(safeName)) {
+                        // Strip the `_css` disambiguation suffix from the
+                        // input key, then insert `-[hash]` before `.css`
+                        // so Rollup fills it with the file's content hash.
                         const cleaned = safeName.replace(/_css\.css$/, '.css');
-                        return `css/${cleaned}`;
+                        return `css/${cleaned.replace(/\.css$/, '-[hash].css')}`;
                     }
                     const extension = (safeName.split('.').pop() ?? '').toLowerCase();
                     return `${extension}/${safeName}`;
