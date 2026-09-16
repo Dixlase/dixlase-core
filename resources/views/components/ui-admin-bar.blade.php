@@ -282,6 +282,7 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
              bg — the sidebar's bar-area shows the admin bar tinted rather than
              replacing it. --}}
         <div x-cloak
+             id="admin-mobile-sidebar"
              class="sm:hidden fixed top-0 left-0 h-full transform transition-transform duration-300 ease-in-out z-[10010]"
              :class="{ '-translate-x-64': !openSidebar, 'translate-x-0': openSidebar }">
             <div class="flex-1 h-full ">
