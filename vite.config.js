@@ -171,8 +171,19 @@ export default defineConfig(({ command }) => ({
             cert: fs.readFileSync('/etc/ssl/private/localhost.crt'),
         } : false,
         watch: {
-            usePolling: true,     // Poll to detect file changes
-            interval: 100,        // Polling interval (tune as needed)
+            // Polling is a Docker-on-macOS workaround for the classic
+            // "bind-mount events don't propagate into the container" problem.
+            // Docker Desktop 4.6+ with VirtioFS forwards FSEvents into the
+            // container, so polling is no longer required by default and is
+            // a significant CPU / responsiveness tax when it's on (every
+            // watched file is stat()'d on every tick). We default to
+            // FSEvents and let the operator turn polling back on via
+            // VITE_USE_POLLING=1 if their environment can't deliver
+            // events (older Docker, gRPC-FUSE, network-mounted source, WSL2
+            // hybrid mounts, etc.). Interval defaults to 500ms when polling
+            // is enabled — 100ms was overly aggressive.
+            usePolling: process.env.VITE_USE_POLLING === '1',
+            interval: parseInt(process.env.VITE_POLLING_INTERVAL || '500', 10),
             ignored: [
                 '**/node_modules/**',
                 '**/.git/**',
