@@ -42,6 +42,7 @@ use App\Models\CoreVersionHistory;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
+use App\Services\Core\PublicAssetRelinker;
 use App\Services\Update\SystemUpdateFlash;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -229,6 +230,15 @@ class CoreRollback extends Command
                 $this->line('Reset opcache after source restore.');
             }
 
+            // The snapshot never carried public/assets/themes/<Theme> or
+            // public/assets/plugins/<Plugin>: CoreSourceSnapshot::capture()
+            // skips symlinks, so the restored public/ has no link at those
+            // paths and every theme/plugin asset 404s (front page unstyled,
+            // `appearanceTheme is not defined`). Re-create them. Outside the
+            // $dependencyUpdate branch — the source restore happens on every
+            // rollback. Non-fatal.
+            $this->relinkPublicAssets();
+
             if ($dependencyUpdate) {
                 // vendor.old was discarded when the update succeeded, so we
                 // re-fetch the matching dependencies from the OLD release ZIP
@@ -324,6 +334,9 @@ class CoreRollback extends Command
                 $this->line('Attempting to restore the pre-rollback state...');
                 try {
                     $snapshotter->restore($safetySnapshot);
+                    // Same as the success path: the safety snapshot has no
+                    // asset symlinks either.
+                    $this->relinkPublicAssets();
                     $this->info('Pre-rollback state restored — the core is back where it was before this command ran.');
                 } catch (\Throwable $recoverError) {
                     $this->error("Recovery also failed: {$recoverError->getMessage()}");
@@ -398,6 +411,28 @@ class CoreRollback extends Command
             return (int) DB::table('migrations')->where('batch', '>', $batch)->count();
         } catch (\Throwable) {
             return 0;
+        }
+    }
+
+    /**
+     * Recreate the public asset symlinks the restored snapshot cannot carry.
+     *
+     * CoreSourceSnapshot::capture() skips symlinks by design (they point at
+     * protected paths outside the snapshot's scope), so a restored public/
+     * has no public/assets/themes/<Theme> or public/assets/plugins/<Plugin>
+     * link and every extension asset 404s. Non-fatal: a rollback that
+     * restored the source has done the important part, and the operator can
+     * re-run the symlink commands by hand.
+     */
+    protected function relinkPublicAssets(): void
+    {
+        $this->line('Relinking public asset symlinks (storage, themes, plugins)...');
+
+        try {
+            $relinked = (new PublicAssetRelinker())->relink();
+            $this->line("Relinked public assets (themes: {$relinked['themes']}, plugins: {$relinked['plugins']}).");
+        } catch (\Throwable $e) {
+            $this->warn('Public asset relink failed ('.$e->getMessage().'); if the front page renders unstyled, run `php artisan dls:theme:symlink create --all` and `php artisan dls:plugin:symlink create --all`.');
         }
     }
 }
