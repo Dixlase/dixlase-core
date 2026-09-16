@@ -34,25 +34,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <footer id="page-footer"
         class="lg:ml-64 border-t py-4 text-center text-xs bg-white text-gray-500 border-gray-200 dark:bg-black dark:text-gray-400 dark:border-gray-700 transition-[margin] duration-300 ease-in-out"
         :class="{ 'lg:mr-80': rightSidebarActive && !rightSidebarCollapsed }">
-    {{-- flex flex-wrap: each atomic unit and each `·` separator is its own
-         flex item, so narrow viewports break cleanly at unit boundaries and the
-         separator wraps with its adjacent segment rather than dangling on its
-         own. gap-x-2 spaces siblings; gap-y-1 gives a small line-gap when the
-         line does wrap. On wide viewports everything sits on one line. --}}
-    <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+    {{-- Layout switches at the same `lg` breakpoint the admin sidebar uses.
+         Below `lg` the footer stacks into three clean rows — product/version,
+         copyright, and the license/source link pair — so the middot `·`
+         separators between them are hidden (they belong to the one-line form,
+         not to visual stacking). `AGPLv3 · ソース` stays a single inline group
+         even on mobile so the separator between them is meaningful. From `lg`
+         upward everything sits on one line with `·` separators visible. --}}
+    <div class="flex flex-col items-center gap-y-1 lg:flex-row lg:flex-wrap lg:justify-center lg:gap-x-2">
         <span class="whitespace-nowrap">
             <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
             v{{ $coreVersion ?? config('app.version', '1.0.0') }}
         </span>
-        <span aria-hidden="true">&middot;</span>
+        <span aria-hidden="true" class="hidden lg:inline">&middot;</span>
         <span class="whitespace-nowrap">&copy; {{ date('Y') }} exc-D inc. and Dixlase contributors</span>
-        <span aria-hidden="true">&middot;</span>
-        <a href="{{ config('dixlase.license_url', 'https://www.gnu.org/licenses/agpl-3.0.html') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap">
-            {{ config('dixlase.license_label', 'AGPLv3') }}
-        </a>
-        <span aria-hidden="true">&middot;</span>
-        <a href="{{ config('dixlase.source_url', 'https://github.com/Dixlase/dixlase-core') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap" title="{{ __('common.source_code_title') }}">
-            {{ __('common.source_code') }}
-        </a>
+        <span aria-hidden="true" class="hidden lg:inline">&middot;</span>
+        <span class="inline-flex items-center gap-x-2 whitespace-nowrap">
+            <a href="{{ config('dixlase.license_url', 'https://www.gnu.org/licenses/agpl-3.0.html') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300">
+                {{ config('dixlase.license_label', 'AGPLv3') }}
+            </a>
+            <span aria-hidden="true">&middot;</span>
+            <a href="{{ config('dixlase.source_url', 'https://github.com/Dixlase/dixlase-core') }}" target="_blank" rel="noopener" class="underline hover:text-gray-700 dark:hover:text-gray-300" title="{{ __('common.source_code_title') }}">
+                {{ __('common.source_code') }}
+            </a>
+        </span>
     </div>
 </footer>
