@@ -125,7 +125,11 @@
 - 更新は必ず `php scripts/bump-version.php <x.y.z>` で両方同時に行う — 片方だけを手で書き換えない
 - 2 つが食い違うと CI（`tests/Unit/VersionManifestConsistencyTest.php`）が失敗する
 - コア更新パイプラインは両ファイルを適用し（`CoreSourceSnapshot::SOURCE_FILES`）、ロールバックでも両方が戻る。稼働中の食い違いは `VersionDriftService` が `manifest_drifted` として報告する
-- テーマ・プラグインにも同種の組（`theme.json` / `plugin.json` ↔ `composer.json`）がある。同等のガードが入るまでは、手動でバージョンを揃えること
+- プラグイン・テーマにも同種の組がある: マニフェスト（`plugin.json` / `theme.json`。コアはこちらを先に読む）と `composer.json`（プラグインはトップレベルの `version`、テーマは `extra.dixlase.version`）
+- 拡張機能のバージョン更新は、その拡張機能のルートで `php scripts/bump-version.php <x.y.z>` を実行する — `package.json` があればそれも同時に揃える
+- マニフェストと `composer.json` が食い違うと、拡張機能の `tests/Unit/VersionManifestConsistencyTest.php` で CI が失敗する（`package.json` はバージョンを読むコードがないため検査しない）
+- `dls:make:plugin` / `dls:make:theme` が両ファイルを生成するので、新しい拡張機能は最初からガード付きで作られる
+- プラグインの署名は `composer.json` と `package.json` も対象にしているため、署名済みプラグインはバージョン更新のたびに再署名する
 
 ### Git 調査ツール — `git log -S` はファイル内の "移動" を検出しない
 - 「最近 X を変更した人がいるか」を調査する際、`git log -S '<term>'`（pickaxe）はその文字列の**出現回数が変わった**コミットしか検出しない
