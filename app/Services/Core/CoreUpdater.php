@@ -316,6 +316,15 @@ class CoreUpdater
                 if (! ComposerLocalHelper::syncAutoload()) {
                     $log('WARNING: extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
                 }
+
+                // The swap also leaves bootstrap/cache/packages.php describing
+                // the previous vendor/; a provider that is no longer there
+                // 500s the whole site on the next boot. See
+                // ComposerLocalHelper::rebuildPackageManifest().
+                $log('Rebuilding the package-discovery manifest after vendor swap...');
+                if (! ComposerLocalHelper::rebuildPackageManifest()) {
+                    $log('WARNING: package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                }
             }
 
             // A release ZIP MAY carry a manifest declaring theme

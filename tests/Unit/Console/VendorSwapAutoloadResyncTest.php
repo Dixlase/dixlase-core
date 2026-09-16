@@ -75,6 +75,68 @@ class VendorSwapAutoloadResyncTest extends TestCase
         );
     }
 
+    public function test_core_update_rebuilds_package_manifest_after_vendor_swap(): void
+    {
+        $this->assertManifestRebuildFollowsResync(app_path('Services/Core/CoreUpdater.php'));
+    }
+
+    public function test_core_rollback_rebuilds_package_manifest_after_vendor_swap(): void
+    {
+        $this->assertManifestRebuildFollowsResync(app_path('Console/Commands/CoreRollback.php'));
+    }
+
+    public function test_backup_restore_rebuilds_package_manifest_after_vendor_refetch(): void
+    {
+        $this->assertManifestRebuildFollowsResync(app_path('Console/Commands/Backup/BackupRestoreCommand.php'));
+    }
+
+    public function test_package_manifest_is_rebuilt_in_process(): void
+    {
+        // A fresh `php artisan package:discover` process boots the framework
+        // from the stale manifest and dies on the missing provider before the
+        // command runs; only an in-process Artisan::call() gets past that.
+        $source = (string) file_get_contents(app_path('Helpers/ComposerLocalHelper.php'));
+
+        $this->assertStringContainsString(
+            "Artisan::call('package:discover'",
+            $source,
+            'ComposerLocalHelper::rebuildPackageManifest() must run package:discover '
+            .'in-process via Artisan::call(). Shelling out to a new `php artisan` '
+            .'process fails exactly when it is needed, because that process boots '
+            .'from the stale manifest.'
+        );
+    }
+
+    /**
+     * Round 2 sandbox verification (Finding #2): the vendor swap also leaves
+     * bootstrap/cache/packages.php listing the previous vendor/'s providers.
+     * A package the new tree lacks — e.g. a dev-only package on a baseline
+     * installed with dev dependencies — then makes every request fail with
+     * `Class "...ServiceProvider" not found`. Pin the rebuild and its position.
+     */
+    private function assertManifestRebuildFollowsResync(string $file): void
+    {
+        $source = (string) file_get_contents($file);
+        $rel = str_replace(base_path().'/', '', $file);
+
+        $resyncPos = strpos($source, 'ComposerLocalHelper::syncAutoload()');
+        $rebuildPos = strpos($source, 'ComposerLocalHelper::rebuildPackageManifest()');
+
+        $this->assertNotFalse(
+            $rebuildPos,
+            "{$rel} must call `ComposerLocalHelper::rebuildPackageManifest()` after the "
+            .'vendor swap. Without it, bootstrap/cache/packages.php keeps listing '
+            .'providers from the previous vendor/ and the site 500s on the next boot.'
+        );
+        $this->assertGreaterThan(
+            $resyncPos,
+            $rebuildPos,
+            "In {$rel}, `ComposerLocalHelper::rebuildPackageManifest()` MUST run AFTER "
+            .'`ComposerLocalHelper::syncAutoload()`, once the new vendor/ and its '
+            .'autoload are in place.'
+        );
+    }
+
     private function assertResyncFollowsSwap(string $file, string $swapNeedle): void
     {
         $source = (string) file_get_contents($file);
