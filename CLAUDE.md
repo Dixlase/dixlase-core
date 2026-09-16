@@ -125,7 +125,11 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - Always bump both together with `php scripts/bump-version.php <x.y.z>` — never hand-edit only one of them
 - CI (`tests/Unit/VersionManifestConsistencyTest.php`) fails when the two disagree
 - The core update pipeline applies both files (`CoreSourceSnapshot::SOURCE_FILES`) and a rollback restores both; on a live instance, `VersionDriftService` reports a mismatch as `manifest_drifted`
-- Themes and plugins carry the same kind of pair (`theme.json` / `plugin.json` ↔ `composer.json`); until an equivalent guard exists for them, keep those versions in step by hand
+- Plugins and themes carry the same kind of pair: the manifest (`plugin.json` / `theme.json`, which core reads first) and `composer.json` (top-level `version` for a plugin, `extra.dixlase.version` for a theme)
+- Bump an extension with its own `php scripts/bump-version.php <x.y.z>`, run from the extension root — it also keeps `package.json` in step when one exists
+- The extension's `tests/Unit/VersionManifestConsistencyTest.php` fails CI when the manifest and `composer.json` disagree (`package.json` is not checked — nothing reads its version)
+- `dls:make:plugin` / `dls:make:theme` generate both files, so new extensions start with the guard
+- A plugin signature covers `composer.json` and `package.json`, so re-sign a signed plugin after every bump
 
 ### Git Investigation Tools — `git log -S` does not detect in-file moves
 - When investigating "who recently changed X", `git log -S '<term>'` (pickaxe) only catches commits where the **occurrence count** of the string changed
