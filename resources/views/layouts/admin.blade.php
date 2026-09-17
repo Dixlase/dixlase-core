@@ -74,6 +74,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 #admin-layout-flex > aside { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             }
             #admin-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+            /* Mobile sidebar tab (the ">" handle inside the mobile drawer): its
+               mt-[56px] must also clear the demo banner or it overlaps the banner.
+               Scoped by the drawer id so the desktop aside's hidden copy is untouched. */
+            #admin-mobile-sidebar .js-mobile-sidebar-tab { margin-top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
             #admin-right-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
             #admin-right-sidebar-panel { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             .modal { padding-top: var(--admin-banner-offset, 0px); }

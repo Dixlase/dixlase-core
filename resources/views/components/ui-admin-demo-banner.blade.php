@@ -45,9 +45,11 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
                 <div class="font-semibold">
                     {{ __('admin/demo.banner_title') }}
                 </div>
-                <div class="text-sm opacity-90">
-                    {{ __('admin/demo.banner_message') }}
-                </div>
+                {{-- The full explanation lives in a modal (opened by this link) so
+                     the banner stays compact — important on narrow mobile screens. --}}
+                <a href="#" id="admin-demo-banner-details" class="text-sm underline opacity-90 hover:no-underline whitespace-nowrap">
+                    <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('admin/demo.details_link') }}
+                </a>
             </div>
         </div>
         {{-- Access hints: how to sign in and where the tenant's own front page
@@ -67,9 +69,25 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
         </div>
     </div>
 </div>
-{{-- Localise the expiry <time> to the visitor's own timezone. Server time is
-     UTC; visitors are worldwide, so the correct wall-clock time is only known
-     client-side. Nonce'd per CSP; no-JS falls back to the UTC text above. --}}
+
+{{-- Details modal: the full demo-mode explanation, kept out of the banner so the
+     banner stays compact on mobile. Centered + close-only. Works on both the
+     admin layout and the login screen, since the common bundle (which registers
+     the modal() Alpine component and window.openModal) is loaded in both. --}}
+<x-ui-modal
+    id="demoDetailsModal"
+    centered
+    close-only
+    icon-type="info"
+    :close-label="__('common.close')"
+    :title="__('admin/demo.details_title')"
+    :message="__('admin/demo.banner_message')"
+/>
+
+{{-- Localise the expiry <time> to the visitor's own timezone, and open the
+     details modal from the compact banner link. Server time is UTC; visitors
+     are worldwide, so the correct wall-clock time is only known client-side.
+     Nonce'd per CSP; no-JS falls back to the UTC text above. --}}
 <script @cspNonce>
     (function () {
         document.querySelectorAll('time[data-demo-localtime]').forEach(function (el) {
@@ -80,6 +98,15 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
                 });
             }
         });
+        var detailsLink = document.getElementById('admin-demo-banner-details');
+        if (detailsLink) {
+            detailsLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (typeof window.openModal === 'function') {
+                    window.openModal('demoDetailsModal');
+                }
+            });
+        }
     })();
 </script>
 @endif
