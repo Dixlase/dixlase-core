@@ -35,7 +35,7 @@
 
 return [
     'banner_title' => 'Demo Mode',
-    'banner_message' => 'You are using a public demo. Destructive actions and some admin features (member management, global settings, etc.) are disabled and view-only, and outgoing mail is captured locally. Your data will be reset when this demo expires. In production, all features are fully available.',
+    'banner_message' => 'You are using a public demo. <br><br>Destructive actions and some admin features (member management, global settings, etc.) are disabled and view-only, and outgoing mail is captured locally.<br><br>Your data will be reset when this demo expires. <br><br>In production, all features are fully available.',
     'details_link' => 'Learn more',
     'details_title' => 'About demo mode',
     'action_disabled' => 'This action is disabled in demo mode.',
