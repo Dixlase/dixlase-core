@@ -12,6 +12,10 @@
 /public/hot
 /public/storage
 
+# Site-specific /.well-known/ files (e.g. security.txt). The core ships none:
+# each site publishes its own security contact and canonical URL.
+/public/.well-known/
+
 /public/assets/admin
 # Keep manually-managed assets such as images
 !public/assets/images/
