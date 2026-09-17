@@ -35,7 +35,7 @@
 
 namespace App\Console\Commands;
 
-use App\Support\RelativeSymlink;
+use App\Services\Core\PublicAssetRelinker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -152,8 +152,11 @@ class PluginSymlink extends Command
                     continue;
                 }
 
+                // A working link is left alone; a missing, dangling or
+                // overwritten slot (a real directory from a dereferenced
+                // release payload) is relinked below.
                 $link = public_path("assets/plugins/{$pluginDirName}");
-                if (File::exists($link) || is_link($link)) {
+                if (is_link($link) && File::exists($link)) {
                     $skipped++;
 
                     continue;
@@ -221,13 +224,13 @@ class PluginSymlink extends Command
      */
     protected function createPluginSymlink(string $pluginDirName)
     {
-        $target = base_path("plugins/{$pluginDirName}/resources/assets");
-        $link = public_path("assets/plugins/{$pluginDirName}");
-
-        if (File::exists($target) && ! File::exists($link)) {
-            File::ensureDirectoryExists(dirname($link));
-            RelativeSymlink::create($target, $link);
-        }
+        // Replaces whatever occupies the slot, including a real directory
+        // left by a core update whose payload carried the dereferenced
+        // assets. See PublicAssetRelinker.
+        PublicAssetRelinker::ensureLink(
+            base_path("plugins/{$pluginDirName}/resources/assets"),
+            public_path("assets/plugins/{$pluginDirName}"),
+        );
     }
 
     /**
@@ -239,7 +242,21 @@ class PluginSymlink extends Command
     {
         $link = public_path("assets/plugins/{$pluginDirName}");
 
-        if (File::exists($link) || is_link($link)) {
+        if (is_link($link)) {
+            @unlink($link);
+
+            return;
+        }
+
+        // File::delete() is unlink(): it cannot remove a directory, which is
+        // what an overwritten link leaves behind.
+        if (File::isDirectory($link)) {
+            File::deleteDirectory($link);
+
+            return;
+        }
+
+        if (File::exists($link)) {
             File::delete($link);
         }
     }

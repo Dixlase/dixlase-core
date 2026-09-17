@@ -35,7 +35,7 @@
 
 namespace App\Console\Commands;
 
-use App\Support\RelativeSymlink;
+use App\Services\Core\PublicAssetRelinker;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -152,8 +152,11 @@ class ThemeSymlink extends Command
                     continue;
                 }
 
+                // A working link is left alone; a missing, dangling or
+                // overwritten slot (a real directory from a dereferenced
+                // release payload) is relinked below.
                 $link = public_path("assets/themes/{$themeDirName}");
-                if (File::exists($link) || is_link($link)) {
+                if (is_link($link) && File::exists($link)) {
                     $skipped++;
 
                     continue;
@@ -216,13 +219,14 @@ class ThemeSymlink extends Command
      */
     protected function createThemeSymlink(string $themeDirName)
     {
-        $target = base_path("themes/{$themeDirName}/resources/assets");
-        $link = public_path("assets/themes/{$themeDirName}");
-
-        if (File::exists($target) && ! File::exists($link)) {
-            File::ensureDirectoryExists(dirname($link));
-            RelativeSymlink::create($target, $link);
-        }
+        // Replaces whatever occupies the slot, including a real directory:
+        // a core update whose payload carried the dereferenced assets used
+        // to leave one there, and the old `! File::exists($link)` guard
+        // then skipped the repair silently. See PublicAssetRelinker.
+        PublicAssetRelinker::ensureLink(
+            base_path("themes/{$themeDirName}/resources/assets"),
+            public_path("assets/themes/{$themeDirName}"),
+        );
     }
 
     /**
@@ -234,7 +238,21 @@ class ThemeSymlink extends Command
     {
         $link = public_path("assets/themes/{$themeDirName}");
 
-        if (File::exists($link) || is_link($link)) {
+        if (is_link($link)) {
+            @unlink($link);
+
+            return;
+        }
+
+        // File::delete() is unlink(): it cannot remove a directory, which is
+        // what an overwritten link leaves behind.
+        if (File::isDirectory($link)) {
+            File::deleteDirectory($link);
+
+            return;
+        }
+
+        if (File::exists($link)) {
             File::delete($link);
         }
     }
