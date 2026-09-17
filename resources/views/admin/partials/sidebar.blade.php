@@ -540,7 +540,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          tab's vertical center sits near the h1's baseline rather than
          hugging the admin bar. --}}
     <button @click="openSidebar = !openSidebar"
-            class="sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-blue-400 px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
+            class="js-mobile-sidebar-tab sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-blue-400 px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
             aria-label="Toggle sidebar menu">
         <i class="fas text-sm" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
     </button>

@@ -59,15 +59,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- Scripts -->
     {!! load_auth_assets() !!}
 </head>
-<body class="bg-gray-100 dark:bg-black flex items-center justify-center min-h-screen transition-colors duration-300">
-    {{-- Demo-mode banner (account + front/admin URLs). Fixed to the top so it
-         does not disturb the vertically centred auth card. --}}
+<body class="bg-gray-100 dark:bg-black flex flex-col items-center min-h-screen transition-colors duration-300">
+    {{-- Demo-mode banner (account + front/admin URLs). Rendered in-flow (not
+         fixed) so it takes layout height and pushes the auth card down instead of
+         overlapping the logo on short mobile viewports; the card below still
+         centres in the remaining space via `my-auto`. --}}
     @if(config('dixlase.demo_mode'))
-        <div class="fixed top-0 inset-x-0 z-50">
+        <div class="w-full">
             <x-ui-admin-demo-banner />
         </div>
     @endif
-    <div class="flex flex-col items-center w-full max-w-lg min-w-[400px]">
+    <div class="flex flex-col items-center w-full max-w-lg min-w-[400px] my-auto">
 
         {{-- Site logo. Wrapped so the login card gets the current
              theme's ink color via `text-gray-900 dark:text-white`,
