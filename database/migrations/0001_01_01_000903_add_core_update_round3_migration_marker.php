@@ -33,36 +33,46 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Seeder that `dls:core:update` runs after migrations, when the class is
- * present. It is deliberately NOT registered in DatabaseSeeder, so a fresh
- * install never runs it — only an update does.
+ * Round 2 verification migration shipped in v0.3.31.
  *
- * Round 2 uses it as a verification marker, and each round's update target
- * bumps the value it writes (v0.3.27, v0.3.29, then v0.3.31), so a stale value left by
- * an earlier round is easy to tell apart. `dls:core:rollback` reverses
- * migrations but never re-runs or undoes seeders, so this marker survives a
- * rollback while the sibling row written by that round's marker migration
- * (`0001_01_01_000903_add_core_update_round3_migration_marker` for v0.3.31)
- * disappears. That contrast is what the sandbox asserts.
+ * Purpose: prove that `dls:core:update` runs migrations forward and that
+ * `dls:core:rollback` reverses them, on the re-run that verifies the public
+ * asset symlink fixes (#298, #299). `up()` writes a marker row into
+ * `global_settings`; `down()` deletes it, so the row's absence after a
+ * rollback is direct evidence that `migrate:rollback` ran.
  *
- * Everything here must stay safe to re-run: the seeder fires on every core
- * update, so use updateOrInsert / insertOrIgnore rather than plain inserts.
+ * It writes a new key instead of reusing an earlier round's. The sandbox
+ * baseline is a fresh install of v0.3.30, and a fresh install already runs
+ * `0001_01_01_000901_add_core_update_migration_marker` and
+ * `0001_01_01_000902_add_core_update_round2_migration_marker`, so those rows
+ * exist before the update and cannot show anything. A separate key is absent
+ * on the baseline, present after the update and gone after the rollback,
+ * while the earlier rows stay untouched throughout.
+ *
+ * Read this together with `database/seeders/UpdateSeeder.php`, whose marker
+ * survives the rollback. The row is inert — nothing in the shipped code reads
+ * it — and `updateOrInsert` keeps both directions safe to re-run.
  */
-class UpdateSeeder extends Seeder
+return new class extends Migration
 {
-    private const MARKER_NAME = 'core_update_seeder_marker';
+    private const MARKER_NAME = 'core_update_round3_migration_marker';
 
-    public function run(): void
+    public function up(): void
     {
         DB::table('global_settings')->updateOrInsert(
             ['name' => self::MARKER_NAME],
             ['value' => '0.3.31', 'created_at' => now(), 'updated_at' => now()],
         );
     }
-}
+
+    public function down(): void
+    {
+        DB::table('global_settings')
+            ->where('name', self::MARKER_NAME)
+            ->delete();
+    }
+};

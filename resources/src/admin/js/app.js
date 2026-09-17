@@ -84,8 +84,10 @@ window.Dixlase.newTabPreview = function(url, el) {
 };
 
 // Sentinel marker written by the dryrun-10 release. Sandbox verification
-// greps for this string in the built public/assets/build/js/admin.js to
-// confirm that a core update actually replaces the built front-end
-// assets (not just the source tree and the VERSION file). Safe to keep
-// past dryrun-10; harmless in production.
-window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:0.3.29';
+// greps for this string in the built admin bundle to confirm that a core
+// update actually replaces the built front-end assets (not just the source
+// tree and the VERSION file). Since #300 the bundle filename is
+// content-hashed (public/assets/build/js/admin-<hash>.js), so resolve it
+// through public/assets/build/manifest.json instead of a fixed path. Safe
+// to keep past dryrun-10; harmless in production.
+window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:0.3.31';
