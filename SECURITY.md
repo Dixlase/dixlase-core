@@ -67,7 +67,7 @@ Dixlase does not currently operate a bug bounty program, and no monetary reward 
 
 ## What to Expect
 
-We aim to acknowledge all security reports promptly and handle them responsibly.
+We aim to acknowledge all security reports promptly and handle them responsibly, within the response targets below.
 
 Our process is as follows:
 
@@ -78,6 +78,22 @@ Our process is as follows:
 5. **Public Disclosure** — Coordinated with the reporter, after the patch is available
 
 For critical vulnerabilities actively exploited in the wild, we will work to release a patch as quickly as possible.
+
+### Response targets
+
+We are a small team, so these are targets rather than guarantees. "Business days" are Japanese
+business days (JST, excluding Japanese public holidays and 29 December – 3 January).
+
+| Stage | Target |
+| --- | --- |
+| Acknowledgment of your report | within 3 business days |
+| Initial assessment (valid or not, and severity) | within 10 business days |
+| Status updates while we work on a fix | at least every 14 days |
+| Fix for a confirmed vulnerability | Critical: 7 days · High: 30 days · Medium: 90 days · Low: next regular release |
+| Public disclosure | coordinated with you once the fix is released; by default no later than 90 days after the report |
+
+Severity is rated with CVSS v3.1. If you have not received an acknowledgment within 3 business days,
+please follow up through the other reporting channel.
 
 ## Responsible Disclosure Policy
 
