@@ -129,6 +129,46 @@ if (! function_exists('render_css_link')) {
     }
 }
 
+if (! function_exists('resolve_manifest_asset_url')) {
+    /**
+     * Resolve a single Vite manifest source key to a public URL.
+     *
+     * Used when a caller needs to reference ONE built asset by its
+     * source path (e.g. `resources/src/common/scss/style.scss`)
+     * without going through the fuller `load_assets_from_manifest`
+     * flow, which also emits `<script>` / `<link rel="preload">`
+     * tags depending on the entry shape.
+     *
+     * Vite content-hashes JS/CSS entry filenames (`css/common-<hash>.css`
+     * etc.), so hard-coding `assets/build/css/common.css` no longer
+     * resolves — the actual filename changes on every build whose
+     * bytes changed. This helper reads the current build's manifest
+     * and returns whatever hashed URL is live right now.
+     *
+     * @param  string  $sourceKey  Manifest key, e.g.
+     *                             `resources/src/common/scss/style.scss`
+     * @param  string  $manifestPath  Absolute filesystem path to the
+     *                                Vite manifest.json
+     * @param  string  $assetBasePath  URL prefix for the built asset,
+     *                                 e.g. `assets/build/`
+     * @return string|null  Absolute URL to the built asset, or null
+     *                      when the manifest is missing or the key
+     *                      is not present.
+     */
+    function resolve_manifest_asset_url(string $sourceKey, string $manifestPath, string $assetBasePath): ?string
+    {
+        if (! file_exists($manifestPath)) {
+            return null;
+        }
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+        if (! is_array($manifest) || ! isset($manifest[$sourceKey]['file']) || ! is_string($manifest[$sourceKey]['file'])) {
+            return null;
+        }
+
+        return asset($assetBasePath.$manifest[$sourceKey]['file']);
+    }
+}
+
 if (! function_exists('render_js_script')) {
     /**
      * Generate JS script tag (with CSP nonce support)
@@ -612,14 +652,18 @@ if (! function_exists('load_core_assets')) {
 
             $output .= render_vite_assets($viteFiles, false, false);
         } else {
-            // Load built Core CSS
-            $coreCssFiles = [
-                'assets/build/css/common.css',
-            ];
-            foreach ($coreCssFiles as $cssFile) {
-                if (file_exists(public_path($cssFile))) {
-                    $output .= render_css_link(asset($cssFile));
-                }
+            // Prepend bundled Core CSS (Tailwind + commons). Vite
+            // content-hashes the built filename (`css/common-<hash>.css`)
+            // so the on-disk path is not stable — resolve it through the
+            // manifest instead of hard-coding `assets/build/css/common.css`,
+            // which stopped existing after the hash migration.
+            $coreCssUrl = resolve_manifest_asset_url(
+                'resources/src/common/scss/style.scss',
+                public_path('assets/build/manifest.json'),
+                'assets/build/'
+            );
+            if ($coreCssUrl !== null) {
+                $output .= render_css_link($coreCssUrl);
             }
 
             // Load assets from manifest.json
@@ -651,11 +695,17 @@ if (! function_exists('load_front_assets')) {
         if (! empty($coreFiles)) {
             $output .= load_core_assets($coreFiles, 'front');
         } else {
-            // Load Tailwind even if coreFiles is empty
+            // Load Tailwind even if coreFiles is empty. Resolved through
+            // the manifest so it picks up Vite's content-hashed filename
+            // — see the comment in load_assets above for the rationale.
             if (! is_vite_dev_server()) {
-                $coreCssFile = 'assets/build/css/common.css';
-                if (file_exists(public_path($coreCssFile))) {
-                    $output .= render_css_link(asset($coreCssFile));
+                $coreCssUrl = resolve_manifest_asset_url(
+                    'resources/src/common/scss/style.scss',
+                    public_path('assets/build/manifest.json'),
+                    'assets/build/'
+                );
+                if ($coreCssUrl !== null) {
+                    $output .= render_css_link($coreCssUrl);
                 }
             }
         }
