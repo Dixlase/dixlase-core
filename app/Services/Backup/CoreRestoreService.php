@@ -30,9 +30,8 @@ use App\Events\DixlaseEvents;
 use App\Facades\Audit;
 use App\Models\AuditLog;
 use App\Models\BackupRecord;
-use App\Models\Plugin;
 use App\Models\RestoreRecord;
-use App\Models\Theme;
+use App\Services\Core\PublicAssetRelinker;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -375,25 +374,15 @@ class CoreRestoreService implements RestoreServiceInterface
      * (and without public/storage if it was ever lost). Every theme
      * and plugin asset then 404s and the front page renders
      * unstyled, so regenerate the links the same way the installer
-     * does. The symlink commands are idempotent (no-op when the
-     * link already exists).
+     * does. The relinker is idempotent (a working link is left as-is)
+     * and also replaces a real directory sitting in a link's place.
+     *
+     * The implementation lives in PublicAssetRelinker so the core
+     * update and rollback paths run the same repair.
      */
     private function relinkPublicAssets(): void
     {
-        $storageLink = public_path('storage');
-        if (! is_link($storageLink) && ! file_exists($storageLink)) {
-            // `--relative` for cross-container symlink resolution: see
-            // the matching comment in InstallConfirmController.
-            Artisan::call('storage:link', ['--relative' => true]);
-        }
-
-        foreach (Theme::query()->whereNotNull('directory')->pluck('directory') as $directory) {
-            Artisan::call('dls:theme:symlink', ['action' => 'create', 'theme' => $directory]);
-        }
-
-        foreach (Plugin::query()->whereNotNull('directory')->pluck('directory') as $directory) {
-            Artisan::call('dls:plugin:symlink', ['action' => 'create', 'plugin' => $directory]);
-        }
+        (new PublicAssetRelinker())->relink();
     }
 
     /**

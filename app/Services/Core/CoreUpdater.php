@@ -347,6 +347,23 @@ class CoreUpdater
                 );
             }
 
+            // public/assets/themes/<Theme> and public/assets/plugins/<Plugin>
+            // are symlinks into the extension trees; the source swap above
+            // replaced public/ wholesale and a release ZIP can even carry the
+            // dereferenced assets as a real directory at those paths. Re-point
+            // the links at the extension trees, after the bundled-theme step so
+            // a newly bundled theme is covered too. Deliberately outside the
+            // $dependencyUpdate branch: the source swap happens on every
+            // update. Non-fatal — an unlinked asset tree renders the front page
+            // unstyled but does not stop the update.
+            $log('Relinking public asset symlinks (storage, themes, plugins)...');
+            try {
+                $relinked = (new PublicAssetRelinker())->relink();
+                $log("Relinked public assets (themes: {$relinked['themes']}, plugins: {$relinked['plugins']}).");
+            } catch (\Throwable $relinkError) {
+                $log('WARNING: public asset relink failed ('.$relinkError->getMessage().'); if the front page renders unstyled, run `php artisan dls:theme:symlink create --all` and `php artisan dls:plugin:symlink create --all`.');
+            }
+
             $log('Running migrations...');
             // Scope migrate to the core's own migration path. Plugin and
             // theme ServiceProviders register their own database/migrations
