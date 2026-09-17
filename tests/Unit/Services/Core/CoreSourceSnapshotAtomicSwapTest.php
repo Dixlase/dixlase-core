@@ -142,6 +142,35 @@ class CoreSourceSnapshotAtomicSwapTest extends TestCase
         $this->assertSame('{"version":2}', (string) file_get_contents($live.'/assets/manifest.json'));
     }
 
+    public function test_swap_clears_a_staged_real_directory_so_the_live_symlink_survives(): void
+    {
+        // A release ZIP that dereferenced public/assets/themes/<Theme> ships it
+        // as a real directory, so the staged tree occupies the slot the live
+        // symlink needs. unlink() cannot remove a directory, so without a
+        // recursive delete the link is never recreated and the live tree ends
+        // up holding a stale copy — which a later rollback then deletes.
+        [$source, $live] = $this->makePair();
+        $themeTarget = $this->workDir.'/external-theme';
+        mkdir($themeTarget, 0755, true);
+        $this->writeFile($themeTarget.'/style.css', 'external theme');
+        mkdir($live.'/assets/themes', 0755, true);
+        symlink($themeTarget, $live.'/assets/themes/DixlaseOnePage');
+        $this->writeFile($source.'/assets/themes/DixlaseOnePage/style.css', 'dereferenced copy from the zip');
+
+        $this->snapshotter->replaceLiveDirectory($source, $live);
+
+        $this->assertTrue(
+            is_link($live.'/assets/themes/DixlaseOnePage'),
+            'The live symlink must survive a staged payload that holds a real directory at the same path.'
+        );
+        $this->assertSame($themeTarget, readlink($live.'/assets/themes/DixlaseOnePage'));
+        $this->assertSame(
+            'external theme',
+            (string) file_get_contents($live.'/assets/themes/DixlaseOnePage/style.css'),
+            'The link must resolve to the extension assets, not the dereferenced copy.'
+        );
+    }
+
     public function test_swap_preserves_bootstrap_cache_when_swapping_bootstrap(): void
     {
         // `bootstrap/cache` is in PROTECTED_PATHS but lives INSIDE the

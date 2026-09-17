@@ -345,10 +345,16 @@ class CoreSourceSnapshot
             $destination = $targetDir.'/'.$relative;
             File::ensureDirectoryExists(dirname($destination));
             if (is_link($destination) || file_exists($destination)) {
-                // A staged file already occupies the slot — drop it so
+                // A staged entry already occupies the slot — drop it so
                 // the symlink can take its place. The staged content
                 // was a shadow of what the runtime symlink points at.
-                @unlink($destination);
+                // It can be a whole directory: a release ZIP built with
+                // `zip` without `-y` stores public/assets/themes/<Theme>
+                // dereferenced, as a real directory. unlink() cannot
+                // remove one, so clear the slot recursively — otherwise
+                // the symlink is never recreated and the live tree keeps
+                // a stale copy that the next rollback deletes outright.
+                self::deleteRecursive($destination);
             }
             @symlink($target, $destination);
         }
