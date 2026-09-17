@@ -187,7 +187,12 @@ class FileIntegrityAudit extends Model
      */
     public static function getLatest(?string $scope = null): ?self
     {
-        $query = static::query()->orderBy('created_at', 'desc');
+        // Order by the primary key, not created_at: the two are monotonic,
+        // and created_at has no index, so ordering by it forces a filesort
+        // that on MySQL 8 packs the whole row — including the multi-hundred-
+        // KB result_payload JSON — into sort_buffer_size (256 KB by
+        // default) and fails with 1038 "Out of sort memory".
+        $query = static::query()->orderBy('id', 'desc');
 
         if ($scope) {
             $query->where('scope', $scope);

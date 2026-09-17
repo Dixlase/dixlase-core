@@ -63,8 +63,11 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $baselineMeta = $hasBaseline ? $this->fileIntegrityService->getBaselineMeta() : null;
 
         // Get recent scan history (with pagination)
+        // Ordered by id (see FileIntegrityAudit::getLatest()): created_at is
+        // unindexed and a filesort over rows carrying result_payload
+        // overflows MySQL 8's default sort buffer.
         $recentAudits = FileIntegrityAudit::where('scope', FileIntegrityAudit::SCOPE_CORE)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate(10);
 
         // Date format according to locale
