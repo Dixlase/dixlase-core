@@ -66,6 +66,8 @@ class FrontWelcomeController extends FrontController
 
         $hasCustomJs = false;
         $hasCustomCss = false;
+        $customJs = '';
+        $customCss = '';
 
         if ($frontPage) {
             $locale = App::getLocale();
@@ -84,8 +86,10 @@ class FrontWelcomeController extends FrontController
 
             // HTML editor: check if custom JS/CSS exists for external file delivery
             if ($frontPage->editor_type === ContentEditorType::HTML) {
-                $hasCustomJs = ! empty($this->contentService->getJsContent($frontPage, $locale));
-                $hasCustomCss = ! empty($this->contentService->getCssContent($frontPage, $locale));
+                $customJs = (string) $this->contentService->getJsContent($frontPage, $locale);
+                $customCss = (string) $this->contentService->getCssContent($frontPage, $locale);
+                $hasCustomJs = $customJs !== '';
+                $hasCustomCss = $customCss !== '';
             }
         }
 
@@ -93,8 +97,34 @@ class FrontWelcomeController extends FrontController
         $this->viewParams['frontEditorType'] = $frontEditorType;
         $this->viewParams['hasCustomJs'] = $hasCustomJs;
         $this->viewParams['hasCustomCss'] = $hasCustomCss;
-        $this->viewParams['customAssetVersion'] = $frontPage?->updated_at?->timestamp ?? 0;
+        $this->viewParams['customAssetVersion'] = self::customAssetVersion($frontPage, $customCss, $customJs);
 
         return view('themes::index', $this->viewParams);
+    }
+
+    /**
+     * Cache-busting token for the `/front/custom-style.css` and
+     * `/front/custom-script.js` URLs.
+     *
+     * Derived from the served CSS / JS bodies (plus the row timestamp), not
+     * from `updated_at` alone: with file storage the CSS / JS are edited on
+     * disk without touching the row, so a timestamp-only token never
+     * changed and browsers kept the stale stylesheet for the full
+     * `max-age=3600` of the asset response. Shared with the admin preview
+     * frame so both render against the same token.
+     */
+    public static function customAssetVersion(?FrontPage $frontPage, string $css, string $js): string
+    {
+        if (! $frontPage) {
+            return '0';
+        }
+
+        $stamp = (string) ($frontPage->updated_at?->timestamp ?? 0);
+
+        if ($css === '' && $js === '') {
+            return $stamp;
+        }
+
+        return sprintf('%u', crc32($stamp."\n".$css."\n".$js));
     }
 }
