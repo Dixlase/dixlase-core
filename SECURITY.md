@@ -129,13 +129,22 @@ We want to be unambiguous about the gaps so that operators do not over-trust the
 - **No memory isolation** between plugin code and core code.
 - **Filesystem and network access are not jailed** by default — only declared via `plugin.json` and detected by static analysis.
 - **No CPU / memory quotas** on plugin code execution.
-- **`PluginPermissionService::enforce()` is opt-in by core call sites**, not a global runtime interceptor.
+- **Capability checks run at a handful of core call sites**, not at a global interceptor. Today that is the plugin-capability resolver and the privacy export / erase paths; `PluginPermissionService::enforce()` itself is not yet called anywhere.
+- **Declared permissions are inputs to scanning and scoring, not runtime switches.** A plugin that does not declare `system.register_commands` still gets its Artisan commands registered; the mismatch lowers the health score instead of blocking the registration.
+- **The health score gates install and enable, not execution.** Once a plugin is enabled, nothing re-evaluates it per request.
 
 These limitations are inherent to single-process PHP CMSs and apply equally to WordPress, Drupal, and other Laravel-based CMSs. They are not unique gaps in Dixlase.
 
 ### Forward direction
 
 We will explore a range of approaches over future releases and progressively strengthen plugin isolation. Candidates under consideration include subprocess-level separation with `disable_functions` / `open_basedir` restrictions, and language-runtime-level isolation via WebAssembly. We are intentionally not pre-committing to a specific implementation path until the relevant ecosystems (e.g. `wasmer-php`, WASI Component Model) reach production readiness.
+
+Two points of honesty about that direction:
+
+- **Subprocess-level separation would be a mitigation, not isolation.** It narrows what a compromised plugin can reach; it does not make plugin code untrusted-safe, and we will not describe it as sandboxing if we ship it.
+- **A runtime only constrains code that runs inside it.** Isolating plugins through WebAssembly means plugin code executing inside the runtime and reaching the core only through host functions — a different plugin format, not a change that could be applied to today's PHP plugins.
+
+The nearer-term work is therefore to make the declared model true: widen the core APIs that plugins must go through, and enforce the declarations at those boundaries.
 
 ### Operational guidance
 
