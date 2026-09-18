@@ -43,6 +43,8 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 {
+    use \App\Captcha\Concerns\SanitizesRecaptchaAction;
+
     protected array $config;
 
     public function __construct(array $config = [])
@@ -81,7 +83,8 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
         }
 
         $siteKey = $this->config['site_key'];
-        $action = $options['action'] ?? 'submit';
+        // Same A-Za-z/_ restriction as reCAPTCHA v3.
+        $action = $this->sanitizeAction((string) ($options['action'] ?? 'submit'));
         $scriptTag = $this->renderScript();
 
         // Get CSP nonce for inline script

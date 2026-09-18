@@ -42,6 +42,8 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleRecaptchaV3Driver implements CaptchaDriver
 {
+    use \App\Captcha\Concerns\SanitizesRecaptchaAction;
+
     protected array $config;
 
     public function __construct(array $config = [])
@@ -79,7 +81,10 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
         }
 
         $siteKey = $this->config['site_key'];
-        $action = $options['action'] ?? 'submit';
+        // Google rejects anything outside A-Za-z/_ in an action name, and
+        // Dixlase derives it from a form key such as
+        // `dixlase-inquiry.inquiry_contact`. See SanitizesRecaptchaAction.
+        $action = $this->sanitizeAction((string) ($options['action'] ?? 'submit'));
         $scriptTag = $this->renderScript();
 
         // Get CSP nonce for inline script
@@ -92,17 +97,13 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
         return $scriptTag."
             <input type=\"hidden\" id=\"g-recaptcha-response\" name=\"g-recaptcha-response\" value=\"\">
             <script{$nonce}>
-                console.log('CAPTCHA v3 Debug - Site Key:', '$siteKey');
-                console.log('CAPTCHA v3 Debug - Action:', '$action');
                 document.addEventListener('DOMContentLoaded', function() {
                     if (typeof grecaptcha !== 'undefined') {
                         grecaptcha.ready(function() {
-                            console.log('CAPTCHA v3 Debug - About to execute');
                             grecaptcha.execute('$siteKey', {action: '$action'}).then(function(token) {
-                                console.log('CAPTCHA v3 Debug - Token received:', token.substring(0, 20) + '...');
                                 document.getElementById('g-recaptcha-response').value = token;
                             }).catch(function(error) {
-                                console.error('CAPTCHA v3 Debug - Execute failed:', error);
+                                console.error('reCAPTCHA v3 execute failed:', error);
                             });
                         });
                     } else {
