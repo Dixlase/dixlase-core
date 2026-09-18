@@ -84,8 +84,10 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
 >
     {{-- The modal body is centered by default (.modal-body is text-center), so
          wrap the explanation in a left-aligned bullet list: one point per line
-         is easier to scan than a centered paragraph. --}}
-    <div class="text-left text-sm">
+         is easier to scan than a centered paragraph. Colour and padding mirror
+         the modal's own .modal-message (text-gray-600 dark:text-gray-300 +
+         horizontal padding), since this slot renders outside that element. --}}
+    <div class="text-left text-sm text-gray-600 dark:text-gray-300 mt-3 px-4 sm:px-8">
         <p class="mb-3">{{ __('admin/demo.details_intro') }}</p>
         <ul class="list-disc list-outside pl-5 space-y-2">
             @foreach ((array) __('admin/demo.details_points') as $point)
