@@ -38,6 +38,13 @@ return [
     'banner_message' => 'You are using a public demo. <br><br>Destructive actions and some admin features (member management, global settings, etc.) are disabled and view-only, and outgoing mail is captured locally.<br><br>Your data will be reset when this demo expires. <br><br>In production, all features are fully available.',
     'details_link' => 'Learn more',
     'details_title' => 'About demo mode',
+    'details_intro' => 'You are using a public demo.',
+    'details_points' => [
+        'Destructive actions and some admin features (member management, global settings, etc.) are disabled and view-only.',
+        'Outgoing mail is captured locally.',
+        'Each session lasts about 3 hours; your data is reset when it expires.',
+        'In production, all features are fully available.',
+    ],
     'action_disabled' => 'This action is disabled in demo mode.',
     'readonly_notice' => 'This form is view-only in the demo. Changes cannot be saved.',
     'account' => 'Account',
