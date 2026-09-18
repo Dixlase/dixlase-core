@@ -82,75 +82,101 @@ class GoogleRecaptchaV2Driver implements CaptchaDriver
         $callback = $options['callback'] ?? 'onRecaptchaCallback';
         $scriptTag = $this->renderScript();
 
+        // CSP nonce for the inline script below. Without it the script is
+        // blocked wherever CSP is on, and the invisible widget never produces
+        // a token — the submission then fails as "response is required".
+        $nonce = '';
+        if (function_exists('csp_nonce')) {
+            $nonceValue = csp_nonce();
+            $nonce = $nonceValue ? ' nonce="'.$nonceValue.'"' : '';
+        }
+
         if ($version === 'v2_invisible') {
-            // v2 Invisible: no checkbox, automatically executed on form submission
+            // v2 invisible: no checkbox. The token is fetched on load and
+            // written into the hidden field, exactly like v3, so the page can
+            // submit however it likes — a native submit, or the fetch() the
+            // inquiry form uses. The previous shape intercepted the submit
+            // event and called HTMLFormElement.prototype.submit() from the
+            // callback, which cannot work for a form that posts with fetch:
+            // the request is already in flight by then. It also carried no CSP
+            // nonce (so the whole script was blocked on any site with CSP on),
+            // grabbed `document.querySelector("form")` — the first form on the
+            // page, not necessarily this one — and used a fixed element id, so
+            // a second form on the page broke both.
+            //
+            // Trade-off: executing on load means Google may raise its
+            // challenge when the page opens rather than on submit, and the
+            // token expires two minutes later, as it does for v3.
+            $instance = 'dls_rc_'.bin2hex(random_bytes(4));
+            $containerId = 'recaptcha-container-'.$instance;
+
             return $scriptTag."
-                <div id=\"recaptcha-container\" style=\"display:none;\"></div>
-                <script>
-                    var recaptchaWidgetId;
-                    var isRecaptchaExecuting = false;
-                    
-                    function onRecaptchaLoad() {
-                        
-                        recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
-                            'sitekey': '$siteKey',
-                            'size': 'invisible',
-                            'callback': function(token) {
-                                isRecaptchaExecuting = false;
-                                // Google reCAPTCHA APIが自動的にhidden inputに値を設定するため、
-                                // 少し待ってからフォームを送信
-                                setTimeout(function() {
-                                    var form = document.querySelector('form');
-                                    HTMLFormElement.prototype.submit.call(form);
-                                }, 100);
-                            },
-                            'error-callback': function() {
-                                isRecaptchaExecuting = false;
-                                alert('reCAPTCHA verification failed. Please try again.');
-                            }
-                        });
-                    }
-                    
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const form = document.querySelector('form');
-                        
-                        if (!form) {
-                            return;
+                <div id=\"{$containerId}\" style=\"display:none;\"></div>
+                <input type=\"hidden\" name=\"g-recaptcha-response\" value=\"\">
+                <script{$nonce}>
+                    (function () {
+                        var script = document.currentScript;
+                        var container = document.getElementById('{$containerId}');
+
+                        function tokenField() {
+                            // The field this widget shipped with, inside the
+                            // form the widget was rendered into.
+                            var form = script && script.closest ? script.closest('form') : null;
+                            var scope = form || document;
+
+                            return scope.querySelector('input[name=\"g-recaptcha-response\"]');
                         }
-                        
-                        // grecaptchaが読み込まれるまで待つ
-                        var checkInterval = setInterval(function() {
-                            if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
-                                clearInterval(checkInterval);
-                                onRecaptchaLoad();
+
+                        function execute() {
+                            var field = tokenField();
+                            if (! field) {
+                                console.error('reCAPTCHA v2 invisible: no g-recaptcha-response field found');
+
+                                return;
                             }
-                        }, 100);
-                        
-                        // フォーム送信をインターセプト
-                        form.addEventListener('submit', function(e) {
-                            // 既にトークンがある場合はそのまま送信
-                            const existingToken = document.getElementById('g-recaptcha-response').value;
-                            if (existingToken) {
-                                return true;
+
+                            var widgetId = grecaptcha.render(container, {
+                                'sitekey': '$siteKey',
+                                'size': 'invisible',
+                                'callback': function (token) {
+                                    field.value = token;
+                                },
+                                'error-callback': function () {
+                                    console.error('reCAPTCHA v2 invisible: challenge failed');
+                                }
+                            });
+
+                            grecaptcha.execute(widgetId);
+                        }
+
+                        function whenReady() {
+                            if (typeof grecaptcha === 'undefined' || ! grecaptcha.render) {
+                                console.error('reCAPTCHA v2 script not loaded properly');
+
+                                return;
                             }
-                            
-                            // 実行中の場合は待つ
-                            if (isRecaptchaExecuting) {
-                                e.preventDefault();
-                                return false;
-                            }
-                            
-                            // トークンがない場合は取得
-                            e.preventDefault();
-                            
-                            if (typeof grecaptcha === 'undefined' || typeof recaptchaWidgetId === 'undefined') {
-                                return false;
-                            }
-                            
-                            isRecaptchaExecuting = true;
-                            grecaptcha.execute(recaptchaWidgetId);
-                        });
-                    });
+
+                            grecaptcha.ready ? grecaptcha.ready(execute) : execute();
+                        }
+
+                        // api.js is loaded async/defer, so it may land after
+                        // this script runs.
+                        if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+                            whenReady();
+                        } else {
+                            var waited = 0;
+                            var timer = setInterval(function () {
+                                waited += 100;
+                                if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+                                    clearInterval(timer);
+                                    whenReady();
+                                } else if (waited >= 10000) {
+                                    clearInterval(timer);
+                                    console.error('reCAPTCHA v2 script not loaded properly');
+                                }
+                            }, 100);
+                        }
+                    })();
                 </script>
             ";
         } else {
