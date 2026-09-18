@@ -241,6 +241,17 @@ trait LoginTrait
 
         // CAPTCHA verification (skip if already verified in identifier check).
         // Key derivation must match LoginIdentifierCheckTrait (hashed identifier).
+        //
+        // The flag is what lets the password step (step 2 of the form) go
+        // without a widget of its own: the CAPTCHA was solved on the
+        // identifier step and stays good for five minutes. It is cleared only
+        // once the password is accepted (see the two success branches
+        // below). Clearing it here, before the password check, meant a single
+        // wrong password consumed it — and the retry then had neither the
+        // flag nor a widget to obtain a token from, so it failed with
+        // "CAPTCHA token is missing" no matter what was typed. Brute-force on
+        // the password step is bounded by the lockout service, not by
+        // re-solving a CAPTCHA per attempt.
         $captchaVerifiedKey = 'captcha_verified_'.hash('sha256', (string) $login);
         $captchaVerifiedTime = session()->get($captchaVerifiedKey);
         $captchaVerified = $captchaVerifiedTime && (time() - $captchaVerifiedTime) < 300; // Within 5 minutes
@@ -255,9 +266,6 @@ trait LoginTrait
                 ])->withInput($request->except('password'));
             }
         }
-
-        // Clear CAPTCHA verified flag
-        session()->forget($captchaVerifiedKey);
 
         // Check lockout status
         if ($lockoutService->isLockedOut($login)) {
@@ -333,6 +341,9 @@ trait LoginTrait
                 ]);
             }
 
+            // Password accepted: the identifier-step CAPTCHA has done its job.
+            session()->forget($captchaVerifiedKey);
+
             session([
                 $this->getSessionPrefix().'.id' => $user->getAuthIdentifier(),
                 $this->getSessionPrefix().'.remember' => $request->boolean('remember'),
@@ -354,6 +365,9 @@ trait LoginTrait
 
             return redirect()->route($redirectRoute);
         } else {
+            // Password accepted: the identifier-step CAPTCHA has done its job.
+            session()->forget($captchaVerifiedKey);
+
             // Record successful login (clear failure records)
             $lockoutService->handleSuccessfulLogin($email, $request);
 
