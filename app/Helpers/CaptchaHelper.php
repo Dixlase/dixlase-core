@@ -365,6 +365,13 @@ class CaptchaHelper
         try {
             $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
 
+            // Drivers that assess the token against the action it was
+            // rendered with (reCAPTCHA Enterprise) get it here; the
+            // CaptchaDriver contract itself does not carry the action.
+            if ($captchaDriverInstance instanceof \App\Captcha\ExpectsAction) {
+                $captchaDriverInstance = $captchaDriverInstance->withExpectedAction($action);
+            }
+
             return $captchaDriverInstance->verify($request);
         } catch (\Exception $e) {
             Log::error('Failed to verify CAPTCHA', [
@@ -372,10 +379,14 @@ class CaptchaHelper
                 'error' => $e->getMessage(),
             ]);
 
-            // Treat errors as failures
+            // Treat errors as failures. The message belongs in `errors`
+            // (what getErrorMessage() reads); it used to be passed as the
+            // score, so the user saw the generic fallback instead.
             return new \App\Captcha\CaptchaResult(
                 false,
-                __('auth.captcha_verification_failed')
+                null,
+                null,
+                ['captcha' => __('auth.captcha_verification_failed')]
             );
         }
     }

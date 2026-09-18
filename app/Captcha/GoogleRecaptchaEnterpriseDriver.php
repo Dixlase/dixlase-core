@@ -41,11 +41,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
+class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver, ExpectsAction
 {
     use \App\Captcha\Concerns\SanitizesRecaptchaAction;
 
     protected array $config;
+
+    /**
+     * Action to assess the token against, already in Google's A-Za-z/_ form.
+     * Null when verify() is called without one; the assessment then carries
+     * no expectedAction and the mismatch check is skipped.
+     */
+    protected ?string $expectedAction = null;
 
     public function __construct(array $config = [])
     {
@@ -56,6 +63,15 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             'min_score' => CaptchaHelper::getGoogleMinScore(),
             'project_id' => CaptchaHelper::getGoogleProjectId(),
         ], $config);
+    }
+
+    public function withExpectedAction(string $action): static
+    {
+        // Bound as a singleton: never mutate the shared instance.
+        $copy = clone $this;
+        $copy->expectedAction = $this->sanitizeAction($action);
+
+        return $copy;
     }
 
     public function renderScript(): string
@@ -133,15 +149,21 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
             // Uses Enterprise REST API (API key-based authentication)
             $apiUrl = "https://recaptchaenterprise.googleapis.com/v1/projects/{$this->config['project_id']}/assessments?key={$this->config['api_key']}";
 
-            $payload = [
-                'event' => [
-                    'token' => $token,
-                    'siteKey' => $this->config['site_key'],
-                    'userIpAddress' => $request->ip(),
-                    'userAgent' => $request->userAgent() ?? '',
-                    'expectedAction' => 'admin_login',
-                ],
+            $event = [
+                'token' => $token,
+                'siteKey' => $this->config['site_key'],
+                'userIpAddress' => $request->ip(),
+                'userAgent' => $request->userAgent() ?? '',
             ];
+
+            // The action the widget was rendered with (see withExpectedAction).
+            // This used to be the literal 'admin_login' for every form, so the
+            // inquiry form's tokens were assessed against the wrong action.
+            if ($this->expectedAction !== null) {
+                $event['expectedAction'] = $this->expectedAction;
+            }
+
+            $payload = ['event' => $event];
 
             $timeout = config('security.external_services.captcha_timeout', 10);
 
@@ -179,6 +201,25 @@ class GoogleRecaptchaEnterpriseDriver implements CaptchaDriver
 
             $score = $result['riskAnalysis']['score'] ?? 0;
             $action = $result['tokenProperties']['action'] ?? null;
+
+            // Google: a token whose action differs from the expected one was
+            // obtained for another form and replayed here — treat it as an
+            // attempt to falsify the action, not as a low score.
+            if ($this->expectedAction !== null && $action !== $this->expectedAction) {
+                Log::warning('reCAPTCHA Enterprise action mismatch', [
+                    'expected' => $this->expectedAction,
+                    'actual' => $action,
+                    'ip' => $request->ip(),
+                ]);
+
+                return new CaptchaResult(
+                    false,
+                    $score,
+                    $action,
+                    ['captcha' => 'reCAPTCHA verification failed'],
+                    ['invalid_reason' => 'action_mismatch', 'expected_action' => $this->expectedAction]
+                );
+            }
 
             if ($score < $this->config['min_score']) {
                 Log::warning('reCAPTCHA Enterprise score too low', [
