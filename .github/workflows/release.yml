@@ -215,10 +215,12 @@ jobs:
         #     that must ship a matching theme update alongside core.
         #
         # When on, the next step writes .dixlase-release.json into the
-        # payload root; CoreUpdater reads it and applies each declared
-        # themes/<slug>/ during the update. Releases without the marker
-        # keep the pre-manifest behaviour (theme code preserved, admin
-        # panel still runs the standalone theme-update flow).
+        # payload root; CoreUpdater reads it and bootstraps each declared
+        # themes/<slug>/ that is NOT yet installed (fresh
+        # install-from-release). An already-installed theme is never
+        # changed by a core update, whatever the bundled version — the
+        # operator moves it via dls:theme:update / dls:theme:rollback.
+        # Releases without the marker ship core only.
         id: bundle
         run: |
           BUNDLE=false
@@ -242,7 +244,7 @@ jobs:
       - name: Write .dixlase-release.json manifest
         if: steps.bundle.outputs.bundle == 'true'
         # Emits the manifest the core updater reads to decide which
-        # themes to apply alongside core. v1 supports exactly the
+        # themes to bootstrap alongside core. v1 supports exactly the
         # official theme (DixlaseOnePage); ReleaseManifest validates
         # the entry so a hostile ZIP cannot direct the updater at a
         # path outside themes/<slug>/. Version comes from the theme's

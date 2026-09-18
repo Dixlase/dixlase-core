@@ -31,243 +31,224 @@ use RuntimeException;
 use Tests\TestCase;
 
 /**
- * Pins CoreUpdater::applyBundledThemes(). The method is only called
- * for a release whose ReleaseManifest declares bundled themes; when it
- * runs it copies each declared themes/<slug>/ from staging over the
- * live tree, retains a pre-apply copy under storage/ so the catch
- * block can restore it on rollback, and refreshes the DB Theme.version
- * so operator-facing metadata lines up on the release's version.
+ * Pins the bootstrap-only contract of CoreUpdater::applyBundledThemes().
  *
- * Tests use slugs prefixed with `TestBundle_` so they cannot collide
- * with a real theme directory on the developer's machine, and the
- * tearDown removes both the live theme dir and the storage snapshots
- * root even when a test fails.
+ * A release manifest may declare bundled themes, but a core update
+ * never changes a theme that is already installed: no file is
+ * overwritten and the DB Theme.version stays where it was, even when
+ * the bundled copy is newer. Only a theme whose directory is absent is
+ * copied into place (fresh install-from-release). Installed themes are
+ * moved exclusively through dls:theme:update / dls:theme:rollback.
+ *
+ * The fake "live" theme tree lives under storage/framework/testing/,
+ * never under the real themes/ directory, so a failing test can never
+ * touch a tracked theme on the developer's machine. The method resolves
+ * the live path from the manifest entry's `path` through base_path(),
+ * so the tests pass a repo-relative path into that throwaway tree.
  */
 class CoreUpdaterBundledThemesTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @var list<string> */
-    private array $liveThemeSlugsToCleanup = [];
-
     private string $stagingRoot;
+
+    /** Repo-relative throwaway "themes/" root, e.g. storage/framework/testing/bundled-themes-xxx */
+    private string $liveRootRelative;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->stagingRoot = sys_get_temp_dir().'/core-updater-bundled-themes-staging-'.uniqid();
         File::ensureDirectoryExists($this->stagingRoot);
+
+        $this->liveRootRelative = 'storage/framework/testing/bundled-themes-'.uniqid();
+        File::ensureDirectoryExists(base_path($this->liveRootRelative));
     }
 
     protected function tearDown(): void
     {
-        foreach ($this->liveThemeSlugsToCleanup as $slug) {
-            $livePath = base_path("themes/{$slug}");
-            if (is_dir($livePath)) {
-                File::deleteDirectory($livePath);
-            }
-        }
         if (is_dir($this->stagingRoot)) {
             File::deleteDirectory($this->stagingRoot);
         }
-        $snapshotsRoot = storage_path('app/private/core-update/theme-snapshots');
-        if (is_dir($snapshotsRoot)) {
-            File::deleteDirectory($snapshotsRoot);
+        if (is_dir(base_path($this->liveRootRelative))) {
+            File::deleteDirectory(base_path($this->liveRootRelative));
         }
         parent::tearDown();
     }
 
-    public function test_copies_staged_theme_dir_over_the_live_tree(): void
+    public function test_leaves_an_installed_theme_untouched(): void
     {
-        $slug = $this->registerTestSlug();
+        $slug = $this->newSlug();
+        $livePath = $this->livePath($slug);
+        File::ensureDirectoryExists($livePath);
+        file_put_contents($livePath.'/theme.json', json_encode(['version' => '1.0.0', 'directory' => $slug]));
+        file_put_contents($livePath.'/custom.txt', 'operator-customized');
+        $before = $this->fingerprint($livePath);
+        $this->createThemeRow($slug, '1.0.0');
         $this->stageTheme($slug, '2.0.0', ['hello.txt' => 'from-staging']);
 
-        $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
-        ]);
+        $lines = [];
+        $bootstrapped = $this->applyBundledThemes([$this->entry($slug, '2.0.0')], $lines);
 
-        $this->assertFileExists(base_path("themes/{$slug}/hello.txt"));
-        $this->assertSame('from-staging', file_get_contents(base_path("themes/{$slug}/hello.txt")));
+        // Files are byte-identical, nothing was added, nothing removed.
+        $this->assertSame($before, $this->fingerprint($livePath));
+        $this->assertFileDoesNotExist($livePath.'/hello.txt');
+        // The DB row still says the operator's version.
+        $this->assertSame('1.0.0', Theme::where('directory', $slug)->value('version'));
+        // Nothing to undo on rollback.
+        $this->assertSame([], $bootstrapped);
+        $this->assertStringContainsString("Theme '{$slug}' is already installed; leaving it untouched", implode("\n", $lines));
     }
 
-    public function test_updates_the_theme_db_version_when_the_theme_is_installed(): void
+    public function test_leaves_an_installed_theme_untouched_even_when_it_is_newer_than_the_bundle(): void
     {
-        $slug = $this->registerTestSlug();
-        Theme::create([
-            'name' => 'Test Bundled Theme',
-            'slug' => strtolower($slug),
-            'directory' => $slug,
-            'package_name' => "dixlase/{$slug}",
-            'version' => '1.0.0',
-            'has_settings' => false,
-        ]);
+        // No version comparison in either direction: the operator
+        // decides when a theme moves, so a bundle that is older than
+        // the installed copy must not downgrade it either.
+        $slug = $this->newSlug();
+        $livePath = $this->livePath($slug);
+        File::ensureDirectoryExists($livePath);
+        file_put_contents($livePath.'/theme.json', json_encode(['version' => '3.0.0', 'directory' => $slug]));
+        $before = $this->fingerprint($livePath);
+        $this->createThemeRow($slug, '3.0.0');
         $this->stageTheme($slug, '2.0.0');
 
-        $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
-        ]);
+        $bootstrapped = $this->applyBundledThemes([$this->entry($slug, '2.0.0')]);
+
+        $this->assertSame($before, $this->fingerprint($livePath));
+        $this->assertSame('3.0.0', Theme::where('directory', $slug)->value('version'));
+        $this->assertSame([], $bootstrapped);
+    }
+
+    public function test_bootstraps_a_theme_that_is_not_installed(): void
+    {
+        $slug = $this->newSlug();
+        $this->stageTheme($slug, '2.0.0', ['hello.txt' => 'from-staging']);
+
+        $lines = [];
+        $bootstrapped = $this->applyBundledThemes([$this->entry($slug, '2.0.0')], $lines);
+
+        $livePath = $this->livePath($slug);
+        $this->assertFileExists($livePath.'/theme.json');
+        $this->assertSame('from-staging', file_get_contents($livePath.'/hello.txt'));
+        $this->assertSame([$slug], $bootstrapped);
+        $this->assertStringContainsString("Bootstrapped themes/{$slug} at v2.0.0.", implode("\n", $lines));
+    }
+
+    public function test_bootstrapping_sets_the_db_version_when_a_row_already_exists(): void
+    {
+        // A stale row (directory removed earlier) would otherwise keep
+        // advertising the old version after the code is bootstrapped.
+        $slug = $this->newSlug();
+        $this->createThemeRow($slug, '1.0.0');
+        $this->stageTheme($slug, '2.0.0');
+
+        $this->applyBundledThemes([$this->entry($slug, '2.0.0')]);
 
         $this->assertSame('2.0.0', Theme::where('directory', $slug)->value('version'));
     }
 
-    public function test_is_a_noop_on_the_db_when_the_theme_is_not_installed(): void
+    public function test_bootstrapping_does_not_create_a_db_row(): void
     {
-        // Operator has never activated this theme (no DB row); the
-        // update should still land the code, and simply skip the DB
-        // update rather than throw. The row is created later by the
-        // theme's normal activation flow.
-        $slug = $this->registerTestSlug();
+        // The row is created by the theme's normal activation flow.
+        $slug = $this->newSlug();
         $this->stageTheme($slug, '2.0.0');
 
-        $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
-        ]);
+        $this->applyBundledThemes([$this->entry($slug, '2.0.0')]);
 
         $this->assertNull(Theme::where('directory', $slug)->first());
-        $this->assertFileExists(base_path("themes/{$slug}/theme.json"));
+        $this->assertFileExists($this->livePath($slug).'/theme.json');
     }
 
-    public function test_retains_the_pre_apply_copy_of_an_existing_live_theme_for_rollback(): void
+    public function test_handles_a_mixed_manifest_per_theme(): void
     {
-        $slug = $this->registerTestSlug();
-        $livePath = base_path("themes/{$slug}");
-        File::ensureDirectoryExists($livePath);
-        file_put_contents($livePath.'/old.txt', 'live-version');
-        $this->stageTheme($slug, '2.0.0');
+        $installed = $this->newSlug();
+        $absent = $this->newSlug();
+        File::ensureDirectoryExists($this->livePath($installed));
+        file_put_contents($this->livePath($installed).'/keep.txt', 'keep');
+        $this->stageTheme($installed, '2.0.0');
+        $this->stageTheme($absent, '2.0.0');
 
-        $snapshots = $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
+        $bootstrapped = $this->applyBundledThemes([
+            $this->entry($installed, '2.0.0'),
+            $this->entry($absent, '2.0.0'),
         ]);
 
-        // Live now has the staged copy.
-        $this->assertFileExists($livePath.'/theme.json');
-        $this->assertFalse(is_file($livePath.'/old.txt'));
-
-        // Snapshot has the pre-apply copy so a rollback can restore it.
-        $this->assertArrayHasKey($slug, $snapshots);
-        $this->assertFileExists($snapshots[$slug].'/old.txt');
-        $this->assertSame('live-version', file_get_contents($snapshots[$slug].'/old.txt'));
-    }
-
-    public function test_returns_no_snapshot_when_the_theme_is_a_fresh_install(): void
-    {
-        // No live directory means there is nothing to snapshot; the
-        // rollback path relies on an empty slot to mean "delete the
-        // fresh-copied dir on rollback" (verified elsewhere).
-        $slug = $this->registerTestSlug();
-        $this->stageTheme($slug, '2.0.0');
-
-        $snapshots = $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
-        ]);
-
-        $this->assertSame([], $snapshots);
-        $this->assertFileExists(base_path("themes/{$slug}/theme.json"));
+        $this->assertSame([$absent], $bootstrapped);
+        $this->assertFileDoesNotExist($this->livePath($installed).'/theme.json');
+        $this->assertFileExists($this->livePath($absent).'/theme.json');
     }
 
     public function test_throws_when_the_release_declares_a_theme_that_the_staged_payload_does_not_carry(): void
     {
-        $slug = $this->registerTestSlug();
+        $slug = $this->newSlug();
         // No stageTheme() call — the payload is empty.
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage("bundled theme '{$slug}'");
 
-        $this->applyBundledThemes([
-            ['slug' => $slug, 'version' => '2.0.0', 'path' => "themes/{$slug}"],
+        $this->applyBundledThemes([$this->entry($slug, '2.0.0')]);
+    }
+
+    private function newSlug(): string
+    {
+        return 'TestBundle_'.uniqid();
+    }
+
+    private function livePath(string $slug): string
+    {
+        return base_path($this->liveRootRelative."/themes/{$slug}");
+    }
+
+    /**
+     * @return array{slug: string, version: string, path: string}
+     */
+    private function entry(string $slug, string $version): array
+    {
+        return [
+            'slug' => $slug,
+            'version' => $version,
+            'path' => $this->liveRootRelative."/themes/{$slug}",
+        ];
+    }
+
+    private function createThemeRow(string $slug, string $version): void
+    {
+        Theme::create([
+            'name' => 'Test Bundled Theme',
+            'slug' => strtolower($slug),
+            'directory' => $slug,
+            'package_name' => "dixlase/{$slug}",
+            'version' => $version,
+            'has_settings' => false,
         ]);
     }
 
-    public function test_prune_removes_the_wrapper_dir_when_it_becomes_empty(): void
-    {
-        // Simulates the success-path cleanup sequence: applyBundledThemes()
-        // created a wrapper + per-slug snapshot; the update() loop then
-        // deleted each per-slug snapshot, leaving the wrapper empty; the
-        // pruner then drops the wrapper. Before this fix the wrapper stayed
-        // and every core update leaked one empty timestamp directory.
-        $wrapper = storage_path('app/private/core-update/theme-snapshots/TestPrune_'.uniqid());
-        File::ensureDirectoryExists($wrapper);
-        $slug = 'TestBundle_'.uniqid();
-        $snapshotPath = $wrapper.'/'.$slug;
-        File::ensureDirectoryExists($snapshotPath);
-        // Simulate the per-slug discard that runs before the pruner:
-        File::deleteDirectory($snapshotPath);
-
-        $this->invokePruner([$slug => $snapshotPath]);
-
-        $this->assertFalse(is_dir($wrapper), 'The empty wrapper directory should have been removed.');
-    }
-
-    public function test_prune_preserves_the_wrapper_dir_when_it_still_has_children(): void
-    {
-        // A concurrent write / another slug that failed to be cleaned up
-        // during the loop is enough — the pruner refuses to remove a
-        // non-empty wrapper so a stray file cannot be silently deleted.
-        $wrapper = storage_path('app/private/core-update/theme-snapshots/TestPrune_'.uniqid());
-        File::ensureDirectoryExists($wrapper);
-        $slug = 'TestBundle_'.uniqid();
-        $snapshotPath = $wrapper.'/'.$slug;
-        File::ensureDirectoryExists($snapshotPath);
-        // Simulate an unrelated leftover next to the snapshot:
-        file_put_contents($wrapper.'/unrelated.txt', 'still here');
-
-        $this->invokePruner([$slug => $snapshotPath]);
-
-        $this->assertTrue(is_dir($wrapper), 'The wrapper directory should have been preserved because a child remained.');
-        $this->assertFileExists($wrapper.'/unrelated.txt');
-
-        // House-keeping: this test intentionally left the wrapper on
-        // disk, so remove it before we leave.
-        File::deleteDirectory($wrapper);
-    }
-
-    public function test_prune_is_a_noop_for_an_empty_snapshot_map(): void
-    {
-        // The rollback / success paths always call the pruner even when
-        // the update did not touch any bundled theme; verify that the
-        // empty-map short-circuit doesn't throw or accidentally remove
-        // an ancestor.
-        $this->invokePruner([]);
-
-        // Purely a no-throw assertion — the important thing is that the
-        // call above returned without touching the filesystem.
-        $this->assertTrue(true);
-    }
-
     /**
-     * @param  array<string, string>  $snapshotPaths
+     * Relative path => sha1 of contents for every file under $dir.
+     *
+     * @return array<string, string>
      */
-    private function invokePruner(array $snapshotPaths): void
+    private function fingerprint(string $dir): array
     {
-        $updater = app(CoreUpdater::class);
-        $method = (new ReflectionClass(CoreUpdater::class))->getMethod('pruneEmptyThemeSnapshotParent');
-        $method->setAccessible(true);
-        $method->invoke($updater, $snapshotPaths);
+        $out = [];
+        foreach (File::allFiles($dir) as $file) {
+            $out[$file->getRelativePathname()] = sha1_file($file->getPathname());
+        }
+        ksort($out);
+
+        return $out;
     }
 
     /**
-     * Register a slug for tearDown cleanup and return it. Prefix
-     * guarantees the slug can never collide with a real theme
-     * directory on the developer's machine.
-     */
-    private function registerTestSlug(): string
-    {
-        $slug = 'TestBundle_'.uniqid();
-        $this->liveThemeSlugsToCleanup[] = $slug;
-
-        return $slug;
-    }
-
-    /**
-     * Create a minimal staged themes/<slug>/ directory under the
-     * test's staging root, including a theme.json plus any extra
-     * files the caller wants to plant.
+     * Create a minimal staged <path>/ directory under the test's
+     * staging root, including a theme.json plus any extra files.
      *
      * @param  array<string, string>  $extraFiles  filename => contents
      */
     private function stageTheme(string $slug, string $version, array $extraFiles = []): void
     {
-        $stagedTheme = $this->stagingRoot."/themes/{$slug}";
+        $stagedTheme = $this->stagingRoot.'/'.$this->entry($slug, $version)['path'];
         File::ensureDirectoryExists($stagedTheme);
         file_put_contents(
             $stagedTheme.'/theme.json',
@@ -280,17 +261,20 @@ class CoreUpdaterBundledThemesTest extends TestCase
 
     /**
      * Reflectively invoke CoreUpdater::applyBundledThemes with the
-     * shared staging root, capturing the returned snapshot map.
+     * shared staging root, collecting log lines into $lines.
      *
      * @param  list<array{slug: string, version: string, path: string}>  $themes
-     * @return array<string, string> slug => snapshot path
+     * @param  list<string>  $lines
+     * @return list<string> slugs bootstrapped by the call
      */
-    private function applyBundledThemes(array $themes): array
+    private function applyBundledThemes(array $themes, array &$lines = []): array
     {
         $updater = app(CoreUpdater::class);
         $method = (new ReflectionClass(CoreUpdater::class))->getMethod('applyBundledThemes');
         $method->setAccessible(true);
 
-        return $method->invoke($updater, $this->stagingRoot, $themes, fn (string $line) => null);
+        return $method->invoke($updater, $this->stagingRoot, $themes, function (string $line) use (&$lines): void {
+            $lines[] = $line;
+        });
     }
 }
