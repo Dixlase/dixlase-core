@@ -263,12 +263,16 @@ class AdminFrontController extends AdminLoggedInController
             }
 
             // Mirror FrontWelcomeController: HTML editor serves JS/CSS via separate routes.
+            $customJs = '';
+            $customCss = '';
             if ($frontPage->editor_type === ContentEditorType::HTML) {
-                $hasCustomJs = ! empty($this->contentService->getJsContent($frontPage, $frontPage->lang));
-                $hasCustomCss = ! empty($this->contentService->getCssContent($frontPage, $frontPage->lang));
+                $customJs = (string) $this->contentService->getJsContent($frontPage, $frontPage->lang);
+                $customCss = (string) $this->contentService->getCssContent($frontPage, $frontPage->lang);
+                $hasCustomJs = $customJs !== '';
+                $hasCustomCss = $customCss !== '';
             }
 
-            $customAssetVersion = $frontPage->updated_at?->timestamp ?? 0;
+            $customAssetVersion = \App\Http\Controllers\Front\FrontWelcomeController::customAssetVersion($frontPage, $customCss, $customJs);
         }
 
         return view('themes::admin.preview-frame', [
