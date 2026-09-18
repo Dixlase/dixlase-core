@@ -217,6 +217,17 @@ return [
                             'access_roles' => MemberRole::SUPER_ADMIN->value,
                             'view_roles' => MemberRole::SUPER_ADMIN->value,
                         ],
+                        // The active theme's own settings page (e.g. DixlaseOnePage
+                        // colours / hero) is contributed as a theme nav item under
+                        // this key. Without a default here, PermissionRegistry hard-
+                        // denies every non-super_admin (it returns before consulting
+                        // role_permission_overrides), so the menu is hidden and the
+                        // route 403s for ADMIN — contradicting Permission::THEMES_SETTINGS
+                        // (ADMIN) and the links in the admin bar / getting-started.
+                        'settings' => [
+                            'access_roles' => MemberRole::ADMIN->value,
+                            'view_roles' => MemberRole::ADMIN->value,
+                        ],
                     ],
                 ],
 
