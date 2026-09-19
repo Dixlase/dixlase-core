@@ -120,6 +120,20 @@ plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `L
   "Migration Editing Policy").
 - `requires.dixlase: ^0.1.0` declared in all in-tree plugin `plugin.json` files.
 
+#### Audit log integrity (operations)
+
+- `audit:integrity verify` now verifies every daily seal (O(1) per day) plus the
+  hash chain from the last verified record; `--all` re-verifies every row.
+  `--date` and `--from` / `--to` keep their previous meaning.
+- Site Health gains an **Audit Log Integrity** item (critical on detected
+  tampering, warning when the hourly build or the daily seal stops running,
+  recommendation when nothing was verified for 30 days).
+- The web installer builds the hash chain once at completion.
+- The audit log detail screen shows chain sequence, record hash, verification
+  status and last verification time.
+- `AUDIT_LOG_SECRET` is wired to `config('app.audit_log_secret')` as an optional
+  dedicated HMAC key for the daily seals (falls back to `APP_KEY`).
+
 ### Notes for plugin authors
 
 - Plugins targeting the v0.1 line should declare `"requires": {"dixlase": "^0.1.0"}`

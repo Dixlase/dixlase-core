@@ -144,6 +144,21 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Audit Log Signing Key
+    |--------------------------------------------------------------------------
+    |
+    | HMAC key for the audit log daily seals. When empty the application key
+    | is used, so the seals detect tampering in the database but not by an
+    | attacker who can also read .env. Set a separate secret to widen that,
+    | but set it before the first seal exists: seals signed with a previous
+    | key fail verification (key rotation is not supported yet).
+    |
+    */
+
+    'audit_log_secret' => env('AUDIT_LOG_SECRET'),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))

@@ -345,6 +345,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created At</dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $auditLog->created_at?->format('Y-m-d H:i:s') }}</dd>
                         </div>
+                        {{-- Integrity (read-only; maintained by `audit:integrity`) --}}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/logs/index.chain_sequence') }}</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $auditLog->chain_sequence ?? '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/logs/index.record_hash') }}</dt>
+                            <dd class="mt-1 text-xs text-gray-900 dark:text-white font-mono break-all">{{ $auditLog->record_hash ?? '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/logs/index.verification_status') }}</dt>
+                            <dd class="mt-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $integrityColors[$integrityStatus] ?? $integrityColors['unverified'] }}">
+                                    {{ __('admin/settings/systems/logs/index.verification_statuses.' . $integrityStatus) }}
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/logs/index.last_verified_at') }}</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $auditLog->last_verified_at?->format('Y-m-d H:i:s') ?? '-' }}</dd>
+                        </div>
                     </dl>
                 </div>
             </div>

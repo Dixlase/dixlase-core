@@ -58,7 +58,8 @@ class AuditLogIntegrityCommand extends Command
                             {--days=7 : Number of days for pending seals}
                             {--limit=1000 : Limit for build action}
                             {--from= : Start ID for verify action}
-                            {--to= : End ID for verify action}';
+                            {--to= : End ID for verify action}
+                            {--all : Re-verify the whole hash chain instead of resuming from the last verified record}';
 
     /**
      * The console command description.
@@ -82,13 +83,18 @@ class AuditLogIntegrityCommand extends Command
     {
         $action = $this->argument('action');
 
-        return match ($action) {
+        $exitCode = match ($action) {
             'build' => $this->handleBuild(),
             'verify' => $this->handleVerify(),
             'seal' => $this->handleSeal(),
             'stats' => $this->handleStats(),
             default => $this->handleUnknownAction($action),
         };
+
+        // The dashboard caches its integrity snapshot; reflect the new state at once.
+        $this->service->forgetHealthCache();
+
+        return $exitCode;
     }
 
     /**
@@ -120,7 +126,13 @@ class AuditLogIntegrityCommand extends Command
     }
 
     /**
-     * Verify hash chain
+     * Verify integrity
+     *
+     * - `--date`          : one daily seal, including the chain inside that day
+     * - `--from` / `--to` : an explicit chain range
+     * - no option         : every daily seal (O(1) each) plus the chain from
+     *                       the last verified record onward
+     * - `--all`           : every daily seal plus the whole chain
      */
     protected function handleVerify(): int
     {
@@ -132,10 +144,65 @@ class AuditLogIntegrityCommand extends Command
             return $this->verifyDailySeal($date);
         }
 
-        $this->info(__('admin/command/audit.integrity.verifying_chain'));
+        if ($fromId !== null || $toId !== null) {
+            $this->info(__('admin/command/audit.integrity.verifying_chain'));
 
-        $result = $this->service->verifyChain($fromId, $toId);
+            $result = $this->service->verifyChain($fromId, $toId);
 
+            return $this->reportChainResult($result) ? self::SUCCESS : self::FAILURE;
+        }
+
+        $fullChain = (bool) $this->option('all');
+
+        $this->info(__('admin/command/audit.integrity.verifying_seals'));
+
+        $result = $this->service->verifyIncremental($fullChain);
+
+        $this->newLine();
+        $this->table(
+            [__('admin/command/audit.integrity.stat_name'), __('admin/command/audit.integrity.stat_value')],
+            [
+                [__('admin/command/audit.integrity.total_seals'), $result['seals']['total']],
+                [__('admin/command/audit.integrity.valid_seals'), $result['seals']['valid']],
+                [__('admin/command/audit.integrity.invalid_seals'), $result['seals']['invalid']],
+            ]
+        );
+
+        if (! empty($result['seals']['errors'])) {
+            $this->warn(__('admin/command/audit.integrity.invalid_seals_detected'));
+            foreach ($result['seals']['errors'] as $error) {
+                $failed = array_keys(array_filter($error['checks'], fn ($ok) => ! $ok));
+                $this->line("  - {$error['date']}: ".implode(', ', $failed));
+            }
+        }
+
+        $this->newLine();
+        if ($result['full_chain']) {
+            $this->info(__('admin/command/audit.integrity.verifying_chain'));
+        } else {
+            $this->info(__('admin/command/audit.integrity.verifying_chain_from', ['id' => $result['from_id']]));
+        }
+
+        $chainValid = $this->reportChainResult($result['chain']);
+
+        if ($result['tampered_total'] > 0) {
+            $this->newLine();
+            $this->error(__('admin/command/audit.integrity.tampered_total', ['count' => $result['tampered_total']]));
+        }
+
+        if (! $result['full_chain']) {
+            $this->newLine();
+            $this->line(__('admin/command/audit.integrity.full_verify_hint'));
+        }
+
+        return $result['is_valid'] && $chainValid ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Print a verifyChain() result and return whether the range was valid
+     */
+    protected function reportChainResult(array $result): bool
+    {
         $this->newLine();
         $this->table(
             [__('admin/command/audit.integrity.stat_name'), __('admin/command/audit.integrity.stat_value')],
@@ -148,26 +215,26 @@ class AuditLogIntegrityCommand extends Command
 
         if ($result['is_valid']) {
             $this->info(__('admin/command/audit.integrity.chain_valid'));
-        } else {
-            $this->error(__('admin/command/audit.integrity.chain_invalid'));
 
-            if (! empty($result['errors'])) {
-                $this->newLine();
-                $this->warn(__('admin/command/audit.integrity.tampered_records'));
-                foreach (array_slice($result['errors'], 0, 10) as $error) {
-                    $this->line("  - ID {$error['id']}: ".implode(', ', $error['errors']));
-                }
-                if (count($result['errors']) > 10) {
-                    $this->line('  ... '.__('admin/command/audit.integrity.and_more', [
-                        'count' => count($result['errors']) - 10,
-                    ]));
-                }
-            }
-
-            return self::FAILURE;
+            return true;
         }
 
-        return self::SUCCESS;
+        $this->error(__('admin/command/audit.integrity.chain_invalid'));
+
+        if (! empty($result['errors'])) {
+            $this->newLine();
+            $this->warn(__('admin/command/audit.integrity.tampered_records'));
+            foreach (array_slice($result['errors'], 0, 10) as $error) {
+                $this->line("  - ID {$error['id']}: ".implode(', ', $error['errors']));
+            }
+            if (count($result['errors']) > 10) {
+                $this->line('  ... '.__('admin/command/audit.integrity.and_more', [
+                    'count' => count($result['errors']) - 10,
+                ]));
+            }
+        }
+
+        return false;
     }
 
     /**
