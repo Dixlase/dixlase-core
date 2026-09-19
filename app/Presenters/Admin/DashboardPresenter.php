@@ -57,6 +57,7 @@ use App\Models\PluginAudit;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Models\Theme;
+use App\Services\AuditLogIntegrityService;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
@@ -334,6 +335,45 @@ class DashboardPresenter
             'label' => __('admin/dashboard.file_integrity_status'),
             'description' => $integrityDescription,
             'url' => route('admin.settings.security.integrity'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // Audit log integrity (hash chain + daily seals)
+        $auditHealth = app(AuditLogIntegrityService::class)->getHealthCached();
+        $auditStatus = match ($auditHealth['state']) {
+            AuditLogIntegrityService::HEALTH_TAMPERED => 'critical',
+            AuditLogIntegrityService::HEALTH_CHAIN_STALLED,
+            AuditLogIntegrityService::HEALTH_SEAL_OVERDUE => 'warning',
+            AuditLogIntegrityService::HEALTH_VERIFICATION_STALE => 'recommendation',
+            default => 'ok',
+        };
+        $auditDescription = match ($auditHealth['state']) {
+            AuditLogIntegrityService::HEALTH_TAMPERED => __('admin/dashboard.audit_integrity_tampered', [
+                'records' => $auditHealth['tampered'],
+                'seals' => $auditHealth['invalid_seals'],
+            ]),
+            AuditLogIntegrityService::HEALTH_CHAIN_STALLED => __('admin/dashboard.audit_integrity_chain_stalled', [
+                'count' => $auditHealth['stalled'],
+                'hours' => AuditLogIntegrityService::CHAIN_STALL_HOURS,
+            ]),
+            AuditLogIntegrityService::HEALTH_SEAL_OVERDUE => __('admin/dashboard.audit_integrity_seal_overdue', [
+                'date' => $auditHealth['unsealed_date'],
+            ]),
+            AuditLogIntegrityService::HEALTH_VERIFICATION_STALE => __('admin/dashboard.audit_integrity_verify_recommended', [
+                'days' => AuditLogIntegrityService::VERIFY_RECOMMENDED_DAYS,
+            ]),
+            AuditLogIntegrityService::HEALTH_EMPTY => __('admin/dashboard.audit_integrity_empty'),
+            default => $auditHealth['verified_since'] !== null
+                ? __('admin/dashboard.audit_integrity_ok', ['date' => $auditHealth['verified_since']->format('Y-m-d')])
+                : __('admin/dashboard.audit_integrity_ok_unverified'),
+        };
+        $items[] = [
+            'key' => 'audit_log_integrity',
+            'status' => $auditStatus,
+            'icon' => 'fas fa-link',
+            'label' => __('admin/dashboard.audit_integrity_status'),
+            'description' => $auditDescription,
+            'url' => route('admin.settings.systems.logs.index'),
             'requires_advanced_mode' => true,
         ];
 

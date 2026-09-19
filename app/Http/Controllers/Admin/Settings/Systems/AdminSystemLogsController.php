@@ -620,6 +620,10 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         $this->viewParams['auditLog'] = $auditLog;
         $this->viewParams['relatedLogs'] = $relatedLogs;
+        // Integrity state shown in the Meta Information card (maintained by `audit:integrity`)
+        $this->viewParams['integrityStatus'] = $auditLog->record_hash === null
+            ? 'unchained'
+            : ($auditLog->verification_status ?? 'unverified');
         $this->addLogColorMaps();
 
         return view('admin::settings.systems.logs.show', $this->viewParams);
@@ -967,6 +971,12 @@ class AdminSystemLogsController extends AdminLoggedInController
             'denied' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
             'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
             'unknown' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+        ];
+        $this->viewParams['integrityColors'] = [
+            'valid' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+            'invalid' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            'unverified' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+            'unchained' => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
         ];
     }
 

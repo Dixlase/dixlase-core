@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Install;
 
 use App\Models\CoreVersionHistory;
+use App\Services\AuditLogIntegrityService;
 use App\Services\Core\CoreUpdater;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -191,6 +192,12 @@ class InstallCompleteController extends BaseInstallController
         // follow-up).
         $this->recordBaselineVersionHistoryIfNeeded();
 
+        // Chain the audit log entries written during installation right
+        // away instead of leaving them unprotected until the first hourly
+        // `audit:integrity build` run (see routes/console.php). Calls the
+        // service directly — no Artisan here, see the note above.
+        $this->buildAuditLogHashChain();
+
         // Get redirect destination
         $redirectTo = $request->input('redirect_to');
 
@@ -277,6 +284,37 @@ class InstallCompleteController extends BaseInstallController
         } catch (\Throwable $e) {
             // Never fail the install over a bookkeeping row — log and continue.
             Log::channel('install')->warning('Failed to record baseline core_version_history row (non-fatal): '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
+     * Link every unchained audit log entry into the hash chain.
+     *
+     * Runs once at install completion so install-time events are protected
+     * immediately and the dashboard shows a working chain instead of an
+     * empty one for up to an hour. No daily seal can exist yet — seals only
+     * cover completed days — so nothing is sealed here.
+     *
+     * Returns the number of entries chained, or null when the step was
+     * skipped because of an error (never fails the install).
+     */
+    protected function buildAuditLogHashChain(): ?int
+    {
+        try {
+            $result = app(AuditLogIntegrityService::class)->buildPendingChains();
+
+            Log::channel('install')->info('Audit log hash chain built at install completion', [
+                'processed' => $result['processed'],
+                'remaining' => $result['remaining'],
+                'errors' => count($result['errors']),
+            ]);
+
+            return (int) $result['processed'];
+        } catch (\Throwable $e) {
+            // The hourly scheduler picks these rows up — log and continue.
+            Log::channel('install')->warning('Failed to build the audit log hash chain at install completion (non-fatal): '.$e->getMessage());
 
             return null;
         }
