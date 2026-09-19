@@ -1,0 +1,49 @@
+name: Auto-close external pull requests
+
+# CONTRIBUTING.md states that external pull requests are closed automatically
+# during the current policy period. This workflow closes pull requests opened
+# from forks by non-members only. Maintainer pull requests come from in-repo
+# branches (head.repo.fork == false) and/or carry an OWNER / MEMBER /
+# COLLABORATOR author association, so they are never touched. Adding a
+# "keep-open" label also exempts a PR.
+#
+# pull_request_target runs the workflow file from the base branch of the PR,
+# so a fork PR cannot alter this logic, and new release branches cut from the
+# default branch inherit this file automatically (no per-branch maintenance).
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  autoclose:
+    if: >-
+      github.event.pull_request.head.repo.fork == true &&
+      !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association) &&
+      !contains(github.event.pull_request.labels.*.name, 'keep-open')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment and close
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr comment "$PR_URL" --body "$(cat <<'EOF'
+          Thanks for your interest in Dixlase. During the current policy period we are
+          **not accepting pull requests**, so this PR is closed automatically without code
+          review — this is policy, not a judgement of your change. If it addresses a real
+          problem, please re-file it as an **Issue** and a maintainer will implement a fix
+          independently. See CONTRIBUTING.md.
+
+          ——
+
+          Dixlase へのご関心ありがとうございます。本ポリシー期間中はあらゆる Pull Request を
+          受け付けていないため、この PR はコードレビューを行わず自動的にクローズされます
+          （方針であり、変更内容への評価ではありません）。実際の問題への対応であれば Issue として
+          再提出してください。メンテナーが独立して修正します。詳細は CONTRIBUTING.md を参照。
+          EOF
+          )"
+          gh pr close "$PR_URL"
