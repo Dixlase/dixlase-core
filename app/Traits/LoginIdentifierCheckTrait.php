@@ -95,10 +95,17 @@ trait LoginIdentifierCheckTrait
         $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $captchaAction);
 
         if ($captchaResult && ! $captchaResult->isValid()) {
+            $errorMessage = $captchaResult->getErrorMessage();
+
+            // The client reloads the page on `redirect` so the widget is
+            // re-issued a fresh token; flash the reason like the validation
+            // branch below does, otherwise the reload swallows the message.
+            session()->flash('error', $errorMessage);
+
             return response()->json([
                 'redirect' => true,
-                'message' => $captchaResult->getErrorMessage(),
-                'errors' => ['captcha' => [$captchaResult->getErrorMessage()]],
+                'message' => $errorMessage,
+                'errors' => ['captcha' => [$errorMessage]],
             ], 422);
         }
 

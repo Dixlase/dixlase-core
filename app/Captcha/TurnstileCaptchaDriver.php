@@ -60,6 +60,7 @@ use App\Helpers\CaptchaHelper;
 use App\Services\CaptchaFailoverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
 
 class TurnstileCaptchaDriver implements CaptchaDriver
@@ -332,17 +333,22 @@ class TurnstileCaptchaDriver implements CaptchaDriver
 
     private function getErrorMessage(array $errorCodes): string
     {
+        // The messages live under the CAPTCHA settings dictionary
+        // (lang/*/admin/settings/security/captcha.php); codes Cloudflare adds
+        // later fall back to the generic entry instead of leaking a raw key.
+        $unknown = __('admin/settings/security/captcha.turnstile_errors.unknown-error');
+
         if (empty($errorCodes)) {
-            return __('admin/settings/security/turnstile_errors.unknown-error');
+            return $unknown;
         }
 
         $messages = [];
         foreach ($errorCodes as $code) {
-            $translationKey = "admin.settings.security.turnstile_errors.{$code}";
-            $messages[] = __($translationKey, [], null, $translationKey);
+            $translationKey = "admin/settings/security/captcha.turnstile_errors.{$code}";
+            $messages[] = Lang::has($translationKey) ? __($translationKey) : $unknown;
         }
 
-        return implode(', ', $messages);
+        return implode(', ', array_unique($messages));
     }
 
     public function renderScript(): string

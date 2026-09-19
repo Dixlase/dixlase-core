@@ -111,6 +111,7 @@ return [
         'bad-request' => 'リクエストが無効または形式が正しくありません',
         'timeout-or-duplicate' => 'レスポンスが無効です：期限切れまたは既に使用されています',
         'internal-error' => 'レスポンス検証中に内部エラーが発生しました',
+        'unknown-error' => 'CAPTCHA の検証に失敗しました',
     ],
     'test_required' => 'CAPTCHA認証が完了してません。CAPTCHAを使用するには認証を実行して成功する必要があります。',
     'test_button' => '接続テスト',
