@@ -195,6 +195,18 @@ export default defineConfig(({ command }) => ({
             key: fs.readFileSync('/etc/ssl/private/localhost.key'),
             cert: fs.readFileSync('/etc/ssl/private/localhost.crt'),
         } : false,
+        // Dev-server only (the `server` block is ignored by `vite build`).
+        // Vite derives ETag / Last-Modified from the *entry* file's mtime,
+        // not from the files it pulls in. Editing an @use'd partial
+        // (e.g. admin/scss/_admin.scss) or a Blade file that introduces new
+        // Tailwind utilities leaves the entry's mtime untouched, so the
+        // browser revalidates with If-None-Match, receives 304, and keeps
+        // stale CSS — even across hard reloads and fresh incognito
+        // windows. no-store stops the browser caching dev responses at
+        // all, so every reload gets a fresh 200 with the current output.
+        headers: {
+            'Cache-Control': 'no-store',
+        },
         watch: {
             // Polling is a Docker-on-macOS workaround for the classic
             // "bind-mount events don't propagate into the container" problem.
