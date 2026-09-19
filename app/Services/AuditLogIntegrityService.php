@@ -39,6 +39,7 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\AuditLogDailySeal;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -54,6 +55,47 @@ class AuditLogIntegrityService
      * Settings key for signature secret key
      */
     protected const SECRET_KEY_CONFIG = 'app.audit_log_secret';
+
+    /**
+     * Health states returned by getHealth()
+     */
+    public const HEALTH_OK = 'ok';
+
+    public const HEALTH_EMPTY = 'empty';
+
+    public const HEALTH_VERIFICATION_STALE = 'verification_stale';
+
+    public const HEALTH_SEAL_OVERDUE = 'seal_overdue';
+
+    public const HEALTH_CHAIN_STALLED = 'chain_stalled';
+
+    public const HEALTH_TAMPERED = 'tampered';
+
+    /**
+     * An unchained row older than this means the hourly build is not running
+     */
+    public const CHAIN_STALL_HOURS = 2;
+
+    /**
+     * A completed day is expected to be sealed by this time on the next day
+     * (the scheduler runs `audit:integrity seal` at 03:30; see routes/console.php)
+     */
+    public const SEAL_DUE_HOUR = 4;
+
+    public const SEAL_DUE_MINUTE = 30;
+
+    /**
+     * Recommend a manual verification when some chained row has not been
+     * verified within this many days
+     */
+    public const VERIFY_RECOMMENDED_DAYS = 30;
+
+    /**
+     * Cache key / TTL for the dashboard health snapshot (getHealthCached())
+     */
+    public const HEALTH_CACHE_KEY = 'audit_log_integrity_health';
+
+    public const HEALTH_CACHE_TTL = 300;
 
     /**
      * Default secret key (uses APP_KEY)
@@ -269,9 +311,13 @@ class AuditLogIntegrityService
     /**
      * Verify daily signature
      *
+     * The signature, row count and final hash checks are O(1) per seal.
+     * The chain check re-verifies every row of the sealed day (O(rows));
+     * pass $verifyChain = false to skip it, e.g. when sweeping all seals.
+     *
      * @return array Verification result
      */
-    public function verifyDailySeal(\Carbon\Carbon $date): array
+    public function verifyDailySeal(\Carbon\Carbon $date, bool $verifyChain = true): array
     {
         $seal = AuditLogDailySeal::forDate($date);
 
@@ -309,18 +355,107 @@ class AuditLogIntegrityService
         $hashValid = $lastLog && $lastLog->record_hash === $seal->final_hash;
         $result['checks']['final_hash'] = $hashValid;
 
-        // Chain verification
-        $chainResult = $this->verifyChain($seal->first_log_id, $seal->last_log_id, false);
-        $result['checks']['chain'] = $chainResult['is_valid'];
+        // Chain verification (optional, O(rows) for the day)
+        $chainValid = true;
+        if ($verifyChain) {
+            $chainResult = $this->verifyChain($seal->first_log_id, $seal->last_log_id, false);
+            $chainValid = $chainResult['is_valid'];
+            $result['checks']['chain'] = $chainValid;
+        }
 
         // Overall determination
-        $result['is_valid'] = $signatureValid && $countValid && $hashValid && $chainResult['is_valid'];
+        $result['is_valid'] = $signatureValid && $countValid && $hashValid && $chainValid;
 
         // Update status
         $seal->markAsVerified($result['is_valid']);
         $seal->addVerificationHistory($result['is_valid'], $result['is_valid'] ? null : json_encode($result['checks']));
 
         return $result;
+    }
+
+    /**
+     * Verify every daily seal.
+     *
+     * By default each seal gets the O(1) checks only (signature, row count,
+     * final hash). That catches deleted or inserted rows, a rewritten tail
+     * and a tampered seal row, but not an in-place edit of an earlier row
+     * whose record_hash was left untouched — only a chain pass over that
+     * row detects that. Pass $verifyChain = true to re-verify the chain
+     * inside every sealed day as well (O(rows)).
+     *
+     * @return array{total:int,valid:int,invalid:int,errors:array<int,array{date:string,seal_id:int,checks:array<string,bool>}>,is_valid:bool}
+     */
+    public function verifyAllSeals(bool $verifyChain = false): array
+    {
+        $result = [
+            'total' => 0,
+            'valid' => 0,
+            'invalid' => 0,
+            'errors' => [],
+        ];
+
+        foreach (AuditLogDailySeal::orderBy('seal_date')->cursor() as $seal) {
+            $sealResult = $this->verifyDailySeal($seal->seal_date, $verifyChain);
+            $result['total']++;
+
+            if ($sealResult['is_valid']) {
+                $result['valid']++;
+
+                continue;
+            }
+
+            $result['invalid']++;
+            $result['errors'][] = [
+                'date' => $sealResult['date'],
+                'seal_id' => $sealResult['seal_id'] ?? $seal->id,
+                'checks' => $sealResult['checks'] ?? [],
+            ];
+        }
+
+        $result['is_valid'] = $result['invalid'] === 0;
+
+        return $result;
+    }
+
+    /**
+     * ID of the newest record that passed chain verification, or null when
+     * nothing has been verified yet. Incremental verification resumes here.
+     */
+    public function getLastVerifiedId(): ?int
+    {
+        $id = AuditLog::verified()->max('id');
+
+        return $id === null ? null : (int) $id;
+    }
+
+    /**
+     * The standard manual verification pass: every daily seal (O(1) each)
+     * plus the hash chain from the last verified record onward.
+     *
+     * The incremental chain pass alone would miss an edit to a row that was
+     * verified earlier; the seal sweep narrows that gap but does not close
+     * it (see verifyAllSeals()). Pass $fullChain = true to re-verify every
+     * chained row instead — do that periodically.
+     *
+     * @return array{seals:array,chain:array,from_id:int|null,full_chain:bool,tampered_total:int,is_valid:bool}
+     */
+    public function verifyIncremental(bool $fullChain = false, bool $updateStatus = true): array
+    {
+        $seals = $this->verifyAllSeals(false);
+
+        $fromId = $fullChain ? null : $this->getLastVerifiedId();
+        $chain = $this->verifyChain($fromId, null, $updateStatus);
+
+        $tamperedTotal = AuditLog::tampered()->count();
+
+        return [
+            'seals' => $seals,
+            'chain' => $chain,
+            'from_id' => $fromId,
+            'full_chain' => $fromId === null,
+            'tampered_total' => $tamperedTotal,
+            'is_valid' => $seals['is_valid'] && $chain['is_valid'] && $tamperedTotal === 0,
+        ];
     }
 
     /**
@@ -373,6 +508,94 @@ class AuditLogIntegrityService
             'unverified' => AuditLog::unverified()->count(),
             'daily_seals' => AuditLogDailySeal::getStats(),
         ];
+    }
+
+    /**
+     * Integrity health snapshot for the admin dashboard.
+     *
+     * States, from worst to best:
+     * - tampered:           a chain row or a daily seal failed verification
+     * - chain_stalled:      rows have waited longer than CHAIN_STALL_HOURS to
+     *                       be chained (the hourly `audit:integrity build`
+     *                       is not running)
+     * - seal_overdue:       the most recent past day with entries has no
+     *                       seal although the daily `audit:integrity seal`
+     *                       run is past due (day one never trips this: a
+     *                       seal only exists for completed days)
+     * - verification_stale: some chained row has never been verified, or
+     *                       was last verified more than VERIFY_RECOMMENDED_DAYS
+     *                       ago (the oldest last_verified_at is used, so an
+     *                       incremental pass does not refresh this — only a
+     *                       pass that re-hashed every row does)
+     * - empty:              no audit log entries yet
+     * - ok
+     *
+     * @return array{state:string,has_entries:bool,tampered:int,invalid_seals:int,stalled:int,unsealed_date:string|null,verified_since:\Carbon\Carbon|null}
+     */
+    public function getHealth(): array
+    {
+        $now = now();
+        $hasEntries = AuditLog::query()->exists();
+        $tampered = AuditLog::tampered()->count();
+        $invalidSeals = AuditLogDailySeal::invalid()->count();
+
+        $stalled = AuditLog::withoutHashChain()
+            ->where('created_at', '<=', $now->copy()->subHours(self::CHAIN_STALL_HOURS))
+            ->count();
+
+        $unsealedDate = null;
+        $latestPastDay = AuditLog::where('occurred_at', '<', $now->copy()->startOfDay())->max('occurred_at');
+        if ($latestPastDay !== null) {
+            $day = \Carbon\Carbon::parse($latestPastDay)->startOfDay();
+            $due = $day->copy()->addDay()->setTime(self::SEAL_DUE_HOUR, self::SEAL_DUE_MINUTE);
+            if ($now->greaterThanOrEqualTo($due) && ! AuditLogDailySeal::existsForDate($day)) {
+                $unsealedDate = $day->format('Y-m-d');
+            }
+        }
+
+        // "Every chained row was verified on or after this time". The oldest
+        // last_verified_at is deliberately used: an incremental pass bumps the
+        // newest rows only, so it cannot make old, unre-hashed rows look fresh.
+        $neverVerified = AuditLog::withHashChain()->whereNull('last_verified_at')->exists();
+        $verifiedSinceRaw = $neverVerified ? null : AuditLog::withHashChain()->min('last_verified_at');
+        $verifiedSince = $verifiedSinceRaw === null ? null : \Carbon\Carbon::parse($verifiedSinceRaw);
+        $verificationStale = $latestPastDay !== null
+            && ($verifiedSince === null || $verifiedSince->lt($now->copy()->subDays(self::VERIFY_RECOMMENDED_DAYS)));
+
+        $state = match (true) {
+            $tampered > 0 || $invalidSeals > 0 => self::HEALTH_TAMPERED,
+            $stalled > 0 => self::HEALTH_CHAIN_STALLED,
+            $unsealedDate !== null => self::HEALTH_SEAL_OVERDUE,
+            $verificationStale => self::HEALTH_VERIFICATION_STALE,
+            ! $hasEntries => self::HEALTH_EMPTY,
+            default => self::HEALTH_OK,
+        };
+
+        return [
+            'state' => $state,
+            'has_entries' => $hasEntries,
+            'tampered' => $tampered,
+            'invalid_seals' => $invalidSeals,
+            'stalled' => $stalled,
+            'unsealed_date' => $unsealedDate,
+            'verified_since' => $verifiedSince,
+        ];
+    }
+
+    /**
+     * getHealth() behind a short cache. The dashboard is loaded by every
+     * authenticated member and the snapshot scans the audit log table, so
+     * it must not run on every request. Commands that change the state
+     * call forgetHealthCache().
+     */
+    public function getHealthCached(): array
+    {
+        return Cache::remember(self::HEALTH_CACHE_KEY, self::HEALTH_CACHE_TTL, fn () => $this->getHealth());
+    }
+
+    public function forgetHealthCache(): void
+    {
+        Cache::forget(self::HEALTH_CACHE_KEY);
     }
 
     /**

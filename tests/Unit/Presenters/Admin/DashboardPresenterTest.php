@@ -30,6 +30,7 @@ use App\Models\Plugin;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Presenters\Admin\DashboardPresenter;
+use App\Services\AuditLogIntegrityService;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,9 +42,9 @@ class DashboardPresenterTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * siteHealth は11項目を返すことを確認
+     * siteHealth は12項目を返すことを確認
      */
-    public function test_site_health_returns_eleven_items(): void
+    public function test_site_health_returns_twelve_items(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -58,7 +59,7 @@ class DashboardPresenterTest extends TestCase
 
         $result = DashboardPresenter::siteHealth($user);
 
-        $this->assertCount(11, $result);
+        $this->assertCount(12, $result);
 
         $keys = array_column($result, 'key');
         $this->assertContains('maintenance_mode', $keys);
@@ -71,6 +72,7 @@ class DashboardPresenterTest extends TestCase
         $this->assertContains('public_key', $keys);
         $this->assertContains('error_notification', $keys);
         $this->assertContains('file_integrity', $keys);
+        $this->assertContains('audit_log_integrity', $keys);
         $this->assertContains('two_fa', $keys);
     }
 
@@ -122,6 +124,64 @@ class DashboardPresenterTest extends TestCase
     /**
      * メールステータス: logドライバー使用時は警告
      */
+    /**
+     * 監査ログ整合性: 改ざん検知済みレコードがあれば critical
+     */
+    public function test_site_health_audit_log_integrity_critical_when_tampered(): void
+    {
+        $safeModeService = Mockery::mock(SafeModeService::class);
+        $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
+        $this->app->instance(SafeModeService::class, $safeModeService);
+
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
+        $log = AuditLog::create([
+            'occurred_at' => now(),
+            'severity' => AuditLog::SEVERITY_INFO,
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'category' => AuditLog::CATEGORY_AUTH,
+            'action' => AuditLog::ACTION_LOGIN,
+            'ip_address' => '127.0.0.1',
+            'context' => [],
+        ]);
+        $log->saveWithHashChain();
+        AuditLog::where('id', $log->id)->update(['action' => 'tampered']);
+        (new AuditLogIntegrityService())->verifyChain();
+
+        $user = new Member();
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
+
+        $result = DashboardPresenter::siteHealth($user);
+
+        $item = collect($result)->firstWhere('key', 'audit_log_integrity');
+        $this->assertEquals('critical', $item['status']);
+        $this->assertTrue($item['requires_advanced_mode']);
+    }
+
+    /**
+     * 監査ログ整合性: ログが無ければ ok
+     */
+    public function test_site_health_audit_log_integrity_ok_when_empty(): void
+    {
+        $safeModeService = Mockery::mock(SafeModeService::class);
+        $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
+        $this->app->instance(SafeModeService::class, $safeModeService);
+
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
+        $user = new Member();
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
+
+        $result = DashboardPresenter::siteHealth($user);
+
+        $item = collect($result)->firstWhere('key', 'audit_log_integrity');
+        $this->assertEquals('ok', $item['status']);
+    }
+
     public function test_mail_status_warning_for_log_driver(): void
     {
         config(['mail.default' => 'log']);
