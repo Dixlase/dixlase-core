@@ -43,8 +43,10 @@ use RuntimeException;
  * Reads the optional release manifest a release ZIP can carry at its
  * payload root. Its presence tells the core updater that this release
  * ships more than just source + vendor — currently, that means a bundled
- * theme whose code the updater should apply in addition to the usual
- * source-only replace.
+ * theme the updater bootstraps in addition to the usual source-only
+ * replace. Bundled themes are bootstrap-only: the updater copies a
+ * declared theme into place only when it is not installed yet, and
+ * never modifies an installed theme (see CoreUpdater::applyBundledThemes).
  *
  * A release without the manifest is the normal, backward-compatible
  * case: {@see readFromPayload()} returns null and the updater takes
