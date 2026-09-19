@@ -54,7 +54,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     // バリエーションに応じたクラス設定
     $variantClasses = [
-        'primary' => 'bg-blue-600 text-white hover:bg-blue-900 focus:ring-blue-500',
+        // disabled:bg-blue-400 — the shared disabled:opacity-50 fades whatever
+        // background the variant has. blue-600 sits on the violet side of the
+        // oklch hue wheel, so at 50% over a light card it reads as a pale
+        // indigo/periwinkle rather than "light blue". Swapping to blue-400 for
+        // the disabled state keeps the same fade mechanism as every other
+        // variant but lands on a clearly blue tint.
+        'primary' => 'bg-blue-600 text-white hover:bg-blue-900 focus:ring-blue-500 disabled:bg-blue-400',
         'secondary' => 'bg-gray-200 dark:bg-gray-500 text-gray-900 dark:text-white hover:bg-gray-700 focus:ring-gray-500',
         'tertiary' => 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:ring-gray-300',
         'ghost' => 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white focus:ring-gray-300',
