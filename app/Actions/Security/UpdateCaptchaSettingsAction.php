@@ -101,36 +101,49 @@ class UpdateCaptchaSettingsAction extends AbstractAction
     {
         $before = $this->repository->getMultiple(static::SETTING_KEYS);
 
-        // Detect setting changes
+        // Detect setting changes against the keys stored for the current provider
         $currentDriver = $this->repository->get('captcha_driver', 'google');
-        $currentSiteKey = $this->repository->get('captcha_site_key', '');
-        $currentSecretKey = $this->repository->get('captcha_secret_key', '');
-        $currentVersion = $this->repository->get('captcha_google_version', 'v3');
-        $currentMinScore = $this->repository->get('captcha_google_min_score', '0.5');
+        $currentPrefix = $this->providerKeyPrefix($currentDriver);
+        $current = [
+            'captcha_driver' => $currentDriver,
+            'captcha_site_key' => $this->repository->get("{$currentPrefix}_site_key", ''),
+            'captcha_secret_key' => $this->repository->get("{$currentPrefix}_secret_key", ''),
+            'captcha_google_version' => $this->repository->get('captcha_google_version', 'v3'),
+            'captcha_google_min_score' => $this->repository->get('captcha_google_min_score', '0.5'),
+            'captcha_google_project_id' => $this->repository->get('captcha_google_project_id', ''),
+        ];
 
         $newDriver = $data['captcha_driver'] ?? 'google';
         $newSiteKey = $data['captcha_site_key'] ?? '';
         $newSecretKey = $data['captcha_secret_key'] ?? '';
         $newVersion = $data['captcha_google_version'] ?? 'v3';
         $newMinScore = $data['captcha_google_min_score'] ?? '0.5';
+        $newProjectId = $data['captcha_google_project_id'] ?? '';
+        $submitted = [
+            'captcha_driver' => $newDriver,
+            'captcha_site_key' => $newSiteKey,
+            'captcha_secret_key' => $newSecretKey,
+            'captcha_google_version' => $newVersion,
+            'captcha_google_min_score' => $newMinScore,
+            'captcha_google_project_id' => $newProjectId,
+        ];
 
-        $settingsChanged = (
-            $currentDriver !== $newDriver ||
-            $currentSiteKey !== $newSiteKey ||
-            $currentSecretKey !== $newSecretKey ||
-            $currentVersion !== $newVersion ||
-            (string) $currentMinScore !== (string) $newMinScore
-        );
+        $settingsChanged = CaptchaTestService::fingerprint($current) !== CaptchaTestService::fingerprint($submitted);
 
-        // Handle test result based on changes
+        // The hidden "test passed" flag comes from the browser, so it is only
+        // honoured when the submitted values are the ones that actually passed
+        // the widget test in this session. Anything else that changed the
+        // settings drops the stored pass flag.
         $submittedTestResult = (bool) ($data['captcha_authentication_result'] ?? false);
         $captchaTestService = app(CaptchaTestService::class);
+        $freshlyTested = $submittedTestResult && $captchaTestService->matchesTestedSettings($submitted);
 
-        if ($settingsChanged && ! $submittedTestResult) {
-            $captchaTestService->resetCaptchaTestResults();
-        } elseif ($submittedTestResult) {
+        if ($freshlyTested) {
             $captchaTestService->saveCaptchaTestResult($newDriver, true);
+        } elseif ($settingsChanged) {
+            $captchaTestService->resetCaptchaTestResults();
         }
+        $captchaTestService->forgetTestedSettings();
 
         // Write settings
         $this->repository->set('captcha_enabled', $data['captcha_enabled'] ?? false);
@@ -138,7 +151,7 @@ class UpdateCaptchaSettingsAction extends AbstractAction
         $this->saveProviderKeys($newDriver, $newSiteKey, $newSecretKey);
         $this->repository->set('captcha_google_version', $newVersion);
         $this->repository->set('captcha_google_min_score', $newMinScore);
-        $this->repository->set('captcha_google_project_id', $data['captcha_google_project_id'] ?? '');
+        $this->repository->set('captcha_google_project_id', $newProjectId);
 
         // Update form settings
         if (isset($data['forms']) && is_array($data['forms'])) {
@@ -176,14 +189,22 @@ class UpdateCaptchaSettingsAction extends AbstractAction
      */
     private function saveProviderKeys(string $driver, string $siteKey, string $secretKey): void
     {
-        $keyPrefix = match ($driver) {
+        $keyPrefix = $this->providerKeyPrefix($driver);
+
+        $this->repository->set("{$keyPrefix}_site_key", $siteKey);
+        $this->repository->set("{$keyPrefix}_secret_key", $secretKey);
+    }
+
+    /**
+     * Setting-name prefix under which a provider's key pair is stored
+     */
+    private function providerKeyPrefix(string $driver): string
+    {
+        return match ($driver) {
             'google' => 'captcha_google',
             'google_enterprise' => 'captcha_google_enterprise',
             'turnstile' => 'captcha_turnstile',
             default => 'captcha_google',
         };
-
-        $this->repository->set("{$keyPrefix}_site_key", $siteKey);
-        $this->repository->set("{$keyPrefix}_secret_key", $secretKey);
     }
 }
