@@ -144,6 +144,7 @@ window.validateToken = function (token) {
             secret_key: document.getElementById('captcha_secret_key').value,
             site_key: document.getElementById('captcha_site_key').value,
             project_id: document.getElementById('captcha_google_project_id')?.value || '',
+            version: document.getElementById('captcha_google_version')?.value || '',
             min_score: document.getElementById('captcha_google_min_score')?.value || '0.5'
         })
     })
@@ -152,6 +153,8 @@ window.validateToken = function (token) {
         if (data.success) {
             showTestResult('success', data.message);
             document.getElementById('captcha-authentication-result').value = '1';
+            // Let the settings form snapshot the values that just passed
+            window.dispatchEvent(new CustomEvent('captcha-test-passed'));
         } else {
             showTestResult('error', data.message);
         }

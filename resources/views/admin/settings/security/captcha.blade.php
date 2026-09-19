@@ -47,7 +47,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     savedVersion: '{{ $settings['captcha_google_version'] }}',
     savedMinScore: '{{ $settings['captcha_google_min_score'] }}',
     captchaMinScore: '{{ old('captcha_google_min_score', $settings['captcha_google_min_score']) }}',
+    savedProjectId: '{{ $settings['captcha_google_project_id'] }}',
     captchaSettingsChanged: false,
+    testedSnapshot: null,
     init() {
         this.$watch('captchaDriver', (newDriver, oldDriver) => {
             if (newDriver !== oldDriver) {
@@ -58,6 +60,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         this.$watch('captchaSecretKey', () => this.checkSettingsChanged())
         this.$watch('captchaVersion', () => this.checkSettingsChanged())
         this.$watch('captchaMinScore', () => this.checkSettingsChanged())
+        this.$watch('captchaProjectId', () => this.checkSettingsChanged())
+        window.addEventListener('captcha-test-passed', () => this.markTested())
     },
     switchProviderKeys(newDriver) {
         const keys = this.providerKeys[newDriver] || { site_key: '', secret_key: '' }
@@ -66,19 +70,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         this.resetAuthenticationStatus()
         this.captchaSettingsChanged = true
     },
-    checkSettingsChanged() {
+    currentSnapshot() {
+        return [
+            this.captchaDriver, this.captchaSiteKey, this.captchaSecretKey,
+            this.captchaVersion, this.captchaMinScore, this.captchaProjectId,
+        ].join('\u001f')
+    },
+    savedSnapshot() {
         const savedKeys = this.providerKeys[this.savedDriver] || { site_key: '', secret_key: '' }
-        const changed = this.captchaDriver !== this.savedDriver ||
-                       this.captchaSiteKey !== savedKeys.site_key ||
-                       this.captchaSecretKey !== savedKeys.secret_key ||
-                       this.captchaVersion !== this.savedVersion ||
-                       this.captchaMinScore !== this.savedMinScore
-        if (changed && !this.captchaSettingsChanged) {
-            this.captchaSettingsChanged = true
+        return [
+            this.savedDriver, savedKeys.site_key || '', savedKeys.secret_key || '',
+            this.savedVersion, this.savedMinScore, this.savedProjectId,
+        ].join('\u001f')
+    },
+    markTested() {
+        // Values that just passed the widget test; editing any of them afterwards
+        // drops the passed status again (the server enforces the same rule).
+        this.testedSnapshot = this.currentSnapshot()
+    },
+    checkSettingsChanged() {
+        const baseline = this.testedSnapshot ?? this.savedSnapshot()
+        if (this.currentSnapshot() === baseline) {
+            return
+        }
+        this.captchaSettingsChanged = true
+        const authInput = document.getElementById('captcha-authentication-result')
+        if (authInput && authInput.value === '1') {
             this.resetAuthenticationStatus()
         }
     },
     resetAuthenticationStatus() {
+        this.testedSnapshot = null
         const authInput = document.getElementById('captcha-authentication-result')
         if (authInput) {
             authInput.value = '0'
