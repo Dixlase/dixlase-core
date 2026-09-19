@@ -111,6 +111,7 @@ return [
         'bad-request' => 'Request is invalid or malformed',
         'timeout-or-duplicate' => 'Response is invalid: expired or already used',
         'internal-error' => 'Internal error during response validation',
+        'unknown-error' => 'CAPTCHA verification failed',
     ],
     'test_required' => 'CAPTCHA authentication not completed. To use CAPTCHA, you must complete authentication successfully.',
     'test_button' => 'Connection Test',
