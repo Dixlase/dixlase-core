@@ -131,6 +131,13 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - `dls:make:plugin` / `dls:make:theme` generate both files, so new extensions start with the guard
 - A plugin signature covers `composer.json` and `package.json`, so re-sign a signed plugin after every bump
 
+### Core Update vs. Theme Update (bundled themes are bootstrap-only)
+- **A core update never changes an installed theme.** `CoreUpdater::applyBundledThemes()` copies a theme declared in the release manifest (`.dixlase-release.json`, produced by the `[bundle-theme]` release-notes marker) into `themes/<slug>` **only when that directory does not exist yet** (fresh install-from-release)
+- When the theme is already installed, the updater skips it entirely: no file overwrite, no `Theme.version` change, no snapshot — even if the bundled copy is newer or older. Do not add a version comparison; the operator decides when a theme moves
+- Theme changes go exclusively through `dls:theme:update` / `dls:theme:rollback` (independent, operator-controlled). Core and theme versions are independent
+- Rollback of a failed core update only removes themes that this update bootstrapped (they did not exist before); it never restores or touches a pre-existing theme
+- Tests for this path must use a throwaway tree under `storage/framework/testing/` (see `tests/Unit/Services/Core/CoreUpdaterBundledThemesTest.php`), never the real `themes/`
+
 ### Git Investigation Tools — `git log -S` does not detect in-file moves
 - When investigating "who recently changed X", `git log -S '<term>'` (pickaxe) only catches commits where the **occurrence count** of the string changed
 - If a config entry simply **moved within the same file** (e.g., an SPDX identifier moved from the refused list to the accepted list), `-S` shows nothing — the occurrence count is unchanged
