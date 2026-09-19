@@ -174,9 +174,18 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId);
 
             if ($result['success']) {
-                // Save test results
+                // Do not flip the stored pass flag here: the settings under
+                // test are not saved yet. Remember their fingerprint so the
+                // save can grant the passed status only to these exact values.
                 $captchaTestService = app(CaptchaTestService::class);
-                $captchaTestService->saveCaptchaTestResult($driver, true);
+                $captchaTestService->rememberTestedSettings([
+                    'captcha_driver' => $driver,
+                    'captcha_site_key' => $siteKey,
+                    'captcha_secret_key' => $secretKey,
+                    'captcha_google_version' => $request->input('version') ?: $this->securitySettingRepository->get('captcha_google_version', 'v3'),
+                    'captcha_google_min_score' => $minScore,
+                    'captcha_google_project_id' => $projectId,
+                ]);
 
                 return response()->json([
                     'success' => true,

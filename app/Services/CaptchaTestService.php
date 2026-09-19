@@ -654,6 +654,64 @@ class CaptchaTestService
     }
 
     /**
+     * Session key holding the fingerprint of the settings that passed the
+     * last widget test. The stored pass flag is only refreshed from a save
+     * whose submitted settings reproduce this fingerprint, so a value edited
+     * after the test can never inherit the passed status.
+     */
+    public const TESTED_FINGERPRINT_SESSION_KEY = 'captcha_tested_fingerprint';
+
+    /**
+     * Build a fingerprint of every setting the widget test depends on.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    public static function fingerprint(array $settings): string
+    {
+        $minScore = $settings['captcha_google_min_score'] ?? '';
+        $minScore = is_numeric($minScore) ? number_format((float) $minScore, 2, '.', '') : '';
+
+        return hash('sha256', implode("\x1f", [
+            (string) ($settings['captcha_driver'] ?? ''),
+            (string) ($settings['captcha_site_key'] ?? ''),
+            (string) ($settings['captcha_secret_key'] ?? ''),
+            (string) ($settings['captcha_google_version'] ?? ''),
+            $minScore,
+            (string) ($settings['captcha_google_project_id'] ?? ''),
+        ]));
+    }
+
+    /**
+     * Remember which settings just passed the widget test.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    public function rememberTestedSettings(array $settings): void
+    {
+        session()->put(self::TESTED_FINGERPRINT_SESSION_KEY, self::fingerprint($settings));
+    }
+
+    /**
+     * Whether the given settings are exactly the ones that passed the last test.
+     *
+     * @param  array<string, mixed>  $settings
+     */
+    public function matchesTestedSettings(array $settings): bool
+    {
+        $stored = session(self::TESTED_FINGERPRINT_SESSION_KEY);
+
+        return is_string($stored) && hash_equals($stored, self::fingerprint($settings));
+    }
+
+    /**
+     * Forget the remembered test once it has been consumed by a save.
+     */
+    public function forgetTestedSettings(): void
+    {
+        session()->forget(self::TESTED_FINGERPRINT_SESSION_KEY);
+    }
+
+    /**
      * Save test result to database
      */
     public function saveCaptchaTestResult(string $driver, bool $success, ?string $errorMessage = null): void
@@ -750,6 +808,7 @@ class CaptchaTestService
     {
         // Remove test result from session
         session()->forget('captcha_authentication_result');
+        $this->forgetTestedSettings();
 
         // Reset test result to 0 in database (use repository to automatically clear cache)
         $testKey = 'captcha_authentication_result';
