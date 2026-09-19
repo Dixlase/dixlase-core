@@ -32,7 +32,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'button_class' => '!flex text-left items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none w-full',
+    // py-2.5 below lg and py-2 from lg upward — the extra 4px of vertical
+    // padding on mobile and tablet pushes each item row above the Apple HIG
+    // 44px touch target minimum. Real desktop (lg+) keeps the tighter
+    // density because it is a mouse-primary surface.
+    'button_class' => '!flex text-left items-center px-4 py-2.5 lg:py-2 text-sm font-medium rounded-md focus:outline-none w-full',
     'arrow_class' => 'w-4 h-4 ml-auto shrink-0 transform'
 ])
 
@@ -42,7 +46,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          x-ref="sidebarRoot"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', '{{ route('admin.profile.sidebar.reset') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
 
-        <nav class="flex-1 px-4 py-4 space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
+        {{-- space-y-2 below lg, space-y-1 from lg upward: gives mobile and
+             tablet taps a little breathing room between items without
+             changing the desktop density. The lg cut-off matches the
+             touch/mouse boundary the button padding uses (py-2.5 lg:py-2).
+             Nested menu levels below use the same gap. --}}
+        <nav class="flex-1 px-4 py-4 space-y-2 lg:space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
@@ -272,7 +281,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             $__children = \App\Helpers\AdminHelper::reorderByKeys($__children, $__savedOrder[$key]);
                         }
                     @endphp
-                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-1" role="menu" data-sortable-group="{{ $key }}">
+                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1" role="menu" data-sortable-group="{{ $key }}">
                         @foreach ($__children as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
@@ -420,7 +429,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     $__grandChildren = \App\Helpers\AdminHelper::reorderByKeys($__grandChildren, $__savedOrder[$__childOrderKey]);
                                                 }
                                             @endphp
-                                            <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-1" data-sortable-group="{{ $__childOrderKey }}">
+                                            <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1" data-sortable-group="{{ $__childOrderKey }}">
                                                 @foreach ($__grandChildren as $grand_child_key => $grand_child_item)
                                                     @php
                                                         // 孫項目の権限キーを生成（親キー.子キー.孫キー）
@@ -481,7 +490,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                                 </svg>
                                                             </button>
-                                                            <div x-show="{{ $open_grand_child_key }}" x-collapse class="ml-2 space-y-1">
+                                                            <div x-show="{{ $open_grand_child_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1">
                                                                 @foreach ($grand_child_item['children'] as $great_grand_child_key => $great_grand_child_item)
                                                                     @php
                                                                         $great_grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key . '.' . $great_grand_child_key;
@@ -538,11 +547,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          mt-[56px] visually aligns the tab with the page heading (h1) — this
          clears the admin bar h-12 (48px) with a small breathing gap, so the
          tab's vertical center sits near the h1's baseline rather than
-         hugging the admin bar. --}}
+         hugging the admin bar. (The concrete margin-top is set by CSS in
+         admin.blade.php so it can pick up the mobile banner offset.)
+         Sized for a comfortable touch target: min-w-11 (44px) meets the
+         Apple HIG recommended minimum, px-3.5 keeps the icon centred with
+         breathing room, and text-base scales the chevron above the previous
+         text-sm so the affordance reads at a glance. bg-white/90 (was /75)
+         is slightly more opaque so the tab does not fade into a busy page
+         background. The heading in admin.blade.php picks up a matching
+         mobile-only left padding to keep clear of the wider tab. --}}
     <button @click="openSidebar = !openSidebar"
-            class="js-mobile-sidebar-tab sm:hidden backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-blue-400 px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
+            class="js-mobile-sidebar-tab sm:hidden backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-500 dark:text-blue-400 px-3.5 py-4 min-w-11 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
             aria-label="Toggle sidebar menu">
-        <i class="fas text-sm" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+        <i class="fas text-base" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
     </button>
 </div>
 

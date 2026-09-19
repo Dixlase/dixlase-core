@@ -95,6 +95,16 @@ window.twoFaManagement = function (routes, csrfToken, translations) {
                 options.challenge = base64urlToBuffer(options.challenge);
                 options.user.id = base64urlToBuffer(options.user.id);
 
+                // excludeCredentials[].id must also be an ArrayBuffer, otherwise
+                // navigator.credentials.create() rejects the options whenever the
+                // user already has at least one passkey registered
+                if (Array.isArray(options.excludeCredentials)) {
+                    options.excludeCredentials = options.excludeCredentials.map((cred) => ({
+                        ...cred,
+                        id: base64urlToBuffer(cred.id),
+                    }));
+                }
+
                 // Passkey作成
                 const credential = await navigator.credentials.create({
                     publicKey: options
