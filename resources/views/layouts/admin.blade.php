@@ -147,24 +147,40 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     ])
                 </aside>
 
-                <!-- Sidebar Toggle Button (Desktop) -->
+                {{-- Sidebar Toggle Button (Desktop / Tablet).
+                     lg+ (mouse-primary desktops) keeps the original slim
+                     tab (px-1.5, text-sm chevron). Below lg — i.e. the
+                     sm/md tablet range, since the button is hidden under
+                     sm — the max-lg: variants grow it to a 44px touch
+                     target (min-w-11, px-3.5, text-base) so a finger can
+                     hit it, matching the mobile drawer tab. The page
+                     heading's sm:pl-5 keeps clear of the wider tab (see
+                     the header below). bg-*/90 (was /75) keeps the tab
+                     legible against busy page backgrounds. --}}
                 <button type="button"
                         id="admin-sidebar-toggle"
                         @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
-                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-1.5 py-4 max-lg:px-3.5 max-lg:min-w-11 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
                         }"
                         :style="sidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
                         aria-label="Toggle sidebar menu">
-                    <i class="fas text-sm" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                    <i class="fas text-sm max-lg:text-base" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
 
-                <!-- Main Content Area -->
+                {{-- Main Content Area.
+                     No left padding on <main> itself: the page header
+                     (which owns the border-bottom under the heading)
+                     must start exactly at the sidebar edge (open) or the
+                     viewport edge (collapsed) so that border runs
+                     unbroken to the edge. Horizontal breathing room is
+                     provided by each section's own px-6 lg:px-8 and by
+                     the header's px-8, not by a wrapper gap. --}}
                 <main @right-sidebar-active.window="rightSidebarActive = true"
                       id="admin-main-content"
-                      class="ml-0 md:pl-4 lg:pl-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
+                      class="ml-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
                           'md:ml-0': sidebarCollapsed,
                           'md:ml-64': !sidebarCollapsed,
@@ -213,8 +229,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       role="main">
 
                     <!-- Page Header -->
+                    {{-- The header's own padding (px-8) is a protected offset —
+                         it anchors every admin page horizontally. The extra
+                         left indent lives on the <h1> and only exists to
+                         keep the heading clear of the sidebar toggle tab
+                         that overlaps this row:
+                           - below sm: pl-8 (32px) — the 44px mobile drawer
+                             tab sits at x=0, heading lands at 64px.
+                           - sm..lg: sm:pl-5 (20px) — the 44px tablet tab
+                             docks to the sidebar edge (open) or x=0
+                             (collapsed); heading lands 8px past it.
+                           - lg+: lg:pl-0 — the slim desktop tab needs no
+                             extra clearance, so the original indent is
+                             restored. --}}
                     <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
-                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white">
+                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white pl-8 sm:pl-5 lg:pl-0">
                             {{ __($heading ?? '') }}
                         </h1>
                     </header>
