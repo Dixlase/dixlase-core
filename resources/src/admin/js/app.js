@@ -90,4 +90,4 @@ window.Dixlase.newTabPreview = function(url, el) {
 // content-hashed (public/assets/build/js/admin-<hash>.js), so resolve it
 // through public/assets/build/manifest.json instead of a fixed path. Safe
 // to keep past dryrun-10; harmless in production.
-window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:0.3.33';
+window.Dixlase.buildMarker = 'DIXLASE_BUILD_MARKER:0.3.35';
