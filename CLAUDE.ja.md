@@ -188,8 +188,9 @@ git submodule foreach --quiet \
   'git fetch --depth=1 origin $sha1 2>/dev/null || echo "WARN: $name の $sha1 が remote に未 push"'
 ```
 
-### プラグイン・テーマを手動クローンした後の autoload 再生成
+### プラグイン・テーマを手動クローンした後・ブランチを切り替えた後の autoload 再生成
 - 管理画面や `artisan plugin:install` ではなく **GitHub から `git clone` して**プラグイン・テーマを配置した場合は、動作前に自分で autoload を再生成する必要がある
+- **プラグイン・テーマ内で別のブランチ・タグ・コミットに切り替えた後も、同じコマンドを実行する。** `composer.local.json` は各拡張の `composer.json` からその時点の状態で生成されるため、ブランチを切り替えると、切り替え前のブランチの内容を指したまま黙って残る
 - プラグインのクラス（`Plugins\{Name}\App\...`）は `composer.local.json` 経由でオートロードされる。これは `Plugins\{Name}\App\` → `plugins/{Name}/app` をマッピングし、`wikimedia/composer-merge-plugin` がルートの autoload にマージする。このファイルは自動生成で、素の `git clone` では **更新されない** ため、クラスが解決できないままになる
 - 症状: ルートは正常に登録される（ルートファイルはディスクから走査されるため）が、プラグインのコントローラにディスパッチした瞬間に `BindingResolutionException: Target class [Plugins\...\SomeController] does not exist` が発生する
 - 管理画面 / `plugin:install` / `plugin:delete` の経路では自動実行される（`ComposerLocalHelper::syncAutoload()`）。手動クローンでは実行されないので、Core ルート（`html/`）で自分で実行する:
@@ -198,6 +199,8 @@ git submodule foreach --quiet \
   ```
   - `sync-local-autoload.php` は現在の `plugins/` + `themes/` から `composer.local.json` を書き直す（フレームワーク非依存・DB 不要）。`--no-scripts` は DB 接続を要する `package:discover` ポストフックをスキップする
 - 注意: 素の `composer dump-autoload` は **2 回実行** が必要 — composer-merge-plugin は `pre-autoload-dump` フックが再生成する前の古い `composer.local.json` を読むため、1 回目では新規クローンしたプラグインを取りこぼす。上記のワンライナーは composer 起動前にファイルを書き直すことでこれを回避する
+- `autoload.files` の登録が実態とずれていると、**機能が一部使えなくなるのではなく致命的エラーになる**。composer は登録されたファイルを存在確認なしに `require` するため、1 ファイル欠けるだけで全リクエストと全 `artisan` コマンドが `Failed opening required '.../SomeHelper.php'` で停止する（ヘルパーが使えないのではなく、画面が真っ白になる）。ヘルパーファイルが追加される前のブランチにプラグインを切り替えると、これがそのまま再現する。その後にマージして戻した場合も同様で、今度は「ファイルはあるが登録が無い」状態になり、呼び出し箇所で未定義関数エラーになる。どちらの操作の後も上記コマンドを実行する
+- 拡張側でこの影響範囲を自分の中に閉じ込めるには、`autoload.files` に宣言する代わりに、ServiceProvider の `register()` でヘルパーファイルを `require_once` する
 - `composer.local.json` と `vendor/` は gitignore 対象なので、この作業でコミットすべき差分は発生しない — ローカル環境専用の手順である
 
 ### CLAUDE.md 再生成
