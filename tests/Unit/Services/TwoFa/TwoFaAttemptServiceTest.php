@@ -107,4 +107,52 @@ class TwoFaAttemptServiceTest extends TestCase
 
         $this->assertTrue($this->service->isLockoutNotificationEnabled());
     }
+
+    /**
+     * Regression: the model's fillable list once said `success` while the
+     * column (and the service) say `successful`, so every attempt was stored
+     * with the column default (false) and five ordinary logins locked the
+     * account out.
+     */
+    public function test_successful_attempt_is_stored_as_successful(): void
+    {
+        $this->service->recordAttempt($this->member, 'email', true);
+
+        $this->assertDatabaseHas('members_two_fa_attempts', [
+            'member_id' => $this->member->id,
+            'attempt_type' => 'email',
+            'successful' => true,
+        ]);
+        $this->assertTrue((bool) $this->member->twoFaAttempts()->first()->successful);
+    }
+
+    public function test_successful_attempts_never_lock_out(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->service->recordAttempt($this->member, 'email', true);
+        }
+
+        $this->assertFalse($this->service->hasReachedMaxAttempts($this->member));
+        $this->assertFalse($this->service->isLockedOut($this->member));
+        $this->assertEquals(3, $this->service->getRemainingAttempts($this->member));
+    }
+
+    public function test_failed_attempts_lock_out_and_report_remaining_minutes(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->service->recordAttempt($this->member, 'email', false);
+        }
+
+        $this->assertTrue($this->service->isLockedOut($this->member));
+        $this->assertGreaterThan(0, $this->service->getRemainingLockoutTime($this->member));
+    }
+
+    public function test_model_failed_count_helpers_use_the_successful_column(): void
+    {
+        $this->service->recordAttempt($this->member, 'email', false);
+        $this->service->recordAttempt($this->member, 'email', true);
+
+        $this->assertSame(1, \App\Models\MemberTwoFaAttempt::getFailedAttemptsCount($this->member->id, 15));
+        $this->assertSame(1, \App\Models\MemberTwoFaAttempt::getFailedAttemptsByIpCount((string) request()->ip(), 15));
+    }
 }
