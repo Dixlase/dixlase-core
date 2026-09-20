@@ -29,6 +29,7 @@ database.sqlite
 .env
 .env.backup
 .env.production
+/dixlase-deploy.json
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
