@@ -1,5 +1,9 @@
 includes:
     - ./vendor/larastan/larastan/extension.neon
+    # Baseline of pre-existing level-5 findings, frozen so the job can block on
+    # NEW errors. Shrink it by regenerating after fixing entries; never grow it
+    # to silence new violations.
+    - ./phpstan-baseline.neon
 
 parameters:
     paths:
@@ -17,3 +21,8 @@ parameters:
         - '#Call to an undefined method Illuminate\\Database\\Query\\Builder::#'
 
     treatPhpDocTypesAsCertain: false
+
+    # The Builder ignoreErrors patterns above are kept as guards; do not fail the
+    # run when a release happens not to trigger them. Also lets the committed
+    # baseline stay resilient to minor larastan version drift between CI runs.
+    reportUnmatchedIgnoredErrors: false

@@ -273,7 +273,6 @@ jobs:
 
       - name: Run Laravel Pint
         run: ./vendor/bin/pint --test
-        continue-on-error: true  # 既存ファイルのスタイル統一は段階的に実施
 
   # ============================================
   # Static Analysis (PHPStan)
@@ -297,7 +296,6 @@ jobs:
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse --memory-limit=2G
-        continue-on-error: true  # アルファ版では警告のみ
 
   # ============================================
   # Missing Symbols — BLOCKING
