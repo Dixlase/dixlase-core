@@ -24,7 +24,6 @@ namespace Tests\Unit\Resources;
 
 use App\Http\Resources\BaseApiCollection;
 use App\Http\Resources\BaseApiResource;
-use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -37,7 +36,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_single_resource_wraps_data_with_meta_and_links(): void
     {
-
         $resource = new FixtureItemResource((object) ['id' => 42, 'label' => 'foo']);
         $request = Request::create('https://example.com/api/v1/items/42', 'GET');
 
@@ -51,7 +49,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_resource_collection_omits_pagination_meta_for_plain_arrays(): void
     {
-
         $items = new Collection([
             (object) ['id' => 1, 'label' => 'a'],
             (object) ['id' => 2, 'label' => 'b'],
@@ -73,7 +70,6 @@ class BaseApiResourceTest extends TestCase
 
     public function test_resource_collection_includes_pagination_block_for_paginators(): void
     {
-
         $items = collect([
             (object) ['id' => 1, 'label' => 'a'],
             (object) ['id' => 2, 'label' => 'b'],

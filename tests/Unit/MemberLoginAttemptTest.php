@@ -110,7 +110,7 @@ class MemberLoginAttemptTest extends TestCase
         $lastAttempt = MemberLoginAttempt::recordAttempt($email, '192.168.1.1', null, false);
 
         $retrieved = MemberLoginAttempt::getLastFailedAttempt($email);
-        
+
         $this->assertNotNull($retrieved);
         $this->assertEquals($lastAttempt->attempted_at->timestamp, $retrieved->timestamp);
     }

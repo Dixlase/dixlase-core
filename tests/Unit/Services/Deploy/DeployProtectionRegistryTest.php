@@ -26,7 +26,6 @@ namespace Tests\Unit\Services\Deploy;
 
 use App\DTO\PluginIntegration\DeployProtectionSource;
 use App\Services\Deploy\DeployProtectionRegistry;
-use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -133,7 +132,7 @@ class DeployProtectionRegistryTest extends TestCase
         // case for extensions that carry no runtime data. Must not be
         // treated as an error nor pollute the source list.
         $this->writePluginManifest('DixlaseNoDeploy', [
-            'name'    => 'DixlaseNoDeploy',
+            'name' => 'DixlaseNoDeploy',
             'version' => '1.0.0',
         ]);
 
@@ -149,7 +148,7 @@ class DeployProtectionRegistryTest extends TestCase
     public function test_registry_collects_tables_and_paths_from_plugin_manifest(): void
     {
         $this->writePluginManifest('DixlaseLegal', [
-            'name'   => 'DixlaseLegal',
+            'name' => 'DixlaseLegal',
             'deploy' => [
                 'protected_tables' => ['dls_plg_dixlase_legal_cookie_consents'],
             ],
@@ -172,9 +171,9 @@ class DeployProtectionRegistryTest extends TestCase
     public function test_registry_collects_storage_paths(): void
     {
         $this->writePluginManifest('DixlaseInquiry', [
-            'name'   => 'DixlaseInquiry',
+            'name' => 'DixlaseInquiry',
             'deploy' => [
-                'protected_tables'        => ['dls_plg_dixlase_inquiries'],
+                'protected_tables' => ['dls_plg_dixlase_inquiries'],
                 'protected_storage_paths' => ['inquiries/attachments/'],
             ],
         ]);
@@ -191,7 +190,7 @@ class DeployProtectionRegistryTest extends TestCase
         // that owns runtime tables must not have to bind a service
         // provider just to declare protection.
         $this->writeThemeManifest('DixlaseOnePage', [
-            'name'   => 'DixlaseOnePage',
+            'name' => 'DixlaseOnePage',
             'deploy' => [
                 'protected_tables' => ['thm_dixlase_onepage_analytics'],
             ],
@@ -213,11 +212,11 @@ class DeployProtectionRegistryTest extends TestCase
         // report it exactly once so downstream `--ignore-table`
         // arguments are not duplicated.
         $this->writePluginManifest('DixlaseA', [
-            'name'   => 'DixlaseA',
+            'name' => 'DixlaseA',
             'deploy' => ['protected_tables' => ['dls_shared_audit', 'dls_plg_a']],
         ]);
         $this->writePluginManifest('DixlaseB', [
-            'name'   => 'DixlaseB',
+            'name' => 'DixlaseB',
             'deploy' => ['protected_tables' => ['dls_shared_audit', 'dls_plg_b']],
         ]);
 
@@ -237,7 +236,7 @@ class DeployProtectionRegistryTest extends TestCase
         // memoizes. Verify by mutating the fixture between calls and
         // asserting the second call returns the CACHED snapshot.
         $this->writePluginManifest('DixlaseInitial', [
-            'name'   => 'DixlaseInitial',
+            'name' => 'DixlaseInitial',
             'deploy' => ['protected_tables' => ['dls_initial']],
         ]);
 
@@ -246,7 +245,7 @@ class DeployProtectionRegistryTest extends TestCase
 
         // Add a new plugin AFTER the first read.
         $this->writePluginManifest('DixlaseLate', [
-            'name'   => 'DixlaseLate',
+            'name' => 'DixlaseLate',
             'deploy' => ['protected_tables' => ['dls_late']],
         ]);
 
@@ -272,7 +271,7 @@ class DeployProtectionRegistryTest extends TestCase
     public function test_registry_skips_extension_with_non_array_deploy_section(): void
     {
         $this->writePluginManifest('DixlaseWrongShape', [
-            'name'   => 'DixlaseWrongShape',
+            'name' => 'DixlaseWrongShape',
             'deploy' => 'oops-should-be-an-object',
         ]);
 
@@ -286,7 +285,7 @@ class DeployProtectionRegistryTest extends TestCase
         // A plugin author accidentally mixes strings with non-string
         // entries. The non-strings are dropped; the strings survive.
         $this->writePluginManifest('DixlaseMixed', [
-            'name'   => 'DixlaseMixed',
+            'name' => 'DixlaseMixed',
             'deploy' => [
                 'protected_tables' => [
                     'dls_good_table',
@@ -314,9 +313,9 @@ class DeployProtectionRegistryTest extends TestCase
         // empty-count line for every plugin whose author just left the
         // skeleton behind.
         $this->writePluginManifest('DixlaseEmpty', [
-            'name'   => 'DixlaseEmpty',
+            'name' => 'DixlaseEmpty',
             'deploy' => [
-                'protected_tables'        => [],
+                'protected_tables' => [],
                 'protected_storage_paths' => [],
             ],
         ]);

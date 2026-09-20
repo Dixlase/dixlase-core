@@ -151,9 +151,9 @@ if (! function_exists('resolve_manifest_asset_url')) {
      *                                Vite manifest.json
      * @param  string  $assetBasePath  URL prefix for the built asset,
      *                                 e.g. `assets/build/`
-     * @return string|null  Absolute URL to the built asset, or null
-     *                      when the manifest is missing or the key
-     *                      is not present.
+     * @return string|null Absolute URL to the built asset, or null
+     *                     when the manifest is missing or the key
+     *                     is not present.
      */
     function resolve_manifest_asset_url(string $sourceKey, string $manifestPath, string $assetBasePath): ?string
     {

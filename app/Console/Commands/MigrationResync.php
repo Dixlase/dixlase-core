@@ -135,10 +135,10 @@ class MigrationResync extends Command
     public function handle(): int
     {
         $scopes = $this->collectScopeResults();
-        $prune  = (bool) $this->option('prune');
+        $prune = (bool) $this->option('prune');
 
         $totalChanges = array_sum(array_map(fn (array $s) => count($s['changes']), $scopes));
-        $totalPrunes  = $prune
+        $totalPrunes = $prune
             ? array_sum(array_map(fn (array $s) => count($s['skipped']), $scopes))
             : 0;
 
@@ -527,8 +527,8 @@ class MigrationResync extends Command
     protected function report(array $scopes, string $status): int
     {
         $totalChanges = array_sum(array_map(fn (array $s) => count($s['changes']), $scopes));
-        $prune        = (bool) $this->option('prune');
-        $totalPrunes  = $prune
+        $prune = (bool) $this->option('prune');
+        $totalPrunes = $prune
             ? array_sum(array_map(fn (array $s) => count($s['skipped']), $scopes))
             : 0;
 

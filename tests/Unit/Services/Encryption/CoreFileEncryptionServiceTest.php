@@ -38,7 +38,7 @@ class CoreFileEncryptionServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->service = new CoreFileEncryptionService;
+        $this->service = new CoreFileEncryptionService();
         $this->tempDir = sys_get_temp_dir().'/dixlase_encryption_test_'.uniqid();
         mkdir($this->tempDir, 0755, true);
     }

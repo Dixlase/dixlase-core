@@ -48,6 +48,7 @@ class ExtensionSettingsDefaultsSyncTest extends TestCase
     use RefreshDatabase;
 
     private string $tempTable = 'test_extension_settings_sync';
+
     private string $tempDir;
 
     protected function setUp(): void
@@ -95,8 +96,8 @@ class ExtensionSettingsDefaultsSyncTest extends TestCase
         FakeSyncProvider::$defaults = [
             'existing_a' => 'CONTRACT-DEFAULT-A', // must NOT overwrite
             'existing_b' => 'CONTRACT-DEFAULT-B', // must NOT overwrite (null is present)
-            'new_key_c'  => 'default-c',           // MUST insert
-            'new_key_d'  => null,                  // MUST insert (as null)
+            'new_key_c' => 'default-c',           // MUST insert
+            'new_key_d' => null,                  // MUST insert (as null)
         ];
         $this->writeManifest('theme', [FakeSyncProvider::class]);
 
@@ -132,12 +133,12 @@ class ExtensionSettingsDefaultsSyncTest extends TestCase
     {
         FakeSyncProvider::$table = $this->tempTable;
         FakeSyncProvider::$defaults = [
-            'as_bool_true'  => true,
+            'as_bool_true' => true,
             'as_bool_false' => false,
-            'as_int'        => 42,
-            'as_float'      => 1.5,
-            'as_string'     => 'plain',
-            'as_null'       => null,
+            'as_int' => 42,
+            'as_float' => 1.5,
+            'as_string' => 'plain',
+            'as_null' => null,
         ];
         $this->writeManifest('theme', [FakeSyncProvider::class]);
 
