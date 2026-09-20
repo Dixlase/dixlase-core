@@ -635,6 +635,49 @@ class ExtensionSourceManager
     }
 
     /**
+     * Decide the source linkage for an extension that dls:plugin:install /
+     * dls:theme:install is about to register, in priority order:
+     *
+     *   1. an explicit `--source=<id>` (disk-only installs such as a git
+     *      clone, where nothing recorded the origin);
+     *   2. the sidecar written by the download step (admin "add from
+     *      source" page or `dls:*:download --extract`);
+     *   3. the official-source default via officialLinkage(), tried with
+     *      the manifest package_name first and the composer.json name
+     *      second — a manifest that says `plugins/<slug>` while
+     *      composer.json says `dixlase/<slug>` still links.
+     *
+     * Returns null when none of those apply; the extension is then left
+     * unlinked and dls:*:update refuses to run for it until an operator
+     * links it.
+     *
+     * @param  ?array<string, mixed>  $sidecar  Contents of the download sidecar (external input; used only when it carries a source_id)
+     * @return ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}
+     */
+    public function resolveInstallLinkage(
+        string $slug,
+        string $extensionType,
+        ?int $sourceId,
+        ?array $sidecar,
+        ?string $packageName,
+        ?string $composerName = null,
+    ): ?array {
+        if ($sourceId !== null) {
+            $source = ExtensionSource::query()->find($sourceId);
+            if ($source !== null) {
+                return $this->resolveSourceLinkage($source, $slug, $extensionType);
+            }
+        }
+
+        if ($sidecar !== null && isset($sidecar['source_id'])) {
+            return $sidecar;
+        }
+
+        return $this->officialLinkage($slug, $extensionType, $packageName)
+            ?? $this->officialLinkage($slug, $extensionType, $composerName);
+    }
+
+    /**
      * Same as download() but also returns the source that served the
      * extension. Callers that need to record the source linkage (e.g.
      * the admin install flow that has to persist source_id /
