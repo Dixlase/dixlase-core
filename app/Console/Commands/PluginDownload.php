@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSidecar;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
@@ -57,7 +58,7 @@ class PluginDownload extends Command
 
     protected $description = 'Download a plugin from an extension source';
 
-    public function handle(ExtensionSourceManager $manager): int
+    public function handle(ExtensionSourceManager $manager, ExtensionSourceSidecar $sidecar): int
     {
         $slug = $this->argument('slug');
         $version = $this->option('to');
@@ -66,11 +67,26 @@ class PluginDownload extends Command
         $this->info("Downloading plugin '{$slug}'...");
 
         try {
-            $zipPath = $manager->download($slug, 'plugin', $version, $sourceId);
+            // Keep the source that served the ZIP: after --extract it is
+            // written next to plugin.json so dls:plugin:install can link
+            // the plugin to it (dls:plugin:update refuses to run for an
+            // unlinked plugin). Same mechanism as the admin "add from
+            // source" page.
+            $download = $manager->downloadWithSource($slug, 'plugin', $version, $sourceId);
+            $zipPath = $download['path'];
             $this->info("Downloaded to: {$zipPath}");
 
             if ($this->option('extract')) {
-                return $this->extractPlugin($zipPath, $slug);
+                $result = $this->extractPlugin($zipPath, $slug);
+                if ($result === self::SUCCESS) {
+                    $sidecar->write(
+                        base_path("plugins/{$this->slugToName($slug)}"),
+                        $manager->resolveSourceLinkage($download['source'], $slug, 'plugin'),
+                    );
+                    $this->info("Recorded source '{$download['source']->name}' for dls:plugin:install.");
+                }
+
+                return $result;
             }
 
             return self::SUCCESS;

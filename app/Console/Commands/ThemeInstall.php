@@ -39,6 +39,7 @@ use App\Console\Traits\BuildsExtensionAssets;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -54,7 +55,7 @@ class ThemeInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:install {themeName : '.'command.theme_install.theme_name_prompt'.'} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely}';
+    protected $signature = 'dls:theme:install {themeName : '.'command.theme_install.theme_name_prompt'.'} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the theme to, for a theme placed on disk by hand (git clone) rather than downloaded from a source}';
 
     /**
      * The console command description.
@@ -68,7 +69,7 @@ class ThemeInstall extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(ExtensionSourceSidecar $sidecar)
     {
         $themeName = $this->argument('themeName');
         $themeDirName = Str::studly($themeName);
@@ -146,6 +147,7 @@ class ThemeInstall extends Command
 
         $displayName = null;
         $packageName = null;
+        $composerName = null;
         $namespace = null;
         $description = null;
         $license = null;
@@ -179,7 +181,8 @@ class ThemeInstall extends Command
             if (json_last_error() === JSON_ERROR_NONE) {
                 // Get display-name from extra.dixlase
                 $displayName = $displayName ?? $composerData['extra']['dixlase']['display-name'] ?? null;
-                $packageName = $packageName ?? $composerData['name'] ?? null;
+                $composerName = $composerData['name'] ?? null;
+                $packageName = $packageName ?? $composerName;
 
                 // Get namespace from autoload in composer.json
                 if (! $namespace && isset($composerData['autoload']['psr-4'])) {
@@ -214,15 +217,20 @@ class ThemeInstall extends Command
         // Register the theme
         $slug = Theme::resolveSlug($themeDirName);
 
-        // Default an official-vendor theme to the official source so it
-        // is updatable out of the box. A theme installed from a
-        // configured source has its real source recorded afterwards via
-        // the sidecar (persistSupplyChainMetadata), which overrides this
-        // default; a third-party theme is left unlinked (officialLinkage
-        // returns null when the package_name is not under the official
-        // vendor).
-        $linkage = app(ExtensionSourceManager::class)
-            ->officialLinkage($slug, 'theme', $packageName);
+        // Link the theme to the source it can be updated from: an
+        // explicit --source, then the sidecar the admin add page left
+        // next to theme.json, then the official-source default for an
+        // official-vendor package. See PluginInstall for the plugin
+        // twin of this block.
+        $sourceId = $this->option('source') !== null ? (int) $this->option('source') : null;
+        $linkage = app(ExtensionSourceManager::class)->resolveInstallLinkage(
+            $slug,
+            'theme',
+            $sourceId,
+            $sidecar->read($themeDir),
+            $packageName,
+            $composerName,
+        );
 
         $theme = Theme::create([
             'name' => $displayName,
@@ -243,6 +251,7 @@ class ThemeInstall extends Command
             'installation_method' => $linkage['installation_method'] ?? null,
             'installed_at' => now(),
         ]);
+        $sidecar->delete($themeDir);
 
         // Update composer.local.json
         ComposerLocalHelper::syncAutoload();
