@@ -631,18 +631,6 @@ parameters:
 			path: app/Http/Controllers/Admin/AdminTwoFaController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Admin/AdminTwoFaController.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Admin/Auth/AdminConfirmablePasswordController.php
-
-		-
 			message: '#^Static method App\\Services\\PasswordService\:\:getPasswordResetValidationRules\(\) invoked with 5 parameters, 4 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -1197,12 +1185,6 @@ parameters:
 		-
 			message: '#^Binary operation "/" between 10 and 0 results in an error\.$#'
 			identifier: binaryOp.invalid
-			count: 1
-			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
 
