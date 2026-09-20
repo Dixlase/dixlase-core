@@ -74,9 +74,9 @@ class ExtensionSettingsDefaultsSync
      * @param  'plugin'|'theme'  $kind  Whether the manifest is
      *                                  `plugin.json` or `theme.json`.
      * @return array{synced_keys: list<string>, table: string|null}
-     *                Diagnostic outcome — the caller can log what
-     *                got inserted. Empty synced_keys means "nothing
-     *                to do" (contract satisfied, or contract absent).
+     *                                                              Diagnostic outcome — the caller can log what
+     *                                                              got inserted. Empty synced_keys means "nothing
+     *                                                              to do" (contract satisfied, or contract absent).
      */
     public function syncForExtension(string $extensionDir, string $kind): array
     {

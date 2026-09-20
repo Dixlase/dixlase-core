@@ -1,5 +1,9 @@
 includes:
     - ./vendor/larastan/larastan/extension.neon
+    # Baseline of pre-existing level-5 findings, frozen so the job can block on
+    # NEW errors. Shrink it by regenerating after fixing entries; never grow it
+    # to silence new violations.
+    - ./phpstan-baseline.neon
 
 parameters:
     paths:
@@ -15,5 +19,15 @@ parameters:
     ignoreErrors:
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::#'
         - '#Call to an undefined method Illuminate\\Database\\Query\\Builder::#'
+        # Larastan's view-string check on `view('name')` calls. It is a noisy,
+        # environment-sensitive false positive (its hit count varies with the
+        # larastan version and view-resolution state between CI runs), so it is
+        # ignored globally rather than pinned by count in the baseline.
+        - '#Parameter \#1 \$view of function view expects view-string\|null, string given\.#'
 
     treatPhpDocTypesAsCertain: false
+
+    # The Builder ignoreErrors patterns above are kept as guards; do not fail the
+    # run when a release happens not to trigger them. Also lets the committed
+    # baseline stay resilient to minor larastan version drift between CI runs.
+    reportUnmatchedIgnoredErrors: false

@@ -22,7 +22,6 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -52,7 +51,6 @@ class ApiExceptionEnvelopeTest extends TestCase
 
     public function test_unmatched_api_route_returns_404_in_unified_envelope(): void
     {
-
         $response = $this->getJson('/api/v1/this-route-does-not-exist');
 
         $response->assertNotFound();
@@ -80,7 +78,6 @@ class ApiExceptionEnvelopeTest extends TestCase
 
     public function test_wrong_http_method_returns_405_in_unified_envelope(): void
     {
-
         $response = $this->postJson('/api/v1/health');
 
         $this->assertSame(405, $response->getStatusCode());

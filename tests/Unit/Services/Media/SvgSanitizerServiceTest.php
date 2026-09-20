@@ -39,7 +39,7 @@ class SvgSanitizerServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new SvgSanitizerService;
+        $this->service = new SvgSanitizerService();
     }
 
     private function wrap(string $inner): string
@@ -284,7 +284,7 @@ XML;
         // Sanitize strips the external xlink:href from removeExternalReferences;
         // isSafe must catch this too so the fast-path does not accidentally
         // let it through unmodified.
-        $svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 10 10\"><image xlink:href=\"http://attacker.example.com/x.png\" width=\"10\" height=\"10\"/></svg>";
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><image xlink:href="http://attacker.example.com/x.png" width="10" height="10"/></svg>';
 
         $out = $this->service->sanitize($svg);
 

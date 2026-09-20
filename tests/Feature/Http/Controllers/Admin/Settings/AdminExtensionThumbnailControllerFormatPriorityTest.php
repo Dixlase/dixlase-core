@@ -25,7 +25,6 @@ namespace Tests\Feature\Http\Controllers\Admin\Settings;
 use App\Http\Controllers\Admin\Settings\AdminExtensionThumbnailController;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ReflectionMethod;
 use Tests\TestCase;
 
 /**
@@ -194,7 +193,7 @@ class AdminExtensionThumbnailControllerFormatPriorityTest extends TestCase
         return $controller->show($request, $type, $directory);
     }
 
-    private function writePluginThumbnail(string $extension, string $body = null): void
+    private function writePluginThumbnail(string $extension, ?string $body = null): void
     {
         $dir = base_path('plugins/'.self::PLUGIN_FIXTURE.'/resources/assets');
         if (! is_dir($dir)) {
@@ -210,7 +209,7 @@ class AdminExtensionThumbnailControllerFormatPriorityTest extends TestCase
      * (alongside plugin.json) rather than the legacy resources/assets/
      * path. Used to pin the "root wins over legacy" precedence.
      */
-    private function writePluginRootThumbnail(string $extension, string $body = null): void
+    private function writePluginRootThumbnail(string $extension, ?string $body = null): void
     {
         $dir = base_path('plugins/'.self::PLUGIN_FIXTURE);
         if (! is_dir($dir)) {

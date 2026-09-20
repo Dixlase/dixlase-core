@@ -25,7 +25,6 @@ namespace Tests\Unit\Middleware;
 use App\Http\Middleware\AuthenticateApiKey;
 use App\Models\ApiKey;
 use App\Models\AuditLog;
-use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -205,7 +204,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_error_envelope_has_unified_structure_with_meta_block(): void
     {
-
         $request = Request::create('/api/test', 'GET');
 
         $response = $this->middleware->handle($request, fn () => response()->json(['ok' => true]));
@@ -226,7 +224,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_network_key_use_writes_audit_log_entry(): void
     {
-
         $apiKeyData = ApiKey::generateNetworkKey('Network Auth', [ApiKey::SCOPE_READ_CONTENT]);
 
         $request = Request::create('/api/test', 'GET');
@@ -251,7 +248,6 @@ class AuthenticateApiKeyTest extends TestCase
 
     public function test_site_key_use_does_not_write_network_audit_log_entry(): void
     {
-
         $apiKeyData = ApiKey::generate('Site Auth', ApiKey::ENV_TEST, [ApiKey::SCOPE_READ_CONTENT]);
 
         $request = Request::create('/api/test', 'GET');

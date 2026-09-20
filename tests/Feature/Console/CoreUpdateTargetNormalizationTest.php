@@ -25,7 +25,6 @@ namespace Tests\Feature\Console;
 use App\Services\Core\CoreUpdater;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Mockery;
 use Tests\TestCase;
 
 /**

@@ -210,11 +210,11 @@ class DemoGuard
             if (str_ends_with($blocked, '.*')) {
                 $prefix = substr($blocked, 0, -2);
                 if ($routeName === $prefix
-                    || str_starts_with($routeName, $prefix . '.')
-                    || str_starts_with($prefix, $routeName . '.')) {
+                    || str_starts_with($routeName, $prefix.'.')
+                    || str_starts_with($prefix, $routeName.'.')) {
                     return true;
                 }
-            } elseif ($blocked === $routeName || str_starts_with($blocked, $routeName . '.')) {
+            } elseif ($blocked === $routeName || str_starts_with($blocked, $routeName.'.')) {
                 return true;
             }
         }

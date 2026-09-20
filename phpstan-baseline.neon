@@ -1,0 +1,2503 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Using nullsafe property access "\?\-\>editor_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/FrontPage/CreateFrontPageAction.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>storage_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/FrontPage/CreateFrontPageAction.php
+
+		-
+			message: '#^Cannot call method slug\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Actions/FrontPage/DeleteFrontPageAction.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Actions/FrontPage/RestoreFrontPageRevisionAction.php
+
+		-
+			message: '#^Cannot call method slug\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between \*NEVER\* and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between null and null will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 2
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^Ternary operator condition is always false\.$#'
+			identifier: ternary.alwaysFalse
+			count: 1
+			path: app/Actions/FrontPage/UpdateFrontPageAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$file_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/DeleteMediaAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/DeleteMediaAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$path\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Actions/Media/DeleteMediaAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/DeleteMediaAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/UpdateMediaMetadataAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/UploadMediaAction.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/UploadMediaAction.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/UploadMediaAction.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Media/UploadMediaAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Member/CreateMemberAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Member/DeleteMemberAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Member/UpdateMemberAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actors/MemberActor.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Captcha/GoogleRecaptchaV3Driver.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 8
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\AppUninstall\:\:isEnvComplete\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\AppUninstall\:\:updateEnvSessionDriver\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\AppUninstall\:\:updateEnvValue\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 2
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 2
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Console/Commands/AppUninstall.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Console/Commands/CheckInstallStatus.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/CheckMaintenanceAutoRelease.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Console/Commands/CoreRollback.php
+
+		-
+			message: '#^Match expression does not handle remaining values\: string\|null$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Console/Commands/CspEnable.php
+
+		-
+			message: '#^Constant App\\Console\\Commands\\CspScanAlpine\:\:DIRECTIVE_ATTRS is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Console/Commands/CspScanAlpine.php
+
+		-
+			message: '#^Constant App\\Console\\Commands\\CspScanAlpine\:\:SHORTHAND_PREFIXES is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Console/Commands/CspScanAlpine.php
+
+		-
+			message: '#^Match expression does not handle remaining values\: array\|string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Console/Commands/CspSetAdminMode.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/IntegrityScan.php
+
+		-
+			message: '#^Parameter \#2 \$syntax of method Carbon\\Carbon\:\:diffForHumans\(\) expects array\|int\|null, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/LockdownCommand.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Console/Commands/PluginSeed.php
+
+		-
+			message: '#^Parameter \#1 \$source of method App\\Services\\Extension\\ExtensionSourceManager\:\:makeProvider\(\) expects App\\Models\\ExtensionSource, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/PluginUpdate.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessWebhookDeadLetters.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$event\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessWebhookDeadLetters.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessWebhookDeadLetters.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_attempts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ProcessWebhookDeadLetters.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/RbacRecoveryCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/RbacRecoveryCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Console/Commands/RbacRecoveryCommand.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/RbacRecoveryCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SignatureWaiver\:\:\$reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SignatureWaiver\:\:\$scope\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SignatureWaiver\:\:\$target_slug\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SignatureWaiver\:\:\$waived_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SignatureWaiver\:\:\$waived_by_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\SignatureWaiver\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Console/Commands/Signature/WaiversCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$is_primary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$primary_locale\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$timezone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteCurrentCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$is_primary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$primary_locale\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$timezone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Site\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Console/Commands/Site/SiteListCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_notified_version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/SourceCheck.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Console/Commands/SourceSign.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Console/Commands/SyncGitExclude.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Console/Commands/SyncGitIgnore.php
+
+		-
+			message: '#^Parameter \#1 \$source of method App\\Services\\Extension\\ExtensionSourceManager\:\:makeProvider\(\) expects App\\Models\\ExtensionSource, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/ThemeUpdate.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Console/Commands/TwoFaRecoveryCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/TwoFaRecoveryCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/TwoFaRecoveryCommand.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/TwoFaRecoveryCommand.php
+
+		-
+			message: '#^Trait App\\Console\\Traits\\ThemeManagementTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Console/Traits/ThemeManagementTrait.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/DTO/Audit/AuditLogPayload.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/DTO/Logging/LogContextDTO.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$memberId with type int\|string\|null is not subtype of native type int\|null\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: app/DTO/Logging/LogContextDTO.php
+
+		-
+			message: '#^Instanceof between T of JsonSerializable and JsonSerializable will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: app/DTO/PluginIntegration/PaginatedResultDTO.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Facades/SiteSettings.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Foundation\\Application\:\:\$config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Helpers/AdminHelper.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 17
+			path: app/Helpers/AdminHelper.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Helpers/AdminHelper.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 2
+			path: app/Helpers/AssetHelper.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Helpers/ConfigHelper.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Helpers/ExtensionHelper.php
+
+		-
+			message: '#^Access to property \$locale on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Helpers/LocaleHelper.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 3
+			path: app/Helpers/PluginHelper.php
+
+		-
+			message: '#^Parameter \#1 \$string of function str_pad expects string, float given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Helpers/TimezoneHelper.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$ip_address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Helpers/TwoFaHelper.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$user_agent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Helpers/TwoFaHelper.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Helpers/TwoFaHelper.php
+
+		-
+			message: '#^Access to undefined constant App\\Enums\\TwoFaMethod\:\:BIOMETRIC\.$#'
+			identifier: classConstant.notFound
+			count: 1
+			path: app/Helpers/TwoFaHelper.php
+
+		-
+			message: '#^Access to undefined constant App\\Enums\\TwoFaMethod\:\:DEVICE\.$#'
+			identifier: classConstant.notFound
+			count: 1
+			path: app/Helpers/TwoFaHelper.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Admin/AdminController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$getting_started_dismissed\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Admin/AdminDashboardController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$getting_started_visited\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/AdminDashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/AdminLoggedInController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Member\>\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/AdminTwoFaController.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Http\\Controllers\\Admin\\AdminTwoFaController\) and ''getLoginNotificatio…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Http/Controllers/Admin/AdminTwoFaController.php
+
+		-
+			message: '#^Static method App\\Services\\PasswordService\:\:getPasswordResetValidationRules\(\) invoked with 5 parameters, 4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Admin/Auth/AdminNewPasswordController.php
+
+		-
+			message: '#^Static method App\\Services\\PasswordService\:\:getPasswordResetValidationRules\(\) invoked with 5 parameters, 4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Admin/Auth/AdminPasswordResetLinkController.php
+
+		-
+			message: '#^Access to property \$locale on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot access property \$slug on array\<mixed\>\|object\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot call method descriptionKey\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot call method iconClass\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot call method iconColor\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot call method slug\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Cannot call method translationKey\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Parameter \#2 \$editorType of method App\\Services\\ContentPreviewService\:\:render\(\) expects App\\Enums\\ContentEditorType, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Front/AdminFrontController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$path\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:getCollection\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email_verified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$login_notification_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:old\(\) expects array\|Illuminate\\Database\\Eloquent\\Model\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberRolesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Admin\\Members\\AdminMemberRolesController\:\:collectMenuPermissions\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberRolesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Admin\\Members\\AdminMemberRolesController\:\:collectPluginMenuPermissions\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberRolesController.php
+
+		-
+			message: '#^Offset ''default_access_roles'' does not exist on array\{access_roles\: int, view_roles\: int\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberRolesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email_verified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 13
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasVerifiedEmail\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:sendEmailVerificationNotification\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:generateRegistrationChallenge\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:registerCredential\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:revokeAllCredentials\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:revokeCredential\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:canRegenerate\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:generate\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:getNextRegenerateTime\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:hasRecoveryCodes\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:revokeAll\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Members/AdminMemberSecurityController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Privacy/UserDataController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileAppearanceController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileAppearanceController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileBasicController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$pending_email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileBasicController.php
+
+		-
+			message: '#^Call to method fresh\(\) on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileBasicController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$login_notification_mode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Profile/AdminProfileNotificationsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$passkey_prompt_dismissed\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Profile/AdminProfilePasskeyPromptController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfilePasswordController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$sidebar_preferences\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Profile/AdminProfileSidebarController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaController.php
+
+		-
+			message: '#^Call to method fresh\(\) on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:generateRegistrationChallenge\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:registerCredential\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:revokeAllCredentials\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaPasskeyService\:\:revokeCredential\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:canRegenerate\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:generate\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:getNextRegenerateTime\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:hasRecoveryCodes\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\TwoFa\\TwoFaRecoveryCodeService\:\:revokeAll\(\) expects App\\Contracts\\TwoFaInterface, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaManagementController.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Controllers\\Admin\\Settings\\AdminPluginsSettingsController\:\:\$app\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$csp_compatibility\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$csp_diagnostic\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$files_changed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$has_settings\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$permission_summary\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$translated_description\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$translated_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Admin\\Settings\\AdminPluginsSettingsController\:\:loadCustomFiles\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Admin\\Settings\\AdminPluginsSettingsController\:\:loadTranslationsFrom\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Offset ''slug'' on array\{slug\: string, name\: string, description\: string\|null, version\: string\|null, source_id\: int, source_name\: string\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$csp_compatibility\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$csp_diagnostic\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$files_changed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$permission_summary\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Offset ''slug'' on array\{slug\: string, name\: string, description\: string\|null, version\: string\|null, source_id\: int, source_name\: string\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Static method App\\Presenters\\Admin\\ExtensionCardPresenter\:\:forTheme\(\) invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Base/AdminBaseIndexController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Base/AdminBaseMailController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Base/AdminBaseMailController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Base/AdminBaseSiteController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>auth_token" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Security/AdminSecurityExtensionsController.php
+
+		-
+			message: '#^Parameter \#2 \$default of function old expects array\|Illuminate\\Database\\Eloquent\\Model\|string\|null, bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AuditLog\:\:\$message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
+
+		-
+			message: '#^Access to property \$name on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 6
+			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
+
+		-
+			message: '#^Binary operation "/" between 10 and 0 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Http/Controllers/Front/FrontController.php
+
+		-
+			message: '#^Cannot access property \$slug on array\<mixed\>\|object\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Front/FrontController.php
+
+		-
+			message: '#^Cannot call method slug\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Front/FrontWelcomeController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>timestamp" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Front/FrontWelcomeController.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 4
+			path: app/Http/Controllers/Install/InstallCompleteController.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Http/Controllers/Install/InstallCompleteController.php
+
+		-
+			message: '#^Variable \$data in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 2
+			path: app/Http/Controllers/Install/InstallConfirmController.php
+
+		-
+			message: '#^Variable \$data on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Http/Controllers/Install/InstallConfirmController.php
+
+		-
+			message: '#^Property App\\Http\\Controllers\\Install\\InstallController\:\:\$total_steps is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Http/Controllers/Install/InstallController.php
+
+		-
+			message: '#^Offset ''DB_HOST'' on array\{DB_CONNECTION\: string, DB_DATABASE\: string, DB_HOST\: string, DB_PORT\: string, DB_USERNAME\: string, DB_PASSWORD\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Install/InstallDatabaseController.php
+
+		-
+			message: '#^Offset ''DB_PASSWORD'' on array\{DB_CONNECTION\: string, DB_DATABASE\: string, DB_HOST\: string, DB_PORT\: string, DB_USERNAME\: string, DB_PASSWORD\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Install/InstallDatabaseController.php
+
+		-
+			message: '#^Offset ''DB_PORT'' on array\{DB_CONNECTION\: string, DB_DATABASE\: string, DB_HOST\: string, DB_PORT\: string, DB_USERNAME\: string, DB_PASSWORD\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Install/InstallDatabaseController.php
+
+		-
+			message: '#^Offset ''DB_USERNAME'' on array\{DB_CONNECTION\: string, DB_DATABASE\: string, DB_HOST\: string, DB_PORT\: string, DB_USERNAME\: string, DB_PASSWORD\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Install/InstallDatabaseController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Install/InstallMailController.php
+
+		-
+			message: '#^Method App\\Http\\Middleware\\Authenticate\:\:redirectTo\(\) should return string\|null but empty return statement found\.$#'
+			identifier: return.empty
+			count: 1
+			path: app/Http/Middleware/Authenticate.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Middleware/CheckInstallationReady.php
+
+		-
+			message: '#^Offset 1 on array\{non\-falsy\-string, non\-empty\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Middleware/CheckInstallationReady.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Middleware/CheckMaintenanceMode.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Middleware/CheckMaintenanceMode.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Middleware/DemoGuard.php
+
+		-
+			message: '#^Call to method hasVerifiedEmail\(\) on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/EnsureEmailIsVerified.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$is_admin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Middleware/FrontIpFilter.php
+
+		-
+			message: '#^Access to property \$name on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/LogAdminActivity.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Site\:\:\$primary_locale\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Middleware/ResolveSiteContext.php
+
+		-
+			message: '#^Access to property \$role on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Middleware/SafeMode.php
+
+		-
+			message: '#^Method App\\Http\\Middleware\\SetAdminLocale\:\:resolveLocale\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Http/Middleware/SetAdminLocale.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$locale\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Middleware/SetMemberLocale.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Http/Middleware/SetMemberLocale.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Admin/Profile/ProfileBasicUpdateRequest.php
+
+		-
+			message: '#^Static method App\\Services\\PasswordService\:\:buildPasswordRules\(\) invoked with 7 parameters, 5\-6 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Requests/Admin/Profile/ProfilePasswordUpdateRequest.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Requests\\Admin\\Profile\\ProfileTwoFaUpdateRequest\:\:twoFaPasskeys\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Requests/Admin/Profile/ProfileTwoFaUpdateRequest.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Requests\\Admin\\Profile\\ProfileTwoFaUpdateRequest\:\:twoFaRecoveryCodes\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Requests/Admin/Profile/ProfileTwoFaUpdateRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/Admin/Profile/ProfileUpdateRequest.php
+
+		-
+			message: '#^Static method App\\Services\\PasswordService\:\:buildPasswordRules\(\) invoked with 7 parameters, 5\-6 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Requests/Admin/Profile/ProfileUpdateRequest.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Requests\\Admin\\Settings\\Members\\AdminSettingsMemberStoreRequest\:\:twoFaPasskeys\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Requests/Admin/Settings/Members/AdminSettingsMemberStoreRequest.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Requests\\Admin\\Settings\\Members\\AdminSettingsMemberStoreRequest\:\:twoFaRecoveryCodes\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Requests/Admin/Settings/Members/AdminSettingsMemberStoreRequest.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Pagination\\AbstractPaginator\:\:lastPage\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/BaseApiCollection.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Pagination\\AbstractPaginator\:\:nextPageUrl\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/BaseApiCollection.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Pagination\\AbstractPaginator\:\:total\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/BaseApiCollection.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/SendWebhook.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\ApiKey\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/ApiKey.php
+
+		-
+			message: '#^Method App\\Models\\ApiRequestLog\:\:logRequest\(\) should return static\(App\\Models\\ApiRequestLog\) but returns App\\Models\\ApiRequestLog\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/ApiRequestLog.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\ApiRequestLog\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/ApiRequestLog.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:cases\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Models/AuditLog.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Models/AuditLog.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/AuditLog.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>record_hash" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/AuditLog.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/AuthorityPublicKey.php
+
+		-
+			message: '#^Method App\\Models\\CaptchaEnabledForm\:\:enableForm\(\) should return static\(App\\Models\\CaptchaEnabledForm\) but returns App\\Models\\CaptchaEnabledForm\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/CaptchaEnabledForm.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\CaptchaEnabledForm\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/CaptchaEnabledForm.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\CaptchaEnabledForm\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/CaptchaEnabledForm.php
+
+		-
+			message: '#^Call to an undefined method App\\Contracts\\Revisionable\:\:hasMany\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/FrontPage.php
+
+		-
+			message: '#^Generic type Illuminate\\Database\\Eloquent\\Relations\\HasMany\<Illuminate\\Database\\Eloquent\\Model\> in PHPDoc tag @return does not specify all template types of class Illuminate\\Database\\Eloquent\\Relations\\HasMany\: TRelatedModel, TDeclaringModel$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: app/Models/FrontPage.php
+
+		-
+			message: '#^PHPDoc tag @var with type App\\Contracts\\Revisionable is not subtype of native type \$this\(App\\Models\\FrontPage\)\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Models/FrontPage.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\FrontPage\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/FrontPage.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\FrontPage\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/FrontPage.php
+
+		-
+			message: '#^Method App\\Models\\FrontPageRevision\:\:creator\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<App\\Models\\Member, App\\Models\\FrontPageRevision\> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<App\\Models\\Member, \$this\(App\\Models\\FrontPageRevision\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/FrontPageRevision.php
+
+		-
+			message: '#^Method App\\Models\\FrontPageRevision\:\:frontPage\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<App\\Models\\FrontPage, App\\Models\\FrontPageRevision\> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<App\\Models\\FrontPage, \$this\(App\\Models\\FrontPageRevision\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/FrontPageRevision.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\FrontPageRevision\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/FrontPageRevision.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\FrontSetting\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/FrontSetting.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\LockdownHistory\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/LockdownHistory.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\LockdownStatus\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/LockdownStatus.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$file_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Media.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$height\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Media.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Media\:\:\$width\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Media.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\Media\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/Media.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\MediaSetting\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/MediaSetting.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$pending_email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^Method App\\Models\\Member\:\:makeWebAuthnCredential\(\) should return App\\Models\\WebAuthnCredential but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\Member\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\Member\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/Member.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$attempted_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/MemberLoginAttempt.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$login_day_of_week\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/MemberLoginAttempt.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$login_hour\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/MemberLoginAttempt.php
+
+		-
+			message: '#^Method App\\Models\\MemberLoginAttempt\:\:recordAttempt\(\) should return static\(App\\Models\\MemberLoginAttempt\) but returns App\\Models\\MemberLoginAttempt\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/MemberLoginAttempt.php
+
+		-
+			message: '#^Method App\\Models\\MemberLoginAttempt\:\:recordAttemptWithBehavior\(\) should return static\(App\\Models\\MemberLoginAttempt\) but returns App\\Models\\MemberLoginAttempt\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/MemberLoginAttempt.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\MemberPreference\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/MemberPreference.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberTwoFaRecoveryCode\:\:\$disabled\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/MemberTwoFaRecoveryCode.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberTwoFaRecoveryCode\:\:\$used_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/MemberTwoFaRecoveryCode.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MembersTwoFaDevice\:\:\$approved\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/MembersTwoFaDevice.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MembersTwoFaDevice\:\:\$expires_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/MembersTwoFaDevice.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\PluginVersionHistory\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/PluginVersionHistory.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\RolePermissionOverride\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/RolePermissionOverride.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Models\\SiteSetting\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/SiteSetting.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\SiteSetting\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/SiteSetting.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$is_default\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Theme.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\ThemeMigration\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/ThemeMigration.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\ThemeVersionHistory\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/ThemeVersionHistory.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\WebAuthnCredential\:\:\$last_used_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/WebAuthnCredential.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\WebAuthnCredential\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/WebAuthnCredential.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Models\\WebAuthnCredential\:\:\$casts is not covariant with PHPDoc type array\<string, string\> of overridden property Laragear\\WebAuthn\\Models\\WebAuthnCredential\:\:\$casts\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/WebAuthnCredential.php
+
+		-
+			message: '#^PHPDoc type array of property App\\Models\\WebAuthnCredential\:\:\$guarded is not covariant with PHPDoc type array\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$guarded\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/WebAuthnCredential.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\WebAuthnCredential\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/WebAuthnCredential.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\Webhook\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/Webhook.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/WebhookDeadLetter.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\WebhookDeadLetter\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/WebhookDeadLetter.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/WebhookDeadLetter.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:recordFailure\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/WebhookDelivery.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:recordSuccess\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/WebhookDelivery.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\WebhookDelivery\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/WebhookDelivery.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/AdminPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/DashboardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$last_login_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/DashboardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/DashboardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$translated_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/ExtensionCardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$translated_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/ExtensionCardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Plugin\:\:\$web\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/ExtensionCardPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$web\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/ExtensionCardPresenter.php
+
+		-
+			message: '#^Method App\\Presenters\\Admin\\ExtensionCardPresenter\:\:buildPresetCompatibilityBadges\(\) should return array\<string, array\{compatible\: bool\}\> but returns array\{development\: array\{compatible\: null\}, balanced\: array\{compatible\: null\}, strict\: array\{compatible\: null\}, custom\: array\{compatible\: null\}\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Presenters/Admin/ExtensionCardPresenter.php
+
+		-
+			message: '#^Offset \*NEVER\* on array\{\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Presenters/Admin/RevisionDiffPresenter.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Presenters/Admin/RevisionDiffPresenter.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between null and null will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 3
+			path: app/Presenters/Admin/RevisionDiffPresenter.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Method App\\Providers\\AppServiceProvider\:\:getUninstallingPluginName\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Method App\\Providers\\AppServiceProvider\:\:loadCustomFiles\(\) invoked with 4 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Parameter \#1 \$array \(array\{non\-falsy\-string, non\-falsy\-string\}\) to function array_filter does not contain falsy values, the array will always stay the same\.$#'
+			identifier: arrayFilter.same
+			count: 2
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Providers/FortifyServiceProvider.php
+
+		-
+			message: '#^Call to an undefined method App\\Providers\\PluginServiceProvider\:\:loadCustomFiles\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Providers/PluginServiceProvider.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: app/Providers/PluginServiceProvider.php
+
+		-
+			message: '#^Method App\\Providers\\PluginServiceProvider\:\:loadPluginConfigs\(\) invoked with 3 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Providers/PluginServiceProvider.php
+
+		-
+			message: '#^Relation ''frontOgpImage'' is not found in App\\Models\\FrontSetting model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Repositories/FrontSettingRepository.php
+
+		-
+			message: '#^Relation ''member'' is not found in App\\Models\\Media model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Repositories/MediaRepository.php
+
+		-
+			message: '#^Relation ''defaultOgpImage'' is not found in App\\Models\\SiteSetting model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Repositories/SiteSettingRepository.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Repositories/ThemeRepository.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Rules/NotPwnedPassword.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Rules/UniqueContentSlug.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Rules/UniqueRouteSlug.php
+
+		-
+			message: '#^Parameter \#1 \$array \(non\-empty\-list\<''\.git''\|''node_modules''\|''vendor''\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Services/Backup/CoreBackupService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Backup/CoreRestoreService.php
+
+		-
+			message: '#^Access to property \$email on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/Backup/CoreRestoreService.php
+
+		-
+			message: '#^Access to property \$id on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Services/Backup/CoreRestoreService.php
+
+		-
+			message: '#^Parameter \#1 \$backup of method App\\Services\\Backup\\CoreRestoreService\:\:restore\(\) expects App\\Models\\BackupRecord, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Backup/CoreRestoreService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Backup/CoreRestoreService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Captcha/CaptchaCspProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SecuritySetting\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SecuritySetting\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:checkVersionSpecificErrors\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:detectVersionMismatch\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:detectVersionMismatchFromResponses\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:performFinalVersionCheck\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:performVersionCompatibilityTest\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Method App\\Services\\CaptchaTestService\:\:validateGoogleRecaptchaKeyCompatibility\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/CaptchaTestService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between list\<array\{int, string, int\}\|string\> and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/CommentTranslation/CommentBuilderService.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: app/Services/Core/CoreUpdater.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value 0 \(''0'', 0\)\.$#'
+			identifier: array.duplicateKey
+			count: 2
+			path: app/Services/Csp/CspBuilder.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value 1 \(''1'', 1\)\.$#'
+			identifier: array.duplicateKey
+			count: 2
+			path: app/Services/Csp/CspBuilder.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value 2 \(''2'', 2\)\.$#'
+			identifier: array.duplicateKey
+			count: 2
+			path: app/Services/Csp/CspBuilder.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Services/Csp/CspBuilder.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberTwoFaToken\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EmailAuthenticationService.php
+
+		-
+			message: '#^Constant App\\Services\\Encryption\\CoreFileEncryptionService\:\:CHUNK_SIZE is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Services/Encryption/CoreFileEncryptionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>owner" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Extension/ExtensionSourceManager.php
+
+		-
+			message: '#^Parameter \$durationMs of class App\\DTO\\FileIntegrity\\ScanResultDTO constructor expects int, float given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Services/FileIntegrityService.php
+
+		-
+			message: '#^Cannot call method slug\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/FrontPageContentService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LockdownService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$ip_address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberLoginAttempt\:\:\$user_agent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_login_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_login_ip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_login_ua\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/LoginNotificationService.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Services/MailServerValidatorService.php
+
+		-
+			message: '#^Parameter \#1 \$view of static method Illuminate\\Support\\Facades\\Mail\:\:queue\(\) expects Illuminate\\Contracts\\Mail\\Mailable, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/MailService.php
+
+		-
+			message: '#^Parameter \#2 \$queue of static method Illuminate\\Support\\Facades\\Mail\:\:queue\(\) expects BackedEnum\|string\|null, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/MailService.php
+
+		-
+			message: '#^Static method Illuminate\\Support\\Facades\\Mail\:\:queue\(\) invoked with 3 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Services/MailService.php
+
+		-
+			message: '#^Parameter \#1 \$element of method App\\Services\\Media\\SvgSanitizerService\:\:removeExternalReferences\(\) expects DOMElement, DOMNode given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Media/SvgSanitizerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>access_roles" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/PermissionRegistry.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>view_roles" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/PermissionRegistry.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/PermissionService.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<\(int\|string\)\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Services/Plugin/PluginTableInspector.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Services/Plugin/Scanning/PatternRegistry.php
+
+		-
+			message: '#^Method Illuminate\\Database\\Migrations\\MigrationRepositoryInterface\:\:getRan\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Services/PluginMigrator.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-array\<string\|null\> and array\{\} will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/Privacy/Providers/CoreMemberPrivacyProvider.php
+
+		-
+			message: '#^Call to an undefined method App\\Contracts\\Revisionable\:\:getKey\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Services/RevisionService.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type App\\Contracts\\Revisionable\.$#'
+			identifier: varTag.nativeType
+			count: 2
+			path: app/Services/RevisionService.php
+
+		-
+			message: '#^Access to property \$name on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Services/SafeModeService.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: app/Services/Security/EnvSecretProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\GlobalSetting\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Site/SettingResolver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SiteSetting\:\:\$value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Site/SettingResolver.php
+
+		-
+			message: '#^Method App\\Services\\SystemNotificationService\:\:buildErrorNotificationMail\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/SystemNotificationService.php
+
+		-
+			message: '#^Method Illuminate\\Database\\Migrations\\MigrationRepositoryInterface\:\:getRan\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Services/ThemeMigrator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaAttemptService.php
+
+		-
+			message: '#^Method App\\Services\\TwoFa\\TwoFaAttemptService\:\:getRemainingLockoutTime\(\) should return int\|null but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaAttemptService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberTwoFaToken\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaCodeService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\MemberTwoFaToken\:\:\$expires_at\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/TwoFa/TwoFaCodeService.php
+
+		-
+			message: '#^Method App\\Services\\TwoFa\\TwoFaCodeService\:\:getRemainingTime\(\) should return int\|null but returns float\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaCodeService.php
+
+		-
+			message: '#^Call to an undefined method App\\Contracts\\TwoFaInterface\:\:webAuthnId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Call to an undefined method App\\Contracts\\TwoFaInterface\:\:webauthnCredentials\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Assertion\\Creator\\AssertionCreation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Attestation\\Creator\\AttestationCreation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Attestation\\Validator\\AttestationValidation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Parameter \#2 \$user of class Laragear\\WebAuthn\\Assertion\\Validator\\AssertionValidation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TwoFa/TwoFaPasskeyService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaRecoveryCodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/TwoFa/TwoFaRecoveryCodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaRecoveryCodeService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:markAsUsed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaRecoveryCodeService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TwoFa/TwoFaStatusService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:markDeadLetterNotified\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/WebhookDeadLetterService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/WebhookDispatcher.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$secret\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WebhookDispatcher.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$timeout\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WebhookDispatcher.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$url\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/WebhookDispatcher.php
+
+		-
+			message: '#^Parameter \#1 \$webhook of static method App\\Services\\WebhookDispatcher\:\:createDelivery\(\) expects App\\Models\\Webhook, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/WebhookDispatcher.php
+
+		-
+			message: '#^Method App\\Session\\GuardAwareDatabaseSessionHandler\:\:performInsert\(\) should return bool but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: app/Session/GuardAwareDatabaseSessionHandler.php
+
+		-
+			message: '#^PHPDoc tag @return with type string\|null is not subtype of native type string\|false\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Session/GuardAwareDatabaseSessionHandler.php
+
+		-
+			message: '#^Trait App\\Traits\\AuditableTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/AuditableTrait.php
+
+		-
+			message: '#^Trait App\\Traits\\FrontActivityLogTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/FrontActivityLogTrait.php
+
+		-
+			message: '#^Trait App\\Traits\\LoginLockoutTrait is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/LoginLockoutTrait.php
+
+		-
+			message: '#^Trait App\\Traits\\ManagesPageContent is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/ManagesPageContent.php
+
+		-
+			message: '#^Trait App\\Traits\\RegistersCspPolicy is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/RegistersCspPolicy.php
+
+		-
+			message: '#^Trait App\\Traits\\VerifiesCaptcha is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/VerifiesCaptcha.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: routes/console.php

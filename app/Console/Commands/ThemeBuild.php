@@ -91,7 +91,7 @@ class ThemeBuild extends Command
         $aggregatorPath = base_path(\App\Services\Tailwind\PluginSourceAggregator::OUTPUT_PATH);
         if (! File::exists($aggregatorPath)) {
             File::ensureDirectoryExists(dirname($aggregatorPath), 0775);
-            File::put($aggregatorPath, <<<CSS
+            File::put($aggregatorPath, <<<'CSS'
 /*
  * AUTO-GENERATED placeholder seeded by dls:theme:build.
  * The Dixlase install wizard and plugin lifecycle commands overwrite

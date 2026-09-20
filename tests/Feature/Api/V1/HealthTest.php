@@ -23,7 +23,6 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Http\Controllers\Api\V1\HealthController;
-use App\Models\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -55,7 +54,6 @@ class HealthTest extends TestCase
 
     public function test_health_endpoint_returns_unified_envelope_with_status_and_version(): void
     {
-
         $response = $this->getJson('/api/v1/health');
 
         $response->assertOk();
@@ -70,7 +68,6 @@ class HealthTest extends TestCase
 
     public function test_health_endpoint_is_unauthenticated(): void
     {
-
         // No Authorization header — must still succeed.
         $response = $this->getJson('/api/v1/health');
 

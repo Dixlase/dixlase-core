@@ -474,7 +474,7 @@ class CsrfTokenSessionTest extends TestCase
             $this->assertSame(
                 $expected,
                 $guard,
-                "path {$path} expected guard ".var_export($expected, true).", got ".var_export($guard, true),
+                "path {$path} expected guard ".var_export($expected, true).', got '.var_export($guard, true),
             );
         }
     }
