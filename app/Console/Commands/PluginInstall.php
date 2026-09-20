@@ -37,7 +37,11 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\PluginManagementTrait;
+use App\Helpers\ComposerLocalHelper;
+use App\Helpers\GitExcludeHelper;
+use App\Helpers\GitIgnoreHelper;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
@@ -57,7 +61,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the plugin to, for a plugin placed on disk by hand (git clone) rather than by dls:plugin:download --extract}';
 
     /**
      * The console command description.
@@ -69,7 +73,7 @@ class PluginInstall extends Command
     /**
      * Execute the console command.
      */
-    public function handle(LicenseCompatibilityChecker $licenseChecker)
+    public function handle(LicenseCompatibilityChecker $licenseChecker, ExtensionSourceSidecar $sidecar)
     {
         //
         $pluginName = $this->argument('pluginName');
@@ -91,6 +95,7 @@ class PluginInstall extends Command
         $email = null;
         $web = null;
         $packageName = null;
+        $composerName = null;
         $slug = Str::slug(Str::headline($pluginName), '-');
 
         // 1. Read from plugin.json (highest priority)
@@ -123,7 +128,8 @@ class PluginInstall extends Command
                 return;
             }
 
-            $packageName = $packageName ?? $composerData['name'] ?? null;
+            $composerName = $composerData['name'] ?? null;
+            $packageName = $packageName ?? $composerName;
             $description = $description ?? $composerData['description'] ?? null;
             $license = $license ?? $composerData['license'] ?? null;
 
@@ -174,15 +180,23 @@ class PluginInstall extends Command
             ));
         }
 
-        // Default an official-vendor plugin to the official source so it
-        // is updatable out of the box. A plugin installed from a
-        // configured source has its real source recorded afterwards via
-        // the sidecar (persistSupplyChainMetadata), which overrides this
-        // default; a third-party plugin is left unlinked (officialLinkage
-        // returns null when the package_name is not under the official
-        // vendor).
-        $linkage = app(ExtensionSourceManager::class)
-            ->officialLinkage($slug, 'plugin', $packageName);
+        // Link the plugin to the source it can be updated from. In
+        // order: an explicit --source, the sidecar dls:plugin:download
+        // --extract (or the admin add page) left next to plugin.json,
+        // then the official-source default for an official-vendor
+        // package. A third-party plugin with none of those is left
+        // unlinked and dls:plugin:update refuses to run for it. The
+        // sidecar is read here and removed once the row is written so a
+        // failed install can still be retried with it.
+        $sourceId = $this->option('source') !== null ? (int) $this->option('source') : null;
+        $linkage = app(ExtensionSourceManager::class)->resolveInstallLinkage(
+            $slug,
+            'plugin',
+            $sourceId,
+            $sidecar->read($pluginPath),
+            $packageName,
+            $composerName,
+        );
 
         // Register in database
         DB::table('plugins')->updateOrInsert(
@@ -206,9 +220,33 @@ class PluginInstall extends Command
             ]
         );
 
+        $sidecar->delete($pluginPath);
+
         $this->info(__('admin/command/plugin-install.installed', [
             'pluginName' => $pluginName,
         ]));
+
+        if ($linkage === null) {
+            $this->warn("Plugin '{$pluginName}' is not linked to an extension source; dls:plugin:update will not work for it. Re-run with --source=<id> to link it.");
+        }
+
+        // Register the plugin's PSR-4 namespaces before anything below
+        // needs its classes. The admin add page does this at download /
+        // extract time, but the CLI chain (dls:plugin:download --extract,
+        // a git clone, a hand-copied directory) reaches this command
+        // with composer.local.json still describing the previous set of
+        // plugins: the plugin's controllers would not resolve (routes
+        // 500 with "Class ... does not exist") and the class_exists()
+        // seeder check below would silently skip its DatabaseSeeder.
+        // Same call ThemeInstall makes; also keeps .git/info/exclude and
+        // .gitignore in step like the admin path does.
+        GitExcludeHelper::addPluginExclusion($pluginName);
+        GitIgnoreHelper::addPluginExclusion($pluginName);
+        if (ComposerLocalHelper::syncAutoload()) {
+            $this->info('Updated composer.local.json');
+        } else {
+            $this->warn('Failed to sync composer.local.json; run `php scripts/sync-local-autoload.php && composer dump-autoload --no-scripts` if plugin pages error.');
+        }
 
         // Run migrations
         $this->info(__('admin/command/plugin-install.migrating'));
@@ -224,9 +262,6 @@ class PluginInstall extends Command
                 '--force' => true,
             ]);
         }
-
-        // Note: Updating composer.local.json and .git/info/exclude
-        // is already done during plugin creation (make:plugin), so not needed here
 
         // Build front-end assets if the plugin ships its own npm pipeline.
         // No-op when the plugin has no package.json (most plugins) or when

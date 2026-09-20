@@ -56,6 +56,7 @@ use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceManager;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
@@ -813,20 +814,28 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         try {
+            // If the download came from a registered source (online add
+            // flow), the sidecar written by downloadFromSource() tells us
+            // which one. Plain ZIP uploads have no sidecar and stay as
+            // 'upload'. Read it before the install command runs: the
+            // command links the row from the same sidecar (and removes
+            // it once the row is written), and the metadata below needs
+            // the values too.
+            $sidecar = app(ExtensionSourceSidecar::class);
+            $linkage = $sidecar->read(base_path("plugins/{$pluginDir}"));
+
             // Install using command
-            Artisan::call('dls:plugin:install', [
+            Artisan::call('dls:plugin:install', array_filter([
                 'pluginName' => $pluginDir,
-            ]);
+                '--source' => $linkage['source_id'] ?? null,
+            ], fn ($v) => $v !== null));
+            $sidecar->delete(base_path("plugins/{$pluginDir}"));
 
             // Retrieve installed plugin
             $plugin = Plugin::where('directory', $pluginDir)->first();
 
             // Perform audit after installation
             if ($plugin) {
-                // If the download came from a registered source (online add
-                // flow), the sidecar tells us which one. Plain ZIP uploads
-                // have no sidecar and stay as 'upload'.
-                $linkage = $this->consumeSourceSidecar($pluginDir);
                 $installationMethod = $linkage['installation_method'] ?? 'upload';
                 $sourceUrl = $linkage['installed_from_url'] ?? null;
 
@@ -1485,9 +1494,9 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 // so source_id / source_repo / installation_method are
                 // recorded on the Plugin row (otherwise update checks
                 // have no way to find the matching upstream release).
-                $this->writeSourceSidecar(
-                    pluginDirectory: $result['directory'],
-                    linkage: $manager->resolveSourceLinkage($download['source'], $slug, 'plugin'),
+                app(ExtensionSourceSidecar::class)->write(
+                    base_path("plugins/{$result['directory']}"),
+                    $manager->resolveSourceLinkage($download['source'], $slug, 'plugin'),
                 );
 
                 // Redirect to plugin master, not back to the add page.
@@ -1539,15 +1548,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * File name of the sidecar JSON used to remember which source
-     * served a downloaded extension. Lives next to plugin.json inside
-     * the plugin directory; deleted again once install() has consumed
-     * its contents so the metadata is not committed back to source
-     * control on accident.
-     */
-    private const SOURCE_SIDECAR_FILENAME = '.dixlase-source.json';
-
-    /**
      * Build an HTML flash-message body that pairs a completion sentence
      * (e.g. "Plugin :name downloaded successfully.") with a link that
      * takes the operator straight to the just-added card in plugin
@@ -1590,62 +1590,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             .' <a href="'.e($url).'" class="ml-1 inline-flex items-center underline font-semibold hover:no-underline">'
             .e($ctaLabel).'</a>'
         );
-    }
-
-    /**
-     * Write the supply-chain linkage produced by ExtensionSourceManager
-     * to a sidecar JSON file next to plugin.json. The install controller
-     * reads it back when the user proceeds to install.
-     *
-     * @param  array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage
-     */
-    protected function writeSourceSidecar(string $pluginDirectory, array $linkage): void
-    {
-        $path = base_path("plugins/{$pluginDirectory}/".self::SOURCE_SIDECAR_FILENAME);
-        try {
-            File::put($path, json_encode($linkage, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        } catch (\Throwable $e) {
-            // Loss of the sidecar only degrades update-check linkage; do
-            // not abort the install for it.
-            Log::warning('Failed to write extension source sidecar', [
-                'directory' => $pluginDirectory,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Read and remove the source sidecar written by downloadFromSource.
-     * Returns null when no sidecar is present (e.g. plain ZIP upload).
-     *
-     * The file is deleted after reading so the linkage metadata does
-     * not get committed alongside the plugin source if the operator
-     * later commits plugins/ to version control.
-     *
-     * @return ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}
-     */
-    protected function consumeSourceSidecar(string $pluginDirectory): ?array
-    {
-        $path = base_path("plugins/{$pluginDirectory}/".self::SOURCE_SIDECAR_FILENAME);
-        if (! File::exists($path)) {
-            return null;
-        }
-        try {
-            $data = json_decode(File::get($path), true);
-            File::delete($path);
-            if (! is_array($data) || ! isset($data['source_id'])) {
-                return null;
-            }
-
-            return $data;
-        } catch (\Throwable $e) {
-            Log::warning('Failed to read extension source sidecar', [
-                'directory' => $pluginDirectory,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
     }
 
     /**

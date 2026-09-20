@@ -51,6 +51,7 @@ use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
@@ -582,12 +583,24 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themeDir = $validated['directory'];
 
         try {
+            // If the download came from a registered source (online add
+            // flow), the sidecar written by downloadFromSource() tells us
+            // which one. Plain ZIP uploads have no sidecar and stay as
+            // 'install'. Read it before the install command runs: the
+            // command links the row from the same sidecar (and removes
+            // it once the row is written), and the metadata below needs
+            // the values too.
+            $sidecar = app(ExtensionSourceSidecar::class);
+            $linkage = $sidecar->read(base_path("themes/{$themeDir}"));
+
             // Execute Artisan command to install theme (with --force option)
-            $exitCode = Artisan::call('dls:theme:install', [
+            $exitCode = Artisan::call('dls:theme:install', array_filter([
                 'themeName' => $themeDir,
                 '--force' => true,
                 '--no-interaction' => true,
-            ]);
+                '--source' => $linkage['source_id'] ?? null,
+            ], fn ($v) => $v !== null));
+            $sidecar->delete(base_path("themes/{$themeDir}"));
 
             if ($exitCode !== 0) {
                 $output = Artisan::output();
@@ -607,10 +620,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
             // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
-                // If the download came from a registered source (online add
-                // flow), the sidecar tells us which one. Plain ZIP uploads
-                // have no sidecar and stay as 'install'.
-                $linkage = $this->consumeSourceSidecar($themeDir);
                 $installationMethod = $linkage['installation_method'] ?? 'install';
                 $sourceUrl = $linkage['installed_from_url'] ?? null;
 
@@ -1153,9 +1162,9 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 // so source_id / source_repo / installation_method are
                 // recorded on the Theme row (otherwise update checks
                 // have no way to find the matching upstream release).
-                $this->writeSourceSidecar(
-                    themeDirectory: $result['directory'],
-                    linkage: $manager->resolveSourceLinkage($download['source'], $slug, 'theme'),
+                app(ExtensionSourceSidecar::class)->write(
+                    base_path("themes/{$result['directory']}"),
+                    $manager->resolveSourceLinkage($download['source'], $slug, 'theme'),
                 );
 
                 return redirect()->route('admin.settings.themes.index')
@@ -1173,62 +1182,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return redirect()->route('admin.settings.themes.add')
                 ->with('error', __('admin/settings/themes/add.messages.download_failed', ['error' => $e->getMessage()]));
-        }
-    }
-
-    /**
-     * File name of the sidecar JSON used to remember which source
-     * served a downloaded theme. Mirrors AdminPluginsSettingsController.
-     */
-    private const SOURCE_SIDECAR_FILENAME = '.dixlase-source.json';
-
-    /**
-     * Write the supply-chain linkage produced by ExtensionSourceManager
-     * to a sidecar JSON file next to theme.json. The install controller
-     * reads it back when the user proceeds to install.
-     *
-     * @param  array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}  $linkage
-     */
-    protected function writeSourceSidecar(string $themeDirectory, array $linkage): void
-    {
-        $path = base_path("themes/{$themeDirectory}/".self::SOURCE_SIDECAR_FILENAME);
-        try {
-            File::put($path, json_encode($linkage, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        } catch (\Throwable $e) {
-            Log::warning('Failed to write extension source sidecar', [
-                'directory' => $themeDirectory,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Read and remove the source sidecar written by downloadFromSource.
-     * Returns null when no sidecar is present (e.g. plain ZIP upload).
-     *
-     * @return ?array{source_id: int, source_repo: ?string, installation_method: string, installed_from_url: ?string}
-     */
-    protected function consumeSourceSidecar(string $themeDirectory): ?array
-    {
-        $path = base_path("themes/{$themeDirectory}/".self::SOURCE_SIDECAR_FILENAME);
-        if (! File::exists($path)) {
-            return null;
-        }
-        try {
-            $data = json_decode(File::get($path), true);
-            File::delete($path);
-            if (! is_array($data) || ! isset($data['source_id'])) {
-                return null;
-            }
-
-            return $data;
-        } catch (\Throwable $e) {
-            Log::warning('Failed to read extension source sidecar', [
-                'directory' => $themeDirectory,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
         }
     }
 
