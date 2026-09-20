@@ -49,12 +49,12 @@ class MemberTwoFaAttempt extends Model
         'attempt_type',
         'ip_address',
         'user_agent',
-        'success',
+        'successful',
         'created_at',
     ];
 
     protected $casts = [
-        'success' => 'boolean',
+        'successful' => 'boolean',
         'created_at' => 'datetime',
     ];
 
@@ -72,7 +72,7 @@ class MemberTwoFaAttempt extends Model
     public static function getFailedAttemptsCount(int $memberId, int $minutes): int
     {
         return self::where('member_id', $memberId)
-            ->where('success', false)
+            ->where('successful', false)
             ->where('created_at', '>=', now()->subMinutes($minutes))
             ->count();
     }
@@ -83,7 +83,7 @@ class MemberTwoFaAttempt extends Model
     public static function getFailedAttemptsByIpCount(string $ipAddress, int $minutes): int
     {
         return self::where('ip_address', $ipAddress)
-            ->where('success', false)
+            ->where('successful', false)
             ->where('created_at', '>=', now()->subMinutes($minutes))
             ->count();
     }
@@ -98,7 +98,7 @@ class MemberTwoFaAttempt extends Model
             'attempt_type' => $attemptType,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'success' => $success,
+            'successful' => $success,
             'created_at' => now(),
         ]);
     }
