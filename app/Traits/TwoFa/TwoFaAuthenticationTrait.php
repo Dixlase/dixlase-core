@@ -606,6 +606,16 @@ trait TwoFaAuthenticationTrait
             ]);
         }
 
+        // The challenge page renders the CAPTCHA widget when the form is
+        // enabled; the token it posts has to be verified here too, otherwise
+        // the widget is decorative. Null means CAPTCHA does not apply.
+        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $this->getCaptchaAction());
+        if ($captchaResult && ! $captchaResult->isValid()) {
+            return back()->withErrors([
+                'code' => $captchaResult->getErrorMessage(),
+            ]);
+        }
+
         if (! $this->verifyEmailCode($user, $request->code)) {
             return back()->withErrors([
                 'code' => __('two_fa.email.invalid_code'),
@@ -704,6 +714,15 @@ trait TwoFaAuthenticationTrait
                 'recovery_code' => __('two_fa.lockout.message', [
                     'minutes' => $lockoutStatus['remaining_minutes'],
                 ]),
+            ]);
+        }
+
+        // Same CAPTCHA gate as verifyEmail(): the recovery-code page renders
+        // the widget for the same form key.
+        $captchaResult = \App\Helpers\CaptchaHelper::verify($request, $this->getCaptchaAction());
+        if ($captchaResult && ! $captchaResult->isValid()) {
+            return back()->withErrors([
+                'recovery_code' => $captchaResult->getErrorMessage(),
             ]);
         }
 
