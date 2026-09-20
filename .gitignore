@@ -83,6 +83,9 @@ PLUGIN-API.md
 !README.ja.md
 !SECURITY.ja.md
 !CLAUDE.ja.md
+# CHANGELOG.ja.md mirrors CHANGELOG.md so Japanese-reading contributors can
+# follow Plugin API additions / deprecations without running a generator.
+!CHANGELOG.ja.md
 # PLUGIN-API.md (EN) is tracked and is referenced by LICENSE-EXCEPTIONS, so
 # its Japanese mirror is tracked too. (The `PLUGIN-API.md` line above is a
 # no-op: the file was committed before it and stays tracked regardless.)
