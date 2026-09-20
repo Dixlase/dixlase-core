@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-08-13
+**Last Updated:** 2026-09-20
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -200,7 +200,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Traits\ThemeLoaderTrait` | Theme resource loading mechanism |
 | `App\Traits\TranslatableTrait` | Translatable Trait |
 | `App\Traits\TwoFa\TwoFaAuthenticationTrait` | Trait that provides two-factor authentication flow control functionality |
-| `App\Traits\VerifiesCaptcha` |  |
+| `App\Traits\VerifiesCaptcha` | Server-side CAPTCHA verification for form requests. |
 
 ---
 
