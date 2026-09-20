@@ -55,8 +55,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'showPasswordToggle' => false,
 ])
 
+@php
+    // The size classes (input-sm/md/lg/xl) only cap the width, so the
+    // toggle wrapper carries them too: the eye icon then sits at the
+    // input's right edge instead of the row's.
+    preg_match_all('/\binput-(?:sm|md|lg|xl)\b/', $class, $sizeMatches);
+    $toggleWrapperClass = trim('relative '.implode(' ', $sizeMatches[0]));
+@endphp
 @if ($showPasswordToggle)
-<div x-data="{ showPassword: false }" class="relative">
+<div x-data="{ showPassword: false }" class="{{ $toggleWrapperClass }}">
     <input :type="showPassword ? 'text' : 'password'"
 @else
 <input type="{{ $type }}"
