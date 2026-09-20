@@ -25,7 +25,8 @@
  * Website: https://exc-d.com
  *
  * Two-Factor Authentication - Email Challenge Component
- * Handles email verification code input with auto-submit and resend functionality
+ * Handles email verification code input and resend functionality.
+ * The code is submitted only through the Verify button (or Enter), never automatically.
  */
 
 /**
@@ -36,7 +37,6 @@
  * @param {number} config.codeLength - Length of verification code
  * @param {number} config.expireMinutes - Code expiration time in minutes
  * @param {number} config.resendIntervalSeconds - Interval before allowing resend
- * @param {boolean} config.autoSubmit - Whether to auto-submit when code is complete
  * @param {boolean} config.showExpireTime - Whether to show expiration timer
  * @param {boolean} config.showResend - Whether to show resend button
  * @param {Object} config.translations - Translation strings
@@ -87,10 +87,6 @@ function initEmailChallenge(config) {
 
             updateHiddenInput();
             updateSubmitButton();
-
-            if (config.autoSubmit && getCodeValue().length === config.codeLength) {
-                setTimeout(() => form.submit(), 100);
-            }
         });
 
         input.addEventListener('keydown', function (e) {
@@ -113,10 +109,6 @@ function initEmailChallenge(config) {
 
             updateHiddenInput();
             updateSubmitButton();
-
-            if (config.autoSubmit && numbers.length === config.codeLength) {
-                setTimeout(() => form.submit(), 100);
-            }
         });
     });
 
