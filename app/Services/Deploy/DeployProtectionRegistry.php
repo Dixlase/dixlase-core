@@ -157,7 +157,7 @@ class DeployProtectionRegistry implements DeployProtectionRegistryInterface
             }
 
             $tables = $this->normalizeStringList($deploySection['protected_tables'] ?? []);
-            $paths  = $this->normalizeStringList($deploySection['protected_storage_paths'] ?? []);
+            $paths = $this->normalizeStringList($deploySection['protected_storage_paths'] ?? []);
 
             if ($tables === [] && $paths === []) {
                 continue;

@@ -560,6 +560,7 @@ class SvgSanitizerService
                 && preg_match('/^data:image\/(png|jpeg|gif|webp);base64,/i', $value)) {
                 continue;
             }
+
             return false;
         }
 

@@ -150,7 +150,7 @@ class AuditLogPayloadTest extends TestCase
     {
         $now = Carbon::parse('2026-05-10T12:34:56+00:00');
 
-        $auditLog = new AuditLog;
+        $auditLog = new AuditLog();
         $auditLog->id = 42;
         $auditLog->occurred_at = $now;
         $auditLog->severity = AuditLog::SEVERITY_INFO;

@@ -10,7 +10,6 @@
  * functions and inline CSS, and returns HTTP 503 to make it explicit
  * that the application is not yet serving requests.
  */
-
 $missingVendor = ! is_file(__DIR__.'/../vendor/autoload.php');
 $missingBuild = ! is_file(__DIR__.'/assets/build/manifest.json');
 
@@ -126,12 +125,12 @@ strong{color:#f1f5f9}
 <span class="dot" aria-hidden="true"></span>
 <span><code>vendor/</code> &mdash; <?= $missingVendor ? 'missing (Composer dependencies not installed)' : 'OK' ?></span>
 </div>
-<?php if ($missingBuild): ?>
+<?php if ($missingBuild) { ?>
 <div class="status bad">
 <span class="dot" aria-hidden="true"></span>
 <span><code>public/assets/build/</code> &mdash; missing (front-end assets not built)</span>
 </div>
-<?php endif; ?>
+<?php } ?>
 
 <hr>
 

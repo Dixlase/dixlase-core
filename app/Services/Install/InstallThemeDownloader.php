@@ -188,7 +188,7 @@ class InstallThemeDownloader
                 $output = trim((string) Artisan::output());
                 throw new \RuntimeException(
                     "Theme '{$directory}' was downloaded but the asset build failed. "
-                    ."Install Node.js (with npm) on this host and run "
+                    .'Install Node.js (with npm) on this host and run '
                     ."`php artisan dls:theme:build {$directory}` manually."
                     .($output !== '' ? "\n\n".$output : '')
                 );

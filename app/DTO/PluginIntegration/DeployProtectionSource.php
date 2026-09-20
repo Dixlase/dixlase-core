@@ -56,8 +56,8 @@ namespace App\DTO\PluginIntegration;
 final class DeployProtectionSource
 {
     /**
-     * @param  list<string>  $tables         Table names to protect from sync overwrite (e.g. `dls_plg_dixlase_legal_cookie_consents`).
-     * @param  list<string>  $storagePaths   Paths relative to `storage/app/private/` to protect from sync overwrite (e.g. `inquiries/attachments/`).
+     * @param  list<string>  $tables  Table names to protect from sync overwrite (e.g. `dls_plg_dixlase_legal_cookie_consents`).
+     * @param  list<string>  $storagePaths  Paths relative to `storage/app/private/` to protect from sync overwrite (e.g. `inquiries/attachments/`).
      */
     public function __construct(
         public readonly string $extensionName,

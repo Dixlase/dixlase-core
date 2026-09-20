@@ -36,7 +36,7 @@ class CoreFileVerificationServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->service = new CoreFileVerificationService;
+        $this->service = new CoreFileVerificationService();
         $this->tempDir = sys_get_temp_dir().'/dixlase_verification_test_'.uniqid();
         mkdir($this->tempDir, 0755, true);
     }

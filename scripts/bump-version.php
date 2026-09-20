@@ -38,7 +38,6 @@ declare(strict_types=1);
  *   php scripts/bump-version.php 0.3.27
  *   php scripts/bump-version.php 0.3.27-dryrun-5
  */
-
 $root = dirname(__DIR__);
 
 $new = $argv[1] ?? '';

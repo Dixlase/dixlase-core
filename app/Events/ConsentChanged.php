@@ -92,7 +92,7 @@ class ConsentChanged
 
     /**
      * @param  array<string, bool>  $previous  Category → consent map before the change; empty array for first-time acceptance
-     * @param  array<string, bool>  $current   Category → consent map after the change
+     * @param  array<string, bool>  $current  Category → consent map after the change
      * @param  int  $version  Consent version at the time of this change (matches the provider's version() value)
      */
     public function __construct(
