@@ -145,5 +145,5 @@ plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `L
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/Core/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Dixlase/Core/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0
