@@ -188,8 +188,9 @@ git submodule foreach --quiet \
   'git fetch --depth=1 origin $sha1 2>/dev/null || echo "WARN: $name sha $sha1 not pushed to remote"'
 ```
 
-### Autoload Regeneration After Manually Cloning a Plugin/Theme
+### Autoload Regeneration After Manually Cloning a Plugin/Theme or Switching Its Branch
 - When you place a plugin/theme by **cloning it from GitHub** (instead of installing via the admin panel or `artisan plugin:install`), you must regenerate the autoloader yourself before the plugin can run
+- **Run the same command after checking out a different branch, tag or commit inside a plugin/theme.** `composer.local.json` is generated from each extension's `composer.json` at one point in time, so a branch switch silently leaves it describing the branch you left
 - Plugin classes (`Plugins\{Name}\App\...`) are autoloaded via `composer.local.json`, which maps `Plugins\{Name}\App\` → `plugins/{Name}/app` and is merged into the root autoload by `wikimedia/composer-merge-plugin`. This file is auto-generated; a raw `git clone` does **not** update it, so the classes stay unresolvable
 - Symptom: routes register fine (plugin route files are scanned from disk), but dispatching to the plugin's controller throws `BindingResolutionException: Target class [Plugins\...\SomeController] does not exist`
 - The admin-panel / `plugin:install` / `plugin:delete` paths run this automatically (`ComposerLocalHelper::syncAutoload()`). A manual clone does not — run it yourself from the Core root (`html/`):
@@ -198,6 +199,8 @@ git submodule foreach --quiet \
   ```
   - `sync-local-autoload.php` rewrites `composer.local.json` from the current `plugins/` + `themes/` dirs (framework-independent, no DB needed); `--no-scripts` skips the `package:discover` post-hook that requires a DB connection
 - Caveat: a bare `composer dump-autoload` needs **two passes** — composer-merge-plugin reads the old `composer.local.json` before the `pre-autoload-dump` hook regenerates it, so the first pass misses the newly cloned plugin. The one-liner above avoids this by rewriting the file *before* composer starts
+- A stale `autoload.files` entry is a **hard fatal, not a degraded feature**: composer `require`s those files unconditionally, so one missing file takes down every request and every `artisan` command with `Failed opening required '.../SomeHelper.php'` — a white screen, not a missing helper. Checking a plugin out at a branch that predates one of its helper files reproduces this exactly, and so does merging that file back in afterwards (the entry is then missing while the file exists, and the helper is undefined wherever it is called). Re-run the command above after either move
+- Extensions can keep that blast radius inside themselves by `require_once`-ing their helper files from the ServiceProvider's `register()` instead of declaring them in `autoload.files`
 - `composer.local.json` and `vendor/` are gitignored, so this produces no committable change — it is a local-environment step only
 
 ### CLAUDE.md Regeneration
