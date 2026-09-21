@@ -104,6 +104,8 @@ return [
         'already_in_progress' => 'A plugin/theme update batch is already running. Wait for it to finish before starting a new one.',
         'core_update_complete' => 'Core update complete: v:from → v:to.',
         'core_rollback_complete' => 'Core rollback complete: v:from → v:to.',
+        'core_rollback_failed' => 'Core rollback to v:to failed, so the core was kept at v:from. Error: :error (details in :log)',
+        'core_rollback_failed_unrecovered' => 'Core rollback to v:to failed and automatic recovery did not finish. Error: :error. Follow the recovery steps in :log before using the site.',
         'update_complete_frame' => 'Updated :subject.',
         'update_complete_plugins' => 'plugin(s) :names',
         'update_complete_themes' => 'theme(s) :names',
