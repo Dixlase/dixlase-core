@@ -324,4 +324,55 @@ XML;
 
         unlink($path);
     }
+
+    // --- XXE: entity declarations (backlog svg-sanitize-strictness-levels §2) ---
+
+    public function test_doctype_with_external_entity_is_rejected(): void
+    {
+        // The exact shape from the #281 review: an external entity pointing at
+        // a local file, referenced from a text node. With LIBXML_NOENT this
+        // used to bake the file's contents into the stored SVG.
+        $svg = '<?xml version="1.0"?>'
+            .'<!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/hostname">]>'
+            .'<svg xmlns="http://www.w3.org/2000/svg"><text>&x;</text></svg>';
+
+        $this->assertSame('', $this->service->sanitize($svg));
+        $this->assertFalse($this->service->isSafe($svg));
+    }
+
+    public function test_internal_entity_is_never_expanded_into_output(): void
+    {
+        $svg = '<?xml version="1.0"?>'
+            .'<!DOCTYPE svg [<!ENTITY m "XXE_LEAK_MARKER_12345">]>'
+            .'<svg xmlns="http://www.w3.org/2000/svg"><text>&m;</text></svg>';
+
+        $out = $this->service->sanitize($svg);
+
+        $this->assertSame('', $out);
+        $this->assertStringNotContainsString('XXE_LEAK_MARKER_12345', $out);
+    }
+
+    public function test_public_doctype_without_internal_subset_is_still_accepted(): void
+    {
+        // What Illustrator / Inkscape emit: a public DOCTYPE, no internal
+        // subset, no entities. Must keep working after the guard.
+        $svg = '<?xml version="1.0" encoding="UTF-8"?>'
+            .'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">'
+            .'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+
+        $this->assertTrue($this->service->isSafe($svg));
+        $this->assertStringContainsString('<rect', $this->service->sanitize($svg));
+    }
+
+    public function test_contains_entity_declaration_detects_the_declaration_not_the_doctype(): void
+    {
+        $this->assertTrue(SvgSanitizerService::containsEntityDeclaration('<!DOCTYPE svg [<!ENTITY a "b">]><svg/>'));
+        $this->assertTrue(SvgSanitizerService::containsEntityDeclaration("<!doctype svg [\n <!entity a 'b'> ]><svg/>"), 'case-insensitive');
+        $this->assertTrue(SvgSanitizerService::containsEntityDeclaration('<svg/><!ENTITY late "x">'), 'declaration anywhere');
+        $this->assertTrue(SvgSanitizerService::containsEntityDeclaration('<!DOCTYPE svg SYSTEM "x.dtd" [ ]><svg/>'), 'empty internal subset still opens one');
+
+        $this->assertFalse(SvgSanitizerService::containsEntityDeclaration('<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg/>'));
+        $this->assertFalse(SvgSanitizerService::containsEntityDeclaration($this->wrap('<rect width="1" height="1"/>')));
+        $this->assertFalse(SvgSanitizerService::containsEntityDeclaration($this->wrap('<text>&amp;entity; [not a doctype]</text>')), 'brackets in content are fine');
+    }
 }
