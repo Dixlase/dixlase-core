@@ -133,8 +133,11 @@ class AdminResetPasswordNotification extends Notification
             return call_user_func(static::$createUrlCallback, $notifiable, $this->token);
         }
 
-        // Generate password reset URL for admin panel
-        $adminUrl = config('admin.url.admin_url', 'admin');
+        // Generate password reset URL for admin panel. The prefix is the
+        // operator's configured admin URL (site setting), not the config
+        // default: the two differ on every site that renamed its admin
+        // path, and the config default produced a link that 404s there.
+        $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
 
         // Auto-detect request scheme (http/https) using url() helper
         return url($adminUrl.'/reset-password/'.$this->token.'?email='.urlencode($notifiable->getEmailForPasswordReset()));
