@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      PHP_VERSION: '8.2'
+      PHP_VERSION: '8.3'
       NODE_VERSION: '20'
       # Vite の出力先など（vite.config.js に合わせて）
       BUILD_DIR: public/assets/build
