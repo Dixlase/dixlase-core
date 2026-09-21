@@ -4,6 +4,7 @@ namespace Tests\Unit\Services\Plugin;
 
 use App\Services\Plugin\PluginTableInspector;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PluginTableInspectorTest extends TestCase
@@ -25,7 +26,7 @@ class PluginTableInspectorTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function inspect_returns_empty_when_migrations_directory_is_missing(): void
     {
         $result = (new PluginTableInspector())->inspect($this->tempDir);
@@ -35,7 +36,7 @@ class PluginTableInspectorTest extends TestCase
         $this->assertFalse($result['has_migrations']);
     }
 
-    /** @test */
+    #[Test]
     public function inspect_extracts_table_names_from_schema_create(): void
     {
         $this->makeMigration('001_create_pages.php', <<<'PHP'
@@ -74,7 +75,7 @@ PHP);
         $this->assertTrue($result['has_migrations']);
     }
 
-    /** @test */
+    #[Test]
     public function inspect_counts_dynamic_table_names_separately(): void
     {
         $this->makeMigration('001_dynamic.php', <<<'PHP'
@@ -90,7 +91,7 @@ PHP);
         $this->assertTrue($result['has_migrations']);
     }
 
-    /** @test */
+    #[Test]
     public function inspect_ignores_commented_out_schema_create(): void
     {
         $this->makeMigration('001_create_only_in_comment.php', <<<'PHP'
@@ -108,7 +109,7 @@ PHP);
         $this->assertSame(0, $result['dynamic_count']);
     }
 
-    /** @test */
+    #[Test]
     public function inspect_deduplicates_table_names_seen_multiple_times(): void
     {
         $this->makeMigration('001_create_a.php', <<<'PHP'
@@ -123,7 +124,7 @@ PHP);
         $this->assertSame(['plg_dup'], $result['tables']);
     }
 
-    /** @test */
+    #[Test]
     public function inspect_skips_non_php_files(): void
     {
         File::makeDirectory("{$this->tempDir}/database/migrations", 0755, true);

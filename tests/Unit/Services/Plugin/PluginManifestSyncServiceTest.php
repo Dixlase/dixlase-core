@@ -5,6 +5,7 @@ namespace Tests\Unit\Services\Plugin;
 use App\Services\Plugin\PluginManifestSyncService;
 use App\Services\Plugin\Scanning\PatternRegistry;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PluginManifestSyncServiceTest extends TestCase
@@ -26,7 +27,7 @@ class PluginManifestSyncServiceTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function diff_returns_no_changes_when_manifest_matches_implementation(): void
     {
         $this->writeManifest([
@@ -47,7 +48,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertFalse($result['changed']);
     }
 
-    /** @test */
+    #[Test]
     public function diff_detects_added_config_file(): void
     {
         $this->writeManifest([
@@ -68,7 +69,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertContains('declares.configs.navigation', $changedPaths);
     }
 
-    /** @test */
+    #[Test]
     public function diff_detects_added_command_file(): void
     {
         $this->writeManifest([
@@ -87,7 +88,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertContains('declares.commands', $paths);
     }
 
-    /** @test */
+    #[Test]
     public function sync_writes_to_manifest_when_changes_detected(): void
     {
         $this->writeManifest([
@@ -105,7 +106,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertTrue($written['declares']['migrations']);
     }
 
-    /** @test */
+    #[Test]
     public function sync_preserves_manual_optional_and_notes_fields(): void
     {
         $this->writeManifest([
@@ -127,7 +128,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertSame('手動メモ', $written['permissions']['_notes']['ja']);
     }
 
-    /** @test */
+    #[Test]
     public function sync_preserves_content_other_plugin_lists(): void
     {
         $this->writeManifest([
@@ -148,7 +149,7 @@ class PluginManifestSyncServiceTest extends TestCase
         $this->assertSame(['dixlase-seo'], $written['permissions']['content']['read_other_plugins']);
     }
 
-    /** @test */
+    #[Test]
     public function sync_preserves_empty_object_as_object_not_array(): void
     {
         // 元 JSON で `"files": {}`（空オブジェクト）だったフィールドが、再エンコード時に
