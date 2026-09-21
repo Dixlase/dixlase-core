@@ -275,16 +275,21 @@ class CoreVendorManager
      * because it is huge). Local source and built assets come from the
      * backup; only the heavy vendor/ is re-fetched.
      *
+     * Pass $zipPath when the caller already downloaded and checked the
+     * release with prefetchVerifiedRelease(), so it is not fetched twice.
+     *
      * @param  ?Closure(string): void  $log
      */
-    public function refetchAndSwap(string $version, ?Closure $log = null, ?string $base = null): void
+    public function refetchAndSwap(string $version, ?Closure $log = null, ?string $base = null, ?string $zipPath = null): void
     {
         $log ??= fn (string $line) => null;
         $stagingPath = storage_path('app/private/core-vendor-refetch/'.uniqid('v_', true));
 
         try {
-            $log("Downloading core v{$version} for its vendor/...");
-            $zipPath = $this->sourceManager->downloadCore($version);
+            if ($zipPath === null) {
+                $log("Downloading core v{$version} for its vendor/...");
+                $zipPath = $this->sourceManager->downloadCore($version);
+            }
 
             $log('Extracting release to locate vendor/...');
             $this->extract($zipPath, $stagingPath);
@@ -300,6 +305,60 @@ class CoreVendorManager
             if (is_dir($stagingPath)) {
                 File::deleteDirectory($stagingPath);
             }
+        }
+    }
+
+    /**
+     * Download the release a rollback re-fetches vendor/ from, and confirm it
+     * ships a Composer vendor/ before the caller changes anything.
+     *
+     * A release published without the prebuilt-vendor asset resolves to
+     * GitHub's source zipball, which has no vendor/. Discovered only inside
+     * refetchAndSwap(), the rollback had already entered maintenance mode,
+     * reversed the schema and restored the older source, and then aborted.
+     * Returns the ZIP path so refetchAndSwap() can reuse it.
+     *
+     * @throws RuntimeException when the release has no vendor/.
+     */
+    public function prefetchVerifiedRelease(string $version): string
+    {
+        $zipPath = $this->sourceManager->downloadCore($version);
+
+        if (! $this->zipHasComposerVendor($zipPath)) {
+            throw new RuntimeException(
+                "Core v{$version} cannot be used to restore dependencies: its release has no prebuilt vendor/ "
+                .'(the release asset is missing, so the download fell back to a source-only archive).'
+            );
+        }
+
+        return $zipPath;
+    }
+
+    /**
+     * Whether a release ZIP carries a Composer vendor/ at its root or one
+     * directory down (the prebuilt asset nests everything under
+     * dixlase-v<ver>/). Keyed on vendor/autoload.php so that asset folders
+     * named "vendor" deeper in the tree (resources/.../vendor/mail) do not
+     * count.
+     */
+    protected function zipHasComposerVendor(string $zipPath): bool
+    {
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            throw new RuntimeException("Failed to open release ZIP: {$zipPath}");
+        }
+
+        try {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+                if ($name !== false && preg_match('#^(?:[^/]+/)?vendor/autoload\.php$#', $name) === 1) {
+                    return true;
+                }
+            }
+
+            return false;
+        } finally {
+            $zip->close();
         }
     }
 

@@ -197,4 +197,93 @@ class AdminSystemUpdatesFlashTest extends TestCase
             }
         }
     }
+
+    private function buildFailedFlash(array $result): string
+    {
+        $controller = (new ReflectionClass(AdminSystemUpdatesController::class))
+            ->newInstanceWithoutConstructor();
+        $method = new ReflectionMethod($controller, 'buildRollbackFailedFlash');
+        $method->setAccessible(true);
+
+        return (string) $method->invoke($controller, $result);
+    }
+
+    public function test_recovered_rollback_failure_reports_the_error_and_the_kept_version(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFailedFlash([
+            'status' => 'error',
+            'kind' => 'core',
+            'operation' => 'rollback',
+            'from' => '0.3.35',
+            'to' => '0.3.32',
+            'error' => 'Core v0.3.32 cannot be used to restore dependencies',
+            'recovered' => true,
+        ]);
+
+        $this->assertStringContainsString('0.3.32', $message);
+        $this->assertStringContainsString('0.3.35', $message);
+        $this->assertStringContainsString('cannot be used to restore dependencies', $message);
+        $this->assertStringContainsString('core-update.log', $message);
+        $this->assertStringNotContainsString(
+            __('admin/settings/systems/updates.messages.core_rollback_complete', ['from' => '0.3.35', 'to' => '0.3.32']),
+            $message,
+        );
+    }
+
+    public function test_unrecovered_rollback_failure_uses_the_manual_recovery_message(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFailedFlash([
+            'status' => 'error',
+            'kind' => 'core',
+            'operation' => 'rollback',
+            'from' => '0.3.35',
+            'to' => '0.3.32',
+            'error' => 'disk full',
+            'recovered' => false,
+        ]);
+
+        $this->assertSame(
+            e(__('admin/settings/systems/updates.messages.core_rollback_failed_unrecovered', [
+                'from' => '0.3.35',
+                'to' => '0.3.32',
+                'error' => 'disk full',
+                'log' => 'storage/logs/core-update.log',
+            ])),
+            $message,
+        );
+    }
+
+    public function test_rollback_failure_message_escapes_the_exception_text(): void
+    {
+        $this->app->setLocale('en');
+
+        $message = $this->buildFailedFlash([
+            'status' => 'error',
+            'kind' => 'core',
+            'operation' => 'rollback',
+            'from' => '0.3.35',
+            'to' => '0.3.32',
+            'error' => '<img src=x onerror=alert(1)>',
+            'recovered' => true,
+        ]);
+
+        // Flashes render unescaped; an exception message is untrusted text.
+        $this->assertStringNotContainsString('<img', $message);
+        $this->assertStringContainsString('&lt;img', $message);
+    }
+
+    public function test_rollback_failure_keys_exist_in_both_locales(): void
+    {
+        foreach (['en', 'ja'] as $locale) {
+            $this->app->setLocale($locale);
+            foreach (['core_rollback_failed', 'core_rollback_failed_unrecovered'] as $suffix) {
+                $key = "admin/settings/systems/updates.messages.{$suffix}";
+                $this->assertNotSame($key, __($key), "Missing {$suffix} for locale {$locale}");
+            }
+        }
+    }
 }

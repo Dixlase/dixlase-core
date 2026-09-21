@@ -111,7 +111,11 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // one-shot "update complete" flash on this render, then it is
         // consumed and gone.
         if (($updateResult = SystemUpdateFlash::consume()) !== null) {
-            session()->now('success', $this->buildUpdateCompleteFlash($updateResult));
+            if (($updateResult['status'] ?? 'success') === 'error') {
+                session()->now('error', $this->buildRollbackFailedFlash($updateResult));
+            } else {
+                session()->now('success', $this->buildUpdateCompleteFlash($updateResult));
+            }
         }
 
         $forceCheck = $request->boolean('check');
@@ -885,6 +889,27 @@ HTML;
      *
      * @param  array<string, mixed>  $result
      */
+    /**
+     * Error flash for a failed core rollback (the only operation that records
+     * an error result). The message embeds the exception text, and flashes
+     * render unescaped, so the whole string is escaped here.
+     *
+     * @param  array<string, mixed>  $result
+     */
+    protected function buildRollbackFailedFlash(array $result): HtmlString
+    {
+        $key = ! empty($result['recovered'])
+            ? 'admin/settings/systems/updates.messages.core_rollback_failed'
+            : 'admin/settings/systems/updates.messages.core_rollback_failed_unrecovered';
+
+        return new HtmlString(e(__($key, [
+            'from' => (string) ($result['from'] ?? ''),
+            'to' => (string) ($result['to'] ?? ''),
+            'error' => (string) ($result['error'] ?? ''),
+            'log' => 'storage/logs/core-update.log',
+        ])));
+    }
+
     protected function buildUpdateCompleteFlash(array $result): HtmlString
     {
         if (($result['kind'] ?? '') === 'core') {
