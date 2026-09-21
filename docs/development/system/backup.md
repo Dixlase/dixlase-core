@@ -13,7 +13,7 @@ The backup system provides the following features:
 
 ## Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - ZipArchive PHP extension
 - mysqldump (for database backups)
 

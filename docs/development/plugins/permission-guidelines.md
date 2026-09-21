@@ -273,7 +273,7 @@ Do not confuse these two. Plugin permissions declare "what system resources this
   "tags": ["pages", "content", "cms"],
   "requires": {
     "dixlase": ">=1.0.0",
-    "php": ">=8.2"
+    "php": ">=8.3"
   },
   "provides": {
     "admin_menu": true,
