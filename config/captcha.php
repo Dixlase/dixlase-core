@@ -127,6 +127,9 @@ return [
     'forms' => [
         'admin_login' => [
             'name' => 'admin/settings/security/captcha.forms.admin_login',
+            // Optional: a translation key rendered under the toggle. Use it to
+            // state what the form's CAPTCHA does and does not cover.
+            'description' => 'admin/settings/security/captcha.form_descriptions.admin_login',
             'route' => 'admin.login',
             'category' => 'admin',
             'default_enabled' => false,
@@ -141,6 +144,7 @@ return [
         ],
         'admin_two_fa' => [
             'name' => 'admin/settings/security/captcha.forms.admin_two_fa',
+            'description' => 'admin/settings/security/captcha.form_descriptions.admin_two_fa',
             'route' => 'admin.two-fa.email.verify',
             'category' => 'admin',
             'default_enabled' => false,
