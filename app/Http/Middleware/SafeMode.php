@@ -100,7 +100,10 @@ class SafeMode
     protected function isAdminRoute(Request $request): bool
     {
         $path = $request->path();
-        $adminUrl = config('admin.url.admin_url', 'admin');
+        // The operator's configured admin URL (site setting), with the config
+        // default as the fallback the helper applies when the database is not
+        // reachable — which is exactly the situation safe mode exists for.
+        $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
 
         return str_starts_with($path, 'admin') || str_starts_with($path, $adminUrl);
     }
