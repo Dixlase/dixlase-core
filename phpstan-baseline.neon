@@ -1,6 +1,18 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$editor_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/FrontPage/CreateFrontPageAction.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$storage_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/FrontPage/CreateFrontPageAction.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>editor_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -235,12 +247,6 @@ parameters:
 			path: app/Console/Commands/CspSetAdminMode.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Console/Commands/IntegrityScan.php
-
-		-
 			message: '#^Parameter \#2 \$syntax of method Carbon\\Carbon\:\:diffForHumans\(\) expects array\|int\|null, true given\.$#'
 			identifier: argument.type
 			count: 1
@@ -297,7 +303,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Console/Commands/RbacRecoveryCommand.php
 
 		-
@@ -465,7 +471,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 2
 			path: app/Console/Commands/TwoFaRecoveryCommand.php
 
 		-
@@ -481,12 +487,6 @@ parameters:
 			path: app/Console/Traits/ThemeManagementTrait.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/DTO/Audit/AuditLogPayload.php
-
-		-
 			message: '#^Access to property \$id on an unknown class App\\Models\\User\.$#'
 			identifier: class.notFound
 			count: 1
@@ -497,12 +497,6 @@ parameters:
 			identifier: parameter.phpDocType
 			count: 1
 			path: app/DTO/Logging/LogContextDTO.php
-
-		-
-			message: '#^Instanceof between T of JsonSerializable and JsonSerializable will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: app/DTO/PluginIntegration/PaginatedResultDTO.php
 
 		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
@@ -527,12 +521,6 @@ parameters:
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 1
 			path: app/Helpers/AdminHelper.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 2
-			path: app/Helpers/AssetHelper.php
 
 		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
@@ -613,20 +601,8 @@ parameters:
 			path: app/Http/Controllers/Admin/AdminDashboardController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Admin/AdminLoggedInController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Member\>\:\:\$email\.$#'
+			message: '#^Access to an undefined property App\\Models\\Member\|Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\), App\\Models\\Member\>\:\:\$email\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/AdminTwoFaController.php
-
-		-
-			message: '#^Call to function method_exists\(\) with \$this\(App\\Http\\Controllers\\Admin\\AdminTwoFaController\) and ''getLoginNotificatio…'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
 			count: 1
 			path: app/Http/Controllers/Admin/AdminTwoFaController.php
 
@@ -729,6 +705,12 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:getCollection\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
+
+		-
+			message: '#^Relation ''member'' is not found in App\\Models\\Media model\.$#'
+			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Admin/Media/AdminMediaController.php
 
@@ -1087,12 +1069,6 @@ parameters:
 			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
 
 		-
-			message: '#^Offset ''slug'' on array\{slug\: string, name\: string, description\: string\|null, version\: string\|null, source_id\: int, source_name\: string\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: app/Http/Controllers/Admin/Settings/AdminPluginsSettingsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Theme\:\:\$csp_compatibility\.$#'
 			identifier: property.notFound
 			count: 2
@@ -1119,12 +1095,6 @@ parameters:
 		-
 			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
 			identifier: larastan.noUnnecessaryCollectionCall
-			count: 1
-			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
-
-		-
-			message: '#^Offset ''slug'' on array\{slug\: string, name\: string, description\: string\|null, version\: string\|null, source_id\: int, source_name\: string\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
 			count: 1
 			path: app/Http/Controllers/Admin/Settings/AdminThemesSettingsController.php
 
@@ -1185,12 +1155,6 @@ parameters:
 		-
 			message: '#^Binary operation "/" between 10 and 0 results in an error\.$#'
 			identifier: binaryOp.invalid
-			count: 1
-			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Admin/Settings/Systems/AdminSystemLogsController.php
 
@@ -1435,6 +1399,24 @@ parameters:
 			path: app/Jobs/SendWebhook.php
 
 		-
+			message: '#^Parameter \$markdown of class Illuminate\\Mail\\Mailables\\Content constructor expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mail/ExtensionOperationNotificationMail.php
+
+		-
+			message: '#^Parameter \$markdown of class Illuminate\\Mail\\Mailables\\Content constructor expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mail/LoginNotificationMail.php
+
+		-
+			message: '#^Parameter \$markdown of class Illuminate\\Mail\\Mailables\\Content constructor expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mail/TwoFaDeviceMail.php
+
+		-
 			message: '#^Unsafe access to private property App\\Models\\ApiKey\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
 			identifier: staticClassAccess.privateProperty
 			count: 3
@@ -1453,20 +1435,8 @@ parameters:
 			path: app/Models/ApiRequestLog.php
 
 		-
-			message: '#^Call to an undefined static method App\\Models\\AuditLog\:\:cases\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: app/Models/AuditLog.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
-			path: app/Models/AuditLog.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/AuditLog.php
 
@@ -1616,12 +1586,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Member.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Member.php
@@ -1801,12 +1765,6 @@ parameters:
 			path: app/Models/WebhookDeadLetter.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Models/WebhookDeadLetter.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:recordFailure\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -1845,6 +1803,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$role\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Presenters/Admin/DashboardPresenter.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Member\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Presenters/Admin/DashboardPresenter.php
 
@@ -1987,7 +1951,7 @@ parameters:
 			path: app/Rules/UniqueRouteSlug.php
 
 		-
-			message: '#^Parameter \#1 \$array \(non\-empty\-list\<''\.git''\|''node_modules''\|''vendor''\>\) of array_values is already a list, call has no effect\.$#'
+			message: '#^Parameter \#1 \$array \(list\{0\: ''\.git'', 1\?\: ''node_modules''\|''vendor'', 2\?\: ''vendor''\}\) of array_values is already a list, call has no effect\.$#'
 			identifier: arrayValues.list
 			count: 1
 			path: app/Services/Backup/CoreBackupService.php
@@ -2021,12 +1985,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/Backup/CoreRestoreService.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/Captcha/CaptchaCspProvider.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\SecuritySetting\:\:\$updated_at\.$#'
@@ -2081,6 +2039,12 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/CommentTranslation/CommentBuilderService.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Services/Core/CoreSourceSnapshot.php
 
 		-
 			message: '#^If condition is always true\.$#'
@@ -2225,6 +2189,24 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/Media/SvgSanitizerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$access_roles\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/PermissionRegistry.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$view_roles\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/PermissionRegistry.php
+
+		-
+			message: '#^Parameter \#3 \$callback of static method Illuminate\\Cache\\Repository\:\:remember\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Services/PermissionRegistry.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>access_roles" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -2461,6 +2443,12 @@ parameters:
 			path: app/Session/GuardAwareDatabaseSessionHandler.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Traits/AdminLoggedInTrait.php
+
+		-
 			message: '#^Trait App\\Traits\\AuditableTrait is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1
@@ -2489,6 +2477,18 @@ parameters:
 			identifier: trait.unused
 			count: 1
 			path: app/Traits/RegistersCspPolicy.php
+
+		-
+			message: '#^Property App\\Models\\FrontPage\:\:\$translatable \(list\<string\>\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: app/Traits/TranslatableTrait.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Http\\Controllers\\Admin\\AdminTwoFaController\) and ''getLoginNotificatio…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Traits/TwoFa/TwoFaAuthenticationTrait.php
 
 		-
 			message: '#^Trait App\\Traits\\VerifiesCaptcha is used zero times and is not analysed\.$#'
