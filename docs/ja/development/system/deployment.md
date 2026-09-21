@@ -26,7 +26,7 @@ Dixlase Deployは、ローカル、ステージング、本番環境間でファ
 
 ### ローカル環境
 
-- PHP 8.2以上
+- PHP 8.3以上
 - rsync（SSH同期用）
 - lftp（FTP/SFTP同期用、オプション）
 - mysql/mysqldump（データベース同期用）

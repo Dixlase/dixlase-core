@@ -61,7 +61,7 @@ After this, open the site URL in a browser — the installation wizard will guid
 
 ### Quick install script
 
-For fresh VPS / bare-metal hosts with PHP 8.2+ and Composer, install with a single command:
+For fresh VPS / bare-metal hosts with PHP 8.3+ and Composer, install with a single command:
 
 ```bash
 curl -sS https://install.dixlase.net | php

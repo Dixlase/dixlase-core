@@ -3,7 +3,7 @@
 
 | Requirement | Details |
 |------------|---------|
-| Version | **8.2+** (8.3 recommended) |
+| Version | **8.3+** |
 | SAPI | FPM or CLI |
 
 ### Required Extensions

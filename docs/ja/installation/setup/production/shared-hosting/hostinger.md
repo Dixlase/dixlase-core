@@ -9,7 +9,7 @@ draft: true
 ## 前提条件
 
 - hPanel アクセス付きの Hostinger ホスティングアカウント
-- サーバーで PHP 8.2 以上が利用可能
+- サーバーで PHP 8.3 以上が利用可能
 - MySQL 8.0 / MariaDB 10.6 以上
 - hPanel 経由の SSH アクセス
 

@@ -25,11 +25,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Support;
 
 use App\Support\RelativeSymlink;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
  * Pins the relative-path decomposition and the on-disk create()
- * behaviour of {@see \App\Support\RelativeSymlink}.
+ * behaviour of {@see RelativeSymlink}.
  *
  * The whole point of this helper is that the produced symlink target
  * resolves from any container that mounts the app at some path, so
@@ -39,9 +40,7 @@ use Tests\TestCase;
  */
 class RelativeSymlinkTest extends TestCase
 {
-    /**
-     * @dataProvider relativePathCases
-     */
+    #[DataProvider('relativePathCases')]
     public function test_relative_path_computation(string $to, string $from, string $expected): void
     {
         $this->assertSame($expected, RelativeSymlink::relativePath($to, $from));

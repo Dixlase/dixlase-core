@@ -15,16 +15,16 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "composer/installers": "^2.0",
         "composer/semver": "^3.4",
         "cweagans/composer-patches": "^2.0",
         "dixlase/dixlase-onepage": "dev-main@dev",
         "google/cloud-recaptcha-enterprise": "^2.1",
-        "laragear/webauthn": "^4.0",
+        "laragear/webauthn": "^5.0",
         "laravel/fortify": "^1.25",
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.9",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.1",
         "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.1"
@@ -34,11 +34,11 @@
         "larastan/larastan": "^3.0",
         "laravel/boost": "^2.0",
         "laravel/breeze": "^2.2",
-        "laravel/mcp": "^0.5.9",
-        "laravel/pint": "^1.13",
+        "laravel/mcp": "^1.0",
+        "laravel/pint": "1.26.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0.1"
+        "phpunit/phpunit": "^12.0"
     },
     "autoload": {
         "psr-4": {
@@ -119,7 +119,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.2"
+            "php": "8.3"
         },
         "audit": {
             "abandoned": "report"

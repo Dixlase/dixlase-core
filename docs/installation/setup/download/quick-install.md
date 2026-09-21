@@ -4,7 +4,7 @@ Install Dixlase on your server with a single command.
 
 ## Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - MySQL / MariaDB
 - SSH access to your server

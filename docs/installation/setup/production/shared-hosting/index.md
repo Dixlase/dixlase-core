@@ -4,7 +4,7 @@ Deploy Dixlase on shared rental servers. Choose a guide for your hosting provide
 
 ## Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - MySQL 8.0 / MariaDB 10.6 or higher
 - SSH access (recommended) or FTP access
 - Composer (installed on the server or run locally)

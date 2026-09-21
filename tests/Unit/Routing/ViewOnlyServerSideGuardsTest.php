@@ -23,6 +23,7 @@
 namespace Tests\Unit\Routing;
 
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -76,9 +77,7 @@ class ViewOnlyServerSideGuardsTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider guardedRoutesProvider
-     */
+    #[DataProvider('guardedRoutesProvider')]
     public function test_route_carries_the_check_menu_edit_middleware(string $expectedMiddleware, string $routeName): void
     {
         $route = Route::getRoutes()->getByName($routeName);
