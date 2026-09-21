@@ -62,7 +62,7 @@ composer install
 
 ### クイックインストールスクリプト
 
-PHP 8.2 以上と Composer が用意されたクリーンな VPS / ベアメタル環境では、1 コマンドでインストールできます:
+PHP 8.3 以上と Composer が用意されたクリーンな VPS / ベアメタル環境では、1 コマンドでインストールできます:
 
 ```bash
 curl -sS https://install.dixlase.net | php
