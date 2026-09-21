@@ -89,6 +89,19 @@ Schedule::command('maintenance:check-auto-release')
     ->withoutOverlapping()
     ->runInBackground();
 
+// Core update / rollback self-heal (runs every minute).
+//
+// A core update or rollback brackets its source swap with `artisan down`
+// / `artisan up`. If that process is killed mid-way (OOM, container
+// restart, closed terminal) the site would stay on Laravel's static 503
+// with nobody around to run `php artisan up`. This lifts the window once
+// the owning process is provably gone; a manual `artisan down` is never
+// touched. Cheap when the site is up (one file_exists), so every minute
+// is fine. See App\Services\Core\CoreMaintenanceGuard.
+Schedule::command('dls:core:heal-maintenance')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 // Extension update check (cron ticks hourly, actually runs if the configured interval has elapsed)
 //
 // Interval controlled by `extension_update_check_interval` setting (86400 / 43200 / 21600 / 0=manual)

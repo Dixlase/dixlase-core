@@ -74,7 +74,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      * link) but short enough that a true crash does not leave the UI
      * unusable.
      */
-    protected const IN_PROGRESS_STALE_THRESHOLD_SECONDS = 900; // 15 minutes
+    protected const IN_PROGRESS_STALE_THRESHOLD_SECONDS = \App\Services\Core\CoreMaintenanceGuard::STALE_SECONDS; // 15 minutes, shared with the maintenance self-heal
 
     public function __construct()
     {
