@@ -94,11 +94,17 @@ class IpAccessControlHelperTest extends TestCase
         // Trust covers the actual proxy (172.19.0.10 is inside 172.19.0.0/16),
         // so Symfony resolves X-Forwarded-For and $request->ip() returns the
         // real public client IP. proxy_issue must stay false.
+        //
+        // NOTE: the forwarded client IP must be a genuinely routable public
+        // address. Symfony's IpUtils::isPrivateIp() treats RFC 5737
+        // documentation ranges (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24)
+        // as private/reserved, so using one here would make proxy_issue true
+        // and defeat the point of this case.
         config(['trustedproxy.proxies' => ['172.19.0.0/16']]);
         Request::setTrustedProxies(['172.19.0.0/16'], Request::HEADER_X_FORWARDED_FOR);
 
         $request = Request::create('/', 'GET', server: ['REMOTE_ADDR' => '172.19.0.10']);
-        $request->headers->set('X-Forwarded-For', '203.0.113.7');
+        $request->headers->set('X-Forwarded-For', '8.8.8.8');
 
         $result = IpAccessControlHelper::inspectConnection($request);
 
