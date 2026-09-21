@@ -23,6 +23,7 @@
 namespace Tests\Unit\Routing;
 
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -72,9 +73,7 @@ class AdminMenuKeyConsistencyTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider alignedGetRoutes
-     */
+    #[DataProvider('alignedGetRoutes')]
     public function test_get_route_uses_the_same_child_menu_key_as_its_sibling_post(string $expectedMiddleware, string $routeName): void
     {
         $route = Route::getRoutes()->getByName($routeName);
