@@ -80,7 +80,7 @@ return [
     'file_integrity_critical' => ':count suspicious file(s) detected. Investigate immediately.',
     'file_integrity_no_baseline' => 'No baseline scan has been run yet. Running an initial scan is recommended.',
     'audit_integrity_status' => 'Audit Log Integrity',
-    'audit_integrity_ok' => 'Hash chain and daily seals are up to date. Every entry has been verified since :date.',
+    'audit_integrity_ok' => 'Hash chain and daily seals are up to date. Last verified on :date.',
     'audit_integrity_ok_unverified' => 'Hash chain and daily seals are up to date. Run `php artisan audit:integrity verify` to verify them.',
     'audit_integrity_empty' => 'No audit log entries have been recorded yet.',
     'audit_integrity_verify_recommended' => 'Some audit log entries have not been verified in the last :days days. Run `php artisan audit:integrity verify --all`.',
