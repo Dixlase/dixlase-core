@@ -26,6 +26,7 @@ use App\Services\CoreMigrator;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -97,9 +98,7 @@ class CoreMigratorPathFilterTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider extensionPathProvider
-     */
+    #[DataProvider('extensionPathProvider')]
     public function test_extension_migration_paths_are_not_registered(string $relativePath): void
     {
         $path = base_path($relativePath);

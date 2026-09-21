@@ -26,7 +26,7 @@ Dixlase Deploy is a command-line tool for synchronizing files and databases betw
 
 ### Local Environment
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - rsync (for SSH sync)
 - lftp (for FTP/SFTP sync, optional)
 - mysql/mysqldump (for database sync)

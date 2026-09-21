@@ -33,15 +33,56 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Helpers\LocaleHelper;
+use App\Http\Controllers\System\FpmCacheResetController;
+use App\Http\Middleware\AdminIpFilter;
+use App\Http\Middleware\AppendSourceCodeHeader;
+use App\Http\Middleware\ApplySessionConfig;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\AuthenticateApiKey;
+use App\Http\Middleware\AuthenticateIap;
+use App\Http\Middleware\AuthenticateMtls;
+use App\Http\Middleware\BlockPluginRoutes;
+use App\Http\Middleware\CheckInstallationReady;
+use App\Http\Middleware\CheckInstallationSteps;
+use App\Http\Middleware\CheckLockdown;
+use App\Http\Middleware\CheckMaintenanceMode;
+use App\Http\Middleware\CheckMenuAccess;
+use App\Http\Middleware\CheckMenuEdit;
+use App\Http\Middleware\CheckPermission;
+use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\ContentSecurityPolicy;
+use App\Http\Middleware\DemoGuard;
+use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\EnsurePluginAdminAccess;
+use App\Http\Middleware\ForceHttps;
+use App\Http\Middleware\FrontIpFilter;
+use App\Http\Middleware\LogAdminActivity;
+use App\Http\Middleware\LogApiRequest;
+use App\Http\Middleware\PreventAdminResponseCaching;
+use App\Http\Middleware\ResolveSiteContext;
+use App\Http\Middleware\SafeMode;
+use App\Http\Middleware\SetAdminLocale;
+use App\Http\Middleware\SetMemberLocale;
+use App\Http\Middleware\ThrottleApiRequest;
 use App\Support\Api\ApiErrorResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -69,8 +110,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // source/vendor swap. Token-gated in the controller; kept
             // outside every route group (no session, no auth, no
             // locale prefix) so it survives even mid-swap.
-            \Illuminate\Support\Facades\Route::post('/system/fpm-cache-reset', [
-                \App\Http\Controllers\System\FpmCacheResetController::class,
+            Route::post('/system/fpm-cache-reset', [
+                FpmCacheResetController::class,
                 'reset',
             ])->name('system.fpm-cache-reset');
         },
@@ -117,14 +158,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // the operator-facing site UI — a totally different concept
         // from `Artisan::call('down')`. Both coexist safely.
         $middleware->use([
-            \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class, // Round 5 Finding D root fix: make `Artisan::call('down')` actually block requests
-            \Illuminate\Http\Middleware\TrustProxies::class, // Apply config/trustedproxy.php to incoming forwarded headers
-            \App\Http\Middleware\CheckInstallationReady::class, // Check installation readiness + installation status
-            \App\Http\Middleware\ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
-            \App\Http\Middleware\ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
-            \App\Http\Middleware\ApplySessionConfig::class, // Apply session settings dynamically
-            \App\Http\Middleware\ContentSecurityPolicy::class, // Add CSP headers
-            \App\Http\Middleware\AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
+            PreventRequestsDuringMaintenance::class, // Round 5 Finding D root fix: make `Artisan::call('down')` actually block requests
+            TrustProxies::class, // Apply config/trustedproxy.php to incoming forwarded headers
+            CheckInstallationReady::class, // Check installation readiness + installation status
+            ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
+            ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
+            ApplySessionConfig::class, // Apply session settings dynamically
+            ContentSecurityPolicy::class, // Add CSP headers
+            AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
         ]);
 
         // Exclude CSP report endpoint from CSRF verification. The
@@ -132,7 +173,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // withRouting's `then:` above) is POST but token-authenticated
         // in the controller — CSRF would fail here because the call
         // originates from a CLI subprocess with no session context.
-        $middleware->validateCsrfTokens(except: [
+        $middleware->preventRequestForgery(except: [
             'csp-report',
             'system/fpm-cache-reset',
         ]);
@@ -152,99 +193,99 @@ return Application::configure(basePath: dirname(__DIR__))
         // The language switcher cookie is a non-sensitive preference and
         // is read in plaintext (e.g. by curl tests, reverse proxies, JS).
         $middleware->encryptCookies(except: [
-            \App\Helpers\LocaleHelper::COOKIE_NAME,
+            LocaleHelper::COOKIE_NAME,
         ]);
 
         // Middleware to execute after session starts
         $middleware->appendToGroup('web', [
-            \App\Http\Middleware\CheckMaintenanceMode::class, // Maintenance mode check (executed after session to reference authentication state)
-            \App\Http\Middleware\SafeMode::class, // Safe mode detection (executed after authentication, supports CSP/plugin/theme)
-            \App\Http\Middleware\BlockPluginRoutes::class, // Route blocking when plugin safe mode is active
-            \App\Http\Middleware\SetAdminLocale::class, // Admin locale resolver: member.locale -> Site.primary_locale -> Accept-Language -> fallback
-            \App\Http\Middleware\SetMemberLocale::class, // Install-screen locale + member-specific overrides (admin only). Front locale is handled by SetFrontLocale on the locale-prefixed route group.
-            \App\Http\Middleware\DemoGuard::class, // Block destructive admin actions when DIXLASE_DEMO_MODE is on (must run after routing so route name is available)
+            CheckMaintenanceMode::class, // Maintenance mode check (executed after session to reference authentication state)
+            SafeMode::class, // Safe mode detection (executed after authentication, supports CSP/plugin/theme)
+            BlockPluginRoutes::class, // Route blocking when plugin safe mode is active
+            SetAdminLocale::class, // Admin locale resolver: member.locale -> Site.primary_locale -> Accept-Language -> fallback
+            SetMemberLocale::class, // Install-screen locale + member-specific overrides (admin only). Front locale is handled by SetFrontLocale on the locale-prefixed route group.
+            DemoGuard::class, // Block destructive admin actions when DIXLASE_DEMO_MODE is on (must run after routing so route name is available)
         ]);
 
         // Register route middleware aliases
         $middleware->alias([
-            'auth' => \App\Http\Middleware\Authenticate::class, // Authentication
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, // Email verification
-            'admin.ip' => \App\Http\Middleware\AdminIpFilter::class, // IP address filter
-            'admin.no-cache' => \App\Http\Middleware\PreventAdminResponseCaching::class, // Force browsers not to cache authenticated admin responses
-            'front.ip' => \App\Http\Middleware\FrontIpFilter::class, // Front IP filter
-            'log.admin.activity' => \App\Http\Middleware\LogAdminActivity::class, // Admin panel operation log
-            'check.menu.access' => \App\Http\Middleware\CheckMenuAccess::class, // Admin panel menu access permission
-            'check.menu.edit' => \App\Http\Middleware\CheckMenuEdit::class, // Admin panel menu edit permission
-            'plugin.admin.access' => \App\Http\Middleware\EnsurePluginAdminAccess::class, // Plugin admin route authorization
-            'install.steps' => \App\Http\Middleware\CheckInstallationSteps::class, // Installation step check
-            'auth.api' => \App\Http\Middleware\AuthenticateApiKey::class, // API key authentication
-            'throttle.api' => \App\Http\Middleware\ThrottleApiRequest::class, // API rate limit
-            'log.api' => \App\Http\Middleware\LogApiRequest::class, // API request log
-            'role' => \App\Http\Middleware\CheckRole::class, // Role check
-            'permission' => \App\Http\Middleware\CheckPermission::class, // Permission check
+            'auth' => Authenticate::class, // Authentication
+            'verified' => EnsureEmailIsVerified::class, // Email verification
+            'admin.ip' => AdminIpFilter::class, // IP address filter
+            'admin.no-cache' => PreventAdminResponseCaching::class, // Force browsers not to cache authenticated admin responses
+            'front.ip' => FrontIpFilter::class, // Front IP filter
+            'log.admin.activity' => LogAdminActivity::class, // Admin panel operation log
+            'check.menu.access' => CheckMenuAccess::class, // Admin panel menu access permission
+            'check.menu.edit' => CheckMenuEdit::class, // Admin panel menu edit permission
+            'plugin.admin.access' => EnsurePluginAdminAccess::class, // Plugin admin route authorization
+            'install.steps' => CheckInstallationSteps::class, // Installation step check
+            'auth.api' => AuthenticateApiKey::class, // API key authentication
+            'throttle.api' => ThrottleApiRequest::class, // API rate limit
+            'log.api' => LogApiRequest::class, // API request log
+            'role' => CheckRole::class, // Role check
+            'permission' => CheckPermission::class, // Permission check
             // Reserved Zero Trust extension-point aliases. Default
             // implementations abort(501) to fail fast when a route applies
             // them without an integration plugin in place. See
             // docs/development/extension-points.md.
-            'auth.iap' => \App\Http\Middleware\AuthenticateIap::class, // Identity-Aware Proxy auth (reserved hook)
-            'auth.mtls' => \App\Http\Middleware\AuthenticateMtls::class, // Mutual TLS / client cert auth (reserved hook)
+            'auth.iap' => AuthenticateIap::class, // Identity-Aware Proxy auth (reserved hook)
+            'auth.mtls' => AuthenticateMtls::class, // Mutual TLS / client cert auth (reserved hook)
         ]);
 
         // For plugin API (API key authentication + rate limit + log)
         $middleware->group('plugin.api', [
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\CheckLockdown::class,
-            \App\Http\Middleware\AuthenticateApiKey::class,
-            \App\Http\Middleware\ThrottleApiRequest::class,
-            \App\Http\Middleware\LogApiRequest::class,
+            SubstituteBindings::class,
+            CheckLockdown::class,
+            AuthenticateApiKey::class,
+            ThrottleApiRequest::class,
+            LogApiRequest::class,
         ]);
 
         // For public plugin API (no authentication required, rate limit + log only)
         $middleware->group('plugin.api.public', [
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\CheckLockdown::class,
-            \App\Http\Middleware\ThrottleApiRequest::class,
-            \App\Http\Middleware\LogApiRequest::class,
+            SubstituteBindings::class,
+            CheckLockdown::class,
+            ThrottleApiRequest::class,
+            LogApiRequest::class,
         ]);
 
         // Middleware group for plugin (basic).
         //
         // Mirrors Laravel's `web` stack order (cookie encryption -> queued
         // cookies -> session -> errors -> CSRF -> bindings) so plugin routes
-        // are stateful-safe by default. EncryptCookies and ValidateCsrfToken
+        // are stateful-safe by default. EncryptCookies and PreventRequestForgery
         // were previously omitted, leaving these groups CSRF-unsafe — a serious
         // gap for the session-authenticated plugin.admin group below.
         $middleware->group('plugin', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            PreventRequestForgery::class,
+            SubstituteBindings::class,
         ]);
 
         // For plugin frontend (IP restriction enforced)
         $middleware->group('plugin.web', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\FrontIpFilter::class, // Enforce IP restriction
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            PreventRequestForgery::class,
+            SubstituteBindings::class,
+            FrontIpFilter::class, // Enforce IP restriction
         ]);
 
         // For plugin admin panel (authentication + IP restriction enforced)
         $middleware->group('plugin.admin', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\Authenticate::class.':member', // Enforce authentication
-            \App\Http\Middleware\AdminIpFilter::class, // Enforce IP restriction
-            \App\Http\Middleware\PreventAdminResponseCaching::class, // Force browsers not to cache authenticated plugin-admin responses
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            PreventRequestForgery::class,
+            SubstituteBindings::class,
+            Authenticate::class.':member', // Enforce authentication
+            AdminIpFilter::class, // Enforce IP restriction
+            PreventAdminResponseCaching::class, // Force browsers not to cache authenticated plugin-admin responses
         ]);
     })
 
@@ -370,7 +411,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Final fallback for genuinely unhandled exceptions on /api/*.
         // Web requests fall through to Laravel's default 500 page.
-        $exceptions->render(function (\Throwable $e, Request $request) use ($isApi) {
+        $exceptions->render(function (Throwable $e, Request $request) use ($isApi) {
             if (! $isApi($request)) {
                 return;
             }

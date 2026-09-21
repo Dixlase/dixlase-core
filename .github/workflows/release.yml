@@ -36,10 +36,10 @@ permissions:
 
 env:
   # PHP version used to build the bundled vendor/. composer.json pins
-  # the platform to PHP 8.2, so 8.2 is the safest target — the resulting
-  # vendor/ runs on 8.2, 8.3, 8.4, and 8.5+. Bumping this is fine as
-  # long as the platform pin moves with it.
-  PHP_VERSION: '8.2'
+  # the platform to PHP 8.3 (Laravel 13 requires php ^8.3), so 8.3 is the
+  # target — the resulting vendor/ runs on 8.3, 8.4, and 8.5+. Bumping this
+  # is fine as long as the platform pin moves with it.
+  PHP_VERSION: '8.3'
   NODE_VERSION: '20'
   # GitHub OAuth token used by Composer to clone private dependencies
   # (currently dixlase/dixlase-onepage, which composer/installers routes
