@@ -70,16 +70,30 @@ class AdminMemberController extends AdminLoggedInController
 
         $members = Member::query()
             ->when($search, function ($query, $search) {
+                // dls_members has no `name` column: the person-facing names are
+                // account_name (login handle) and display_name. A partial match
+                // on the numeric id is meaningless, so only match id when the
+                // keyword is itself an integer (and do it exactly), which also
+                // keeps the query portable — LIKE on an integer column is a
+                // type error on Postgres.
                 $query->where(function ($q) use ($search) {
-                    $q->where('id', 'like', '%'.$search.'%')
-                        ->orWhere('name', 'like', '%'.$search.'%')
+                    $q->where('account_name', 'like', '%'.$search.'%')
+                        ->orWhere('display_name', 'like', '%'.$search.'%')
                         ->orWhere('email', 'like', '%'.$search.'%');
+
+                    if (ctype_digit($search)) {
+                        $q->orWhere('id', (int) $search);
+                    }
                 });
             })
             ->when($roleFilter, function ($query, $roleFilter) {
                 $query->where('role', $roleFilter);
             })
-            ->when($statusFilter !== null, function ($query) use ($statusFilter) {
+            // The status <select> submits '' for "all", which must not become
+            // `status = ''`; only a concrete value ('0' / '1') filters. null is
+            // still distinguished above so the very first page load can
+            // default to active members.
+            ->when($statusFilter !== null && $statusFilter !== '', function ($query) use ($statusFilter) {
                 $query->where('status', $statusFilter);
             })
             ->paginate($perPage);
