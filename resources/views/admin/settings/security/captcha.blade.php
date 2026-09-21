@@ -342,6 +342,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             </span>
                                         @endif
                                     </div>
+                                    @if(!empty($form['description']))
+                                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ __($form['description']) }}</p>
+                                    @endif
                                 </div>
                             </div>
                         </fieldset>
