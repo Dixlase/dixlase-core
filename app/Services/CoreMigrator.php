@@ -84,6 +84,16 @@ class CoreMigrator extends Migrator
     protected const EXTENSION_DIRECTORIES = ['plugins', 'themes'];
 
     /**
+     * Extension migration paths that were dropped during registration.
+     *
+     * Recorded so a bare `php artisan migrate` can tell the operator why
+     * plugin / theme tables are absent, instead of silently skipping them.
+     *
+     * @var list<string>
+     */
+    protected array $droppedExtensionPaths = [];
+
+    /**
      * Register a custom migration path, unless it belongs to an extension.
      *
      * @param  string  $path
@@ -92,6 +102,8 @@ class CoreMigrator extends Migrator
     public function path($path)
     {
         if ($this->isExtensionPath($path)) {
+            $this->droppedExtensionPaths[] = (string) $path;
+
             Log::warning('Ignored an extension migration path registered with the stock migrator', [
                 'path' => $path,
                 'reason' => 'Plugin/theme migrations are applied by PluginMigrator / ThemeMigrator and recorded in the plugin_migrations / theme_migrations ledgers.',
@@ -102,6 +114,52 @@ class CoreMigrator extends Migrator
         }
 
         parent::path($path);
+    }
+
+    /**
+     * Run the pending migrations, first surfacing a console hint when any
+     * extension migration paths were dropped during registration.
+     *
+     * `path()` runs at boot, before the console output is attached, so the
+     * guidance cannot be emitted there. Surfacing it here turns the silent
+     * skip into an actionable note for an operator running a bare
+     * `php artisan migrate`.
+     *
+     * @param  array<int, string>|string  $paths
+     * @param  array<string, mixed>  $options
+     * @return array<int, string>
+     */
+    public function run($paths = [], array $options = [])
+    {
+        $this->noteDroppedExtensionPaths();
+
+        return parent::run($paths, $options);
+    }
+
+    /**
+     * Emit a one-time console note listing how extension migrations are
+     * applied, when the stock migrator dropped any extension paths.
+     */
+    protected function noteDroppedExtensionPaths(): void
+    {
+        if ($this->droppedExtensionPaths === [] || ! $this->output) {
+            return;
+        }
+
+        $count = count($this->droppedExtensionPaths);
+
+        $this->output->writeln([
+            '',
+            '  <comment>Skipped '.$count.' plugin/theme migration path'.($count === 1 ? '' : 's').'.</comment> These are not applied by <info>migrate</info>.',
+            '  Apply extension migrations in dependency order instead:',
+            '    <info>php artisan dls:plugin:migrate <Plugin> --force</info>',
+            '    <info>php artisan dls:theme:migrate --force</info>',
+            '  See docs/operations/upgrading.md, section 4.5 "Run migrations in dependency order".',
+            '',
+        ]);
+
+        // Show once per migrator instance.
+        $this->droppedExtensionPaths = [];
     }
 
     /**

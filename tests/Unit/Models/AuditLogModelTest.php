@@ -73,6 +73,36 @@ class AuditLogModelTest extends TestCase
         $this->assertInstanceOf(\Carbon\Carbon::class, $log->occurred_at);
     }
 
+    public function test_dangerous_operations_scope_executes_and_filters_by_risk(): void
+    {
+        // Regression: scopeDangerousOperations() called self::cases() on this
+        // non-enum model and threw BadMethodCallException whenever the
+        // "dangerous operations" audit query ran (e.g. AuditService).
+        $login = $this->createAuditLog(['action' => AuditLog::ACTION_LOGIN]);
+        $uninstall = $this->createAuditLog(['action' => AuditLog::ACTION_PLUGIN_UNINSTALLED]);
+
+        // Executes without throwing.
+        $rows = AuditLog::dangerousOperations()->get();
+        $ids = $rows->pluck('id');
+
+        // Every returned row is classified as a dangerous action.
+        foreach ($rows as $row) {
+            $this->assertTrue(
+                AuditLog::getRiskLevelForAction($row->action)->isDangerous(),
+                "Action {$row->action} should be dangerous"
+            );
+        }
+
+        // A non-dangerous action is not included; a dangerous one is — asserted
+        // against the live risk classification so the test is not brittle.
+        if (! AuditLog::getRiskLevelForAction(AuditLog::ACTION_LOGIN)->isDangerous()) {
+            $this->assertNotContains($login->id, $ids);
+        }
+        if (AuditLog::getRiskLevelForAction(AuditLog::ACTION_PLUGIN_UNINSTALLED)->isDangerous()) {
+            $this->assertContains($uninstall->id, $ids);
+        }
+    }
+
     public function test_is_ai_generated_is_cast_to_boolean(): void
     {
         $log = $this->createAuditLog(['is_ai_generated' => true]);
