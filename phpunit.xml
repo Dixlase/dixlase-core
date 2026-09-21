@@ -58,6 +58,9 @@
         <testsuite name="DixlaseRedirects">
             <directory>plugins/DixlaseRedirects/tests</directory>
         </testsuite>
+        <testsuite name="DixlaseSigner">
+            <directory>plugins/DixlaseSigner/tests</directory>
+        </testsuite>
         <!-- プラグインテストスイート（一括実行用） -->
         <!-- Usage: php artisan test testsuite=Plugins    -->
         <testsuite name="Plugins">
