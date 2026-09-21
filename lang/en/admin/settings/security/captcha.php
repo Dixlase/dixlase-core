@@ -171,4 +171,10 @@ return [
         'admin_password_reset' => 'Admin Password Reset',
         'admin_two_fa' => 'Admin Two-Factor Authentication',
     ],
+
+    // Per-form notes shown under the toggle (what the CAPTCHA does and does not cover)
+    'form_descriptions' => [
+        'admin_login' => 'Applies to the identifier step of the password login. Signing in with a passkey is a challenge-response with the registered authenticator and is not gated by CAPTCHA.',
+        'admin_two_fa' => 'Applies to the email-code and recovery-code steps of two-factor authentication.',
+    ],
 ];
