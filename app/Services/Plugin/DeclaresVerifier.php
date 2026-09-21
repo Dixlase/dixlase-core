@@ -39,7 +39,6 @@ namespace App\Services\Plugin;
 
 use App\DTO\Plugin\DeclaresVerificationResult;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 /**
  * Plugin declares section verification service
@@ -54,7 +53,7 @@ class DeclaresVerifier
      */
     public function verify(string $pluginSlug): DeclaresVerificationResult
     {
-        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginDir = base_path("plugins/{$pluginName}");
 
         if (! File::isDirectory($pluginDir)) {

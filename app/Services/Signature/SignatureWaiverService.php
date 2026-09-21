@@ -40,7 +40,9 @@ namespace App\Services\Signature;
 
 use App\Contracts\Signature\SignatureWaiverServiceInterface;
 use App\Models\AuditLog;
+use App\Models\Plugin;
 use App\Models\SignatureWaiver;
+use App\Models\Theme;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -245,6 +247,9 @@ class SignatureWaiverService implements SignatureWaiverServiceInterface
     /**
      * Canonical target id: 'core' for the core scope, else the studly directory
      * name (matches CoreSignatureVerifier), accepting a slug or a directory name.
+     *
+     * This is the persisted waiver key, so it stays on the plain Studly form;
+     * filesystem lookups resolve the real directory casing separately.
      */
     public function canonicalTarget(string $scope, string $targetSlug): string
     {
@@ -263,8 +268,8 @@ class SignatureWaiverService implements SignatureWaiverServiceInterface
         $canonical = $this->canonicalTarget($scope, $targetSlug);
 
         return match ($scope) {
-            SignatureWaiver::SCOPE_PLUGIN => File::exists(base_path('plugins/'.$canonical.'/plugin.json')),
-            SignatureWaiver::SCOPE_THEME => File::exists(base_path('themes/'.$canonical.'/theme.json')),
+            SignatureWaiver::SCOPE_PLUGIN => File::exists(base_path('plugins/'.Plugin::directoryNameFromSlug($canonical).'/plugin.json')),
+            SignatureWaiver::SCOPE_THEME => File::exists(base_path('themes/'.Theme::directoryNameFromSlug($canonical).'/theme.json')),
             SignatureWaiver::SCOPE_CORE => true,
             default => false,
         };
@@ -281,8 +286,8 @@ class SignatureWaiverService implements SignatureWaiverServiceInterface
         $canonical = $this->canonicalTarget($scope, $targetSlug);
 
         return match ($scope) {
-            SignatureWaiver::SCOPE_PLUGIN => [base_path('plugins/'.$canonical.'/signature.sig')],
-            SignatureWaiver::SCOPE_THEME => [base_path('themes/'.$canonical.'/signature.sig')],
+            SignatureWaiver::SCOPE_PLUGIN => [base_path('plugins/'.Plugin::directoryNameFromSlug($canonical).'/signature.sig')],
+            SignatureWaiver::SCOPE_THEME => [base_path('themes/'.Theme::directoryNameFromSlug($canonical).'/signature.sig')],
             SignatureWaiver::SCOPE_CORE => [
                 base_path((string) config('core-integrity.signature_file', 'core-signature.sig')),
                 base_path((string) config('core-integrity.manifest_file', 'core-manifest.json')),

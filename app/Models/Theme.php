@@ -37,6 +37,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\ResolvesExtensionDirectory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Theme extends Model
 {
     use HasFactory;
+    use ResolvesExtensionDirectory;
 
     /**
      * Table name definition
@@ -153,6 +155,14 @@ class Theme extends Model
     public static function getDefaultTheme()
     {
         return self::where('is_default', true)->first();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected static function extensionRootDirectory(): string
+    {
+        return 'themes';
     }
 
     /**

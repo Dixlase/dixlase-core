@@ -587,7 +587,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
      */
     protected function slugToName(string $slug): string
     {
-        return Str::studly(str_replace('-', '_', $slug));
+        return \App\Models\Theme::directoryNameFromSlug($slug);
     }
 
     /**

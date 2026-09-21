@@ -109,7 +109,7 @@ class ExtensionRescanService
                 $filesHash = $healthScorer->computeFilesHash($pluginSlug);
 
                 // Extract owned_tables (auto-detected from migrations)
-                $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+                $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
                 $extensionDir = base_path("plugins/{$pluginName}");
                 $tableInspection = app(PluginTableInspector::class)->inspect($extensionDir);
 
