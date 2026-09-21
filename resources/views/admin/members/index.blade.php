@@ -77,11 +77,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             {{ __('common.filters.search_keyword') }}
                         </label>
+                        {{-- !my-0: x-form-text adds my-2 for stacked forms; in this
+                             items-end filter row that pushed the keyword field (and
+                             its label) 8px above the selects, which have no margin. --}}
                         <x-form-text
                             id="search"
                             name="search"
                             :placeholder="__('components/form.placeholder.search')"
                             :value="$search"
+                            class="!my-0"
                         />
                     </div>
 
