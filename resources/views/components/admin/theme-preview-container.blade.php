@@ -129,8 +129,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div data-preview-scroll-wrapper
              :style="'overflow: hidden; width: ' + (previewDeviceWidth * previewScale) + 'px; height: ' + innerScaledHeight + 'px; margin: 0 auto;'">
             <div id="{{ $innerId }}"
+                 data-appearance-mode="{{ $appearanceMode }}"
                  data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
-                 @appearance-changed.window="$el.dataset.previewTheme = $event.detail.mode === '1' ? 'light' : 'dark'"
+                 x-init="$el.dataset.previewTheme = resolvePreviewTheme($el.dataset.appearanceMode)"
+                 @appearance-changed.window="$el.dataset.appearanceMode = $event.detail.mode; $el.dataset.previewTheme = resolvePreviewTheme($event.detail.mode)"
                  :style="'visibility: ' + (_previewReady ? 'visible' : 'hidden') + '; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
                  style="visibility: hidden;"
                  class="relative">
@@ -163,6 +165,17 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
         _previewReady: false,
         _containerWidth: 0,
 
+        // Resolve the preview mock's light/dark theme from the appearance
+        // mode ('0' auto / '1' light / '2' dark). Auto follows the OS via
+        // prefers-color-scheme — the same way the live front page and the
+        // front-content iframe resolve it — so the mock chrome no longer
+        // stays dark while the surrounding page (and the OS) is light.
+        resolvePreviewTheme(mode) {
+            if (mode === '1') return 'light';
+            if (mode === '2') return 'dark';
+            return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        },
+
         initPreviewContainer() {
             // 即座にスケール計算（FOUC防止）
             const outerImmediate = document.getElementById(outerId);
@@ -171,6 +184,23 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
                 this.updatePreviewScale();
             }
             this._previewReady = true;
+
+            // Keep an auto-mode ('0') preview in sync with live OS light/dark
+            // changes, mirroring the front page's prefers-color-scheme listener.
+            if (window.matchMedia) {
+                const mq = window.matchMedia('(prefers-color-scheme: dark)');
+                const applyScheme = () => {
+                    const el = document.getElementById(innerId);
+                    if (el && el.dataset.appearanceMode === '0') {
+                        el.dataset.previewTheme = this.resolvePreviewTheme('0');
+                    }
+                };
+                if (mq.addEventListener) {
+                    mq.addEventListener('change', applyScheme);
+                } else if (mq.addListener) {
+                    mq.addListener(applyScheme);
+                }
+            }
 
             this.$nextTick(() => {
                 const outer = document.getElementById(outerId);
