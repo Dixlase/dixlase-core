@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
 use App\Models\CoreVersionHistory;
+use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
@@ -62,7 +63,9 @@ use Illuminate\Support\Facades\DB;
  *   2. restores the core source tree from the snapshot (no npm run),
  *   3. for a dependency update, re-fetches the matching vendor/ from the old
  *      release ZIP under maintenance mode (vendor.old is discarded on update
- *      success, so it cannot simply be moved back),
+ *      success, so it cannot simply be moved back) — the ZIP is downloaded
+ *      and checked for a prebuilt vendor/ before step 1, so a release that
+ *      lacks one is refused without changing anything,
  *   4. reverses ONLY this update's schema via migrate:rollback --step,
  *      preserving data created since the update (a full DB restore from the
  *      retained backup is the escape hatch for data migrations),
@@ -152,8 +155,22 @@ class CoreRollback extends Command
         $dependencyUpdate = (bool) ($meta['dependency_update'] ?? false);
         $maintenanceOn = false;
         $safetySnapshot = null;
+        $vendorZip = null;
+        $schemaTouched = false;
+        $vendorSwapped = false;
 
         try {
+            // A dependency rollback re-fetches vendor/ from the target
+            // release. Check that the release actually ships one before
+            // anything changes: a release without the prebuilt-vendor asset
+            // resolves to a source-only zipball, and that used to surface only
+            // after maintenance, the schema rollback and the source restore,
+            // aborting the rollback half-way. The ZIP is reused for the swap.
+            if ($dependencyUpdate) {
+                $this->line("Checking that v{$from} ships prebuilt dependencies...");
+                $vendorZip = $vendorManager->prefetchVerifiedRelease($from);
+            }
+
             // Capture the current (post-update) state first so the rollback
             // is itself recoverable if a later step fails. This is a bare
             // snapshot with no metadata sidecar, so it is never itself
@@ -173,8 +190,14 @@ class CoreRollback extends Command
             // safety does not depend on whether the original update was a
             // dependency update or on the operator's disk speed.
             $this->line('Entering maintenance mode...');
-            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+            // Record this process as the window's owner before `down` so
+            // that, if we die mid-rollback, dls:core:heal-maintenance can
+            // lift the window; the secret gives an operator a bypass URL
+            // in the meantime (see CoreMaintenanceGuard).
+            $maintenanceSecret = app(CoreMaintenanceGuard::class)->claim(CoreMaintenanceGuard::OPERATION_ROLLBACK, $from);
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15, '--secret' => $maintenanceSecret]);
             $maintenanceOn = true;
+            $this->line('Operator bypass URL while in maintenance: '.CoreMaintenanceGuard::bypassUrl($maintenanceSecret));
 
             // Round 5 residual: prime the FPM SAPI so workers see the
             // maintenance sentinel before any source file moves. On the
@@ -212,6 +235,7 @@ class CoreRollback extends Command
             //
             // vendor and cache clears stay AFTER the source restore so
             // they operate on the rolled-back tree.
+            $schemaTouched = true;
             $this->rollbackSchema($meta);
 
             $this->line('Restoring core source from snapshot...');
@@ -244,7 +268,8 @@ class CoreRollback extends Command
                 // re-fetch the matching dependencies from the OLD release ZIP
                 // (the same mechanism dls:backup:restore --refetch-vendor uses).
                 $this->line("Re-fetching vendor/ to match v{$from}...");
-                $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l));
+                $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l), null, $vendorZip);
+                $vendorSwapped = true;
                 $this->info('vendor/ restored to match the rolled-back source.');
 
                 // The re-fetched vendor/composer/autoload_psr4.php is the old
@@ -289,6 +314,7 @@ class CoreRollback extends Command
                 $this->line('Lifting maintenance mode...');
                 Artisan::call('up');
                 $maintenanceOn = false;
+                app(CoreMaintenanceGuard::class)->release();
             }
 
             $appliedBy = $this->option('applied-by');
@@ -330,25 +356,65 @@ class CoreRollback extends Command
         } catch (\Throwable $e) {
             $this->error("Rollback failed: {$e->getMessage()}");
 
+            // Nothing on disk or in the schema changes before the safety
+            // snapshot, so a failure that early (e.g. the prebuilt-vendor
+            // check) leaves the core exactly as it was.
+            $recovered = $safetySnapshot === null;
+
             if ($safetySnapshot !== null) {
                 $this->line('Attempting to restore the pre-rollback state...');
                 try {
                     $snapshotter->restore($safetySnapshot);
+
+                    // The swap retained the post-update vendor/ as vendor.old;
+                    // put it back so it matches the restored source.
+                    if ($vendorSwapped) {
+                        $vendorManager->restorePrevious();
+                        $this->line('Restored the pre-rollback vendor/.');
+                    }
+
                     // Same as the success path: the safety snapshot has no
                     // asset symlinks either.
                     $this->relinkPublicAssets();
-                    $this->info('Pre-rollback state restored — the core is back where it was before this command ran.');
+
+                    $recovered = $this->reapplySchema($schemaTouched);
+
+                    if ($recovered) {
+                        $this->info('Pre-rollback state restored — the core is back where it was before this command ran.');
+                    }
                 } catch (\Throwable $recoverError) {
                     $this->error("Recovery also failed: {$recoverError->getMessage()}");
                     $this->line("Manual recovery required from: {$safetySnapshot}");
                 }
             }
 
+            // The web UI runs this command detached and can only report what
+            // it finds recorded here — without it a failed rollback returned
+            // to the page with no message at all. Written before the finally
+            // block clears the in-progress flag, like the success record.
+            try {
+                SystemUpdateFlash::record([
+                    'status' => 'error',
+                    'kind' => 'core',
+                    'operation' => 'rollback',
+                    'from' => $current !== '' ? $current : $to,
+                    'to' => $from,
+                    'error' => $e->getMessage(),
+                    'recovered' => $recovered,
+                ]);
+            } catch (\Throwable) {
+                // Reporting must not mask the rollback failure itself.
+            }
+
             if ($maintenanceOn) {
                 try {
                     Artisan::call('up');
+                    // Only drop the owner record once `up` succeeded: if it
+                    // threw, the record is what lets the scheduled self-heal
+                    // lift the window after this process exits.
+                    app(CoreMaintenanceGuard::class)->release();
                 } catch (\Throwable) {
-                    $this->line('Run `php artisan up` manually to restore access.');
+                    $this->line('Run `php artisan up` manually to restore access (or wait: dls:core:heal-maintenance lifts it within a minute).');
                 }
             }
 
@@ -396,6 +462,38 @@ class CoreRollback extends Command
             '--force' => true,
         ]);
         $this->line('Schema rollback complete.');
+    }
+
+    /**
+     * Re-run the migrations a failed rollback already reversed.
+     *
+     * rollbackSchema() runs before the source restore, so a failure after it
+     * left the restored post-update source with its migrations pending.
+     * Called once the safety snapshot is back, so the migration files are on
+     * disk again. Returns false when the schema could not be re-applied.
+     */
+    private function reapplySchema(bool $schemaTouched): bool
+    {
+        if (! $schemaTouched) {
+            return true;
+        }
+
+        $this->line('Re-applying the migrations reversed before the failure...');
+
+        try {
+            Artisan::call('migrate', [
+                '--path' => 'database/migrations',
+                '--force' => true,
+            ]);
+            $this->line('Schema re-applied.');
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->error("Re-applying the schema failed: {$e->getMessage()}");
+            $this->line('Run `php artisan migrate --force` once the site is reachable.');
+
+            return false;
+        }
     }
 
     /**

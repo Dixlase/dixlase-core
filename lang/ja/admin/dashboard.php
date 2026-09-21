@@ -80,7 +80,7 @@ return [
     'file_integrity_critical' => ':count 件の不審なファイルを検出しました。早急に確認してください。',
     'file_integrity_no_baseline' => 'ベースラインスキャンがまだ実行されていません。初回スキャンの実行を推奨します。',
     'audit_integrity_status' => '監査ログ整合性',
-    'audit_integrity_ok' => 'ハッシュチェーンと日次署名は最新です。全エントリが :date 以降に検証済みです。',
+    'audit_integrity_ok' => 'ハッシュチェーンと日次署名は最新です。最終検証日: :date',
     'audit_integrity_ok_unverified' => 'ハッシュチェーンと日次署名は最新です。`php artisan audit:integrity verify` で検証できます。',
     'audit_integrity_empty' => '監査ログはまだ記録されていません。',
     'audit_integrity_verify_recommended' => ':days 日以上検証されていない監査ログがあります。`php artisan audit:integrity verify --all` を実行してください。',

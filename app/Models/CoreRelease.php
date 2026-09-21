@@ -39,6 +39,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
  * Core release state. Single-row table (id = 1) seeded during installation.
@@ -79,10 +80,32 @@ class CoreRelease extends Model
 
     /**
      * Resolve the singleton state row, creating it if missing.
+     *
+     * The row is created with an explicit id. `id` is not mass-assignable,
+     * so the previous firstOrCreate(['id' => PRIMARY_ID]) silently dropped
+     * it and inserted at the next auto-increment value: correct only while
+     * the counter happened to be 1. Once it had moved, every call inserted
+     * another row that no reader (all of them look up PRIMARY_ID) could
+     * see, so update failures and available versions written through the
+     * singleton vanished. The installer seeds id 1 with updateOrInsert, so
+     * this path only runs when the row is missing.
      */
     public static function singleton(): self
     {
-        return self::query()->firstOrCreate(['id' => self::PRIMARY_ID]);
+        $existing = self::query()->find(self::PRIMARY_ID);
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        try {
+            $row = new self();
+            $row->forceFill(['id' => self::PRIMARY_ID])->save();
+
+            return $row;
+        } catch (UniqueConstraintViolationException) {
+            // A concurrent caller created it between the find and the insert.
+            return self::query()->findOrFail(self::PRIMARY_ID);
+        }
     }
 
     /**

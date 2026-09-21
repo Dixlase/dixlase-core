@@ -220,18 +220,39 @@ class AuditLogIntegrityVerificationTest extends TestCase
         $this->assertNotSame(AuditLogIntegrityService::HEALTH_SEAL_OVERDUE, $this->service->getHealth()['state']);
     }
 
-    public function test_health_recommends_verification_when_stale(): void
+    public function test_health_recommends_verification_when_rows_waited_too_long_unverified(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-09-19 12:00:00'));
         $day = Carbon::parse('2026-09-18 10:00:00');
-        $this->sealDay($day->copy()->startOfDay(), 2, $day);
+        $logs = $this->sealDay($day->copy()->startOfDay(), 2, $day);
 
-        $health = $this->service->getHealth();
-        $this->assertSame(AuditLogIntegrityService::HEALTH_VERIFICATION_STALE, $health['state']);
+        // Freshly chained, never verified: not stale yet.
+        $this->assertSame(AuditLogIntegrityService::HEALTH_OK, $this->service->getHealth()['state']);
+
+        // The same rows after 40 days without any verification: stale.
+        AuditLog::whereIn('id', collect($logs)->pluck('id'))->update(['created_at' => now()->subDays(40)]);
+        $this->assertSame(AuditLogIntegrityService::HEALTH_VERIFICATION_STALE, $this->service->getHealth()['state']);
 
         $this->service->verifyChain();
 
         $this->assertSame(AuditLogIntegrityService::HEALTH_OK, $this->service->getHealth()['state']);
+    }
+
+    public function test_health_ignores_rows_chained_after_the_last_verification(): void
+    {
+        // The production case: verify ran, then the hourly build chained new
+        // rows. Those rows are unverified by design and must not trigger the
+        // recommendation.
+        Carbon::setTestNow(Carbon::parse('2026-09-19 12:00:00'));
+        $day = Carbon::parse('2026-09-18 10:00:00');
+        $this->sealDay($day->copy()->startOfDay(), 2, $day);
+        $this->service->verifyChain();
+
+        $this->chainedLogs(3);
+
+        $health = $this->service->getHealth();
+        $this->assertSame(AuditLogIntegrityService::HEALTH_OK, $health['state']);
+        $this->assertNotNull($health['last_verified_at']);
     }
 
     public function test_health_staleness_follows_the_oldest_verification_not_the_newest(): void

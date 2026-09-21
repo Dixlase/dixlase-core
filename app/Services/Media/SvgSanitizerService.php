@@ -158,7 +158,20 @@ class SvgSanitizerService
 
         // Load SVG (explicitly specify UTF-8 encoding)
         $svgContent = $this->ensureUtf8($svgContent);
-        $loaded = $dom->loadXML($svgContent, LIBXML_NONET | LIBXML_NOENT);
+
+        // Entity declarations are the XXE vector and have no place in an
+        // uploaded image; refuse the document before libxml sees it.
+        if (self::containsEntityDeclaration($svgContent)) {
+            Log::warning('SVG rejected: entity declaration (DOCTYPE internal subset or <!ENTITY>)');
+
+            return '';
+        }
+
+        // No LIBXML_NOENT: never substitute entity references, so even a
+        // document that slipped past the guard cannot pull file:// or
+        // network content into the parsed tree. LIBXML_NONET additionally
+        // stops libxml fetching external DTDs / entities.
+        $loaded = $dom->loadXML($svgContent, LIBXML_NONET);
 
         if (! $loaded) {
             $errors = libxml_get_errors();
@@ -420,6 +433,34 @@ class SvgSanitizerService
     /**
      * Ensure UTF-8 encoding
      */
+    /**
+     * Whether the document declares XML entities: a DOCTYPE with an internal
+     * subset (`<!DOCTYPE svg [ ... ]>`) or an `<!ENTITY ...>` anywhere.
+     *
+     * This is the XXE vector. Until now every SVG parse here passed
+     * LIBXML_NOENT, which made libxml expand `<!ENTITY x SYSTEM "file:///...">`
+     * server-side and bake the target file's contents into the stored,
+     * later-served SVG (backlog: svg-sanitize-strictness-levels §2). The
+     * parse flags no longer allow substitution, and this guard refuses the
+     * declaration outright so the outcome does not depend on parser flags.
+     *
+     * A bare public DOCTYPE such as the SVG 1.1 one that Illustrator and
+     * Inkscape emit has no internal subset and stays accepted; those tools
+     * never declare entities. Shared with MimeValidatorService so upload
+     * validation and sanitising agree on what is refused.
+     */
+    public static function containsEntityDeclaration(string $content): bool
+    {
+        // `<!DOCTYPE ... [` — an internal subset opens before the DOCTYPE
+        // closes (a plain `<!DOCTYPE svg PUBLIC "..." "...">` has no `[`).
+        if (preg_match('/<!DOCTYPE\b[^>\[]*\[/i', $content) === 1) {
+            return true;
+        }
+
+        // Belt and braces: an entity declaration anywhere in the bytes.
+        return preg_match('/<!ENTITY\b/i', $content) === 1;
+    }
+
     protected function ensureUtf8(string $content): string
     {
         // Remove BOM
@@ -476,7 +517,13 @@ class SvgSanitizerService
         $dom = new \DOMDocument();
 
         $svgContent = $this->ensureUtf8($svgContent);
-        $loaded = $dom->loadXML($svgContent, LIBXML_NONET | LIBXML_NOENT);
+
+        if (self::containsEntityDeclaration($svgContent)) {
+            return false;
+        }
+
+        // See sanitize(): no LIBXML_NOENT, LIBXML_NONET kept.
+        $loaded = $dom->loadXML($svgContent, LIBXML_NONET);
 
         if (! $loaded) {
             libxml_clear_errors();

@@ -230,7 +230,7 @@ item derived from `AuditLogIntegrityService::getHealth()`:
 | Tampered | Critical | A record or a daily seal failed verification |
 | Chain stalled | Warning | Entries have waited more than 2 hours to be chained — the hourly `audit:integrity build` is not running |
 | Seal overdue | Warning | The most recent completed day with entries has no seal after 04:30 the next day — the daily `audit:integrity seal` is not running |
-| Verification stale | Recommended | Some chained entry has never been verified, or was last verified more than 30 days ago (an incremental pass does not refresh old rows — run `verify --all`) |
+| Verification stale | Recommended | An entry chained more than 30 days ago has never been verified, or the oldest verification is older than 30 days (an incremental pass does not refresh old rows — run `verify --all`). Entries chained since the last pass are expected to be unverified and do not count |
 | OK | OK | Chain and seals are up to date (day one shows OK: seals only exist for completed days) |
 
 This is the safety net for a missing cron: without it a scheduler that never

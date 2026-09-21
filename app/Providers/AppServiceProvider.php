@@ -56,6 +56,7 @@ use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\Services\Backup\CoreBackupService;
 use App\Services\Backup\CoreRestoreService;
+use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreManifestBuilder;
 use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
@@ -243,6 +244,21 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
+        // Self-heal a maintenance window that a killed core update /
+        // rollback left behind, on any artisan boot. Web requests cannot
+        // do this (public/index.php serves the 503 before the framework
+        // boots), so the CLI — including the every-minute scheduler tick
+        // — is where an orphaned window gets noticed. Skipped for the
+        // commands that own or manage that window themselves. Never
+        // allowed to break a boot.
+        if ($this->app->runningInConsole() && ! $this->isMaintenanceOwningCommand()) {
+            try {
+                $this->app->make(CoreMaintenanceGuard::class)->healIfOrphaned();
+            } catch (\Throwable) {
+                // Logged by the guard where possible; booting matters more.
+            }
+        }
+
         // Demo mode: route every mailer through Laravel's log driver so
         // inquiry forms, password resets, and other notification flows
         // remain functional but never deliver real email to the outside
@@ -422,6 +438,27 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Check if plugin management command is running
      */
+    /**
+     * Commands that open, close, or inspect the core-update maintenance
+     * window themselves. The boot-time self-heal must stay out of their
+     * way: `down`/`up` are the operator acting deliberately, the update
+     * and rollback commands own the window while they run, and the heal
+     * command reports its own decision.
+     */
+    private function isMaintenanceOwningCommand(): bool
+    {
+        $argv = $_SERVER['argv'] ?? [];
+        $command = (string) ($argv[1] ?? '');
+
+        return in_array($command, [
+            'down',
+            'up',
+            'dls:core:update',
+            'dls:core:rollback',
+            'dls:core:heal-maintenance',
+        ], true);
+    }
+
     private function isPluginManagementCommand(): bool
     {
         // Check command line arguments
