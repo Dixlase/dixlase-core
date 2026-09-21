@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
+use App\Services\Core\CorePreflightChecker;
 use App\Services\Core\CoreUpdater;
 use Illuminate\Console\Command;
 
@@ -55,7 +56,7 @@ class CoreUpdate extends Command
     protected $signature = 'dls:core:update
         {--to= : Target version to install (defaults to core_releases.available_version)}
         {--force : Skip confirmation prompt}
-        {--dry-run : Resolve target version and exit without changes}
+        {--dry-run : Resolve the target version and run the preflight checks, without changing anything}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
         {--skip-build : Skip the npm install / build step entirely}
         {--applied-by= : Member id to record on core_version_history.applied_by_id (defaults to null for direct CLI runs)}
@@ -98,6 +99,31 @@ class CoreUpdate extends Command
 
         if ($this->option('dry-run')) {
             $this->info('Dry run — no changes will be applied.');
+
+            // Run the same environment preflight the real update starts
+            // with, so an operator can find out *before* scheduling a
+            // maintenance window whether the update would be refused. The
+            // archive-size and new-release PHP checks need the download,
+            // so they only run during the real update.
+            $preflight = app(CorePreflightChecker::class)->run();
+            $this->newLine();
+            $this->line('Preflight checks:');
+            $this->table(
+                ['Check', 'Result', 'Detail'],
+                array_map(
+                    static fn (array $c): array => [$c['name'], strtoupper($c['status']), $c['message']],
+                    $preflight->checks()
+                )
+            );
+            $this->line('Archive size and the new release\'s PHP requirement are checked after the download, during the real update.');
+
+            if ($preflight->failed()) {
+                $this->error('Preflight failed — the update would be refused: '.$preflight->failureSummary());
+
+                return self::FAILURE;
+            }
+
+            $this->info('Preflight passed.');
 
             return self::SUCCESS;
         }

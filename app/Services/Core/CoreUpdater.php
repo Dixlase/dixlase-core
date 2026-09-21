@@ -129,6 +129,28 @@ class CoreUpdater
             $log("WARNING: applying downgrade v{$onDisk} -> v{$version} (--allow-downgrade set).");
         }
 
+        // Preflight (backlog core-update-rollback-hardening #1): refuse to
+        // start an update that cannot finish — missing extension, unwritable
+        // tree, not enough disk — while nothing has been changed yet. This
+        // runs before the snapshot, i.e. outside the try below, so the
+        // failure is recorded for the admin panel and the web launcher's
+        // in-progress flag is cleared here rather than by the finally.
+        $log('Running preflight checks...');
+        $preflight = app(CorePreflightChecker::class)->run();
+        foreach ($preflight->lines() as $line) {
+            $log($line);
+        }
+        if ($preflight->failed()) {
+            $reason = 'Preflight failed, nothing was changed: '.$preflight->failureSummary();
+            $coreState->forceFill([
+                'update_failed_at' => now(),
+                'update_failure_reason' => $this->truncateReason($reason),
+            ])->save();
+            @unlink(self::inProgressFlagPath());
+
+            throw new RuntimeException($reason);
+        }
+
         $log('Capturing source snapshot...');
         $snapshotPath = $this->snapshotter->capture();
         $log("Snapshot captured at {$snapshotPath}");
@@ -182,6 +204,16 @@ class CoreUpdater
                 $log("Downloaded SHA-256: {$downloadedSha256}");
             }
 
+            // Preflight, stage 2: the archive's real unpacked size is only
+            // known now. Inside the try, so the catch restores and records.
+            $archiveCheck = app(CorePreflightChecker::class)->checkDownloadedArchive($zipPath, $stagingPath);
+            foreach ($archiveCheck->lines() as $line) {
+                $log($line);
+            }
+            if ($archiveCheck->failed()) {
+                throw new RuntimeException('Preflight failed before extraction: '.$archiveCheck->failureSummary());
+            }
+
             $log('Extracting to staging directory...');
             $this->extractToStaging($zipPath, $stagingPath);
             $log("Extracted to {$stagingPath}");
@@ -189,6 +221,17 @@ class CoreUpdater
             $log('Validating extracted payload...');
             $payloadRoot = $this->validateStagedPayload($stagingPath);
             $log("Validated payload at {$payloadRoot}");
+
+            // Preflight, stage 3: the new release's own PHP requirement is
+            // only readable from its dixlase.json. Checked before maintenance
+            // mode and before any live file is touched.
+            $releaseCheck = app(CorePreflightChecker::class)->checkReleaseRequirements($payloadRoot);
+            foreach ($releaseCheck->lines() as $line) {
+                $log($line);
+            }
+            if ($releaseCheck->failed()) {
+                throw new RuntimeException('Preflight failed, the new release cannot run here: '.$releaseCheck->failureSummary());
+            }
 
             // A "dependency update" is one whose composer.lock differs from
             // the installed one — i.e. the release ships a different set of
