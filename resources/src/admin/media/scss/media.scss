@@ -124,6 +124,20 @@
         @apply flex items-center justify-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700;
     }
 
+    // Page toolbar row (Upload button + bulk-selection panel). Sticks just
+    // below the fixed admin bar (h-12 = 3rem) plus whatever banner stack is
+    // showing (--admin-banner-offset is maintained by layouts/admin.blade.php)
+    // so the actions stay reachable while a long media grid scrolls
+    // underneath. Opaque page background so cards do not show through;
+    // py-2/-mt-2/mb-2 keep the row's outer spacing identical to the old
+    // plain `mb-4` row while giving the sticky background some inset.
+    // z-20 sits above the cards' z-10 selection markers and well below the
+    // admin bar (9900) / sidebar toggle (40).
+    .media-toolbar {
+        @apply sticky z-20 bg-white dark:bg-black py-2 -mt-2 mb-2;
+        top: calc(3rem + var(--admin-banner-offset, 0px));
+    }
+
     // Bulk-selection toolbar (Select / Done / Delete selected)
     .media-bulk-toolbar {
         @apply flex flex-wrap items-center gap-2;
