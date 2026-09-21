@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
 use App\Models\CoreVersionHistory;
+use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
@@ -173,8 +174,14 @@ class CoreRollback extends Command
             // safety does not depend on whether the original update was a
             // dependency update or on the operator's disk speed.
             $this->line('Entering maintenance mode...');
-            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+            // Record this process as the window's owner before `down` so
+            // that, if we die mid-rollback, dls:core:heal-maintenance can
+            // lift the window; the secret gives an operator a bypass URL
+            // in the meantime (see CoreMaintenanceGuard).
+            $maintenanceSecret = app(CoreMaintenanceGuard::class)->claim(CoreMaintenanceGuard::OPERATION_ROLLBACK, $from);
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15, '--secret' => $maintenanceSecret]);
             $maintenanceOn = true;
+            $this->line('Operator bypass URL while in maintenance: '.CoreMaintenanceGuard::bypassUrl($maintenanceSecret));
 
             // Round 5 residual: prime the FPM SAPI so workers see the
             // maintenance sentinel before any source file moves. On the
@@ -289,6 +296,7 @@ class CoreRollback extends Command
                 $this->line('Lifting maintenance mode...');
                 Artisan::call('up');
                 $maintenanceOn = false;
+                app(CoreMaintenanceGuard::class)->release();
             }
 
             $appliedBy = $this->option('applied-by');
@@ -347,8 +355,12 @@ class CoreRollback extends Command
             if ($maintenanceOn) {
                 try {
                     Artisan::call('up');
+                    // Only drop the owner record once `up` succeeded: if it
+                    // threw, the record is what lets the scheduled self-heal
+                    // lift the window after this process exits.
+                    app(CoreMaintenanceGuard::class)->release();
                 } catch (\Throwable) {
-                    $this->line('Run `php artisan up` manually to restore access.');
+                    $this->line('Run `php artisan up` manually to restore access (or wait: dls:core:heal-maintenance lifts it within a minute).');
                 }
             }
 
