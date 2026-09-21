@@ -262,11 +262,18 @@ class CoreUpdater
             // on the operator's disk speed or on whether composer.lock
             // actually changed.
             $log('Entering maintenance mode...');
+            // Record this process as the window's owner before `down` so
+            // that, if we are killed mid-swap, dls:core:heal-maintenance
+            // (scheduler / any artisan boot) can lift the window; the
+            // secret gives an operator a bypass URL in the meantime. See
+            // CoreMaintenanceGuard for why the record is written first.
+            $maintenanceSecret = app(CoreMaintenanceGuard::class)->claim(CoreMaintenanceGuard::OPERATION_UPDATE, $version);
             // --refresh makes the 503 page reload every 15s so the
             // operator's browser returns to the site automatically once
             // the swap finishes and maintenance is lifted.
-            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15, '--secret' => $maintenanceSecret]);
             $maintenanceOn = true;
+            $log('Operator bypass URL while in maintenance: '.CoreMaintenanceGuard::bypassUrl($maintenanceSecret));
 
             // Round 5 residual: force the FPM SAPI to see the maintenance
             // sentinel BEFORE any source file moves. `Artisan::call('down')`
@@ -441,6 +448,7 @@ class CoreUpdater
                 $log('Lifting maintenance mode...');
                 Artisan::call('up');
                 $maintenanceOn = false;
+                app(CoreMaintenanceGuard::class)->release();
             }
             if ($vendorSwapped) {
                 $this->vendorManager->discardPrevious();
@@ -579,10 +587,14 @@ class CoreUpdater
                 try {
                     Artisan::call('up');
                     $maintenanceOn = false;
+                    // Only drop the owner record once `up` succeeded: if it
+                    // threw, the record is what lets the scheduled self-heal
+                    // lift the window after this process exits.
+                    app(CoreMaintenanceGuard::class)->release();
                     $log('Maintenance mode lifted after rollback.');
                 } catch (\Throwable $upError) {
                     $log("Failed to lift maintenance mode: {$upError->getMessage()}");
-                    $log('Run `php artisan up` manually to restore access.');
+                    $log('Run `php artisan up` manually to restore access (or wait: dls:core:heal-maintenance lifts it within a minute).');
                 }
             }
 
