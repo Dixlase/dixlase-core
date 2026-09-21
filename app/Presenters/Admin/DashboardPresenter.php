@@ -363,8 +363,8 @@ class DashboardPresenter
                 'days' => AuditLogIntegrityService::VERIFY_RECOMMENDED_DAYS,
             ]),
             AuditLogIntegrityService::HEALTH_EMPTY => __('admin/dashboard.audit_integrity_empty'),
-            default => $auditHealth['verified_since'] !== null
-                ? __('admin/dashboard.audit_integrity_ok', ['date' => $auditHealth['verified_since']->format('Y-m-d')])
+            default => $auditHealth['last_verified_at'] !== null
+                ? __('admin/dashboard.audit_integrity_ok', ['date' => $auditHealth['last_verified_at']->format('Y-m-d')])
                 : __('admin/dashboard.audit_integrity_ok_unverified'),
         };
         $items[] = [

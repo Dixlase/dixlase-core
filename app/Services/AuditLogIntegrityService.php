@@ -522,15 +522,18 @@ class AuditLogIntegrityService
      *                       seal although the daily `audit:integrity seal`
      *                       run is past due (day one never trips this: a
      *                       seal only exists for completed days)
-     * - verification_stale: some chained row has never been verified, or
-     *                       was last verified more than VERIFY_RECOMMENDED_DAYS
-     *                       ago (the oldest last_verified_at is used, so an
-     *                       incremental pass does not refresh this — only a
-     *                       pass that re-hashed every row does)
+     * - verification_stale: a row chained more than VERIFY_RECOMMENDED_DAYS
+     *                       ago has never been verified, or the oldest
+     *                       verification is older than that (the oldest
+     *                       last_verified_at is used, so an incremental pass
+     *                       does not refresh this — only a pass that
+     *                       re-hashed every row does). Rows chained since the
+     *                       last pass are expected to be unverified and do
+     *                       not count.
      * - empty:              no audit log entries yet
      * - ok
      *
-     * @return array{state:string,has_entries:bool,tampered:int,invalid_seals:int,stalled:int,unsealed_date:string|null,verified_since:\Carbon\Carbon|null}
+     * @return array{state:string,has_entries:bool,tampered:int,invalid_seals:int,stalled:int,unsealed_date:string|null,verified_since:\Carbon\Carbon|null,last_verified_at:\Carbon\Carbon|null}
      */
     public function getHealth(): array
     {
@@ -553,14 +556,22 @@ class AuditLogIntegrityService
             }
         }
 
-        // "Every chained row was verified on or after this time". The oldest
-        // last_verified_at is deliberately used: an incremental pass bumps the
-        // newest rows only, so it cannot make old, unre-hashed rows look fresh.
-        $neverVerified = AuditLog::withHashChain()->whereNull('last_verified_at')->exists();
-        $verifiedSinceRaw = $neverVerified ? null : AuditLog::withHashChain()->min('last_verified_at');
+        // Staleness is judged by the OLDEST verification, so an incremental
+        // pass (which bumps the newest rows only) cannot make old, un-re-hashed
+        // rows look fresh. Rows chained after the last pass are expected to be
+        // unverified — they only count once they have waited longer than the
+        // recommended window.
+        $staleCutoff = $now->copy()->subDays(self::VERIFY_RECOMMENDED_DAYS);
+        $unverifiedTooLong = AuditLog::withHashChain()
+            ->whereNull('last_verified_at')
+            ->where('created_at', '<=', $staleCutoff)
+            ->exists();
+        $verifiedSinceRaw = AuditLog::withHashChain()->whereNotNull('last_verified_at')->min('last_verified_at');
         $verifiedSince = $verifiedSinceRaw === null ? null : \Carbon\Carbon::parse($verifiedSinceRaw);
+        $lastVerifiedRaw = $verifiedSinceRaw === null ? null : AuditLog::withHashChain()->max('last_verified_at');
+        $lastVerifiedAt = $lastVerifiedRaw === null ? null : \Carbon\Carbon::parse($lastVerifiedRaw);
         $verificationStale = $latestPastDay !== null
-            && ($verifiedSince === null || $verifiedSince->lt($now->copy()->subDays(self::VERIFY_RECOMMENDED_DAYS)));
+            && ($unverifiedTooLong || ($verifiedSince !== null && $verifiedSince->lt($staleCutoff)));
 
         $state = match (true) {
             $tampered > 0 || $invalidSeals > 0 => self::HEALTH_TAMPERED,
@@ -579,6 +590,7 @@ class AuditLogIntegrityService
             'stalled' => $stalled,
             'unsealed_date' => $unsealedDate,
             'verified_since' => $verifiedSince,
+            'last_verified_at' => $lastVerifiedAt,
         ];
     }
 
