@@ -104,6 +104,8 @@ return [
         'already_in_progress' => 'プラグイン／テーマの一括アップデートが既に実行中です。完了してから新しい操作を開始してください。',
         'core_update_complete' => 'コアのアップデートが完了しました: v:from → v:to',
         'core_rollback_complete' => 'コアのロールバックが完了しました: v:from → v:to',
+        'core_rollback_failed' => 'コアの v:to へのロールバックに失敗したため、v:from のまま維持しました。エラー: :error（詳細は :log）',
+        'core_rollback_failed_unrecovered' => 'コアの v:to へのロールバックに失敗し、自動復旧も完了しませんでした。エラー: :error。サイトを使う前に :log の復旧手順を確認してください。',
         'update_complete_frame' => ':subjectをアップデートしました。',
         'update_complete_plugins' => 'プラグイン:names',
         'update_complete_themes' => 'テーマ:names',

@@ -163,6 +163,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
             $minScore = (float) ($request->input('min_score') ?: $this->securitySettingRepository->get('captcha_google_min_score', '0.5'));
             $siteKey = $request->input('site_key') ?: $this->securitySettingRepository->get('captcha_site_key', '');
             $projectId = $request->input('project_id') ?: $this->securitySettingRepository->get('captcha_google_project_id', '');
+            $version = (string) ($request->input('version') ?: $this->securitySettingRepository->get('captcha_google_version', 'v3'));
 
             if (empty($secretKey)) {
                 return response()->json([
@@ -171,7 +172,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                 ]);
             }
 
-            $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId);
+            $result = $this->verifyCaptchaToken($token, $secretKey, $driver, $minScore, $siteKey, $projectId, $version);
 
             if ($result['success']) {
                 // Do not flip the stored pass flag here: the settings under
@@ -224,7 +225,7 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
     /**
      * Verify CAPTCHA token
      */
-    protected function verifyCaptchaToken(string $token, string $secretKey, string $driver, float $minScore, ?string $siteKey = null, ?string $projectId = null): array
+    protected function verifyCaptchaToken(string $token, string $secretKey, string $driver, float $minScore, ?string $siteKey = null, ?string $projectId = null, string $version = 'v3'): array
     {
         // Google reCAPTCHA Enterprise uses a different API
         if ($driver === 'google_enterprise') {
@@ -251,6 +252,27 @@ class AdminSecurityCaptchaController extends AdminLoggedInController
                     'errors' => implode(', ', $data['error-codes'] ?? ['unknown']),
                 ]),
             ];
+        }
+
+        // The three Google versions share one key pair in the settings, so
+        // a v2 pair left in place after switching to v3 (or the reverse) is
+        // the common mistake. siteverify tells them apart: a v3 key always
+        // returns a score, a v2 key never does. Without this check the test
+        // passed on a v2 pair and every real v3 submission then failed with
+        // "score too low" (score 0).
+        if ($driver === 'google') {
+            if ($version === 'v3' && ! isset($data['score'])) {
+                return [
+                    'success' => false,
+                    'message' => __('admin/settings/security/captcha.test_key_version_mismatch_v2_to_v3'),
+                ];
+            }
+            if ($version !== 'v3' && isset($data['score'])) {
+                return [
+                    'success' => false,
+                    'message' => __('admin/settings/security/captcha.test_key_version_mismatch_v3_to_v2'),
+                ];
+            }
         }
 
         // Check score for v3
