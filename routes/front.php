@@ -40,17 +40,23 @@ use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\Front\FrontCustomAssetController;
 use App\Http\Controllers\Front\FrontWelcomeController;
 use App\Http\Controllers\Front\LocaleSwitchController;
+use App\Http\Middleware\ContentSecurityPolicy;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // CSP violation report endpoint (no auth, session/CSP middleware excluded).
 Route::post('/csp-report', [CspReportController::class, 'report'])
     ->name('csp.report')
     ->withoutMiddleware([
-        \App\Http\Middleware\ContentSecurityPolicy::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ContentSecurityPolicy::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        AddQueuedCookiesToResponse::class,
+        PreventRequestForgery::class,
     ]);
 
 // Theme/admin/plugin static asset delivery.
@@ -91,10 +97,10 @@ Route::get('assets/{type}/{file}', function ($type, $file) {
 })
     ->where('file', '.*')
     ->withoutMiddleware([
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        AddQueuedCookiesToResponse::class,
+        PreventRequestForgery::class,
     ]);
 
 // Language switcher endpoint. Writes the dixlase_locale cookie and
@@ -135,20 +141,20 @@ Route::get('/front/custom-script.js', [FrontCustomAssetController::class, 'scrip
     ->name('front.custom-script')
     ->middleware('front.ip')
     ->withoutMiddleware([
-        \App\Http\Middleware\ContentSecurityPolicy::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ContentSecurityPolicy::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        PreventRequestForgery::class,
     ]);
 
 Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style'])
     ->name('front.custom-style')
     ->middleware('front.ip')
     ->withoutMiddleware([
-        \App\Http\Middleware\ContentSecurityPolicy::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ContentSecurityPolicy::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        PreventRequestForgery::class,
     ]);
 
 // Front-end routes.
@@ -170,7 +176,7 @@ Route::middleware(['web', 'front.ip'])->group(function () {
 
     // Front log test route (development only).
     Route::get('/test-front-log', function () {
-        \Illuminate\Support\Facades\Log::channel('front_activity')->info('Front activity log test', [
+        Log::channel('front_activity')->info('Front activity log test', [
             'action' => 'page_view',
             'page' => 'test_page',
             'user_id' => null,
@@ -181,7 +187,7 @@ Route::middleware(['web', 'front.ip'])->group(function () {
             'timestamp' => now()->toDateTimeString(),
         ]);
 
-        \Illuminate\Support\Facades\Log::channel('front_error')->error('Front error log test', [
+        Log::channel('front_error')->error('Front error log test', [
             'error' => 'test_error',
             'error_type' => 'test_error',
             'user_id' => null,

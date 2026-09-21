@@ -32,8 +32,9 @@ use App\Models\Member;
 use App\Models\SiteSetting;
 use App\Session\GuardAwareDatabaseSessionHandler;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -149,9 +150,9 @@ class CsrfTokenSessionTest extends TestCase
             'AddQueuedCookiesToResponse が除外されていない'
         );
         $this->assertContains(
-            VerifyCsrfToken::class,
+            PreventRequestForgery::class,
             $excluded,
-            'VerifyCsrfToken が除外されていない'
+            'PreventRequestForgery が除外されていない'
         );
     }
 
@@ -194,7 +195,7 @@ class CsrfTokenSessionTest extends TestCase
     /**
      * CSP レポートエンドポイントは CSRF 検証から除外されている
      *
-     * bootstrap/app.php の validateCsrfTokens(except: ['csp-report']) が
+     * bootstrap/app.php の preventRequestForgery(except: ['csp-report']) が
      * 残っていることを保証するベースラインテスト。
      */
     public function test_csp_report_endpoint_skips_csrf_validation(): void
@@ -293,7 +294,7 @@ class CsrfTokenSessionTest extends TestCase
         $handler->setGuardTable('member', 'members_sessions');
 
         // request() を admin パスでバインド
-        $request = \Illuminate\Http\Request::create('/admin/dashboard', 'GET');
+        $request = Request::create('/admin/dashboard', 'GET');
         app()->instance('request', $request);
 
         $ref = new ReflectionClass($handler);
@@ -333,7 +334,7 @@ class CsrfTokenSessionTest extends TestCase
         );
         $handler->setGuardTable('member', 'members_sessions');
 
-        $request = \Illuminate\Http\Request::create('/manage/dashboard', 'GET');
+        $request = Request::create('/manage/dashboard', 'GET');
         app()->instance('request', $request);
 
         $ref = new ReflectionClass($handler);
@@ -367,7 +368,7 @@ class CsrfTokenSessionTest extends TestCase
         );
         $handler->setGuardTable('member', 'members_sessions');
 
-        $request = \Illuminate\Http\Request::create('/about-us', 'GET');
+        $request = Request::create('/about-us', 'GET');
         app()->instance('request', $request);
 
         $ref = new ReflectionClass($handler);
@@ -414,7 +415,7 @@ class CsrfTokenSessionTest extends TestCase
         ];
 
         foreach ($lookalikePaths as $path) {
-            $request = \Illuminate\Http\Request::create($path, 'GET');
+            $request = Request::create($path, 'GET');
             app()->instance('request', $request);
 
             // Fresh handler instance per path so the per-instance
@@ -458,7 +459,7 @@ class CsrfTokenSessionTest extends TestCase
         ];
 
         foreach ($cases as $path => $expected) {
-            $request = \Illuminate\Http\Request::create($path, 'GET');
+            $request = Request::create($path, 'GET');
             app()->instance('request', $request);
 
             $handler = new GuardAwareDatabaseSessionHandler(

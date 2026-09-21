@@ -36,7 +36,7 @@
 namespace Tests\Feature\Security;
 
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Tests\TestCase;
 
 /**
@@ -53,7 +53,7 @@ class PluginMiddlewareGroupsTest extends TestCase
         foreach (['plugin', 'plugin.web', 'plugin.admin'] as $group) {
             $this->assertArrayHasKey($group, $groups);
             $this->assertContains(
-                ValidateCsrfToken::class,
+                PreventRequestForgery::class,
                 $groups[$group],
                 "The '{$group}' middleware group must validate CSRF tokens."
             );
