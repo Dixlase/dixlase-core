@@ -921,13 +921,6 @@ class AuditLog extends Model
      */
     public function scopeDangerousOperations($query)
     {
-        $dangerousActions = [];
-        foreach (self::cases() as $action) {
-            if (self::getRiskLevelForAction($action)->isDangerous()) {
-                $dangerousActions[] = $action;
-            }
-        }
-
         // Extract dangerous operations from defined actions
         $allActions = [
             self::ACTION_LOGIN, self::ACTION_LOGOUT, self::ACTION_LOGIN_FAILED,
