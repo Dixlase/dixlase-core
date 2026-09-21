@@ -8,7 +8,7 @@ PHP、Composer、データベースサーバーを個別にマシンへインス
 
 ## 前提条件
 
-- PHP 8.2 以上
+- PHP 8.3 以上
 - Composer
 - データベースサーバー（MariaDB、MySQL、PostgreSQL、または SQLite）
 - Web サーバー（Nginx または Apache）または PHP ビルトインサーバー

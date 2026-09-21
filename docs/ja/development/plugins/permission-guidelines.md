@@ -273,7 +273,7 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
   "tags": ["pages", "content", "cms"],
   "requires": {
     "dixlase": ">=1.0.0",
-    "php": ">=8.2"
+    "php": ">=8.3"
   },
   "provides": {
     "admin_menu": true,

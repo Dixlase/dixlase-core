@@ -13,7 +13,7 @@ Dixlaseのファイルとデータベースをバックアップするための�
 
 ## 必要条件
 
-- PHP 8.2以上
+- PHP 8.3以上
 - ZipArchive PHP拡張
 - mysqldump（データベースバックアップ用）
 

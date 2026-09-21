@@ -9,7 +9,7 @@ Install Dixlase on A2 Hosting, a developer-friendly hosting provider with SSH an
 ## Prerequisites
 
 - An A2 Hosting account with cPanel or control panel access
-- PHP 8.2 or higher available on the server
+- PHP 8.3 or higher available on the server
 - MySQL 8.0 / MariaDB 10.6 or higher
 - SSH access with Composer available
 

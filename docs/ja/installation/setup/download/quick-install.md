@@ -4,7 +4,7 @@
 
 ## 前提条件
 
-- PHP 8.2 以上
+- PHP 8.3 以上
 - Composer
 - MySQL / MariaDB
 - サーバーへのSSHアクセス

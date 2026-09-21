@@ -18,7 +18,7 @@
 
 最初のアクセス時、ウィザードがサーバー環境をチェックします：
 
-- **PHP バージョン**（8.2以上が必須）
+- **PHP バージョン**（8.3以上が必須）
 - **必須拡張**（Ctype、cURL、DOM、Fileinfo、JSON、Mbstring、OpenSSL、PCRE、PDO、Tokenizer、XML）
 - **オプション拡張**（BCMath）
 - **ディレクトリパーミッション**（`storage/`、`bootstrap/cache/`）

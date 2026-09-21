@@ -5,7 +5,7 @@ This guide covers installing Dixlase on a production server without Docker. Ensu
 
 ### PHP Extensions
 
-Install PHP 8.2+ (8.3 recommended) with the required extensions:
+Install PHP 8.3+ with the required extensions:
 
 ```bash
 # Ubuntu / Debian
