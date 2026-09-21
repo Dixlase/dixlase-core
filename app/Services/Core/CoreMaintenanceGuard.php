@@ -100,6 +100,17 @@ final class CoreMaintenanceGuard
         private readonly ?Closure $pidProbe = null,
     ) {}
 
+    /**
+     * Why the last healIfOrphaned() could not mark the failure on
+     * core_releases, or null when it did (or nothing was lifted).
+     */
+    private ?string $lastRecordError = null;
+
+    public function lastRecordError(): ?string
+    {
+        return $this->lastRecordError;
+    }
+
     public static function defaultOwnerPath(): string
     {
         return storage_path('app/private/core-update/.maintenance-owner');
@@ -245,14 +256,20 @@ final class CoreMaintenanceGuard
 
         // Surface it in the admin panel the same way a failed update is
         // surfaced, so the operator learns the update did not complete.
-        // Best-effort: the DB may be mid-migration or unreachable.
+        // Best-effort: the DB may be mid-migration or unreachable, and a
+        // failure to record must never keep the site down — but it is
+        // logged and kept in lastRecordError() so it is not invisible.
+        $this->lastRecordError = null;
         try {
-            CoreRelease::singleton()->forceFill([
+            CoreRelease::singleton();
+            CoreRelease::query()->whereKey(CoreRelease::PRIMARY_ID)->update([
                 'update_failed_at' => now(),
                 'update_failure_reason' => Str::limit($message, 500),
-            ])->save();
-        } catch (\Throwable) {
-            // Logged above; nothing else to do.
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            $this->lastRecordError = $e->getMessage();
+            Log::error('[core-update] Maintenance was lifted but the failure could not be recorded on core_releases: '.$e->getMessage());
         }
 
         return [

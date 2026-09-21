@@ -80,8 +80,14 @@ class HealMaintenanceCommandTest extends TestCase
 
         $this->assertFileDoesNotExist(CoreMaintenanceGuard::defaultSentinelPath(), 'maintenance sentinel removed');
         $this->assertNull($guard->readOwner(), 'owner record removed');
-        $this->assertNotNull(CoreRelease::singleton()->update_failed_at, 'panel is told the update did not complete');
-        $this->assertStringContainsString('lifted automatically', (string) CoreRelease::singleton()->update_failure_reason);
+
+        // If the core_releases write failed, say why (the guard swallows it
+        // on purpose so a DB hiccup can never keep the site down).
+        $this->assertNull($guard->lastRecordError(), 'failure could not be recorded on core_releases');
+        $state = CoreRelease::query()->find(CoreRelease::PRIMARY_ID);
+        $this->assertNotNull($state, 'core_releases singleton row exists');
+        $this->assertNotNull($state->update_failed_at, 'panel is told the update did not complete');
+        $this->assertStringContainsString('lifted automatically', (string) $state->update_failure_reason);
     }
 
     public function test_leaves_maintenance_in_place_while_the_owner_is_still_running(): void
