@@ -18,7 +18,7 @@ The wizard consists of the following steps:
 
 On first access, the wizard checks your server environment:
 
-- **PHP version** (8.2+ required)
+- **PHP version** (8.3+ required)
 - **Required extensions** (Ctype, cURL, DOM, Fileinfo, JSON, Mbstring, OpenSSL, PCRE, PDO, Tokenizer, XML)
 - **Optional extensions** (BCMath)
 - **Directory permissions** (`storage/`, `bootstrap/cache/`)
