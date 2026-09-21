@@ -329,6 +329,11 @@ class PluginPermissionsGenerate extends Command
      */
     protected function resolvePluginDirectory(string $input): ?string
     {
+        $resolved = \App\Models\Plugin::resolveDirectoryFromSlug($input);
+        if ($resolved !== null) {
+            return base_path("plugins/{$resolved}");
+        }
+
         $studlyName = Str::studly(str_replace('-', '_', $input));
         $path = base_path("plugins/{$studlyName}");
         if (File::isDirectory($path)) {

@@ -646,7 +646,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
      */
     protected function slugToName(string $slug): string
     {
-        return Str::studly(str_replace('-', '_', $slug));
+        return \App\Models\Plugin::directoryNameFromSlug($slug);
     }
 
     /**

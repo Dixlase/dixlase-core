@@ -109,6 +109,18 @@ class CspComplianceScanner
      */
     protected function resolveDirectory(string $baseDir, string $slug): string
     {
+        // Prefer the model resolver: it honours the stored directory name,
+        // which Studly/kebab conversion cannot reproduce for names such as
+        // DixlaseDevKit (slug dixlase-devkit) or DixlaseSEO
+        $resolved = match ($baseDir) {
+            'plugins' => \App\Models\Plugin::resolveDirectoryFromSlug($slug),
+            'themes' => \App\Models\Theme::resolveDirectoryFromSlug($slug),
+            default => null,
+        };
+        if ($resolved !== null) {
+            return base_path("{$baseDir}/{$resolved}");
+        }
+
         // Try StudlyCase conversion (my-plugin → MyPlugin)
         $studlyName = Str::studly(str_replace('-', '_', $slug));
         $path = base_path("{$baseDir}/{$studlyName}");

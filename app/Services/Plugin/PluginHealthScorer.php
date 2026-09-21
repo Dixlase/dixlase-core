@@ -46,7 +46,6 @@ use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Extension\ExtensionEnableActionResolver;
 use App\Services\Licensing\LicenseValidator;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -475,7 +474,7 @@ class PluginHealthScorer
      */
     protected function evaluateApiCompatibility(string $pluginSlug, array $deductionRules): array
     {
-        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
 
         if (! File::exists($pluginJsonPath)) {
@@ -523,7 +522,7 @@ class PluginHealthScorer
     {
         $issues = [];
 
-        $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
 
         if (! \Illuminate\Support\Facades\File::exists($pluginJsonPath)) {
@@ -575,7 +574,7 @@ class PluginHealthScorer
      */
     protected function evaluateLicenseMetadata(string $pluginSlug, array $deductionRules): array
     {
-        $pluginName = \Illuminate\Support\Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
 
         if (! \Illuminate\Support\Facades\File::exists($pluginJsonPath)) {
@@ -694,7 +693,7 @@ class PluginHealthScorer
      */
     public function computeFilesHash(string $pluginSlug): string
     {
-        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginPath = base_path("plugins/{$pluginName}");
 
         if (! File::isDirectory($pluginPath)) {
@@ -753,7 +752,7 @@ class PluginHealthScorer
      */
     public function latestSourceMtime(string $pluginSlug): ?int
     {
-        $pluginName = Str::studly(str_replace('-', '_', $pluginSlug));
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
         $pluginPath = base_path("plugins/{$pluginName}");
 
         if (! File::isDirectory($pluginPath)) {

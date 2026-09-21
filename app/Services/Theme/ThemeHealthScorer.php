@@ -45,7 +45,6 @@ use App\Models\ThemeAudit;
 use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Extension\ExtensionEnableActionResolver;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 /**
  * Calculates theme health score
@@ -361,7 +360,7 @@ class ThemeHealthScorer
      */
     protected function evaluateApiCompatibility(string $themeSlug, array $deductionRules): array
     {
-        $themeName = Str::studly(str_replace('-', '_', $themeSlug));
+        $themeName = \App\Models\Theme::directoryNameFromSlug($themeSlug);
         $themeJsonPath = base_path("themes/{$themeName}/theme.json");
 
         if (! File::exists($themeJsonPath)) {
