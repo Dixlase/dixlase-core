@@ -44,7 +44,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           data-selected-tpl="{{ __('admin/media/index.bulk.selected_count', ['count' => ':count']) }}"
           hidden></span>
 
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+    {{-- .media-toolbar (media.scss) makes this row sticky under the admin bar
+         so Upload / bulk-select stay reachable while the grid scrolls. --}}
+    <div class="media-toolbar flex flex-wrap items-center justify-between gap-2">
         <x-form-button
             type="link"
             :href="route('admin.media.upload')"
@@ -119,6 +121,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     />
                 </fieldset>
 
+                {{-- !my-0 on both dates: x-form-text adds my-2 for stacked forms,
+                     which dropped these two inputs 8px below the file-type
+                     select in the same row (the select carries no margin). --}}
                 <fieldset>
                     <legend>{{ __('admin/media/index.search.date_from') }}</legend>
                     <x-form-text
@@ -126,6 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="date_from"
                         name="date_from"
                         :value="$dateFrom ?? ''"
+                        class="!my-0"
                     />
                 </fieldset>
 
@@ -136,6 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         id="date_to"
                         name="date_to"
                         :value="$dateTo ?? ''"
+                        class="!my-0"
                     />
                 </fieldset>
             </div>
