@@ -41,6 +41,7 @@ use App\Enums\ExtensionCompatibilityStatus;
 use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
+use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Extension\ExtensionEnableActionResolver;
@@ -361,7 +362,7 @@ class ThemeHealthScorer
      */
     protected function evaluateApiCompatibility(string $themeSlug, array $deductionRules): array
     {
-        $themeName = Str::studly(str_replace('-', '_', $themeSlug));
+        $themeName = Theme::resolveDirectoryFromSlug($themeSlug) ?? Str::studly(str_replace('-', '_', $themeSlug));
         $themeJsonPath = base_path("themes/{$themeName}/theme.json");
 
         if (! File::exists($themeJsonPath)) {

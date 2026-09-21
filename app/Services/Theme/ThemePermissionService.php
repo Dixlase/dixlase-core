@@ -38,6 +38,7 @@
 namespace App\Services\Theme;
 
 use App\Contracts\Theme\ThemePermissionServiceInterface;
+use App\Models\Theme;
 use App\Models\ThemeAudit;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -582,12 +583,18 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     /**
      * Convert slug to theme name
      *
+     * Resolves the real on-disk directory (see
+     * Theme::resolveDirectoryFromSlug()); a bare Studly conversion yields
+     * `DixlaseOnepage`, which misses `DixlaseOnePage` on case-sensitive
+     * filesystems. The Studly form remains the fallback for themes that
+     * are not on disk.
+     *
      * @param  string  $slug  dixlase-onepage
      * @return string DixlaseOnePage
      */
     protected function slugToName(string $slug): string
     {
-        return Str::studly(str_replace('-', '_', $slug));
+        return Theme::resolveDirectoryFromSlug($slug) ?? Str::studly(str_replace('-', '_', $slug));
     }
 
     /**

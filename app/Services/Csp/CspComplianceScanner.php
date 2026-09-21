@@ -122,11 +122,22 @@ class CspComplianceScanner
             return $path;
         }
 
-        // Search from directory list by kebab-case comparison
+        // Search from directory list by kebab-case comparison, then by a
+        // case-insensitive dash-stripped comparison. The latter catches
+        // names the Studly/kebab round trip cannot reproduce on a
+        // case-sensitive filesystem (dixlase-onepage → DixlaseOnePage,
+        // dixlase-seo → DixlaseSEO).
         $parentDir = base_path($baseDir);
         if (File::isDirectory($parentDir)) {
-            foreach (File::directories($parentDir) as $dir) {
+            $directories = File::directories($parentDir);
+            foreach ($directories as $dir) {
                 if (Str::kebab(basename($dir)) === $slug) {
+                    return $dir;
+                }
+            }
+            $normalized = strtolower(str_replace('-', '', $slug));
+            foreach ($directories as $dir) {
+                if (strtolower(basename($dir)) === $normalized) {
                     return $dir;
                 }
             }

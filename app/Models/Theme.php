@@ -189,6 +189,70 @@ class Theme extends Model
     }
 
     /**
+     * Resolve the on-disk theme directory name from a slug.
+     *
+     * The inverse of resolveSlug(). Reconstructing the directory with
+     * `Str::studly(str_replace('-', '_', $slug))` is lossy: the slug
+     * `dixlase-onepage` becomes `DixlaseOnepage`, which only matches the
+     * real `DixlaseOnePage` directory on a case-insensitive filesystem
+     * (macOS). On Linux the theme.json lookup misses and callers report
+     * the theme as having no permissions section. Mirrors
+     * Plugin::resolveDirectoryFromSlug().
+     *
+     * Resolution order, always returning the actual on-disk casing:
+     *   1. the installed theme's recorded `directory` column (DB)
+     *   2. a theme.json whose declared `slug` matches
+     *   3. the Studly heuristic, then a dash-stripped lowercase match
+     *
+     * Returns null when no on-disk directory matches.
+     */
+    public static function resolveDirectoryFromSlug(string $slug): ?string
+    {
+        if ($slug === '') {
+            return null;
+        }
+
+        $actualDirs = [];
+        foreach (glob(base_path('themes').'/*', GLOB_ONLYDIR) ?: [] as $dir) {
+            $name = basename($dir);
+            $actualDirs[strtolower($name)] = $name;
+        }
+
+        if (empty($actualDirs)) {
+            return null;
+        }
+
+        try {
+            $stored = static::query()->where('slug', $slug)->value('directory');
+            if (is_string($stored) && $stored !== '' && isset($actualDirs[strtolower($stored)])) {
+                return $actualDirs[strtolower($stored)];
+            }
+        } catch (\Throwable $e) {
+            // DB may be unavailable during early boot or in unit tests.
+        }
+
+        foreach ($actualDirs as $name) {
+            $manifest = base_path("themes/{$name}/theme.json");
+            if (! is_file($manifest)) {
+                continue;
+            }
+            $data = json_decode((string) file_get_contents($manifest), true);
+            if (is_array($data) && ($data['slug'] ?? null) === $slug) {
+                return $name;
+            }
+        }
+
+        $studly = strtolower(\Illuminate\Support\Str::studly(str_replace('-', '_', $slug)));
+        if (isset($actualDirs[$studly])) {
+            return $actualDirs[$studly];
+        }
+
+        $normalized = strtolower(str_replace('-', '', $slug));
+
+        return $actualDirs[$normalized] ?? null;
+    }
+
+    /**
      * Prevent theme deletion (default theme cannot be deleted)
      */
     public function deleteTheme()
