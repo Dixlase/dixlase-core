@@ -229,7 +229,7 @@ jobs:
       - name: Run Plugin Tests (Tier 1 - Well Tested)
         run: >-
           php artisan test
-          --testsuite=DixlaseLegal,DixlaseInquiry,DixlaseSEO,DixlaseCoreDevKit
+          --testsuite=DixlaseLegal,DixlaseInquiry,DixlaseSEO,DixlaseCoreDevKit,DixlaseSigner
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
