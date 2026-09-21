@@ -378,6 +378,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     />
 @endsection
 
+@push('styles')
+<style @cspNonce>
+/* The v3 / Enterprise test renders Google's fixed badge bottom-right, where the
+   layout's sticky save bar covers it. Lift it above the bar. */
+.grecaptcha-badge { bottom: 5rem !important; }
+</style>
+@endpush
+
 @push('scripts')
 <div id="captcha-config"
      data-validate-url="{{ route('admin.settings.security.captcha.validate-widget') }}"

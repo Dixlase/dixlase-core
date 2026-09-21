@@ -152,7 +152,24 @@ class GoogleRecaptchaV3Driver implements CaptchaDriver
                 );
             }
 
-            $score = $result['score'] ?? 0;
+            // A v3 key always returns a score; its absence on a successful
+            // verification means the configured pair is a v2 key. Say so
+            // instead of reporting a score of 0 as "too low".
+            if (! isset($result['score'])) {
+                Log::warning('GoogleRecaptchaV3Driver response has no score — the configured key pair is not a v3 key', [
+                    'ip' => $request->ip(),
+                ]);
+
+                return new CaptchaResult(
+                    false,
+                    null,
+                    $result['action'] ?? null,
+                    ['captcha' => __('admin/settings/security/captcha.test_key_version_mismatch_v2_to_v3')],
+                    ['invalid_reason' => 'key_type_mismatch']
+                );
+            }
+
+            $score = $result['score'];
             $action = $result['action'] ?? null;
 
             if ($result['success'] && $score >= $this->config['min_score']) {
