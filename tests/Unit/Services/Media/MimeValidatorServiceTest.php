@@ -97,4 +97,27 @@ class MimeValidatorServiceTest extends TestCase
         $this->assertArrayHasKey('errors', $array);
         $this->assertArrayHasKey('warnings', $array);
     }
+
+    public function test_svg_with_entity_declaration_is_rejected_at_upload(): void
+    {
+        $svg = '<?xml version="1.0"?>'
+            .'<!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/hostname">]>'
+            .'<svg xmlns="http://www.w3.org/2000/svg"><text>&x;</text></svg>';
+        $file = UploadedFile::fake()->createWithContent('evil.svg', $svg);
+
+        $result = $this->service->validate($file);
+
+        $this->assertFalse($result->isValid());
+    }
+
+    public function test_plain_svg_is_still_accepted_at_upload(): void
+    {
+        $svg = '<?xml version="1.0" encoding="UTF-8"?>'
+            .'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
+        $file = UploadedFile::fake()->createWithContent('plain.svg', $svg);
+
+        $result = $this->service->validate($file);
+
+        $this->assertTrue($result->isValid());
+    }
 }

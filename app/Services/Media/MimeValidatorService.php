@@ -184,9 +184,17 @@ class MimeValidatorService
                 return false;
             }
 
+            // Refuse entity declarations (XXE) before parsing; the rule is
+            // shared with SvgSanitizerService so upload validation and
+            // sanitising agree. No LIBXML_NOENT: entities are never
+            // substituted, LIBXML_NONET blocks external DTD/entity fetches.
+            if (SvgSanitizerService::containsEntityDeclaration($content)) {
+                return false;
+            }
+
             libxml_use_internal_errors(true);
             $dom = new \DOMDocument();
-            $loaded = $dom->loadXML($content, LIBXML_NONET | LIBXML_NOENT);
+            $loaded = $dom->loadXML($content, LIBXML_NONET);
             libxml_clear_errors();
 
             if (! $loaded) {
