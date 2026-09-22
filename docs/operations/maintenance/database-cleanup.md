@@ -51,8 +51,8 @@ Admin Panel > Settings > System Settings > Database Management
 - **Description**: Cleans up used and invalidated 2FA recovery codes
 
 ### 6. 2FA Passkeys (passkeys)
-- **Table**: `webauthn_credentials`
-- **Date column**: `created_at`
+- **Table**: `members_passkeys`
+- **Date column**: `last_used_at` (passkeys that have never been used are kept)
 - **Default retention period**: 365 days
 - **Description**: Cleans up old 2FA passkeys (biometric authentication)
 

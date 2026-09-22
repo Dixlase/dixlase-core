@@ -209,12 +209,7 @@ class IdentifierCheckHelper
      */
     protected static function hasPasskey($user): bool
     {
-        // Check if webauthnCredentials relation exists
-        if (method_exists($user, 'webauthnCredentials')) {
-            return $user->webauthnCredentials()->count() > 0;
-        }
-
-        // Check if twoFaPasskeys relation exists (for administrator)
+        // Members and plugin users expose their passkeys through twoFaPasskeys()
         if (method_exists($user, 'twoFaPasskeys')) {
             return $user->twoFaPasskeys()->count() > 0;
         }

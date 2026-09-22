@@ -18,12 +18,11 @@
         "php": "^8.3",
         "composer/installers": "^2.0",
         "composer/semver": "^3.4",
-        "cweagans/composer-patches": "^2.0",
         "dixlase/dixlase-onepage": "dev-main@dev",
         "google/cloud-recaptcha-enterprise": "^2.1",
-        "laragear/webauthn": "^5.0",
         "laravel/fortify": "^1.25",
         "laravel/framework": "^13.0",
+        "laravel/passkeys": "^0.2.1",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.1",
         "oomphinc/composer-installers-extender": "^2.0",
@@ -107,11 +106,6 @@
         ],
         "installer-paths": {
             "themes/DixlaseOnePage/": ["dixlase/dixlase-onepage"]
-        },
-        "patches": {
-            "laragear/webauthn": [
-                "patches/laragear-webauthn-disable-public-key-encryption.patch"
-            ]
         }
     },
     "config": {
@@ -126,7 +120,6 @@
         },
         "allow-plugins": {
             "composer/installers": true,
-            "cweagans/composer-patches": true,
             "oomphinc/composer-installers-extender": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,

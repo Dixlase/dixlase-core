@@ -47,20 +47,20 @@ use App\Traits\HasPermissions;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
-use Laragear\WebAuthn\WebAuthnData;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Ramsey\Uuid\Uuid;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 
 /**
  * Member model
  */
-class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface, WebAuthnAuthenticatable
+class Member extends Authenticatable implements MustVerifyEmail, PasskeyUser, TwoFaInterface
 {
-    use HasFactory, HasPermissions, Notifiable, SoftDeletes, TwoFactorAuthenticatable, TwoFactorEnableCheck;
+    use HasFactory, HasPermissions, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable, TwoFactorEnableCheck;
 
     /**
      * Table name definition
@@ -259,10 +259,13 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
 
     /**
      * Relation to passkey credentials
+     *
+     * Same relation as passkeys(); kept under the TwoFaInterface name that the
+     * 2FA services and plugins use.
      */
-    public function twoFaPasskeys(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function twoFaPasskeys(): HasMany
     {
-        return $this->hasMany(\App\Models\WebAuthnCredential::class, 'member_id');
+        return $this->passkeys();
     }
 
     /**
@@ -290,67 +293,42 @@ class Member extends Authenticatable implements MustVerifyEmail, TwoFaInterface,
     }
 
     // ========================================
-    // WebAuthn (Laragear) interface implementation
+    // Passkeys (laravel/passkeys) PasskeyUser implementation
     // ========================================
 
     /**
-     * Return user data for WebAuthn
-     */
-    public function webAuthnData(): WebAuthnData
-    {
-        return new WebAuthnData(
-            name: $this->email,
-            displayName: $this->name ?? $this->account_name,
-        );
-    }
-
-    /**
-     * Return anonymized user ID (UUID) for WebAuthn
+     * Get the passkeys registered by the member.
      *
-     * Generate consistent UUID from user ID (using UUID v5)
-     */
-    public function webAuthnId(): \Ramsey\Uuid\UuidInterface
-    {
-        // Generate consistent UUID from user ID
-        // Use DNS namespace as namespace and user ID as name
-        return Uuid::uuid5(Uuid::NAMESPACE_DNS, 'dixlase.member.'.$this->id);
-    }
-
-    /**
-     * WebAuthn credentials relation
+     * Overrides the trait default, which resolves the model from the global
+     * Passkeys::passkeyModel() setting, so the member relation always points
+     * at the members_passkeys table no matter what else is registered.
      *
-     * Use webauthn_credentials table
+     * @return HasMany<\Laravel\Passkeys\Passkey, \Illuminate\Database\Eloquent\Model>
      */
-    public function webAuthnCredentials(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function passkeys(): HasMany
     {
-        return $this->morphMany(WebAuthnCredential::class, 'authenticatable');
+        // Typed as the PasskeyUser contract declares it; Larastan would
+        // otherwise infer HasMany<App\Models\Passkey, Member>, which its
+        // invariant generics reject against the contract.
+        /** @var HasMany<\Laravel\Passkeys\Passkey, \Illuminate\Database\Eloquent\Model> $relation */
+        $relation = $this->hasMany(Passkey::class, 'member_id');
+
+        return $relation;
     }
 
     /**
-     * Delete all WebAuthn credentials
+     * Name shown prominently in the authenticator's account picker.
      */
-    public function flushCredentials(string ...$except): void
+    public function getPasskeyDisplayName(): string
     {
-        $this->webAuthnCredentials()
-            ->when($except, fn ($query) => $query->whereNotIn('id', $except))
-            ->delete();
+        return (string) ($this->getAttribute('name') ?: ($this->getAttribute('account_name') ?: $this->getAttribute('email')));
     }
 
     /**
-     * Disable all WebAuthn credentials
+     * Account identifier shown under the display name in authenticator UIs.
      */
-    public function disableAllCredentials(string ...$except): void
+    public function getPasskeyUsername(): string
     {
-        $this->webAuthnCredentials()
-            ->when($except, fn ($query) => $query->whereNotIn('id', $except))
-            ->update(['disabled_at' => now()]);
-    }
-
-    /**
-     * Create WebAuthn credential instance
-     */
-    public function makeWebAuthnCredential(array $properties): WebAuthnCredential
-    {
-        return $this->webAuthnCredentials()->make($properties);
+        return (string) ($this->getAttribute('email') ?: $this->getAttribute('account_name'));
     }
 }

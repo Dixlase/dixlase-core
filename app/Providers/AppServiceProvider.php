@@ -54,6 +54,8 @@ use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\Verification\FileVerificationServiceInterface;
+use App\Models\Member;
+use App\Models\Passkey;
 use App\Services\Backup\CoreBackupService;
 use App\Services\Backup\CoreRestoreService;
 use App\Services\Core\CoreMaintenanceGuard;
@@ -90,6 +92,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passkeys\Passkeys;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -209,12 +212,6 @@ class AppServiceProvider extends ServiceProvider
         // service providers are visible across the whole request.
         $this->app->singleton(SettingDefinitionRegistry::class);
 
-        // Bind Laragear WebAuthn's WebAuthnCredential model to custom model
-        $this->app->bind(
-            \Laragear\WebAuthn\Models\WebAuthnCredential::class,
-            \App\Models\WebAuthnCredential::class
-        );
-
         // Tag the core member privacy provider so the privacy aggregator
         // services (UserPrivacyExporter / UserPrivacyEraser) discover it
         // alongside any plugin-provided implementations.
@@ -238,6 +235,15 @@ class AppServiceProvider extends ServiceProvider
         SecuritySettingDefinitions::register($registry);
         ApiSettingDefinitions::register($registry);
         BackupSettingDefinitions::register($registry);
+
+        // laravel/passkeys: admin members own passkeys in members_passkeys.
+        // Set in boot() so it wins over Fortify, which points the package at
+        // its own configured user model while registering. Dixlase resolves
+        // passkeys through each owner's passkeys() relation, so this mainly
+        // keeps the package's global lookups (route binding) on the right
+        // table.
+        Passkeys::usePasskeyModel(Passkey::class);
+        Passkeys::useUserModel(Member::class);
 
         // Skip if .env file does not exist
         if (! file_exists(base_path('.env'))) {

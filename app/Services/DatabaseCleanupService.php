@@ -332,7 +332,7 @@ class DatabaseCleanupService
 
             case 'unused':
                 // Passkeys: delete unused ones older than 90 days as well
-                if ($table === 'webauthn_credentials') {
+                if ($table === 'members_passkeys') {
                     $query->orWhere(function ($q) {
                         $q->whereNull('last_used_at')
                             ->where('created_at', '<', now()->subDays(90));

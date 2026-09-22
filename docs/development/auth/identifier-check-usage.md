@@ -192,9 +192,8 @@ The user model must have the following columns:
 
 For passkey verification, one of the following relationships is required:
 
-- `webauthnCredentials()`: WebAuthn credentials (recommended)
-- `twoFaPasskeys()`: Two-factor authentication passkeys
-- `passkeys()`: General-purpose passkeys
+- `twoFaPasskeys()`: Two-factor authentication passkeys (recommended; defined by `TwoFaInterface`)
+- `passkeys()`: Passkeys relation from laravel/passkeys (`PasskeyUser`)
 
 ## Return Values
 
@@ -319,7 +318,7 @@ class CustomIdentifierCheckHelper extends IdentifierCheckHelper
 ### Passkey Registration Status Not Retrieved Correctly
 
 1. Verify that the appropriate relationship is defined on the user model
-2. Verify that the relationship name is one of `webauthnCredentials`, `twoFaPasskeys`, or `passkeys`
+2. Verify that the relationship name is `twoFaPasskeys` or `passkeys`
 
 ### Timing Attack Protection Delay Is Too Long
 

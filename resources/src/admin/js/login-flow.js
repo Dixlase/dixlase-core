@@ -184,15 +184,18 @@ function createLoginFlow() {
                         'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
+                    // WebAuthn JSON encoding: every binary field is base64url
+                    // without padding. The server-side parser rejects plain
+                    // base64 (`+`, `/`, `=`) in clientDataJSON.
                     body: JSON.stringify({
                         id: credential.id,
-                        rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
+                        rawId: this.arrayBufferToBase64url(credential.rawId),
                         type: credential.type,
                         response: {
-                            authenticatorData: btoa(String.fromCharCode(...new Uint8Array(credential.response.authenticatorData))),
-                            clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
-                            signature: btoa(String.fromCharCode(...new Uint8Array(credential.response.signature))),
-                            userHandle: credential.response.userHandle ? btoa(String.fromCharCode(...new Uint8Array(credential.response.userHandle))) : null
+                            authenticatorData: this.arrayBufferToBase64url(credential.response.authenticatorData),
+                            clientDataJSON: this.arrayBufferToBase64url(credential.response.clientDataJSON),
+                            signature: this.arrayBufferToBase64url(credential.response.signature),
+                            userHandle: credential.response.userHandle ? this.arrayBufferToBase64url(credential.response.userHandle) : null
                         }
                     })
                 });
@@ -220,13 +223,13 @@ function createLoginFlow() {
             }
         },
 
-        arrayBufferToBase64(buffer) {
+        arrayBufferToBase64url(buffer) {
             const bytes = new Uint8Array(buffer);
             let binary = '';
             for (let i = 0; i < bytes.byteLength; i++) {
                 binary += String.fromCharCode(bytes[i]);
             }
-            return btoa(binary);
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         },
 
         resetFlow() {
@@ -263,7 +266,7 @@ function createLoginFlow() {
                 challenge: this.base64urlDecode(options.challenge),
                 timeout: options.timeout,
                 rpId: options.rpId,
-                allowCredentials: options.allowCredentials.map(cred => ({
+                allowCredentials: (options.allowCredentials || []).map(cred => ({
                     id: this.base64urlDecode(cred.id),
                     type: cred.type,
                     transports: cred.transports

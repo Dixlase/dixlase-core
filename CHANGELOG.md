@@ -26,6 +26,39 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Changed
+
+- **Passkeys now run on the official `laravel/passkeys` package.** `laragear/webauthn`
+  was archived upstream (2026-05) and is removed, together with its composer patch and
+  `cweagans/composer-patches`. Registration and login go through
+  `App\Services\TwoFa\Passkeys\PasskeyCeremony`; `TwoFaPasskeyServiceInterface` keeps
+  its method signatures, but the WebAuthn option arrays it returns are now the standard
+  `PublicKeyCredential*OptionsJSON` shape (base64url binary fields).
+- Admin member passkeys are stored in **`members_passkeys`** (replacing
+  `webauthn_credentials`); the credential is kept as one JSON record with a COSE public
+  key. Existing passkeys are not converted and must be registered again.
+- `App\Models\WebAuthnCredential` is replaced by `App\Models\Passkey`
+  (extends `Laravel\Passkeys\Passkey`). `Member` implements
+  `Laravel\Passkeys\Contracts\PasskeyUser`; its Laragear methods
+  (`webAuthnCredentials()`, `webAuthnId()`, `webAuthnData()`, `flushCredentials()`,
+  `disableAllCredentials()`, `makeWebAuthnCredential()`) are removed — use
+  `passkeys()` / `twoFaPasskeys()`.
+- `config/webauthn.php` is removed. By default the RP ID is the request's host when that
+  host is APP_URL's host or an active site's `host`, and APP_URL's host otherwise, so an
+  arbitrary `Host` header can no longer choose the RP ID. Pin the RP ID and origins with
+  `PASSKEYS_RP_ID` / `PASSKEYS_ALLOWED_ORIGINS` (see the `passkeys` section of
+  `config/fortify.php`).
+
+### Fixed
+
+- Admin passkey login sent the assertion in plain base64; it now uses base64url as
+  WebAuthn requires.
+- The passkey cleanup rule aged passkeys by registration date, so a passkey registered
+  more than a year ago was deleted even if it had just been used; it only stayed
+  harmless because its extra condition referenced a `last_used_at` column the old table
+  lacked, which made the cleanup fail with an SQL error. It now ages passkeys by
+  `last_used_at` (updated on every sign-in) and leaves never-used passkeys alone.
+
 ## [0.1.0] — TBD
 
 The first stable Plugin API freeze. This release establishes the public boundary that

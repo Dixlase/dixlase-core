@@ -92,8 +92,11 @@ return [
     ],
 
     'passkeys' => [
-        'table' => 'webauthn_credentials',
-        'date_column' => 'created_at',
+        'table' => 'members_passkeys',
+        // Age by last use, not registration: a passkey used yesterday must
+        // survive however long ago it was registered. Passkeys that were
+        // never used (last_used_at NULL) are not removed by this rule.
+        'date_column' => 'last_used_at',
         'default_days' => 365,
         'name' => 'admin/settings/systems/database.passkeys.name',
         'description' => 'admin/settings/systems/database.passkeys.description',
