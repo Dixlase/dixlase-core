@@ -66,4 +66,12 @@ return [
     'passkey_no_devices_notice' => 'Passkey認証が有効になっていますが、まだデバイスが登録されていません。<a href=":url" class="underline font-semibold">二段階認証管理</a>でPasskeyデバイスを登録してください。',
     'passkey_registered' => 'Passkeyデバイスが正常に登録されました。',
     'passkey_deleted' => 'Passkeyデバイスを削除しました。',
+    'passkey_deleted_all' => 'Passkeyデバイス（:count件）を削除しました。',
+    'passkey_not_found' => 'Passkeyデバイスが見つかりません。',
+    'passkey_delete_error' => 'Passkeyデバイスの削除に失敗しました。',
+    'passkey_register_options_error' => 'Passkeyの登録を開始できませんでした。もう一度お試しください。',
+    'passkey_register_error' => 'Passkeyデバイスの登録に失敗しました。',
+    'all_passkeys_deleted' => 'Passkeyデバイス（:count件）を削除しました。',
+    'no_passkeys_to_delete' => '削除するPasskeyデバイスがありません。',
+    'passkey_delete_all_error' => 'Passkeyデバイスの削除に失敗しました。',
 ];

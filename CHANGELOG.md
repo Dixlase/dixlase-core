@@ -58,6 +58,11 @@ repository to be notified of changes.
   harmless because its extra condition referenced a `last_used_at` column the old table
   lacked, which made the cleanup fail with an SQL error. It now ages passkeys by
   `last_used_at` (updated on every sign-in) and leaves never-used passkeys alone.
+- The member edit screen built its passkey and recovery-code delete URLs with a hard-coded
+  `admin/` prefix, so every delete returned 404 on installs with a custom admin path.
+  They are now built from route names. Missing passkey messages on the profile and member
+  screens (for example `admin/profile/common.passkey_deleted_all`) were added in both
+  languages.
 
 ## [0.1.0] — TBD
 
