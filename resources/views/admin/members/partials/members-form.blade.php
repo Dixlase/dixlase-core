@@ -347,9 +347,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :hideGenerateButton="true"
             :adminContext="true"
             :routes="[
-                'passkey_delete' => url('admin/members/passkey/' . $member->id . '/:id'),
-                'passkey_delete_all' => url('admin/members/passkey/' . $member->id . '/all'),
-                'recovery_codes_delete' => url('admin/members/recovery-codes/' . $member->id),
+                'passkey_delete' => route('admin.members.passkey.revoke', [$member->id, ':id']),
+                'passkey_delete_all' => route('admin.members.passkey.revoke-all', $member->id),
+                'recovery_codes_delete' => route('admin.members.recovery-codes.revoke', $member->id),
             ]"
             :csrfToken="csrf_token()"
         />

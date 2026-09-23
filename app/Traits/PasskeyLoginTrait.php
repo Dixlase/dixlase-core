@@ -136,7 +136,7 @@ trait PasskeyLoginTrait
         }
 
         // Check if passkey is registered
-        if (! $user->webauthnCredentials()->exists()) {
+        if (! $this->passkeyService->hasCredentials($user)) {
             $errorMessage = __($this->getTranslationPrefix().'.no_passkey_registered');
 
             return response()->json([

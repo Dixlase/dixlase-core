@@ -110,9 +110,9 @@ class AdminMemberSecurityController extends AdminLoggedInController
             $member,
             $credentialId,
             'admin/members/form.passkey_all_deleted',
-            'admin/profile.passkey_not_found',
-            'admin/profile.passkey_deleted',
-            'admin/profile.passkey_delete_error'
+            'admin/profile/common.passkey_not_found',
+            'admin/profile/common.passkey_deleted',
+            'admin/profile/common.passkey_delete_error'
         );
     }
 

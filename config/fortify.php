@@ -176,6 +176,32 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Passkeys (WebAuthn)
+    |--------------------------------------------------------------------------
+    |
+    | Dixlase runs passkey registration and login through laravel/passkeys
+    | (see App\Services\TwoFa\Passkeys\PasskeyCeremony). Fortify's own
+    | passkey routes stay off -- Features::passkeys() is not enabled below.
+    |
+    | Leave both values empty to use the host and origin of the request being
+    | served when that host is APP_URL's host or an active site's host (and
+    | APP_URL's host otherwise), which lets one install serve several site
+    | domains. Set them only to pin passkeys to one domain, e.g. a
+    | parent domain shared by subdomains. Changing the RP ID later makes
+    | every existing passkey unusable. Origins are a comma-separated list of
+    | full origins (scheme://host[:port]).
+    |
+    */
+
+    'passkeys' => [
+        'relying_party_id' => env('PASSKEYS_RP_ID'),
+        'allowed_origins' => env('PASSKEYS_ALLOWED_ORIGINS'),
+        'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', env('APP_KEY')),
+        'timeout' => 60000,
+    ],
+
     'features' => [
         // Features::registration() is deliberately absent. Dixlase members are
         // created by an administrator (admin.members.create); there is no

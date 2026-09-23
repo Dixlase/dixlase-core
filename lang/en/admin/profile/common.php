@@ -65,4 +65,12 @@ return [
     'passkey_no_devices_notice' => 'Passkey authentication is enabled, but no devices have been registered yet. Please register a Passkey device in <a href=":url" class="underline font-semibold">Two-Factor Authentication Management</a>.',
     'passkey_registered' => 'Passkey device has been registered successfully.',
     'passkey_deleted' => 'Passkey device has been deleted.',
+    'passkey_deleted_all' => 'Passkey devices (:count) have been deleted.',
+    'passkey_not_found' => 'The passkey device was not found.',
+    'passkey_delete_error' => 'Failed to delete the passkey device.',
+    'passkey_register_options_error' => 'Failed to start passkey registration. Please try again.',
+    'passkey_register_error' => 'Failed to register the passkey device.',
+    'all_passkeys_deleted' => 'Passkey devices (:count) have been deleted.',
+    'no_passkeys_to_delete' => 'There are no passkey devices to delete.',
+    'passkey_delete_all_error' => 'Failed to delete the passkey devices.',
 ];

@@ -1597,12 +1597,6 @@ parameters:
 			path: app/Models/Member.php
 
 		-
-			message: '#^Method App\\Models\\Member\:\:makeWebAuthnCredential\(\) should return App\\Models\\WebAuthnCredential but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Member.php
-
-		-
 			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\Member\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
 			identifier: property.phpDocType
 			count: 1
@@ -1715,36 +1709,6 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: app/Models/ThemeVersionHistory.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\WebAuthnCredential\:\:\$last_used_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/WebAuthnCredential.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\WebAuthnCredential\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/WebAuthnCredential.php
-
-		-
-			message: '#^PHPDoc type array of property App\\Models\\WebAuthnCredential\:\:\$casts is not covariant with PHPDoc type array\<string, string\> of overridden property Laragear\\WebAuthn\\Models\\WebAuthnCredential\:\:\$casts\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Models/WebAuthnCredential.php
-
-		-
-			message: '#^PHPDoc type array of property App\\Models\\WebAuthnCredential\:\:\$guarded is not covariant with PHPDoc type array\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$guarded\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Models/WebAuthnCredential.php
-
-		-
-			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\WebAuthnCredential\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
-			identifier: property.phpDocType
-			count: 1
-			path: app/Models/WebAuthnCredential.php
 
 		-
 			message: '#^Unsafe access to private property App\\Models\\Webhook\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
@@ -2338,30 +2302,6 @@ parameters:
 			message: '#^Call to an undefined method App\\Contracts\\TwoFaInterface\:\:webauthnCredentials\(\)\.$#'
 			identifier: method.notFound
 			count: 2
-			path: app/Services/TwoFa/TwoFaPasskeyService.php
-
-		-
-			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Assertion\\Creator\\AssertionCreation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/TwoFa/TwoFaPasskeyService.php
-
-		-
-			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Attestation\\Creator\\AttestationCreation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/TwoFa/TwoFaPasskeyService.php
-
-		-
-			message: '#^Parameter \#1 \$user of class Laragear\\WebAuthn\\Attestation\\Validator\\AttestationValidation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/TwoFa/TwoFaPasskeyService.php
-
-		-
-			message: '#^Parameter \#2 \$user of class Laragear\\WebAuthn\\Assertion\\Validator\\AssertionValidation constructor expects Laragear\\WebAuthn\\Contracts\\WebAuthnAuthenticatable\|null, App\\Contracts\\TwoFaInterface given\.$#'
-			identifier: argument.type
-			count: 1
 			path: app/Services/TwoFa/TwoFaPasskeyService.php
 
 		-

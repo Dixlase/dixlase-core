@@ -41,8 +41,13 @@ use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\TwoFaInterface;
 use App\Models\Member;
 use App\Models\MembersTrustedDevice;
+use App\Services\TwoFa\Passkeys\PasskeyCeremony;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
+use LogicException;
+use Throwable;
 
 class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 {
@@ -62,12 +67,10 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
     /**
      * Check if user has Passkey credentials
-     *
-     * Use Laragear's webauthnCredentials() relation
      */
     public function hasCredentials(TwoFaInterface $user): bool
     {
-        return $user->webauthnCredentials()->exists();
+        return $user->twoFaPasskeys()->exists();
     }
 
     /**
@@ -89,36 +92,30 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     /**
      * Generate passkey challenge for login
      *
-     * Generate secure challenge using Laragear\WebAuthn
+     * Returns `['id' => string, 'publicKey' => PublicKeyCredentialRequestOptionsJSON]`.
+     * `publicKey.challenge` and `publicKey.allowCredentials[].id` are
+     * base64url strings; allowCredentials lists only this user's passkeys.
+     * The full options are kept in the session for verifyLoginChallenge().
      */
     public function generateLoginChallenge(TwoFaInterface $user): array
     {
+        $owner = $this->passkeyOwner($user);
+
         try {
-            // Laragear WebAuthn v4: Create AssertionCreation object
-            $assertionCreation = new \Laragear\WebAuthn\Assertion\Creator\AssertionCreation($user);
+            $publicKey = $this->ceremony()->verificationOptions($owner);
 
-            // Execute AssertionCreator pipeline
-            $assertionCreator = app(\Laragear\WebAuthn\Assertion\Creator\AssertionCreator::class);
-            $result = $assertionCreator->send($assertionCreation)->thenReturn();
-
-            // Convert from JsonTransport object to array
-            $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
-
-            // Debug: Check allowCredentials included in challenge
-            $allowCredentials = $jsonData['allowCredentials'] ?? [];
-            Log::info('[Passkey] Login challenge generated (Laragear)', [
-                'member_id' => $user->getId(),
-                'credentials_count' => $user->webauthnCredentials()->count(),
-                'allowCredentials' => $allowCredentials,
+            Log::info('[Passkey] Login challenge generated', [
+                'user_id' => $user->getId(),
+                'credentials_count' => count($publicKey['allowCredentials'] ?? []),
             ]);
 
             return [
                 'id' => Str::random(32),
-                'publicKey' => $jsonData,
+                'publicKey' => $publicKey,
             ];
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error('[Passkey] Challenge generation failed', [
-                'member_id' => $user->getId(),
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage(),
             ]);
             throw $e;
@@ -128,58 +125,30 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     /**
      * Verify passkey authentication for login
      *
-     * Verify cryptographic signature using Laragear\WebAuthn
+     * `$data` is the serialized PublicKeyCredential returned by
+     * navigator.credentials.get(), with binary fields base64url-encoded.
+     * Verifies the challenge issued by generateLoginChallenge(), the origin,
+     * the RP ID hash, the user verification flag, the signature and the
+     * signature counter, and that the passkey belongs to `$user`.
+     * `$challengeId` is accepted for compatibility and no longer used.
      */
     public function verifyLoginChallenge(TwoFaInterface $user, array $data, ?string $challengeId = null): bool
     {
+        $owner = $this->passkeyOwner($user);
+
         try {
-            // Laragear WebAuthn v4: Create JsonTransport (pass request JSON data)
-            $jsonTransport = new \Laragear\WebAuthn\JsonTransport(request()->json()->all());
+            $passkey = $this->ceremony()->verify($owner, $data);
 
-            // Debug: Log userHandle and credential information
-            $userHandle = request()->json('response.userHandle');
-            $credentialId = request()->json('id');
-            $credential = \App\Models\WebAuthnCredential::find($credentialId);
-
-            Log::info('[Passkey] Verification debug', [
-                'member_id' => $user->getId(),
-                'userHandle_from_browser' => $userHandle,
-                'credential_id' => $credentialId,
-                'credential_user_id' => $credential ? $credential->user_id : null,
-                'expected_user_id' => $user->webAuthnId()->toString(),
-                'credential_casts' => $credential ? $credential->getCasts() : null,
-                'credential_class' => $credential ? get_class($credential) : null,
+            Log::info('[Passkey] Login verification successful', [
+                'user_id' => $user->getId(),
+                'passkey_id' => $passkey->getKey(),
             ]);
 
-            // Create AssertionValidation object
-            $assertionValidation = new \Laragear\WebAuthn\Assertion\Validator\AssertionValidation(
-                $jsonTransport,
-                $user
-            );
-
-            // Execute AssertionValidator pipeline
-            $assertionValidator = app(\Laragear\WebAuthn\Assertion\Validator\AssertionValidator::class);
-            $result = $assertionValidator->send($assertionValidation)->thenReturn();
-
-            if ($result && $result->credential) {
-                Log::info('[Passkey] Login verification successful (Laragear)', [
-                    'member_id' => $user->getId(),
-                    'credential_id' => $result->credential->id,
-                ]);
-
-                return true;
-            }
-
+            return true;
+        } catch (Throwable $e) {
             Log::warning('[Passkey] Login verification failed', [
-                'member_id' => $user->getId(),
-            ]);
-
-            return false;
-        } catch (\Exception $e) {
-            Log::error('[Passkey] Verification error', [
-                'member_id' => $user->getId(),
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             return false;
@@ -215,41 +184,35 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
     /**
      * Register WebAuthn credentials
+     *
+     * `$credentialData` is the serialized PublicKeyCredential returned by
+     * navigator.credentials.create(), with binary fields base64url-encoded.
+     * It is validated against the options issued by
+     * generateRegistrationChallenge() for the same user.
+     *
+     * @return Passkey The stored passkey
+     *
+     * @throws \Laravel\Passkeys\Exceptions\InvalidPasskeyException when the attestation is rejected
      */
     public function registerCredential(TwoFaInterface $user, array $credentialData, ?string $deviceName = null)
     {
+        $owner = $this->passkeyOwner($user);
+        $name = $deviceName !== null && trim($deviceName) !== '' ? trim($deviceName) : $this->generateDeviceName();
+
         try {
-            // Create JsonTransport object
-            $jsonTransport = new \Laragear\WebAuthn\JsonTransport($credentialData);
+            $passkey = $this->ceremony()->register($owner, $credentialData, $name);
 
-            // Create AttestationValidation object
-            $attestationValidation = new \Laragear\WebAuthn\Attestation\Validator\AttestationValidation(
-                $user,
-                $jsonTransport
-            );
-
-            // Execute AttestationValidator pipeline
-            $attestationValidator = app(\Laragear\WebAuthn\Attestation\Validator\AttestationValidator::class);
-            $result = $attestationValidator->send($attestationValidation)->thenReturn();
-
-            // Set device name
-            if ($deviceName) {
-                $result->credential->alias = $deviceName;
-                $result->credential->save();
-            }
-
-            Log::info('[Passkey] Credential registration successful (Laragear)', [
-                'member_id' => $user->getId(),
-                'credential_id' => $result->credential->id,
-                'device_name' => $deviceName ?? $this->generateDeviceName(),
+            Log::info('[Passkey] Credential registration successful', [
+                'user_id' => $user->getId(),
+                'passkey_id' => $passkey->getKey(),
+                'device_name' => $name,
             ]);
 
-            return $result->credential;
-        } catch (\Exception $e) {
+            return $passkey;
+        } catch (Throwable $e) {
             Log::error('[Passkey] Registration error', [
-                'member_id' => $user->getId(),
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;
@@ -270,8 +233,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
      * Nothing in Core called it -- verifyPasskeyCredential(), its only route
      * in, has no callers anywhere in the repository, and Core registers no 2FA
      * passkey challenge route. Admin passkey *login* is a separate path
-     * (verifyLoginChallenge below) that runs Laragear's AssertionValidator
-     * pipeline and is sound.
+     * (verifyLoginChallenge above) that runs the full WebAuthn assertion
+     * validation and is sound.
      *
      * It is left throwing rather than deleted because the class carries `@api`
      * and appears in PLUGIN-API.md, so a plugin may already have been written
@@ -287,8 +250,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
     {
         throw new \LogicException(
             'TwoFaPasskeyService::verifyAssertion() is not implemented and never verified the '
-            .'assertion signature. Use verifyLoginChallenge(), which runs the Laragear '
-            .'AssertionValidator pipeline (challenge, origin, RP ID, signature, counter).'
+            .'assertion signature. Use verifyLoginChallenge(), which runs the full WebAuthn '
+            .'assertion validation (challenge, origin, RP ID, signature, counter).'
         );
     }
 
@@ -335,30 +298,27 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
     /**
      * Generate WebAuthn registration challenge
+     *
+     * Returns PublicKeyCredentialCreationOptionsJSON: `challenge`, `user.id`
+     * and `excludeCredentials[].id` are base64url strings. The full options
+     * are kept in the session for registerCredential().
      */
     public function generateRegistrationChallenge(TwoFaInterface $user): array
     {
+        $owner = $this->passkeyOwner($user);
+
         try {
-            // Create AttestationCreation object
-            $attestationCreation = new \Laragear\WebAuthn\Attestation\Creator\AttestationCreation($user);
+            $options = $this->ceremony()->registrationOptions($owner);
 
-            // Execute AttestationCreator pipeline
-            $attestationCreator = app(\Laragear\WebAuthn\Attestation\Creator\AttestationCreator::class);
-            $result = $attestationCreator->send($attestationCreation)->thenReturn();
-
-            // Convert from JsonTransport object to array
-            $jsonData = is_array($result->json) ? $result->json : $result->json->toArray();
-
-            Log::info('[Passkey] Registration challenge generated (Laragear)', [
-                'member_id' => $user->getId(),
+            Log::info('[Passkey] Registration challenge generated', [
+                'user_id' => $user->getId(),
             ]);
 
-            return $jsonData;
-        } catch (\Exception $e) {
+            return $options;
+        } catch (Throwable $e) {
             Log::error('[Passkey] Registration challenge generation error', [
-                'member_id' => $user->getId(),
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             throw $e;
@@ -367,32 +327,38 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
     /**
      * Generate WebAuthn authentication challenge
+     *
+     * Same options as generateLoginChallenge()'s `publicKey`, stored in the
+     * session the same way. Core does not route a 2FA-step passkey
+     * verification; see verifyAssertion().
      */
     public function generateAuthenticationChallenge(TwoFaInterface $user): array
     {
-        $challenge = random_bytes(32);
-        $challengeBase64 = base64_encode($challenge);
+        return $this->ceremony()->verificationOptions($this->passkeyOwner($user));
+    }
 
-        $credentials = $this->getCredentials($user);
-        $allowCredentials = $credentials->map(function ($credential) {
-            return [
-                'type' => 'public-key',
-                'id' => $credential->id, // id instead of credential_id
-                'transports' => json_decode($credential->transports ?? '["internal","hybrid"]', true),
-            ];
-        })->toArray();
+    /**
+     * The users passkeys can be registered for must implement PasskeyUser.
+     *
+     * Core's Member does; a plugin user model that stores passkeys has to as
+     * well (see DixlaseUsersUser).
+     */
+    private function passkeyOwner(TwoFaInterface $user): PasskeyUser
+    {
+        if (! $user instanceof PasskeyUser) {
+            throw new LogicException(sprintf(
+                '%s must implement %s to use passkeys.',
+                $user::class,
+                PasskeyUser::class
+            ));
+        }
 
-        $options = [
-            'challenge' => $challengeBase64,
-            'timeout' => 60000,
-            'rpId' => parse_url(config('app.url'), PHP_URL_HOST),
-            'allowCredentials' => $allowCredentials,
-            'userVerification' => 'required',
-        ];
+        return $user;
+    }
 
-        session(['webauthn_challenge' => $challengeBase64]);
-
-        return $options;
+    private function ceremony(): PasskeyCeremony
+    {
+        return app(PasskeyCeremony::class);
     }
 
     /**
@@ -426,8 +392,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
      * never read. A caller could therefore authenticate with any signature
      * bytes.
      *
-     * The real implementation is verifyLoginChallenge(), which hands the
-     * assertion to Laragear's AssertionValidator. There is no reason to keep a
+     * The real implementation is verifyLoginChallenge(), which runs the full
+     * WebAuthn assertion validation. There is no reason to keep a
      * second, weaker one next to it -- the name is what made the original
      * dangerous, so the name does not come back.
      */

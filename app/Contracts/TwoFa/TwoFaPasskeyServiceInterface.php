@@ -101,7 +101,7 @@ interface TwoFaPasskeyServiceInterface
      * The method stays on the contract so an implementer is told what NOT to
      * do here; removing it would silently drop the warning along with the
      * signature. Verification belongs in verifyLoginChallenge(), which runs
-     * Laragear's AssertionValidator pipeline.
+     * the full WebAuthn assertion validation.
      *
      * @throws \LogicException always, in the Core implementation
      */
