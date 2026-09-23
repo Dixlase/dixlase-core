@@ -40,7 +40,7 @@ env:
   # target — the resulting vendor/ runs on 8.3, 8.4, and 8.5+. Bumping this
   # is fine as long as the platform pin moves with it.
   PHP_VERSION: '8.3'
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   # GitHub OAuth token used by Composer to clone private dependencies
   # (currently dixlase/dixlase-onepage, which composer/installers routes
   # to themes/DixlaseOnePage/). Identical secret name + format used by

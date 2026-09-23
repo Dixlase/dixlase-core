@@ -51,7 +51,7 @@ The default table prefix is `dls_`. UTF-8 (`utf8mb4`) character set is required.
 | Tool | Version | Purpose |
 |------|---------|---------|
 | Composer | 2.x | PHP dependency management |
-| Node.js | 18+ | Frontend asset compilation |
+| Node.js | 22.12+ | Frontend asset compilation |
 | npm | 9+ | Node package management |
 
 ## Docker Requirements (Development)
