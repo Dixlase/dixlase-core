@@ -62,6 +62,7 @@ use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\SecuritySettingsRegistry;
+use App\Support\ExtensionDirectories;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1293,6 +1294,18 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         foreach ($directories as $directory) {
             $dirName = basename($directory);
+
+            // A move-aside copy left by an update (Foo.stale.<timestamp>,
+            // Foo.bak) is a complete copy down to the manifest and
+            // database/migrations/, so it used to be offered here as an
+            // installable plugin. Installing one ran its migrations for real
+            // and registered its routes, while its ServiceProvider could never
+            // resolve -- a directory name with a dot is not a valid namespace
+            // segment. The install request rejects these too; this keeps them
+            // from being presented as a choice at all.
+            if (! ExtensionDirectories::isInstalledName($dirName)) {
+                continue;
+            }
 
             // Detect plugins not registered in DB
             if (! in_array($dirName, $installedDirectories)) {

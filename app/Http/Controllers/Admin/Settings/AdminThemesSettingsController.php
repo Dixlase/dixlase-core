@@ -56,6 +56,7 @@ use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
+use App\Support\ExtensionDirectories;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -925,6 +926,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
         foreach ($directories as $directory) {
             $dirName = basename($directory);
+
+            // Skip move-aside copies for the same reason as the plugin list:
+            // a theme update leaves DixlaseOnePage.stale.<timestamp> next to
+            // the live directory, complete enough to look installable, and
+            // installing one runs its migrations while its ServiceProvider can
+            // never resolve.
+            if (! ExtensionDirectories::isInstalledName($dirName)) {
+                continue;
+            }
 
             // Detect themes not registered in DB
             if (! in_array($dirName, $installedDirectories)) {

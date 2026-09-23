@@ -212,6 +212,10 @@ return [
         'default_two_fa_method' => [
             'in_enabled_methods' => 'The default two-factor method must be selected from the enabled methods.',
         ],
+        'extension_directory' => [
+            'invalid' => 'That is not a valid plugin or theme directory name.',
+            'not_installed_name' => 'That directory is a leftover copy, not an installed plugin or theme. Copies left behind by an update (names containing a dot, or starting with an underscore) cannot be installed.',
+        ],
     ],
 
     /*
