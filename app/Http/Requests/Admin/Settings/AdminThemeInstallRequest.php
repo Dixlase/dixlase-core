@@ -35,6 +35,7 @@
 
 namespace App\Http\Requests\Admin\Settings;
 
+use App\Rules\InstalledExtensionDirectory;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminThemeInstallRequest extends FormRequest
@@ -55,7 +56,11 @@ class AdminThemeInstallRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'directory' => 'required|string',
+            // The value is interpolated into base_path("themes/{$value}")
+            // and handed to dls:theme:install, which runs that directory's
+            // migrations -- so it has to be a bare name, and an installed
+            // extension's name rather than a move-aside copy of one.
+            'directory' => ['required', 'string', new InstalledExtensionDirectory()],
         ];
     }
 }
