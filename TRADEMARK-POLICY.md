@@ -1,21 +1,23 @@
 # Dixlase Trademark Policy
 
-**Status:** DRAFT — Trademark Application Pending
+**Status:** DRAFT — Trademark Applications Pending
 **Draft Version:** 0.1 (Pre-release)
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-09-23
 
 > ### Important — Draft Status Notice
 >
 > This Trademark Policy is a **working draft** published alongside the v0.1.0
-> release for community visibility. The "Dixlase" word mark and associated
-> logos are currently the subject of trademark applications by exc-D inc.
-> ("exc-D"). **Registration has not yet been granted in any jurisdiction.**
+> release for community visibility. The "Dixlase" and "ディクセイラス"
+> word marks and the associated logos are the subject of **trademark
+> applications currently pending before the Japan Patent Office**, filed
+> by exc-D inc. ("exc-D").
 >
 > Because the applications are in progress:
 >
+> - The applications are filed **in Japan only** at this time. No
+>   registered-trademark rights are claimed outside Japan.
 > - The scope of rights stated in this document may change as the
->   applications proceed to registration, are amended, or are refused in
->   one or more jurisdictions.
+>   applications proceed to registration, are amended, or are refused.
 > - This document is not, by itself, a legal claim of registered trademark
 >   rights. Marks referenced here should currently be treated as
 >   **unregistered marks (™)** rather than registered marks (®).
@@ -48,14 +50,16 @@ registered, used by exc-D in connection with the Dixlase project
 | Mark | Status | Notes |
 |---|---|---|
 | **Dixlase** (word mark) | Application pending | Primary project name |
+| **ディクセイラス** (word mark) | Application pending | Japanese-script form of the project name |
 | **Dixlase** logo | Application pending | Visual mark distributed in the repository |
-| Names of official plugins / themes published by exc-D (e.g. "DixlasePages", "DixlaseSEO", "DixlaseUsers", "DixlaseAuthority", "DixlaseSigner", "DixlaseOnePage") | Unregistered | Identifies official, exc-D-published extensions |
-| **exc-D**, **exc-D inc.** | Identifier of the operator | Distinct from the Dixlase Marks |
+| Names of official plugins / themes published by exc-D (e.g. "DixlasePages", "DixlaseInquiry", "DixlaseMenus", "DixlaseSEO", "DixlaseCookie", "DixlaseOnePage") | Unregistered | Identifies official, exc-D-published extensions |
+| **exc-D**, **exc-D inc.**, **株式会社エクシーディー** | Identifier of the operator | Distinct from the Dixlase Marks |
 
-The list above will be revised as new marks are introduced or as
-applications proceed. The current list of indicators that exc-D treats as
-project marks is, at any time, controlled by this Policy regardless of
-registration status.
+"Application pending" above means that a trademark application has been
+filed with the Japan Patent Office and is under examination. The list
+will be revised as new marks are introduced or as applications proceed.
+The current list of indicators that exc-D treats as project marks is, at
+any time, controlled by this Policy regardless of registration status.
 
 ## 2. Goals of This Policy
 
