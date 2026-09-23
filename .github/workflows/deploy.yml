@@ -165,6 +165,32 @@ jobs:
                   "cd /var/www/apps/$SITE && composer install --no-dev --no-interaction --optimize-autoloader"
               fi
 
+              # 4-b. Composer がテーマの作業ツリーを置き換えていたら git 管理下に戻す
+              # themes/DixlaseOnePage は Composer (installer-paths) とテーマ側の
+              # deploy (git clone) の両方が同じパスを所有している。lock の参照が
+              # 動くと手順 4 がディレクトリを入れ替えて zip を展開し直すため、
+              # .git が失われ、テーマは lock の古い参照まで静かに巻き戻り、次の
+              # テーマ deploy は .git が無いのを見て退避コピーを作る。
+              #
+              # 発火条件を「.git が無い」に限定しているのは、運用者が
+              # dls:theme:rollback で戻した状態を上書きしないため (その場合 .git は
+              # 残る)。ここが動くのは Composer が直前に置き換えたときだけで、
+              # そのとき運用者の状態はすでに失われている。
+              #
+              # ディレクトリは削除せず、その場で git 管理下に戻して main に
+              # 合わせる。恒久対応は Composer に所有させるのをやめること
+              # (バックログ theme-directory-dual-ownership)。
+              if [ -d themes/DixlaseOnePage ] && [ ! -d themes/DixlaseOnePage/.git ]; then
+                echo "  themes/DixlaseOnePage has no .git — Composer replaced it; re-adopting the checkout"
+                git -C themes/DixlaseOnePage init -q
+                git -C themes/DixlaseOnePage remote add origin \
+                  git@github.com:Dixlase/theme-dixlase-onepage.git
+                git -C themes/DixlaseOnePage fetch --depth=1 -q origin main
+                git -C themes/DixlaseOnePage reset --hard -q FETCH_HEAD
+                docker exec compose-php-1 bash -c \
+                  "cd /var/www/apps/$SITE && php scripts/sync-local-autoload.php" || true
+              fi
+
               # 5. CIでビルド済みのフロントエンドアセットをコピー
               mkdir -p public/assets/build
               rsync -a "$BASE/_shared/build/" public/assets/build/
