@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -101,6 +102,29 @@ use Illuminate\Support\Facades\DB;
  * row's primary key (with the scope's filter re-applied as belt-and-
  * suspenders) so a future row whose name happens to collide with a
  * pruned one cannot be removed by accident.
+ *
+ * Two things deliberately never produce a scope, because guessing would
+ * risk deleting a valid ledger row:
+ *
+ *   - **Directories that are not an installed extension** (a leftover
+ *     copy such as `themes/DixlaseOnePage.stale.20260705-033828`). They
+ *     ship a complete manifest and `database/migrations/`, so they used
+ *     to be scanned as extra extensions declaring the same slug; a copy
+ *     that predates a migration file then made its *applied* ledger row
+ *     look orphaned, and `--prune` deleted it. See
+ *     {@see ExtensionDirectories} for how such a directory is told apart.
+ *   - **Two installed directories declaring the same slug.** Reported as
+ *     a duplicate; the slug is left entirely alone (no renames, no
+ *     prunes) until the operator removes one of them.
+ *
+ * Ledger rows whose slug matches no installed extension are no longer
+ * silently invisible either: previously a row written under a slug the
+ * extension has since renamed away from (e.g. `dixlase-one-page` →
+ * `dixlase-onepage`) was never queried, so the report claimed its
+ * migrations were "pending" while they were in fact applied — and a
+ * subsequent migrate would fail on `CREATE TABLE`. Those rows are now
+ * listed as unknown-slug rows. They are never pruned: the fix is to
+ * correct the slug, not to delete the history.
  */
 class MigrationResync extends Command
 {
@@ -113,6 +137,26 @@ class MigrationResync extends Command
     protected const PLUGIN_MIGRATIONS_TABLE = 'plugin_migrations';
 
     protected const THEME_MIGRATIONS_TABLE = 'theme_migrations';
+
+    /**
+     * Findings that belong to the run as a whole rather than to one
+     * scope: directories passed over as not-an-installed-extension,
+     * slugs claimed by more than one directory, and ledger rows whose
+     * slug no installed extension declares. Filled by
+     * {@see self::collectScopeResults()} and rendered by
+     * {@see self::report()}.
+     *
+     * @var array{
+     *     ignored: array<string, list<string>>,
+     *     duplicates: array<string, list<string>>,
+     *     unknown: list<array{table: string, column: string, slug: string, migrations: list<string>}>,
+     * }
+     */
+    protected array $meta = [
+        'ignored' => [],
+        'duplicates' => [],
+        'unknown' => [],
+    ];
 
     /**
      * The name and signature of the console command.
@@ -218,7 +262,9 @@ class MigrationResync extends Command
             migrationsDir: $this->basePath().'/database/migrations',
         );
 
+        $pluginSlugs = [];
         foreach ($this->discoverExtensions('plugins', 'plugin.json') as $extension) {
+            $pluginSlugs[] = $extension['slug'];
             $results[] = $this->resyncScope(
                 scope: 'plugin:'.$extension['slug'],
                 table: self::PLUGIN_MIGRATIONS_TABLE,
@@ -228,7 +274,9 @@ class MigrationResync extends Command
             );
         }
 
+        $themeSlugs = [];
         foreach ($this->discoverExtensions('themes', 'theme.json') as $extension) {
+            $themeSlugs[] = $extension['slug'];
             $results[] = $this->resyncScope(
                 scope: 'theme:'.$extension['slug'],
                 table: self::THEME_MIGRATIONS_TABLE,
@@ -238,7 +286,70 @@ class MigrationResync extends Command
             );
         }
 
+        $this->meta['unknown'] = array_merge(
+            $this->unknownLedgerRows(self::PLUGIN_MIGRATIONS_TABLE, 'plugin', $pluginSlugs, 'plugins'),
+            $this->unknownLedgerRows(self::THEME_MIGRATIONS_TABLE, 'theme', $themeSlugs, 'themes'),
+        );
+
         return $results;
+    }
+
+    /**
+     * Ledger rows whose slug no scope covered, grouped by slug.
+     *
+     * A scope only exists for a slug some installed extension declares,
+     * so rows carrying any other slug were never queried — the report
+     * said nothing about them and `--prune` could not reach them. That
+     * silence is the bug: the usual cause is an extension that renamed
+     * its slug (`dixlase-one-page` → `dixlase-onepage`), which leaves
+     * its applied migrations recorded under the old name while the new
+     * scope reports the very same migrations as pending. Running the
+     * extension's migrate then fails on `CREATE TABLE`.
+     *
+     * Slugs listed in `$duplicates` are excluded: those rows are not
+     * unknown, they belong to a slug this run deliberately left alone.
+     *
+     * @param  list<string>  $knownSlugs
+     * @return list<array{table: string, column: string, slug: string, migrations: list<string>}>
+     */
+    protected function unknownLedgerRows(string $table, string $column, array $knownSlugs, string $root): array
+    {
+        if (! DB::getSchemaBuilder()->hasTable($table)) {
+            return [];
+        }
+
+        $duplicateSlugs = [];
+        foreach (array_keys($this->meta['duplicates']) as $key) {
+            if (str_starts_with($key, $root.':')) {
+                $duplicateSlugs[] = substr($key, strlen($root) + 1);
+            }
+        }
+
+        $grouped = [];
+
+        foreach (DB::table($table)->orderBy('id')->get([$column, 'migration']) as $row) {
+            $slug = (string) $row->{$column};
+
+            if (in_array($slug, $knownSlugs, true) || in_array($slug, $duplicateSlugs, true)) {
+                continue;
+            }
+
+            $grouped[$slug][] = (string) $row->migration;
+        }
+
+        ksort($grouped);
+
+        $unknown = [];
+        foreach ($grouped as $slug => $migrations) {
+            $unknown[] = [
+                'table' => $table,
+                'column' => $column,
+                'slug' => $slug,
+                'migrations' => $migrations,
+            ];
+        }
+
+        return $unknown;
     }
 
     /**
@@ -388,9 +499,10 @@ class MigrationResync extends Command
     protected function discoverExtensions(string $rootSubdir, string $manifestName): array
     {
         $base = $this->basePath();
-        $extensions = [];
+        $ignored = [];
+        $bySlug = [];
 
-        foreach (glob($base.'/'.$rootSubdir.'/*', GLOB_ONLYDIR) ?: [] as $dir) {
+        foreach (ExtensionDirectories::list($base.'/'.$rootSubdir, $ignored) as $dir) {
             $migrationsDir = $dir.'/database/migrations';
             if (! is_dir($migrationsDir)) {
                 continue;
@@ -399,9 +511,32 @@ class MigrationResync extends Command
             $slug = $this->slugFromManifest($dir.'/'.$manifestName)
                 ?? basename($dir);
 
+            $bySlug[$slug][] = $dir;
+        }
+
+        if ($ignored !== []) {
+            $this->meta['ignored'][$rootSubdir] = $ignored;
+        }
+
+        $extensions = [];
+
+        foreach ($bySlug as $slug => $dirs) {
+            if (count($dirs) > 1) {
+                // Two installed directories claiming one slug. Both
+                // would query the same ledger rows against different
+                // files, so whichever is missing a migration would make
+                // an applied row look orphaned. Leave the slug alone.
+                $this->meta['duplicates'][$rootSubdir.':'.$slug] = array_map(
+                    static fn (string $dir): string => basename($dir),
+                    $dirs,
+                );
+
+                continue;
+            }
+
             $extensions[] = [
                 'slug' => $slug,
-                'migrations_dir' => $migrationsDir,
+                'migrations_dir' => $dirs[0].'/database/migrations',
             ];
         }
 
@@ -553,6 +688,9 @@ class MigrationResync extends Command
                     'pending' => $s['pending'],
                     'collisions' => $s['collisions'],
                 ], $scopes),
+                'ignored_directories' => $this->meta['ignored'],
+                'duplicate_slugs' => $this->meta['duplicates'],
+                'unknown_rows' => $this->meta['unknown'],
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             return Command::SUCCESS;
@@ -570,6 +708,8 @@ class MigrationResync extends Command
                 $this->printScopePending($scope);
                 $this->printScopeCollisions($scope);
             }
+
+            $this->printMeta();
 
             return Command::SUCCESS;
         }
@@ -603,6 +743,8 @@ class MigrationResync extends Command
 
             $this->newLine();
         }
+
+        $this->printMeta();
 
         if ($status === 'dry_run') {
             $hint = $prune
@@ -665,6 +807,71 @@ class MigrationResync extends Command
         $verb = $status === 'applied' ? '<fg=red>Pruned</>' : '<fg=yellow>Would prune</>';
 
         return sprintf('  %s %d record(s) with no matching file:', $verb, $count);
+    }
+
+    /**
+     * Render the run-wide findings collected in {@see self::$meta}:
+     * directories passed over, slugs claimed twice, and ledger rows no
+     * scope covered. All three are printed on every run, including the
+     * "already aligned" one — the Brand site's case looked completely
+     * clean while two applied theme migrations were being reported as
+     * pending under a renamed slug.
+     */
+    protected function printMeta(): void
+    {
+        foreach ($this->meta['ignored'] as $root => $names) {
+            $this->newLine();
+            $this->line(sprintf(
+                '<fg=gray>[skipped] %d director%s under %s/ %s not an installed extension (a leftover copy), so no scope was built for %s:</>',
+                count($names),
+                count($names) === 1 ? 'y' : 'ies',
+                $root,
+                count($names) === 1 ? 'is' : 'are',
+                count($names) === 1 ? 'it' : 'them',
+            ));
+            foreach ($names as $name) {
+                $this->line('    <fg=gray>·</> '.$root.'/'.$name);
+            }
+        }
+
+        if ($this->meta['duplicates'] !== []) {
+            $this->newLine();
+            $this->warn(sprintf(
+                '%d slug(s) are declared by more than one installed directory — those slugs were left entirely alone (no renames, no prunes).',
+                count($this->meta['duplicates']),
+            ));
+            foreach ($this->meta['duplicates'] as $key => $dirs) {
+                [$root, $slug] = explode(':', $key, 2);
+                $this->line(sprintf('    <fg=yellow>·</> %s (in %s/)', $slug, $root));
+                foreach ($dirs as $dir) {
+                    $this->line('        '.$root.'/'.$dir);
+                }
+            }
+            $this->line('  <fg=yellow>Move or remove the directory that is not the installed one, then re-run.</>');
+        }
+
+        if ($this->meta['unknown'] !== []) {
+            $this->newLine();
+            $this->warn(sprintf(
+                '%d slug(s) recorded in the ledger are not declared by any installed extension. Those rows were not examined and are never pruned.',
+                count($this->meta['unknown']),
+            ));
+            foreach ($this->meta['unknown'] as $entry) {
+                $this->line(sprintf(
+                    '    <fg=yellow>·</> %s = %s <fg=gray>(%s, %d row(s))</>',
+                    $entry['column'],
+                    $entry['slug'],
+                    $entry['table'],
+                    count($entry['migrations']),
+                ));
+                foreach ($entry['migrations'] as $migration) {
+                    $this->line('        '.$migration);
+                }
+            }
+            $this->line('  <fg=yellow>Usually the extension renamed its slug: the rows are applied migrations recorded under the old one,</>');
+            $this->line('  <fg=yellow>while the new scope reports the same migrations as pending. Correct the slug in the ledger rather than</>');
+            $this->line('  <fg=yellow>re-running the migration, which would fail on an existing table.</>');
+        }
     }
 
     /**

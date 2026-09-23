@@ -22,6 +22,7 @@
 
 namespace Tests\Feature\Console;
 
+use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\VersionDriftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,6 +105,67 @@ class CoreReconcileTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame(0, CoreVersionHistory::count());
+    }
+
+    /**
+     * Record the marker an interrupted update leaves behind — the pair
+     * the Updates screen renders in red.
+     */
+    protected function markPreviousUpdateFailed(string $reason = 'Maintenance mode lifted automatically: the core update process (pid 3687) is no longer running.'): void
+    {
+        CoreRelease::singleton()->forceFill([
+            'update_failed_at' => now(),
+            'update_failure_reason' => $reason,
+        ])->save();
+    }
+
+    public function test_confirm_clears_the_failure_marker_left_by_an_interrupted_update(): void
+    {
+        $this->stubDrift(onDisk: '0.3.1', ledger: '0.2.4');
+        $this->markPreviousUpdateFailed();
+
+        $this->artisan('dls:core:reconcile --confirm')
+            ->expectsOutputToContain('A previous update or rollback left a failure marker')
+            ->expectsOutputToContain('Wrote synthetic history row')
+            ->expectsOutputToContain('Cleared the failure marker')
+            ->assertSuccessful();
+
+        $state = CoreRelease::singleton()->fresh();
+        $this->assertNull($state->update_failed_at);
+        $this->assertNull($state->update_failure_reason);
+    }
+
+    public function test_dry_run_reports_the_failure_marker_without_clearing_it(): void
+    {
+        $this->stubDrift(onDisk: '0.3.1', ledger: '0.2.4');
+        $this->markPreviousUpdateFailed();
+
+        $this->artisan('dls:core:reconcile')
+            ->expectsOutputToContain('A previous update or rollback left a failure marker')
+            ->expectsOutputToContain('clear the failure marker above')
+            ->assertSuccessful();
+
+        $this->assertNotNull(CoreRelease::singleton()->fresh()->update_failed_at);
+    }
+
+    public function test_a_leftover_marker_is_cleared_even_when_the_ledger_already_matches(): void
+    {
+        $this->stubDrift(onDisk: '0.3.1', ledger: '0.3.1');
+        $this->markPreviousUpdateFailed();
+
+        // Without --confirm the marker survives and the operator is told
+        // no ledger change is needed.
+        $this->artisan('dls:core:reconcile')
+            ->expectsOutputToContain('the ledger itself needs no change')
+            ->assertSuccessful();
+        $this->assertNotNull(CoreRelease::singleton()->fresh()->update_failed_at);
+
+        $this->artisan('dls:core:reconcile --confirm')
+            ->expectsOutputToContain('Cleared the failure marker')
+            ->assertSuccessful();
+
+        $this->assertNull(CoreRelease::singleton()->fresh()->update_failed_at);
+        $this->assertSame(0, CoreVersionHistory::count(), 'no drift means no synthetic row');
     }
 
     public function test_refuses_reverse_drift_without_force(): void
