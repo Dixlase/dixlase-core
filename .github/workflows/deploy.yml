@@ -79,14 +79,14 @@ jobs:
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
 
-            for SITE in brand docs demo keys; do
+            for SITE in brand docs demo authority; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
 
               # 0. サイトが未セットアップなら skip
               # 本番サーバー側に $BASE/$SITE が存在しない (host) か、
               # compose-php-1 の /var/www/apps/$SITE が存在しない (container)
               # 状態ならそのサイトは未セットアップ扱いで通過させる。
-              # これがないと keys のように bind mount が未追加のサイトで
+              # これがないと bind mount が未追加のサイトで
               # `cd: ... No such file or directory` or `chown: cannot access`
               # で loop 全体が exit 1 して以降のサイトに deploy できなくなる。
               if [ ! -d "$BASE/$SITE" ]; then
@@ -134,11 +134,14 @@ jobs:
 
               # 3-b. サイト固有プラグインの clone / 更新
               # DixlaseAuthority は authority.dixlase.net 専用 (署名鍵管理プラグイン)。
+              # サイト名は keys から authority に改称済み。旧名のままだとループ側の
+              # skip ガードに吸収されて赤くならず、authority だけが静かに
+              # デプロイされない状態になる (2026-09-24 に発覚)。
               # core の submodule からは外し、各サイトで standalone clone として運用する。
               # 旧 submodule の残骸が残っているサイトでは git reset --hard が submodule pointer に
               # 詰まるため、不要なサイトでは丸ごと撤去する。
               case "$SITE" in
-                keys)
+                authority)
                   if [ -d plugins/DixlaseAuthority/.git ]; then
                     (cd plugins/DixlaseAuthority && git fetch --quiet origin && git reset --hard origin/main)
                   else
