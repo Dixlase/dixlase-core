@@ -150,6 +150,7 @@ with the full PR-based contribution guide.
 
 ## 📖 Governance & Policies
 
+- [Pillars Guidelines](./PILLARS.md) — What each pillar promises, and what it does not (draft)
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute
 - [Copyright Policy](./COPYRIGHT-POLICY.md) — Dual-license stance and CLA model overview
 - [Contributor License Agreement](./CLA.md) — In preparation; the full text will be published when external contributions reopen
