@@ -32,6 +32,14 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 最初の安定版 Plugin API 凍結。このリリースは、AGPL プラグイン・テーマ例外
 （`LICENSE` を参照）の下でプラグイン・テーマが依拠できる公開境界を確立します。
 
+### 動作要件
+
+- PHP `>= 8.3`
+- Laravel 13
+
+同梱の Docker ランタイムは PHP 8.3 を提供します。データベース・Web サーバー・
+PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照してください。
+
 ### 追加
 
 #### Plugin API サーフェス（凍結）
@@ -141,7 +149,9 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 ### プラグイン作者向けの注記
 
 - v0.1 系を対象とするプラグインは、`plugin.json` に
-  `"requires": {"dixlase": "^0.1.0"}` を宣言してください。
+  `"requires": {"dixlase": "^0.1.0", "php": ">=8.3"}` を宣言してください。
+  `>=1.0.0` はこの系列では正しい制約ではありません（0.1.x のリリースと
+  非互換として扱われます）。
 - `PLUGIN-API.md` に列挙されていない内部クラス（特に
   `App\Services\Plugin\PluginHealthScorer`, `App\DTO\Plugin\HealthScoreResult` など
   の実装詳細）は Plugin API の **一部ではありません**。これらは予告なく任意の
