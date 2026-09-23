@@ -90,6 +90,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Fortify;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -102,6 +103,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Fortify's own routes are not published. Dixlase ships its own
+        // authentication surface under the operator-configurable admin prefix
+        // (routes/admin.php), guarded by AdminIpFilter, the lockdown check and
+        // AdminLoginController; two-factor management lives under
+        // admin.profile.two-fa and password confirmation under
+        // AdminConfirmablePasswordController. Fortify's defaults would publish
+        // a second, fixed entry point — POST /login on the `member` guard with
+        // only the `web` middleware, plus /logout, /two-factor-challenge and
+        // /user/confirm-password — that bypasses all of the above, and its
+        // GET /login 500s because no Fortify view is registered.
+        //
+        // This must run in register(), before Fortify's provider boots and
+        // reads the flag. The twoFactorAuthentication feature stays enabled in
+        // config/fortify.php: the application uses its actions and the
+        // TwoFactorAuthenticatable trait, only the HTTP surface is dropped.
+        Fortify::ignoreRoutes();
+
         // Register plugin permission service as singleton
         $this->app->singleton(PluginPermissionService::class, function ($app) {
             return new PluginPermissionService();
