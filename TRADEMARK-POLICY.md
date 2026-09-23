@@ -1,4 +1,4 @@
-# Dixlase Trademark Policy
+# Dixlase Trademark Policy (Draft)
 
 **Status:** DRAFT — Trademark Applications Pending
 **Draft Version:** 0.1 (Pre-release)
