@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Services\Plugin\Scanning\PatternRegistry;
 use App\Services\Theme\ThemePermissionService;
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -135,6 +136,14 @@ class ThemeAudit extends Command
         $themesDir = base_path('themes');
         if (File::isDirectory($themesDir)) {
             foreach (File::directories($themesDir) as $dir) {
+                // A move-aside copy carries the same manifest slug as the
+                // live directory, so without this it would be returned once
+                // the live directory is gone -- and --fix would then write
+                // into the abandoned copy while reporting success.
+                if (! ExtensionDirectories::isInstalledName(basename($dir))) {
+                    continue;
+                }
+
                 // Match with kebab-case
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;

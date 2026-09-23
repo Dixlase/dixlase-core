@@ -42,6 +42,7 @@ use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\Plugin\Scanning\PatternRegistry;
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -198,6 +199,14 @@ class PluginAudit extends Command
         $pluginsDir = base_path('plugins');
         if (File::isDirectory($pluginsDir)) {
             foreach (File::directories($pluginsDir) as $dir) {
+                // A move-aside copy carries the same manifest slug as the
+                // live directory, so without this it would be returned once
+                // the live directory is gone -- and --fix would then write
+                // into the abandoned copy while reporting success.
+                if (! ExtensionDirectories::isInstalledName(basename($dir))) {
+                    continue;
+                }
+
                 // Match with kebab-case
                 if (Str::kebab(basename($dir)) === $input) {
                     return $dir;
