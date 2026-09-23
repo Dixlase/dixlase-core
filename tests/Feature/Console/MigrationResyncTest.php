@@ -530,4 +530,133 @@ class MigrationResyncTest extends TestCase
             'JSON skipped field must remain a list<string> for backward compatibility',
         );
     }
+
+    // ------------------------------------------------------------------
+    // Leftover copies, duplicate slugs, unknown slugs
+    // ------------------------------------------------------------------
+
+    /**
+     * Write the shape a site develops over time: the installed theme next
+     * to a copy of an older version of itself, moved aside by an operator
+     * or by deploy tooling. The copy declares the same slug and carries
+     * only the migration files that existed when it was made.
+     */
+    protected function writeThemeWithStaleCopy(): void
+    {
+        $this->writeThemeManifest('themes/DixlaseOnePage', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000002_add_theme_update_migration_marker.php');
+
+        $this->writeThemeManifest('themes/DixlaseOnePage.stale.20260705-033828', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePage.stale.20260705-033828/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+    }
+
+    public function test_a_leftover_extension_copy_does_not_create_a_second_scope(): void
+    {
+        $this->writeThemeWithStaleCopy();
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000001_create_thm_dixlase_onepage_settings_table');
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000002_add_theme_update_migration_marker');
+
+        $this->runResync(json: true, prune: true);
+        $json = $this->decodeJson();
+
+        $themeScopes = array_values(array_filter(
+            $json['scopes'],
+            fn (array $scope): bool => str_starts_with($scope['scope'], 'theme:'),
+        ));
+
+        $this->assertCount(1, $themeScopes, 'the leftover copy must not become a second scope for the same slug');
+        $this->assertSame([], $themeScopes[0]['skipped']);
+        $this->assertSame(0, $json['total_prunes']);
+        $this->assertSame(
+            ['DixlaseOnePage.stale.20260705-033828'],
+            $json['ignored_directories']['themes'],
+            'the copy must be reported as skipped rather than silently dropped',
+        );
+    }
+
+    public function test_prune_keeps_a_row_the_leftover_copy_has_no_file_for(): void
+    {
+        $this->writeThemeWithStaleCopy();
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000001_create_thm_dixlase_onepage_settings_table');
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000002_add_theme_update_migration_marker');
+
+        $this->runResync(confirm: true, prune: true);
+
+        $this->assertTrue(
+            $this->themeContains('dixlase-onepage', '0001_01_01_000002_add_theme_update_migration_marker'),
+            'an applied migration missing only from a leftover copy must survive --prune',
+        );
+        $this->assertTrue($this->themeContains('dixlase-onepage', '0001_01_01_000001_create_thm_dixlase_onepage_settings_table'));
+    }
+
+    public function test_two_installed_directories_with_one_slug_are_left_untouched(): void
+    {
+        $this->writeThemeManifest('themes/DixlaseOnePage', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000002_add_theme_update_migration_marker.php');
+
+        // A dot-free second directory, so the leftover-copy rule cannot
+        // resolve it: this is a genuine misconfiguration.
+        $this->writeThemeManifest('themes/DixlaseOnePageCopy', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePageCopy/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000001_create_thm_dixlase_onepage_settings_table');
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000002_add_theme_update_migration_marker');
+
+        $this->runResync(json: true, prune: true);
+        $json = $this->decodeJson();
+
+        $this->assertNull($this->findScope($json, 'theme:dixlase-onepage'), 'a duplicated slug must not be resynced');
+        $this->assertSame(
+            ['DixlaseOnePage', 'DixlaseOnePageCopy'],
+            $json['duplicate_slugs']['themes:dixlase-onepage'],
+        );
+        $this->assertSame(0, $json['total_prunes']);
+
+        $this->runResync(confirm: true, prune: true);
+
+        $this->assertTrue($this->themeContains('dixlase-onepage', '0001_01_01_000002_add_theme_update_migration_marker'));
+    }
+
+    public function test_ledger_rows_under_an_unknown_slug_are_reported_and_never_pruned(): void
+    {
+        $this->writeThemeManifest('themes/DixlaseOnePage', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+
+        // Applied under the slug the theme used before it was renamed.
+        $this->seedThemeLedger('dixlase-one-page', '0001_01_01_000001_create_thm_dixlase_one_page_settings_table');
+
+        $this->runResync(json: true, prune: true);
+        $json = $this->decodeJson();
+
+        $this->assertSame(
+            [[
+                'table' => 'theme_migrations',
+                'column' => 'theme',
+                'slug' => 'dixlase-one-page',
+                'migrations' => ['0001_01_01_000001_create_thm_dixlase_one_page_settings_table'],
+            ]],
+            $json['unknown_rows'],
+        );
+        $this->assertSame(0, $json['total_prunes'], 'unknown-slug rows are not prune candidates');
+
+        $this->runResync(confirm: true, prune: true);
+
+        $this->assertTrue(
+            $this->themeContains('dixlase-one-page', '0001_01_01_000001_create_thm_dixlase_one_page_settings_table'),
+            'a row recorded under a renamed slug must not be deleted',
+        );
+    }
+
+    public function test_a_slug_matching_an_installed_extension_is_not_reported_as_unknown(): void
+    {
+        $this->writeThemeManifest('themes/DixlaseOnePage', 'dixlase-onepage');
+        $this->writeMigration('themes/DixlaseOnePage/database/migrations/0001_01_01_000001_create_thm_dixlase_onepage_settings_table.php');
+        $this->seedThemeLedger('dixlase-onepage', '0001_01_01_000001_create_thm_dixlase_onepage_settings_table');
+
+        $this->runResync(json: true);
+
+        $this->assertSame([], $this->decodeJson()['unknown_rows']);
+    }
 }
