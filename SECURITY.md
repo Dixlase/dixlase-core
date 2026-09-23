@@ -105,6 +105,8 @@ We practice coordinated disclosure:
 4. We publicly disclose the vulnerability after the patch is available, giving users time to update
 5. We credit the reporter in our security advisory (unless the reporter wishes to remain anonymous)
 
+Why a non-disclosure period exists at all, and where its limits lie, is set out under the transparency pillar of the [Pillars Guidelines](./PILLARS.md). This document stays authoritative for the procedure and the targets above.
+
 ## Plugin Security Model
 
 Dixlase manages plugin and theme risk through a **defense-in-depth model**, not a runtime sandbox. We are explicit about this distinction so that operators, plugin authors, and security researchers can evaluate the actual security posture without ambiguity.
