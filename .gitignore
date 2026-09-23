@@ -91,6 +91,11 @@ PLUGIN-API.md
 # its Japanese mirror is tracked too. (The `PLUGIN-API.md` line above is a
 # no-op: the file was committed before it and stays tracked regardless.)
 !PLUGIN-API.ja.md
+# PILLARS.ja.md states what each pillar promises and what it does not. The
+# pillars are presented in Japanese on the brand site, so the Japanese text is
+# what most readers will compare the guidelines against; it is hand-maintained
+# alongside PILLARS.md rather than generated.
+!PILLARS.ja.md
 
 # Dixlase custom
 # Directory for custom override files
