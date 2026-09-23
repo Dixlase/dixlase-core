@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -131,6 +132,9 @@ class SyncGitIgnore extends Command
 
         // Detect actual directories
         $actualPlugins = $this->detectDirectories(base_path('plugins'));
+        // DixlaseOnePage is placed in themes/ by composer/installers as the
+        // bundled theme, and .gitignore excludes it outright, so Core must not
+        // propose a negation entry that would start tracking it.
         $actualThemes = $this->detectDirectories(base_path('themes'), ['DixlaseOnePage']);
 
         // Calculate diff
@@ -376,7 +380,17 @@ class SyncGitIgnore extends Command
         foreach ($directories as $directory) {
             $name = basename($directory);
 
-            if (! str_starts_with($name, '.') && ! in_array($name, $exclude)) {
+            // A move-aside copy left by an update (Foo.stale.<timestamp>,
+            // Foo.bak) is not an installed extension. Proposing a negation
+            // entry for one would make Core's git start tracking the copy's
+            // whole tree -- source, database/migrations/ and all -- inside the
+            // Core repository, which is precisely what the negation list exists
+            // to avoid doing to plugin and theme trees.
+            if (! ExtensionDirectories::isInstalledName($name)) {
+                continue;
+            }
+
+            if (! in_array($name, $exclude)) {
                 $names[] = $name;
             }
         }
