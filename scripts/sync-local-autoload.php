@@ -26,8 +26,53 @@
 $baseDir = dirname(__DIR__);
 $composerLocalPath = $baseDir.'/composer.local.json';
 
+// App\Support\ExtensionDirectories holds the canonical "is this an installed
+// extension or a leftover copy of one" rule. This script runs from Composer's
+// post-install-cmd, before the framework autoloader exists, so the class is
+// required by path rather than autoloaded. It has no dependencies of its own.
+// The inline fallback below keeps a partial tree from breaking the hook; it
+// must stay in step with isInstalledName().
+if (is_file($baseDir.'/app/Support/ExtensionDirectories.php')) {
+    require_once $baseDir.'/app/Support/ExtensionDirectories.php';
+}
+
+/**
+ * インストール済み拡張機能のディレクトリ名かどうかを判定
+ *
+ * Deploy tooling and operators move the previous version aside instead of
+ * deleting it, leaving names like `DixlaseOnePage.stale.20260817-211837`
+ * next to the live directory. Those copies are complete — manifest, `app/`,
+ * `composer.json` — so a check for `app/` alone accepts them.
+ */
+function isInstalledExtensionName(string $entry): bool
+{
+    if (class_exists(\App\Support\ExtensionDirectories::class, false)) {
+        return \App\Support\ExtensionDirectories::isInstalledName($entry);
+    }
+
+    if ($entry === '' || $entry === '.' || $entry === '..') {
+        return false;
+    }
+
+    if (str_starts_with($entry, '.') || str_starts_with($entry, '_')) {
+        return false;
+    }
+
+    return ! str_contains($entry, '.');
+}
+
 /**
  * 指定ディレクトリ内の拡張機能（プラグイン/テーマ）ディレクトリを検出
+ *
+ * Registering a move-aside copy here is not a cosmetic problem. Each entry's
+ * `autoload.files` is merged into composer.local.json, and Composer `require`s
+ * those files unconditionally at bootstrap — so deleting a copy that was
+ * registered takes down every request and every artisan command with
+ * "Failed opening required ...", a white screen rather than a degraded
+ * extension. Brand hit exactly this on 2026-09-23 when a deploy change pruned
+ * old `themes/*.stale.*` directories, and stayed up only because OPcache still
+ * held the compiled autoload file. Hence two independent guards below: the
+ * name rule, and a manifest requirement.
  *
  * @param  string  $parentDir  plugins/ または themes/ のフルパス
  * @return array<string> ディレクトリ名の配列
@@ -40,13 +85,22 @@ function detectExtensionDirectories(string $parentDir): array
 
     $names = [];
     foreach (scandir($parentDir) as $entry) {
-        if ($entry === '.' || $entry === '..' || str_starts_with($entry, '.')) {
+        if (! isInstalledExtensionName($entry)) {
             continue;
         }
+
         $dir = $parentDir.'/'.$entry;
-        if (is_dir($dir) && is_dir($dir.'/app')) {
-            $names[] = $entry;
+        if (! is_dir($dir) || ! is_dir($dir.'/app')) {
+            continue;
         }
+
+        // An installed extension always declares itself. This also skips a
+        // bare directory that merely happens to contain an `app/`.
+        if (! is_file($dir.'/plugin.json') && ! is_file($dir.'/theme.json')) {
+            continue;
+        }
+
+        $names[] = $entry;
     }
 
     sort($names);
