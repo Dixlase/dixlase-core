@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginManifestSyncService;
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -276,6 +277,16 @@ class PluginLint extends Command
         $names = [];
         foreach (File::directories($pluginsDir) as $dir) {
             $name = basename($dir);
+
+            // A move-aside copy has a plugin.json too, being a full copy, so
+            // --all would lint it and --fix would write into it. Its health
+            // score also counts: below the threshold the command exits
+            // non-zero, failing a lint gate over a directory that was never
+            // an installed plugin.
+            if (! ExtensionDirectories::isInstalledName($name)) {
+                continue;
+            }
+
             if (File::exists("{$dir}/plugin.json")) {
                 $names[] = $name;
             }

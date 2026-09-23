@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\ExtensionDirectories;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -294,11 +295,19 @@ class MigrationLint extends Command
 
         $directories = ['database/migrations'];
 
-        foreach (glob($basePath.'/plugins/*/database/migrations', GLOB_ONLYDIR) ?: [] as $dir) {
-            $directories[] = str_replace($basePath.'/', '', $dir);
-        }
-        foreach (glob($basePath.'/themes/*/database/migrations', GLOB_ONLYDIR) ?: [] as $dir) {
-            $directories[] = str_replace($basePath.'/', '', $dir);
+        // A move-aside copy carries a full database/migrations/ directory, so
+        // its files would be hashed alongside the live extension's and counted
+        // as extra migrations the lock file does not know about.
+        foreach (['plugins', 'themes'] as $parent) {
+            foreach (glob($basePath.'/'.$parent.'/*/database/migrations', GLOB_ONLYDIR) ?: [] as $dir) {
+                $extension = basename(\dirname($dir, 2));
+
+                if (! ExtensionDirectories::isInstalledName($extension)) {
+                    continue;
+                }
+
+                $directories[] = str_replace($basePath.'/', '', $dir);
+            }
         }
 
         foreach ($directories as $relDir) {
