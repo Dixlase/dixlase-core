@@ -37,6 +37,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\VersionDriftService;
 use Illuminate\Console\Command;
@@ -60,8 +61,19 @@ use Illuminate\Support\Facades\Cache;
  * matches the on-disk version reports "nothing to do" and exits without
  * writing.
  *
+ * It also clears the core release's failure marker
+ * (`update_failed_at` / `update_failure_reason`), which is what the
+ * Updates screen renders as the red "the update did not complete" notice.
+ * Only a successful update used to clear it, so an operator who recovered
+ * the documented way — an interrupted update leaves the tree applied but
+ * the ledger behind, and `dls:core:reconcile --confirm` is the recovery —
+ * was left staring at a warning about a state they had just fixed. The
+ * marker is cleared on a no-drift run too, so a leftover notice can be
+ * dismissed without inventing an update to run.
+ *
  * Defaults to a dry-run preview; pass --confirm to apply. Never touches
- * data tables or the schema; only the ledger row is written.
+ * data tables or the schema; only the ledger row and that marker are
+ * written.
  */
 class CoreReconcile extends Command
 {
@@ -85,7 +97,23 @@ class CoreReconcile extends Command
         }
 
         if (! $drift['drifted']) {
-            $this->info("✓ Ledger already matches on-disk (v{$drift['on_disk']}). Nothing to do.");
+            $this->info("✓ Ledger already matches on-disk (v{$drift['on_disk']}).");
+
+            if (! $this->hasFailureMarker()) {
+                $this->line('Nothing to do.');
+
+                return self::SUCCESS;
+            }
+
+            $this->reportFailureMarker();
+
+            if (! $this->option('confirm')) {
+                $this->warn('Dry-run only. Re-run with --confirm to clear that marker (the ledger itself needs no change).');
+
+                return self::SUCCESS;
+            }
+
+            $this->clearFailureMarker();
 
             return self::SUCCESS;
         }
@@ -110,8 +138,13 @@ class CoreReconcile extends Command
         $this->line("  Kind: {$kind}  (on-disk is ".($kind === 'ahead' ? 'newer' : 'older').' than the ledger)');
         $this->newLine();
 
+        if ($this->hasFailureMarker()) {
+            $this->reportFailureMarker();
+        }
+
         if (! $this->option('confirm')) {
-            $this->warn("Dry-run only. Re-run with --confirm to insert a synthetic history row (installation_method='reconcile', old_version=v{$ledger}, new_version=v{$onDisk}).");
+            $this->warn("Dry-run only. Re-run with --confirm to insert a synthetic history row (installation_method='reconcile', old_version=v{$ledger}, new_version=v{$onDisk})"
+                .($this->hasFailureMarker() ? ' and clear the failure marker above.' : '.'));
 
             return self::SUCCESS;
         }
@@ -139,6 +172,46 @@ class CoreReconcile extends Command
         $this->info("✓ Wrote synthetic history row #{$row->id}: v{$ledger} -> v{$onDisk} (installation_method=reconcile).");
         $this->line('Ledger now matches on-disk. Subsequent `dls:core:update` runs will compare targets against v'.$onDisk.'.');
 
+        if ($this->hasFailureMarker()) {
+            $this->clearFailureMarker();
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Whether the core release singleton carries a failure marker — the
+     * pair the Updates screen renders as the red "the update did not
+     * complete" notice.
+     */
+    protected function hasFailureMarker(): bool
+    {
+        return CoreRelease::singleton()->update_failed_at !== null;
+    }
+
+    /**
+     * Print what the marker says, so the operator sees what is about to
+     * be cleared (or, on a dry run, what would be) rather than having a
+     * warning disappear without a record of it.
+     */
+    protected function reportFailureMarker(): void
+    {
+        $state = CoreRelease::singleton();
+
+        $this->newLine();
+        $this->line('A previous update or rollback left a failure marker on the core release:');
+        $this->line('  Recorded at: '.$state->update_failed_at?->format('Y-m-d H:i:s'));
+        $this->line('  Reason:      '.($state->update_failure_reason ?? '(none recorded)'));
+        $this->line('This is what the System Updates screen shows in red. Until now only a successful update cleared it.');
+    }
+
+    protected function clearFailureMarker(): void
+    {
+        CoreRelease::singleton()->forceFill([
+            'update_failed_at' => null,
+            'update_failure_reason' => null,
+        ])->save();
+
+        $this->info('✓ Cleared the failure marker; the System Updates screen no longer reports the interrupted run.');
     }
 }
