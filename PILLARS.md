@@ -101,7 +101,7 @@ Protection works without extra configuration, and the protective mechanisms are 
 - The 15 controls recommended by IPA, NIST, and OWASP are enabled without extra configuration.
 - Protective mechanisms (authentication, authorization, validation, auditing) live in the core. Plugins only declare the permissions they need.
 - Plugin permission declarations, Ed25519 signature verification, and health scoring through static analysis are provided.
-- A channel for reporting vulnerabilities is provided, and response times are published. [TBD: SLA values]
+- A channel for reporting vulnerabilities is provided, and response times are published. SECURITY.md is the authoritative source for those values.
 - Updates are verified by signature and hash.
 
 ### What we do not promise / boundaries
@@ -224,7 +224,7 @@ Even when information is withheld, the following three points are disclosed as f
 - **Users**: Not disclosing a vulnerability before it is fixed is a procedure, not a lack of transparency.
 
 ### Related documents
-SECURITY.md (response SLA and security.txt: [TBD]), PRIVACY-POLICY, release notes
+SECURITY.md (authoritative for the response SLA and security.txt), PRIVACY-POLICY (to be created), release notes
 
 ---
 
@@ -311,7 +311,7 @@ Users decide for themselves about their own sites, data, and operations, without
 - **Users**: Freedom comes with operational responsibility (applying updates, the results of configuration changes).
 
 ### Related documents
-LICENSE, LICENSE-EXCEPTIONS, TRADEMARK-POLICY, PRIVACY-POLICY
+LICENSE, LICENSE-EXCEPTIONS, TRADEMARK-POLICY, PRIVACY-POLICY (to be created)
 
 ---
 
@@ -331,17 +331,16 @@ LICENSE, LICENSE-EXCEPTIONS, TRADEMARK-POLICY, PRIVACY-POLICY
 | 2 | General | Length of the advance notice period |
 | 3 | Security | Protections that cannot be disabled |
 | 4 | Security | Support period (fixes for older versions) |
-| 5 | Security / Transparency | Response SLA in SECURITY.md and security.txt |
-| 6 | Fairness | Whether the AGPL and commercial editions differ in features |
-| 7 | Fairness | When and how to put community rules in place (code of conduct, levels of response, appeals) |
-| 8 | Transparency | Scope of the pillar (product transparency, project transparency, or both) |
-| 9 | Transparency | How far to disclose the use of AI in development |
-| 10 | Extensibility | Period from deprecation to removal |
-| 11 | Sustainability | Handling of signing keys, domains, and trademarks if the project cannot continue |
-| 12 | Sustainability × Freedom | Whether to collect telemetry, and its default |
-| 13 | Freedom | Data export format |
-| 14 | Legal | Changes to the exception clause structure (pending legal review) |
-| 15 | Legal | Relationship between community responses, license rights, and existing contributions |
+| 5 | Fairness | Whether the AGPL and commercial editions differ in features |
+| 6 | Fairness | When and how to put community rules in place (code of conduct, levels of response, appeals) |
+| 7 | Transparency | Scope of the pillar (product transparency, project transparency, or both) |
+| 8 | Transparency | How far to disclose the use of AI in development |
+| 9 | Extensibility | Period from deprecation to removal |
+| 10 | Sustainability | Handling of signing keys, domains, and trademarks if the project cannot continue |
+| 11 | Sustainability × Freedom | Whether to collect telemetry, and its default |
+| 12 | Freedom | Data export format |
+| 13 | Legal | Changes to the exception clause structure (pending legal review) |
+| 14 | Legal | Relationship between community responses, license rights, and existing contributions |
 
 ## Revision history
 
