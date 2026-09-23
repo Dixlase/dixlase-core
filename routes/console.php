@@ -98,9 +98,14 @@ Schedule::command('maintenance:check-auto-release')
 // the owning process is provably gone; a manual `artisan down` is never
 // touched. Cheap when the site is up (one file_exists), so every minute
 // is fine. See App\Services\Core\CoreMaintenanceGuard.
+//
+// evenInMaintenanceMode() is required: the scheduler skips every event
+// while the app is down, and a maintenance window is the only time this
+// command has anything to do.
 Schedule::command('dls:core:heal-maintenance')
     ->everyMinute()
-    ->withoutOverlapping();
+    ->withoutOverlapping()
+    ->evenInMaintenanceMode();
 
 // Extension update check (cron ticks hourly, actually runs if the configured interval has elapsed)
 //

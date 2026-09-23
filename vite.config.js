@@ -115,7 +115,9 @@ export default defineConfig(({ command }) => ({
         // 不要な変換を避ける。
         cssTarget: ['chrome111', 'edge111', 'safari16.4', 'firefox128'],
 
-        rollupOptions: {
+        // Vite 8 bundles with Rolldown; `rollupOptions` still works as a
+        // deprecated alias, so use the current name.
+        rolldownOptions: {
             treeshake: {
                 moduleSideEffects: true,
             },
@@ -180,13 +182,9 @@ export default defineConfig(({ command }) => ({
             },
         },
     },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                api: "modern-compiler",
-            },
-        },
-    },
+    // `css.preprocessorOptions.scss.api` is gone: Vite 7 removed the legacy
+    // Sass API, so the modern compiler (sass-embedded) is the only one left
+    // and needs no opt-in.
     server: {
         host: '0.0.0.0',        // Docker コンテナ内で全てのインターフェースをバインド
         port: 5173,

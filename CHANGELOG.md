@@ -69,6 +69,14 @@ repository to be notified of changes.
 The first stable Plugin API freeze. This release establishes the public boundary that
 plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `LICENSE`).
 
+### Requirements
+
+- PHP `>= 8.3`
+- Laravel 13
+
+The bundled Docker runtime ships PHP 8.3. See `docs/requirements.md` for the full
+environment matrix (database, web server, PHP extensions).
+
 ### Added
 
 #### Plugin API surface (frozen)
@@ -174,8 +182,10 @@ plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `L
 
 ### Notes for plugin authors
 
-- Plugins targeting the v0.1 line should declare `"requires": {"dixlase": "^0.1.0"}`
-  in their `plugin.json`.
+- Plugins targeting the v0.1 line should declare
+  `"requires": {"dixlase": "^0.1.0", "php": ">=8.3"}` in their `plugin.json`.
+  `>=1.0.0` is not a valid Dixlase constraint for this line — it marks the
+  extension incompatible with the 0.1.x releases.
 - Internal classes not enumerated in `PLUGIN-API.md` (notably
   `App\Services\Plugin\PluginHealthScorer`, `App\DTO\Plugin\HealthScoreResult`, and
   similar implementation details) are **not** part of the Plugin API. They may

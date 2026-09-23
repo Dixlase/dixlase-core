@@ -35,7 +35,7 @@ jobs:
 
     env:
       PHP_VERSION: '8.3'
-      NODE_VERSION: '20'
+      NODE_VERSION: '24'
       # Vite の出力先など（vite.config.js に合わせて）
       BUILD_DIR: public/assets/build
       ZIP_NAME: dixlase-${{ github.ref_name }}.zip

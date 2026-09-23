@@ -26,6 +26,8 @@ namespace Tests\Feature\Console;
 
 use App\Models\CoreRelease;
 use App\Services\Core\CoreMaintenanceGuard;
+use Illuminate\Console\Scheduling\Event;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -62,6 +64,23 @@ class HealMaintenanceCommandTest extends TestCase
         }
         File::deleteDirectory($this->dir);
         parent::tearDown();
+    }
+
+    public function test_scheduled_heal_still_runs_while_the_app_is_down(): void
+    {
+        // The scheduler skips events during maintenance unless they opt in,
+        // and maintenance is the only time this command has work to do. The
+        // sandbox cron log showed it silent at every minute of a real window.
+        Artisan::call('schedule:list');
+        $event = collect(app(Schedule::class)->events())
+            ->first(fn (Event $e): bool => str_contains((string) $e->command, 'dls:core:heal-maintenance'));
+        $this->assertNotNull($event, 'dls:core:heal-maintenance must be scheduled.');
+
+        Artisan::call('down');
+        $this->assertTrue($this->app->isDownForMaintenance());
+
+        $this->assertTrue($event->runsInMaintenanceMode());
+        $this->assertTrue($event->isDue($this->app), 'The heal event must be due while the app is down.');
     }
 
     public function test_lifts_maintenance_left_by_a_dead_core_update_and_records_the_failure(): void
