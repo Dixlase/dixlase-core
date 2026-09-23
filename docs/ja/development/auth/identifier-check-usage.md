@@ -192,9 +192,8 @@ public static function getValue(string $key, $default = null)
 
 パスキー確認のため、以下のいずれかのリレーションが必要です：
 
-- `webauthnCredentials()`: WebAuthn認証情報（推奨）
-- `twoFaPasskeys()`: 二段階認証用パスキー
-- `passkeys()`: 汎用パスキー
+- `twoFaPasskeys()`: 二段階認証用パスキー（推奨。`TwoFaInterface` で定義）
+- `passkeys()`: laravel/passkeys のパスキーリレーション（`PasskeyUser`）
 
 ## 戻り値
 
@@ -319,7 +318,7 @@ class CustomIdentifierCheckHelper extends IdentifierCheckHelper
 ### パスキー登録状況が正しく取得できない
 
 1. ユーザーモデルに適切なリレーションが定義されているか確認
-2. リレーション名が`webauthnCredentials`、`twoFaPasskeys`、`passkeys`のいずれかであることを確認
+2. リレーション名が`twoFaPasskeys`または`passkeys`であることを確認
 
 ### タイミング攻撃対策の遅延が長すぎる
 

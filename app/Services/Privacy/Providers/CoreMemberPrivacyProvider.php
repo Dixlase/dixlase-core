@@ -75,7 +75,7 @@ use Illuminate\Support\Str;
  *   - $siteId !== null : Operates only on rows in audit_logs and
  *                        security_events whose site_id matches the
  *                        requested site. Global tables (members,
- *                        members_*, sessions, webauthn_credentials) are
+ *                        members_*, sessions) are
  *                        NOT touched, because the member account itself
  *                        is network-wide. A warning is added to the
  *                        export DTO so operators understand the scope.
@@ -100,7 +100,7 @@ class CoreMemberPrivacyProvider implements PrivacyDataProviderInterface
         ['table' => 'members_two_fa_attempts',      'fk' => 'member_id', 'pii' => ['ip_address', 'user_agent']],
         ['table' => 'members_two_fa_recovery_codes', 'fk' => 'member_id', 'pii' => []],
         ['table' => 'members_two_fa_tokens',        'fk' => 'member_id', 'pii' => []],
-        ['table' => 'webauthn_credentials',         'fk' => 'member_id', 'pii' => ['alias', 'name']],
+        ['table' => 'members_passkeys',             'fk' => 'member_id', 'pii' => ['name']],
         ['table' => 'sessions',                     'fk' => 'user_id',   'pii' => ['ip_address', 'user_agent']],
     ];
 
@@ -139,7 +139,7 @@ class CoreMemberPrivacyProvider implements PrivacyDataProviderInterface
             }
             $data['members_password_reset_tokens'] = $this->fetchPasswordResetTokens($userId);
         } else {
-            $warnings[] = 'Site-scoped export: global member data (members, members_*, sessions, webauthn_credentials) is omitted because the member account itself is network-wide. Only audit_logs and security_events filtered by site_id are included.';
+            $warnings[] = 'Site-scoped export: global member data (members, members_*, sessions) is omitted because the member account itself is network-wide. Only audit_logs and security_events filtered by site_id are included.';
         }
 
         $data['audit_logs'] = $this->fetchAuditLogs($userId, $siteId);

@@ -37,12 +37,22 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Passkeys (WebAuthn credentials) registered by admin members.
+ *
+ * The column layout follows laravel/passkeys: the whole verified credential
+ * record lives in the `credential` JSON (public key in COSE form, signature
+ * counter, transports, AAGUID, user handle), and `credential_id` is its
+ * base64url ID, unique across the table. The owner column is `member_id`
+ * rather than the package's `user_id`; App\Models\Passkey maps the
+ * relation accordingly.
+ */
 return new class extends Migration
 {
     /**
      * Table name
      */
-    protected $table = 'webauthn_credentials';
+    protected $table = 'members_passkeys';
 
     /**
      * Run the migrations.
@@ -50,41 +60,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create($this->table, function (Blueprint $table) {
-            // WebAuthn standard fields
-            $table->string('id', 510)->primary(); // credential_id
-
-            // Polymorphic relation for Laragear\WebAuthn
-            $table->string('authenticatable_type')->default('App\\Models\\Member');
-            $table->unsignedBigInteger('authenticatable_id');
-
-            // Member ID for Dixlase (for existing compatibility)
-            $table->unsignedBigInteger('member_id');
-
-            // User ID for Laragear\WebAuthn (UUID)
-            $table->uuid('user_id');
-
-            // WebAuthn standard fields
-            $table->string('alias')->nullable();
-            $table->unsignedBigInteger('counter')->nullable();
-            $table->string('rp_id');
-            $table->string('origin');
-            $table->json('transports')->nullable();
-            $table->uuid('aaguid')->nullable();
-            $table->text('public_key');
-            $table->string('attestation_format')->default('none');
-            $table->json('certificates')->nullable();
-            $table->timestamp('disabled_at')->nullable();
+            $table->id();
+            $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('credential_id')->unique();
+            $table->json('credential');
+            $table->timestamp('last_used_at')->nullable();
             $table->timestamps();
-
-            // Dixlase custom fields
-            $table->string('name'); // Device name (required)
-
-            // Foreign key constraints
-            $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
-
-            // Indexes (short names specified)
-            $table->index(['authenticatable_type', 'authenticatable_id'], 'passkeys_authenticatable_index');
-            $table->index('member_id');
         });
     }
 

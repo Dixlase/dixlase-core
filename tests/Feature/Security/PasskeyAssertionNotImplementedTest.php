@@ -139,8 +139,12 @@ class PasskeyAssertionNotImplementedTest extends TestCase
     }
 
     /**
-     * The real path must keep working. A fix that also broke admin passkey
-     * login would be worse than the bug.
+     * The real path must keep working, and must not fail open. A fix that
+     * also broke admin passkey login would be worse than the bug; so would a
+     * login path that accepted an assertion nobody asked for.
+     *
+     * The successful ceremony itself is covered end to end in
+     * PasskeyCeremonyTest.
      */
     public function test_the_validated_login_path_is_intact(): void
     {
@@ -151,12 +155,20 @@ class PasskeyAssertionNotImplementedTest extends TestCase
             'Admin passkey login depends on this method.'
         );
 
-        $source = file_get_contents($service->getFileName());
+        // No challenge was issued, so there is nothing this assertion could
+        // legitimately answer. The validated path has to say no -- for that
+        // reason, not because the request has no session.
+        request()->setLaravelSession($this->app['session.store']);
 
-        $this->assertStringContainsString(
-            'AssertionValidator',
-            $source,
-            'verifyLoginChallenge() must keep running the Laragear validation pipeline.'
-        );
+        $this->assertFalse(app(TwoFaPasskeyService::class)->verifyLoginChallenge($this->member(), [
+            'id' => 'AAAA',
+            'rawId' => 'AAAA',
+            'type' => 'public-key',
+            'response' => [
+                'clientDataJSON' => rtrim(strtr(base64_encode(json_encode(['type' => 'webauthn.get', 'challenge' => 'replayed'])), '+/', '-_'), '='),
+                'authenticatorData' => 'AAAA',
+                'signature' => 'AAAA',
+            ],
+        ]));
     }
 }
