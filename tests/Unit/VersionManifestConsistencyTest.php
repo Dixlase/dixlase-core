@@ -36,6 +36,12 @@ use PHPUnit\Framework\TestCase;
  * it is confusing and has drifted before. Bump both together with
  * `php scripts/bump-version.php <x.y.z>`.
  *
+ * The manifest's "requires" block is guarded too, and that one is not
+ * cosmetic: CorePreflightChecker reads `requires.php` from the release's
+ * dixlase.json to decide whether this server may install it. When the
+ * manifest lagged behind composer.json (`>=8.2` against `php ^8.3`), the
+ * preflight happily passed a PHP 8.2 server that composer would then refuse.
+ *
  * Pure file reads: no framework boot, no database.
  */
 class VersionManifestConsistencyTest extends TestCase
@@ -67,6 +73,36 @@ class VersionManifestConsistencyTest extends TestCase
         );
     }
 
+    public function test_dixlase_json_php_requirement_matches_composer_json(): void
+    {
+        $manifest = $this->manifest();
+
+        $this->assertArrayHasKey('requires', $manifest, 'dixlase.json must declare "requires".');
+        $this->assertArrayHasKey('php', $manifest['requires'], 'dixlase.json "requires" must declare "php".');
+
+        $this->assertSame(
+            $this->floorOf($this->composerRequire('php'), 'composer.json require.php'),
+            $this->floorOf($manifest['requires']['php'], 'dixlase.json requires.php'),
+            'dixlase.json "requires.php" must declare the same PHP floor as composer.json. '
+                .'CorePreflightChecker reads the manifest, so a stale floor lets an incompatible '
+                .'server pass the update preflight and break afterwards.'
+        );
+    }
+
+    public function test_dixlase_json_laravel_requirement_matches_composer_json(): void
+    {
+        $manifest = $this->manifest();
+
+        $this->assertArrayHasKey('requires', $manifest, 'dixlase.json must declare "requires".');
+        $this->assertArrayHasKey('laravel', $manifest['requires'], 'dixlase.json "requires" must declare "laravel".');
+
+        $this->assertSame(
+            $this->majorOf($this->composerRequire('laravel/framework'), 'composer.json require.laravel/framework'),
+            $this->majorOf($manifest['requires']['laravel'], 'dixlase.json requires.laravel'),
+            'dixlase.json "requires.laravel" must name the same Laravel major as composer.json.'
+        );
+    }
+
     private function versionFile(): string
     {
         $raw = file_get_contents(self::REPO_ROOT.'/VERSION');
@@ -87,5 +123,45 @@ class VersionManifestConsistencyTest extends TestCase
         $this->assertIsArray($decoded, 'dixlase.json must be valid JSON.');
 
         return $decoded;
+    }
+
+    private function composerRequire(string $package): string
+    {
+        $raw = file_get_contents(self::REPO_ROOT.'/composer.json');
+        $this->assertNotFalse($raw, 'composer.json is missing or unreadable.');
+
+        $decoded = json_decode((string) $raw, true);
+        $this->assertIsArray($decoded, 'composer.json must be valid JSON.');
+        $this->assertArrayHasKey($package, $decoded['require'] ?? [], sprintf('composer.json must require "%s".', $package));
+
+        return (string) $decoded['require'][$package];
+    }
+
+    /**
+     * The leading "major.minor" of a constraint, e.g. "^8.3" and ">=8.3" both give "8.3".
+     */
+    private function floorOf(string $constraint, string $label): string
+    {
+        $this->assertSame(
+            1,
+            preg_match('/(\d+\.\d+)/', $constraint, $matches),
+            sprintf('%s ("%s") must carry a major.minor version.', $label, $constraint)
+        );
+
+        return $matches[1];
+    }
+
+    /**
+     * The leading major of a constraint, e.g. "^13.0" gives "13".
+     */
+    private function majorOf(string $constraint, string $label): string
+    {
+        $this->assertSame(
+            1,
+            preg_match('/(\d+)/', $constraint, $matches),
+            sprintf('%s ("%s") must carry a major version.', $label, $constraint)
+        );
+
+        return $matches[1];
     }
 }
