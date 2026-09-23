@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Scripts;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -74,10 +75,13 @@ class SyncLocalAutoloadTest extends TestCase
             \dirname(__DIR__, 3).'/scripts/sync-local-autoload.php',
             $this->root.'/scripts/sync-local-autoload.php'
         );
-        copy(
-            \dirname(__DIR__, 3).'/app/Support/ExtensionDirectories.php',
-            $this->root.'/app/Support/ExtensionDirectories.php'
-        );
+
+        foreach (['ExtensionDirectories', 'ComposerLocalManifest'] as $class) {
+            copy(
+                \dirname(__DIR__, 3).'/app/Support/'.$class.'.php',
+                $this->root.'/app/Support/'.$class.'.php'
+            );
+        }
     }
 
     protected function tearDown(): void
@@ -215,22 +219,38 @@ class SyncLocalAutoloadTest extends TestCase
     }
 
     /**
-     * The script is run by Composer before the framework autoloader exists,
-     * so it requires App\Support\ExtensionDirectories by path. If that file
-     * is not there, the inline fallback has to enforce the same rule rather
-     * than let the hook fail or silently register the copies again.
+     * The script is run by Composer before the framework autoloader exists, so
+     * it requires the shared classes by path. If one is missing it must refuse
+     * rather than fall back to a private rule: a manifest generated here that
+     * differs from the one the admin panel writes is the exact drift that let
+     * the two writers disagree in the first place.
+     *
+     * @param  string  $class  the shared class removed before the run
      */
-    public function test_the_rule_still_holds_without_the_shared_class(): void
+    #[DataProvider('sharedClassProvider')]
+    public function test_the_script_refuses_to_run_without_a_shared_class(string $class): void
     {
-        unlink($this->root.'/app/Support/ExtensionDirectories.php');
+        unlink($this->root.'/app/Support/'.$class.'.php');
 
         $this->makeExtension('plugins', 'DixlaseSEO', 'plugin.json');
-        $this->makeExtension('plugins', 'DixlaseSEO.stale.20260710-221107', 'plugin.json');
 
-        $result = $this->runScript();
+        exec(
+            escapeshellarg(PHP_BINARY).' '.escapeshellarg($this->root.'/scripts/sync-local-autoload.php').' 2>&1',
+            $output,
+            $exitCode
+        );
 
-        $this->assertArrayHasKey('Plugins\\DixlaseSEO\\App\\', $result['psr4']);
-        $this->assertSame(['plugins/DixlaseSEO/app/Helpers/Helpers.php'], $result['files']);
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString($class, implode("\n", $output));
+        $this->assertFileDoesNotExist($this->root.'/composer.local.json');
+    }
+
+    /**
+     * @return list<array{0: string}>
+     */
+    public static function sharedClassProvider(): array
+    {
+        return [['ExtensionDirectories'], ['ComposerLocalManifest']];
     }
 
     /**
