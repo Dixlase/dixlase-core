@@ -72,6 +72,30 @@ class CorePreflightCheckerTest extends TestCase
         );
     }
 
+    /**
+     * A tree whose `vendor/` is a release behind its `composer.lock` is what
+     * an update interrupted between the source swap and the vendor swap
+     * leaves behind. Warn, do not block: re-running the update is how the
+     * operator repairs it, so refusing to start would trap them.
+     */
+    public function test_a_vendor_mismatch_warns_without_blocking(): void
+    {
+        $result = $this->checker(dependencies: [
+            'state' => 'mismatched',
+            'checked' => 114,
+            'mismatched' => 1,
+            'samples' => [['name' => 'laravel/framework', 'locked' => 'v13.33.0', 'installed' => 'v13.32.0']],
+            'reason' => null,
+        ])->run();
+
+        $this->assertFalse($result->failed(), 'a mismatch must not block the update');
+        $this->assertContains('dependency_integrity', array_column($result->checks(), 'name'));
+
+        $line = implode("\n", $result->lines());
+        $this->assertStringContainsString('laravel/framework', $line);
+        $this->assertStringContainsString('v13.32.0', $line);
+    }
+
     public function test_php_older_than_the_installed_requirement_fails(): void
     {
         $result = $this->checker(phpVersion: '8.1.30')->run();
@@ -202,6 +226,7 @@ class CorePreflightCheckerTest extends TestCase
         array $unwritable = [],
         ?float $freeBytes = 50.0 * 1024 * 1024 * 1024,
         array $drift = ['manifest_drifted' => false],
+        array $dependencies = ['state' => 'ok', 'checked' => 0, 'mismatched' => 0, 'samples' => [], 'reason' => null],
     ): CorePreflightChecker {
         $root = $this->root;
 
@@ -220,6 +245,7 @@ class CorePreflightCheckerTest extends TestCase
             freeSpace: static fn (string $path): ?float => $freeBytes,
             phpVersion: $phpVersion,
             driftDetector: static fn (): array => $drift,
+            dependencyChecker: static fn (): array => $dependencies,
         );
     }
 
