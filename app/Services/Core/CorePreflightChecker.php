@@ -89,6 +89,7 @@ final class CorePreflightChecker
      * @param  Closure|null  $freeSpace  fn (string $path): ?float — bytes, null when unknown
      * @param  string|null  $phpVersion  Defaults to PHP_VERSION.
      * @param  Closure|null  $driftDetector  fn (): array — VersionDriftService::detect() shape
+     * @param  Closure|null  $dependencyChecker  fn (): array — DependencyIntegrityService::check() shape
      */
     public function __construct(
         private readonly ?string $basePath = null,
@@ -97,6 +98,7 @@ final class CorePreflightChecker
         private readonly ?Closure $freeSpace = null,
         private readonly ?string $phpVersion = null,
         private readonly ?Closure $driftDetector = null,
+        private readonly ?Closure $dependencyChecker = null,
     ) {}
 
     /**
@@ -111,6 +113,7 @@ final class CorePreflightChecker
         $this->checkWritable($result);
         $this->checkDiskSpace($result);
         $this->checkLeftovers($result);
+        $this->checkDependencyIntegrity($result);
         $this->checkVersionDrift($result);
 
         return $result;
@@ -333,6 +336,42 @@ final class CorePreflightChecker
         }
 
         $result->add('previous_run', PreflightResult::OK, 'no leftovers from an interrupted run');
+    }
+
+    /**
+     * Does the `vendor/` on disk still match `composer.lock`?
+     *
+     * A mismatch means an earlier update died between swapping the source and
+     * swapping `vendor/`, and nothing else reports it: the site answers 200
+     * and the panel shows the new version (sandbox, 2026-09-24).
+     *
+     * Warn, never block. Re-running the update is exactly how an operator
+     * repairs this, so refusing to start would trap them in the broken state.
+     */
+    private function checkDependencyIntegrity(PreflightResult $result): void
+    {
+        try {
+            $check = $this->dependencyChecker !== null
+                ? ($this->dependencyChecker)()
+                : app(DependencyIntegrityService::class)->check($this->basePath);
+        } catch (\Throwable) {
+            return; // Informational only; never block on it.
+        }
+
+        if ($check['state'] !== DependencyIntegrityService::STATE_MISMATCHED) {
+            return;
+        }
+
+        $names = implode(', ', array_map(
+            static fn (array $s): string => $s['name'].' '.($s['installed'] ?? 'absent').' != '.$s['locked'],
+            $check['samples']
+        ));
+
+        $result->add('dependency_integrity', PreflightResult::WARN, sprintf(
+            '%d installed package(s) do not match composer.lock (%s); an earlier update probably stopped mid-swap',
+            $check['mismatched'],
+            $names
+        ));
     }
 
     private function checkVersionDrift(PreflightResult $result): void
