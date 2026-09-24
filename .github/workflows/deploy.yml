@@ -79,6 +79,13 @@ jobs:
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
 
+            # Recoverable per-site problems set this instead of killing the
+            # loop, so one site cannot stop the sites after it from being
+            # deployed. The run still goes red: the flag is checked after the
+            # loop. A silent skip is what let authority go undeployed for
+            # months, so nothing here may fail quietly.
+            DEPLOY_FAILURES=0
+
             for SITE in brand docs demo keys; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
 
@@ -182,13 +189,31 @@ jobs:
               # (バックログ theme-directory-dual-ownership)。
               if [ -d themes/DixlaseOnePage ] && [ ! -d themes/DixlaseOnePage/.git ]; then
                 echo "  themes/DixlaseOnePage has no .git — Composer replaced it; re-adopting the checkout"
-                git -C themes/DixlaseOnePage init -q
-                git -C themes/DixlaseOnePage remote add origin \
-                  git@github.com:Dixlase/theme-dixlase-onepage.git
-                git -C themes/DixlaseOnePage fetch --depth=1 -q origin main
-                git -C themes/DixlaseOnePage reset --hard -q FETCH_HEAD
-                docker exec compose-php-1 bash -c \
-                  "cd /var/www/apps/$SITE && php scripts/sync-local-autoload.php" || true
+
+                # 手順 4 の composer install は docker exec でコンテナ内の root と
+                # して走るため、展開し直されたテーマは root 所有になる。この後の
+                # git 操作はホスト側の deploy ユーザーで走るので、所有権を戻して
+                # おかないと .git を作れず "Permission denied" で落ちる。手順 1 が
+                # サイト全体に対して行っているのと同じ chown をここでも行う。
+                docker exec compose-php-1 chown -R 1001:1001 \
+                  "/var/www/apps/$SITE/themes/DixlaseOnePage"
+
+                # `&&` で連結して失敗を伝播させる。`set -e` は if の条件部では
+                # 無効になるため、ここでは頼れない。
+                if git -C themes/DixlaseOnePage init -q \
+                  && git -C themes/DixlaseOnePage remote add origin \
+                       git@github.com:Dixlase/theme-dixlase-onepage.git \
+                  && git -C themes/DixlaseOnePage fetch --depth=1 -q origin main \
+                  && git -C themes/DixlaseOnePage reset --hard -q FETCH_HEAD; then
+                  docker exec compose-php-1 bash -c \
+                    "cd /var/www/apps/$SITE && php scripts/sync-local-autoload.php" || true
+                else
+                  # ここで exit すると後続サイトが丸ごとデプロイされなくなる。
+                  # テーマの中身は lock の参照どおりに展開済みで、欠けているのは
+                  # 作業ツリーの .git だけなので、記録して次のサイトへ進む。
+                  echo "::error::$SITE: failed to re-adopt themes/DixlaseOnePage; the theme content is in place but has no checkout"
+                  DEPLOY_FAILURES=1
+                fi
               fi
 
               # 5. CIでビルド済みのフロントエンドアセットをコピー
@@ -215,5 +240,10 @@ jobs:
                 docker exec compose-php-1 php /var/www/apps/$SITE/artisan route:clear
               fi
             done
+
+            if [ "$DEPLOY_FAILURES" != "0" ]; then
+              echo "=== Deploy finished with errors — see the ::error:: lines above ==="
+              exit 1
+            fi
 
             echo "=== Deploy complete ==="
