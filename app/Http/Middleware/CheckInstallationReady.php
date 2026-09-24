@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Install\FinalizePendingMarker;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -169,25 +170,7 @@ class CheckInstallationReady
         $debugInfo = [];
         $isMigrated = $this->checkMigrationCompleted($debugInfo, ! $isInstalled);
 
-        // Self-heal: when the DB clearly shows a completed install
-        // (migrations populated, core tables present, admin user
-        // role >= 9, site_settings.site_name set) but the INSTALLED
-        // env flag is missing/false, the flag is the unreliable signal
-        // here, not the database. The mismatch is almost always
-        // external (.env deleted, swapped with .env.example for CI
-        // reproduction, edited by a misbehaving deploy script).
-        // Persist INSTALLED=true so admins are not bounced to
-        // /install/complete on every fresh session.
-        //
-        // Skip on /install/* requests: the install wizard intentionally
-        // leaves INSTALLED=false between confirm() (DB just migrated)
-        // and finalize() (the operator clicks the "Complete" button).
-        // Self-healing during that window flips the flag prematurely,
-        // and the post-heal branch below then bounces /install/complete
-        // straight to /, robbing the operator of the completion screen.
-        // The install-route branch further down handles the un-healed
-        // state correctly on its own.
-        if (! $isInstalled && $isMigrated && ! $request->is('install') && ! $request->is('install/*')) {
+        if ($this->shouldSelfHealInstalledFlag($request, $isInstalled, $isMigrated)) {
             $this->selfHealInstalledFlag($envPath);
             $isInstalled = true;
         }
@@ -254,6 +237,47 @@ class CheckInstallationReady
         }
 
         return $next($request);
+    }
+
+    /**
+     * Decide whether this request may restore a lost INSTALLED flag.
+     *
+     * The self-heal exists for one situation: the database clearly shows
+     * a completed install (migrations populated, core tables present, an
+     * admin user, site_settings.site_name set) while `.env` says
+     * otherwise — almost always because `.env` was deleted, swapped with
+     * `.env.example` for a CI reproduction, or edited by a misbehaving
+     * deploy script. There the flag is the unreliable signal, not the
+     * database, and restoring it keeps admins from being bounced to
+     * /install/complete on every fresh session.
+     *
+     * The install wizard produces the same mismatch legitimately: between
+     * confirm() (the DB has just been migrated) and finalize() (the
+     * operator presses a button on the completion screen) INSTALLED is
+     * false on purpose. Healing inside that window flips the flag early,
+     * and the "already installed" branch in handle() then redirects the
+     * pending finalize POST to the front page — so the completion
+     * screen's buttons appear to do nothing, and finalize()'s work
+     * (session driver restore, install-time audit log chaining) is
+     * skipped entirely.
+     *
+     * Excluding install routes is not enough by itself: the completion
+     * screen is a page, and the assets and favicon the browser pulls
+     * alongside it are ordinary requests that satisfy every other part of
+     * the condition. FinalizePendingMarker marks the window instead, so a
+     * request of any kind can recognise it.
+     */
+    private function shouldSelfHealInstalledFlag(Request $request, bool $isInstalled, bool $isMigrated): bool
+    {
+        if ($isInstalled || ! $isMigrated) {
+            return false;
+        }
+
+        if ($request->is('install') || $request->is('install/*')) {
+            return false;
+        }
+
+        return ! FinalizePendingMarker::isPending();
     }
 
     /**

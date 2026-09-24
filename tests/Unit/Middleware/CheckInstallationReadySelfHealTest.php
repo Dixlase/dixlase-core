@@ -25,6 +25,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Middleware;
 
 use App\Http\Middleware\CheckInstallationReady;
+use App\Support\Install\FinalizePendingMarker;
+use Illuminate\Http\Request;
+use PHPUnit\Framework\Attributes\Test;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -177,5 +180,40 @@ class CheckInstallationReadySelfHealTest extends TestCase
         file_put_contents($path, $contents);
 
         return $path;
+    }
+
+    #[Test]
+    public function it_does_not_heal_while_the_completion_screen_waits_for_a_button(): void
+    {
+        $decide = new ReflectionMethod($this->middleware, 'shouldSelfHealInstalledFlag');
+        $decide->setAccessible(true);
+        $assetRequest = Request::create('/assets/css/app.css', 'GET');
+
+        // No completion screen pending: an ordinary request may heal.
+        FinalizePendingMarker::clear();
+        $this->assertTrue($decide->invoke($this->middleware, $assetRequest, false, true));
+
+        // The completion screen is up and finalize() has not run yet. The
+        // asset requests it triggers must leave the flag alone, or the
+        // finalize POST that follows is redirected to the front page.
+        FinalizePendingMarker::mark();
+        $this->assertFalse($decide->invoke($this->middleware, $assetRequest, false, true));
+
+        FinalizePendingMarker::clear();
+    }
+
+    #[Test]
+    public function it_never_heals_on_install_routes_or_when_state_disagrees(): void
+    {
+        $decide = new ReflectionMethod($this->middleware, 'shouldSelfHealInstalledFlag');
+        $decide->setAccessible(true);
+        FinalizePendingMarker::clear();
+
+        $this->assertFalse($decide->invoke($this->middleware, Request::create('/install/complete', 'GET'), false, true));
+        $this->assertFalse($decide->invoke($this->middleware, Request::create('/install', 'GET'), false, true));
+        // Already installed, or the database does not show a finished
+        // install: nothing to restore either way.
+        $this->assertFalse($decide->invoke($this->middleware, Request::create('/', 'GET'), true, true));
+        $this->assertFalse($decide->invoke($this->middleware, Request::create('/', 'GET'), false, false));
     }
 }
