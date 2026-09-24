@@ -58,6 +58,7 @@ use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Models\Theme;
 use App\Services\AuditLogIntegrityService;
+use App\Services\Core\DependencyIntegrityService;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
@@ -374,6 +375,42 @@ class DashboardPresenter
             'label' => __('admin/dashboard.audit_integrity_status'),
             'description' => $auditDescription,
             'url' => route('admin.settings.systems.logs.index'),
+            'requires_advanced_mode' => true,
+        ];
+
+        // Dependency integrity (vendor/ vs composer.lock)
+        //
+        // A core update swaps the source tree and vendor/ in separate steps.
+        // An interruption between them leaves new source with old
+        // dependencies, and every other signal stays green: the front page
+        // answers 200, the Laravel log is empty and the panel reports the new
+        // version. Seen on the sandbox 2026-09-24. Critical rather than a
+        // warning because the same interruption across a framework major
+        // leaves a tree that fatals on the next boot.
+        $depHealth = app(DependencyIntegrityService::class)->checkCached();
+        $items[] = [
+            'key' => 'dependency_integrity',
+            'status' => match ($depHealth['state']) {
+                DependencyIntegrityService::STATE_MISMATCHED => 'critical',
+                DependencyIntegrityService::STATE_UNKNOWN => 'warning',
+                default => 'ok',
+            },
+            'icon' => 'fas fa-cubes',
+            'label' => __('admin/dashboard.dependency_integrity_status'),
+            'description' => match ($depHealth['state']) {
+                DependencyIntegrityService::STATE_MISMATCHED => __('admin/dashboard.dependency_integrity_mismatched', [
+                    'count' => $depHealth['mismatched'],
+                    'packages' => implode(', ', array_map(
+                        static fn (array $s): string => $s['name'].' '.($s['installed'] ?? '—').' ≠ '.$s['locked'],
+                        $depHealth['samples']
+                    )),
+                ]),
+                DependencyIntegrityService::STATE_UNKNOWN => __('admin/dashboard.dependency_integrity_unknown', [
+                    'reason' => (string) $depHealth['reason'],
+                ]),
+                default => __('admin/dashboard.dependency_integrity_ok', ['count' => $depHealth['checked']]),
+            },
+            'url' => route('admin.settings.systems.updates.index'),
             'requires_advanced_mode' => true,
         ];
 

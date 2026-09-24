@@ -157,15 +157,89 @@ class CoreMaintenanceGuardTest extends TestCase
 
     public function test_orphan_reason_prefers_the_pid_probe_over_age(): void
     {
+        $here = gethostname();
+
         $guard = $this->guard(pidAlive: true);
-        $ancient = ['pid' => 1, 'started_at' => '2000-01-01T00:00:00+00:00'];
+        $ancient = ['pid' => 1, 'hostname' => $here, 'started_at' => '2000-01-01T00:00:00+00:00'];
 
         $this->assertNull($guard->orphanReason($ancient), 'a live pid wins even when the record is ancient');
 
         $guard = $this->guard(pidAlive: false);
-        $fresh = ['pid' => 1, 'started_at' => now()->toIso8601String()];
+        $fresh = ['pid' => 1, 'hostname' => $here, 'started_at' => now()->toIso8601String()];
 
         $this->assertSame('is no longer running', $guard->orphanReason($fresh), 'a dead pid wins even when the record is fresh');
+    }
+
+    /**
+     * A pid is only meaningful inside the namespace that produced it. In the
+     * standard Docker layout the scheduler runs in a separate `cron`
+     * container, so probing the app container's pid there answers "no such
+     * process" for a perfectly healthy update. Observed on the sandbox
+     * 2026-09-23/24: maintenance was lifted twice with ~31 s and ~72 s of a
+     * running vendor swap still to go.
+     */
+    public function test_a_pid_from_another_host_is_never_treated_as_dead(): void
+    {
+        $guard = $this->guard(pidAlive: false);
+
+        $freshForeign = [
+            'pid' => 1,
+            'hostname' => 'some-other-container',
+            'started_at' => now()->toIso8601String(),
+        ];
+
+        $this->assertNull(
+            $guard->orphanReason($freshForeign),
+            'a dead-looking pid from another host must not end a running operation'
+        );
+    }
+
+    public function test_a_foreign_owner_is_still_cleaned_up_once_it_goes_stale(): void
+    {
+        $guard = $this->guard(pidAlive: false);
+
+        $staleForeign = [
+            'pid' => 1,
+            'hostname' => 'some-other-container',
+            'started_at' => now()->subSeconds(CoreMaintenanceGuard::STALE_SECONDS + 60)->toIso8601String(),
+        ];
+
+        $reason = $guard->orphanReason($staleForeign);
+
+        $this->assertIsString($reason, 'the age rule still applies to a foreign owner');
+        $this->assertStringContainsString('another host', $reason);
+        $this->assertStringContainsString('some-other-container', $reason);
+    }
+
+    public function test_an_owner_record_without_a_hostname_is_not_trusted_to_the_probe(): void
+    {
+        // Records written before the hostname was recorded, or by anything
+        // that did not set it: we cannot tell whose namespace the pid belongs
+        // to, so the safe reading is "unknown", not "dead".
+        $guard = $this->guard(pidAlive: false);
+
+        $this->assertNull($guard->orphanReason([
+            'pid' => 1,
+            'started_at' => now()->toIso8601String(),
+        ]));
+    }
+
+    public function test_the_heal_leaves_a_running_operation_owned_by_another_container_alone(): void
+    {
+        touch($this->sentinel);
+        $guard = $this->guard(pidAlive: false);
+        $guard->claim(CoreMaintenanceGuard::OPERATION_UPDATE, '1.0.0');
+
+        // Rewrite the record as if the app container had claimed it and this
+        // process were the scheduler in the cron container.
+        $owner = $guard->readOwner();
+        $owner['hostname'] = 'app-container';
+        file_put_contents($this->owner, json_encode($owner));
+
+        $this->assertNull($guard->healIfOrphaned());
+        $this->assertSame([], $this->lifts, 'maintenance is not lifted');
+        $this->assertFileExists($this->sentinel);
+        $this->assertNotNull($guard->readOwner(), 'the owner record survives');
     }
 
     private function guard(?bool $pidAlive = null): CoreMaintenanceGuard

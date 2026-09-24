@@ -290,29 +290,56 @@ final class CoreMaintenanceGuard
     {
         $pid = (int) ($owner['pid'] ?? 0);
 
-        $alive = $this->probePid($pid);
-        if ($alive === true) {
-            return null;
-        }
-        if ($alive === false) {
-            return 'is no longer running';
+        // A pid only means something inside the namespace that produced it.
+        // In the standard Docker layout the scheduler runs in its own `cron`
+        // container, so probing the app container's pid there answers "no such
+        // process" for a perfectly healthy update — and the heal then lifts
+        // maintenance in the middle of a running vendor swap, deletes the
+        // in-progress lock (allowing a second update to start) and records a
+        // false failure. Observed twice on the sandbox 2026-09-23/24, with
+        // ~31 s and ~72 s of work still to go.
+        //
+        // So the probe is only trusted when the record was written by this
+        // host. Otherwise fall through to the age rule, which is namespace
+        // independent: a genuinely dead foreign owner is still cleaned up,
+        // just after STALE_SECONDS instead of immediately.
+        $ownerHost = $owner['hostname'] ?? null;
+        $thisHost = gethostname();
+        $sameHost = is_string($ownerHost)
+            && $ownerHost !== ''
+            && is_string($thisHost)
+            && $ownerHost === $thisHost;
+
+        if ($sameHost) {
+            $alive = $this->probePid($pid);
+            if ($alive === true) {
+                return null;
+            }
+            if ($alive === false) {
+                return 'is no longer running';
+            }
         }
 
-        // Liveness unknown on this platform: fall back to age.
+        // Liveness unknown here — either the platform cannot probe, or the
+        // owner belongs to another host. Fall back to age.
+        $why = $sameHost
+            ? 'cannot be probed'
+            : sprintf('was started on another host (%s)', is_string($ownerHost) && $ownerHost !== '' ? $ownerHost : 'unknown');
+
         $startedAt = $owner['started_at'] ?? null;
         if (! is_string($startedAt) || $startedAt === '') {
-            return 'left no start time and cannot be probed';
+            return 'left no start time and '.$why;
         }
 
         try {
             $started = CarbonImmutable::parse($startedAt);
         } catch (\Throwable) {
-            return 'left an unreadable start time and cannot be probed';
+            return 'left an unreadable start time and '.$why;
         }
 
         $age = $started->diffInSeconds(CarbonImmutable::now());
         if ($age > self::STALE_SECONDS) {
-            return sprintf('cannot be probed and started %d seconds ago (limit %d)', $age, self::STALE_SECONDS);
+            return sprintf('%s and started %d seconds ago (limit %d)', $why, $age, self::STALE_SECONDS);
         }
 
         return null;
