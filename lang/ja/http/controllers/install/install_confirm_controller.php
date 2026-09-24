@@ -93,6 +93,7 @@ return [
     'session_driver_restored' => 'セッションドライバーを復元',
     'session_empty_redirect_to_confirm' => 'セッションデータが空です - 確認画面にリダイレクト',
     'storage_symlink_creation_completed' => 'ストレージシンボリックリンク作成完了',
+    'sqlite_database_file_unusable' => 'SQLite データベースファイルが存在せず、作成もできませんでした',
     'storage_symlink_creation_started' => 'ストレージシンボリックリンク作成開始',
     'symlink_creation_failed' => 'シンボリックリンクの作成に失敗しました: :_e__getmessage__',
     'theme_audit_completed' => 'テーマ監査完了: :slug',
