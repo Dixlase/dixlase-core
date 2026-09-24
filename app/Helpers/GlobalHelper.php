@@ -52,3 +52,38 @@ if (! function_exists('shortcode_parse')) {
         return app('shortcode')->parse($content);
     }
 }
+
+if (! function_exists('dls_page_title')) {
+    /**
+     * @api Stable API available for use from plugins/themes
+     *
+     * Compose the document title for the current page.
+     *
+     * Themes and plugins get one rule (and one separator) for the whole
+     * document title instead of concatenating the site name by hand. The
+     * `@pageTitle` directive wraps this helper and reads the `title`
+     * section for you, so a Blade view normally uses the directive and
+     * calls this helper only to guard it on an older core: the theme
+     * wraps the directive in `@if (function_exists('dls_page_title'))` /
+     * `@else` / `@endif` and falls back to its own concatenation. An
+     * unregistered directive is left as literal text by the Blade
+     * compiler rather than failing the compile.
+     *
+     * Called directly, pass plain text: the return value is plain text
+     * too, so escape it at the call site. Content taken from a Blade
+     * section is already HTML escaped and has to be decoded first.
+     *
+     * @param  string|null  $pageName  Page-specific part, or null for the site root
+     * @return string Plain text; escape it at the call site
+     */
+    function dls_page_title(?string $pageName = null): string
+    {
+        $contract = \App\Contracts\Site\PageTitleBuilderInterface::class;
+
+        if (! app()->bound($contract)) {
+            return (new \App\Services\Site\PageTitleBuilder())->build($pageName);
+        }
+
+        return app($contract)->build($pageName);
+    }
+}

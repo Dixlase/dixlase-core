@@ -48,7 +48,7 @@ use App\Models\Site;
 
 class AdminBaseSiteController extends AdminLoggedInController
 {
-    protected const SETTING_KEYS = ['app_name', 'locale', 'display_timezone'];
+    protected const SETTING_KEYS = ['app_name', 'site_tagline', 'locale', 'display_timezone'];
 
     protected SiteSettingRepositoryInterface $siteSettingRepository;
 
@@ -70,6 +70,7 @@ class AdminBaseSiteController extends AdminLoggedInController
     {
         $settings = [
             'app_name' => ConfigHelper::getAppName(),
+            'site_tagline' => ConfigHelper::getSiteTagline(),
             'locale' => $this->getSystemLocale(),
             'display_timezone' => ConfigHelper::getDisplayTimezone(),
         ];
@@ -116,6 +117,7 @@ class AdminBaseSiteController extends AdminLoggedInController
                 // the display-only TZ; Carbon/DB always operate in UTC.
                 $repo->setMultiple([
                     'app_name' => $data['app_name'],
+                    'site_tagline' => (string) ($data['site_tagline'] ?? ''),
                     'locale' => $data['locale'],
                     'display_timezone' => $data['display_timezone'],
                 ]);

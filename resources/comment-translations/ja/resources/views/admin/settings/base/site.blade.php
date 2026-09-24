@@ -21,12 +21,10 @@
  */
 
 return [
-    '{{-- Prevent FOUC: dark mode + Alpine.js x-cloak (executed synchronously) --}}' => '{{-- FOUC防止：ダークモード + Alpine.js x-cloak（同期的に実行） --}}',
-    '<!-- Main scripts -->' => '<!-- メインスクリプト -->',
+    '<!-- Site settings -->' => '<!-- サイト設定 -->',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
-        '<!-- Main scripts -->' => 'human',
-        '{{-- Prevent FOUC: dark mode + Alpine.js x-cloak (executed synchronously) --}}' => 'machine',
+        '<!-- Site settings -->' => 'human',
     ],
 ];

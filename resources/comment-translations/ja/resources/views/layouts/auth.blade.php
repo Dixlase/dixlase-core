@@ -22,9 +22,13 @@
 
 return [
     '{{-- Prevent FOUC: Dark mode + Alpine.js x-cloak (executed synchronously) --}}' => '{{-- FOUC防止：ダークモード + Alpine.js x-cloak（同期的に実行） --}}',
+    '// Check whether the icon section holds an array (JSON)' => '// アイコンが配列形式（JSON）かチェック',
+    '// Not an array, so treat it as a single icon' => '// 配列でない場合は単一アイコンとして扱う',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
+        '// Not an array, so treat it as a single icon' => 'human',
+        '// Check whether the icon section holds an array (JSON)' => 'human',
         '{{-- Prevent FOUC: Dark mode + Alpine.js x-cloak (executed synchronously) --}}' => 'machine',
     ],
 ];

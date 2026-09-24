@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-09-20
+**最終更新日:** 2026-09-24
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -117,6 +117,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
 | `App\Contracts\Security\RiskEvaluatorInterface` | Conditional-access risk scoring hook. |
 | `App\Contracts\Security\SecretProviderInterface` | Pluggable secret-store backend. |
+| `App\Contracts\Site\PageTitleBuilderInterface` | Composes the document title of a rendered page. |
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
@@ -592,6 +593,7 @@ return [
 - `App\Services\CommentTranslation\TranslationFileService`
 - `App\Services\CommentTranslation\CommentBuilderService`
 - `App\Services\CommentTranslation\ExtensionDictionaryLocator`
+- `App\Services\Site\PageTitleBuilder`
 
 ### 9.3 メール & ログ
 
@@ -752,6 +754,13 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 |---|---|
 | `shortcode_parse(string $content): string` | コンテンツ内のショートコードを解析・実行する |
 | `render_x_cloak_style(): string` | `[x-cloak]` 用の style ブロックを出力(Alpine.js 初期描画時のちらつき抑制) |
+| `dls_page_title(?string $pageName = null): string` | サイト名・タグライン・ページ名からドキュメントタイトルを合成する。戻り値はプレーンテキストなので、呼び出し側でエスケープすること |
+
+### 11.1 Blade ディレクティブ
+
+| ディレクティブ | 説明 |
+|---|---|
+| `@pageTitle` | `<title>` 要素全体を出力する。描画中のページの `title` セクション、または明示的な引数 (`@pageTitle($post->title)`) を読む。テーマがタイトルを出力する際の標準手段で、内部で `dls_page_title()` を呼び、結果を 1 度だけエスケープする。旧バージョンのコアでも動かす必要があるテーマは `@if(function_exists('dls_page_title'))` でガードする(未登録のディレクティブはコンパイルエラーにならず、そのまま文字列として残るため) |
 
 ---
 
