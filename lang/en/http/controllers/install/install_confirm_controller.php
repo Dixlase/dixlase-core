@@ -93,6 +93,7 @@ return [
     'session_driver_restored' => 'Session driver restored',
     'session_empty_redirect_to_confirm' => 'Session data is empty - redirecting to confirmation screen',
     'storage_symlink_creation_completed' => 'Storage symbolic link creation completed',
+    'sqlite_database_file_unusable' => 'SQLite database file is missing and could not be created',
     'storage_symlink_creation_started' => 'Storage symbolic link creation started',
     'symlink_creation_failed' => 'Failed to create symbolic link: :_e__getmessage__',
     'theme_audit_completed' => 'Theme audit completed: :slug',

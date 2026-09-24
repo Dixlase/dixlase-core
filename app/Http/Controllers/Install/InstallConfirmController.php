@@ -91,11 +91,17 @@ class InstallConfirmController extends BaseInstallController
             'full_data_keys' => $data ? array_keys($data) : 'empty',
         ]);
 
-        // Check required fields and redirect to appropriate step based on missing fields
+        // Check required fields and redirect to appropriate step based on missing fields.
+        //
+        // SQLite has no server to reach, so the database step neither shows nor
+        // submits host / port / username, and InstallDatabaseController blanks
+        // them in .env on purpose (a leftover DB_HOST=mysql from the docker
+        // preset would otherwise make other code paths attempt a TCP connect).
+        // Requiring them here made every SQLite installation fail this check.
         $steps = [
             'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
             'environment' => ['app_env', 'app_url', 'admin_url', 'app_timezone'],
-            'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
+            'database' => $this->requiredDatabaseFields($data['db_connection'] ?? null),
         ];
 
         // Start over if session data is completely empty
@@ -126,9 +132,12 @@ class InstallConfirmController extends BaseInstallController
                 'redirecting_to_step' => $firstMissing['step'],
             ]);
 
-            $route = 'install.'.($firstMissing['step'] === 'settings' ? 'create' : $firstMissing['step'].'.create');
-
-            return redirect()->route($route)
+            // Route names are `install.settings` / `install.environment` /
+            // `install.database` — the GET step screens. Appending `.create`
+            // (the controller method name) produced undefined route names, so
+            // this recovery path threw RouteNotFoundException instead of
+            // sending the operator back to fix the field.
+            return redirect()->route('install.'.$firstMissing['step'])
                 ->with('error', __('install/common.missing_required_fields').__('http/controllers/install/install_confirm_controller.missing_field', ['field' => $firstMissing['field']]));
         }
 
@@ -157,6 +166,24 @@ class InstallConfirmController extends BaseInstallController
         // while core is unsigned. Re-introduce coreIntegrityPanel() + the
         // confirm.blade.php panel when shipping core signing.
         // See .backlog/core-signing-deferred.md.
+    }
+
+    /**
+     * Required database fields for the chosen driver.
+     *
+     * SQLite only needs the file path; every other driver needs the server
+     * coordinates as well. Kept as its own method so the confirm screen and
+     * its tests share one definition.
+     *
+     * @return array<int, string>
+     */
+    protected function requiredDatabaseFields(?string $connection): array
+    {
+        if ($connection === 'sqlite') {
+            return ['db_connection', 'db_database'];
+        }
+
+        return ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'];
     }
 
     /**
@@ -199,6 +226,44 @@ class InstallConfirmController extends BaseInstallController
             // Decrypt DB password (do not decrypt if empty string)
             $dbPassword = (! empty($data['db_password'])) ? Crypt::decryptString($data['db_password']) : '';
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.db_password_decrypted'));
+
+            // SQLite: normalise what the wizard collected before it reaches
+            // .env and the migration.
+            //
+            // The database step hides host / port / user with `x-show`, which
+            // only hides them — the browser still submits whatever was in
+            // those inputs, so the session can carry the docker preset
+            // (DB_HOST=mysql, DB_USERNAME=dixlase) next to DB_CONNECTION=sqlite.
+            // Blank them here so the written .env describes the driver in use.
+            //
+            // The file itself is created only by the connection test on the
+            // database step, which is gated client-side and is not re-run when
+            // the path field changes afterwards. A missing file makes the
+            // connector throw at `migrate`, half-way through the install, so
+            // resolve the path and create the file here as well.
+            if (($data['db_connection'] ?? null) === 'sqlite') {
+                $data['db_database'] = $this->resolveSqliteDatabasePath($data['db_database'] ?? null);
+                $data['db_host'] = '';
+                $data['db_port'] = '';
+                $data['db_username'] = '';
+                $dbPassword = '';
+
+                if (! $this->ensureSqliteDatabaseFile($data['db_database'])) {
+                    Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.sqlite_database_file_unusable'), [
+                        'database' => $data['db_database'],
+                    ]);
+
+                    return redirect()->route('install.database')
+                        ->with('error', __('install/step3.db_sqlite_file_error', ['path' => $data['db_database']]));
+                }
+
+                session(['install_data' => array_merge(session('install_data', []), [
+                    'db_database' => $data['db_database'],
+                    'db_host' => '',
+                    'db_port' => '',
+                    'db_username' => '',
+                ])]);
+            }
 
             // Decrypt email password (do not decrypt if empty string)
             $mailPassword = (! empty($data['mail_password'])) ? Crypt::decryptString($data['mail_password']) : '';
