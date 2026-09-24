@@ -38,6 +38,7 @@ namespace App\Http\Controllers\Install;
 use App\Models\CoreVersionHistory;
 use App\Services\AuditLogIntegrityService;
 use App\Services\Core\CoreUpdater;
+use App\Support\Install\FinalizePendingMarker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -72,6 +73,14 @@ class InstallCompleteController extends BaseInstallController
         }
 
         Log::channel('install')->info('Display installation completion screen (waiting for button press)');
+
+        // From here until finalize() runs, INSTALLED=false is the correct
+        // state even though the database already shows a completed
+        // install. Say so, so the self-heal in CheckInstallationReady does
+        // not mistake this screen for a lost .env and flip the flag —
+        // which would turn the buttons below into a redirect to the front
+        // page and skip finalize() entirely.
+        FinalizePendingMarker::mark();
 
         // Retrieve admin panel URL (admin_url is Global scope, so get from global_settings via SettingResolver)
         $adminSlug = 'admin';
@@ -163,6 +172,10 @@ class InstallCompleteController extends BaseInstallController
     public function finalize(Request $request)
     {
         Log::channel('install')->info('=== InstallCompleteController::finalize() start ===');
+
+        // The completion screen has been answered: the window it asked the
+        // self-heal to keep out of is over, whichever way this request ends.
+        FinalizePendingMarker::clear();
 
         // Set INSTALLED=true & restore session driver to guard-aware-database
         Log::channel('install')->info('Setting INSTALLED=true...');
