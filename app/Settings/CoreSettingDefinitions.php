@@ -254,6 +254,16 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // Short subtitle / catchphrase shown next to the site name in the
+        // document title. Site identity, so it stays in Core even when no
+        // SEO plugin is installed.
+        $registry->register(new SettingDefinition(
+            name: 'site_tagline',
+            scope: SettingScope::PerSite,
+            default: '',
+            type: 'string',
+        ));
+
         // Display timezone for date/time rendering (separate from the
         // canonical sites.timezone column for legacy callers).
         $registry->register(new SettingDefinition(

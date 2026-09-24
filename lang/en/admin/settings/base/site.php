@@ -38,6 +38,8 @@ return [
     'site_settings' => 'Site Settings',
     'app_name' => 'Application Name',
     'app_name_help' => 'Enter within 60 characters for SEO and to prevent layout issues.',
+    'site_tagline' => 'Site Tagline',
+    'site_tagline_help' => 'Short subtitle shown after the site name on the home page title (e.g. "Brand sites, built properly"). Around 30 characters keeps the whole title near the 60 the search results show. Leave empty to show the site name alone.',
     'language_region_settings' => 'Language & Region Settings',
     'locale' => 'Default Language',
     'locale_help' => 'Used as the fallback language for URLs without a locale prefix and as the initial language for new members.',

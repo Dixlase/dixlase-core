@@ -50,6 +50,7 @@ class SiteSettingsTableSeeder extends Seeder
         $settings = [
             // App settings (for fallback)
             ['name' => 'app_name', 'value' => config('app.name', 'MySoftware')],
+            ['name' => 'site_tagline', 'value' => ''],
             ['name' => 'locale', 'value' => config('app.locale', 'ja')],
             ['name' => 'timezone', 'value' => config('app.timezone', 'Asia/Tokyo')],
 

@@ -230,6 +230,18 @@ class ConfigHelper
     }
 
     /**
+     * Get the site tagline (subtitle / catchphrase)
+     *
+     * Site identity, kept separate from the SEO meta description: the
+     * tagline is short enough to sit inside the document title, while
+     * site_description is a sentence aimed at search results.
+     */
+    public static function getSiteTagline(): string
+    {
+        return self::get('app.tagline', 'site_tagline', '', 'string', 'SiteSetting');
+    }
+
+    /**
      * Get application locale
      */
     public static function getAppLocale(): string

@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-09-20
+**Last Updated:** 2026-09-24
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -117,6 +117,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
 | `App\Contracts\Security\RiskEvaluatorInterface` | Conditional-access risk scoring hook. |
 | `App\Contracts\Security\SecretProviderInterface` | Pluggable secret-store backend. |
+| `App\Contracts\Site\PageTitleBuilderInterface` | Composes the document title of a rendered page. |
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
@@ -592,6 +593,7 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\CommentTranslation\TranslationFileService`
 - `App\Services\CommentTranslation\CommentBuilderService`
 - `App\Services\CommentTranslation\ExtensionDictionaryLocator`
+- `App\Services\Site\PageTitleBuilder`
 
 ### 9.3 Mail & Logging
 
@@ -753,6 +755,13 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 |---|---|
 | `shortcode_parse(string $content): string` | Parse and execute shortcodes in content |
 | `render_x_cloak_style(): string` | Render the `[x-cloak]` style block to suppress Alpine.js flicker on initial render |
+| `dls_page_title(?string $pageName = null): string` | Compose the document title from the site name, the site tagline and the page name. Returns plain text; escape it at the call site |
+
+### 11.1 Blade Directives
+
+| Directive | Description |
+|---|---|
+| `@pageTitle` | Render the whole `<title>` element. Reads the `title` section of the page being rendered, or an explicit argument: `@pageTitle($post->title)`. This is how a theme emits its title; it wraps `dls_page_title()` and escapes the result once. A theme that also has to run on an older core guards it with `@if(function_exists('dls_page_title'))`, since an unregistered directive is left as literal text rather than failing the compile |
 
 ---
 

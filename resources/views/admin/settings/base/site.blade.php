@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <form id="base-site-form" action="{{ route('admin.settings.base.site.update') }}" method="POST">
     @csrf
 
-    <!-- サイト設定 -->
+    <!-- Site settings -->
     <section>
         <h2>{{ __('admin/settings/base/site.site_settings') }}</h2>
 
@@ -52,6 +52,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 class="input-full"
             />
             <x-form-help-text :text="__('admin/settings/base/site.app_name_help')" />
+        </fieldset>
+
+        <fieldset>
+            <legend>{{ __('admin/settings/base/site.site_tagline') }}</legend>
+            <x-form-text
+                name="site_tagline"
+                :value="old('site_tagline', $settings['site_tagline'])"
+                maxlength="120"
+                class="input-full"
+            />
+            <x-form-help-text :text="__('admin/settings/base/site.site_tagline_help')" />
         </fieldset>
 
         @unless ($seoPluginEnabled)
