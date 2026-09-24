@@ -238,6 +238,13 @@ jobs:
               # 6. パーミッション修正（www-data が .env とルートに書き込めるように）
               docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
               [ -f .env ] && docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE/.env
+              # 所有権も戻す。手順 4 の composer install は docker exec 経由の root で
+              # 走り、その post-autoload-dump が artisan package:discover を呼ぶため、
+              # bootstrap/cache/packages.php と services.php が root 所有で作られる
+              # (2026-09-24 に 4 サイト全てで確認)。chmod 777 だけだと所有権は root の
+              # ままで、パーミッションのビットだけが「PHP-FPM が書き換えられない
+              # キャッシュ」との間に立っている状態になる。
+              docker exec compose-php-1 chown -R www-data:www-data /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
               docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
 
               # 6-b. public/ ディレクトリのグループを www-data に戻す
@@ -249,10 +256,17 @@ jobs:
               docker exec compose-php-1 find /var/www/apps/$SITE/public -type d -exec chmod g+s {} +
 
               # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
+              # `-u www-data` は必須。付けないと docker exec は root で走り、
+              # artisan が書くもの (ログ、再生成されたキャッシュ) が root 所有になる。
+              # なお 2026-09-24 に 4 サイト全てで確認された root 所有の
+              # bootstrap/cache/packages.php・services.php を作っていたのは、この
+              # ステップではなく手順 4 の composer install が呼ぶ package:discover
+              # である。そちらは手順 6 に chown を足して手当てした。
+              # 手順 1・6 の chown / chmod は root が必要なのでそのままにする。
               if [ -f artisan ]; then
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan view:clear
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan route:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan config:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan view:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan route:clear
               fi
             done
 
