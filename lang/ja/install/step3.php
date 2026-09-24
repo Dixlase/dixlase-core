@@ -58,6 +58,7 @@ return [
     'preserve_database_help' => 'チェックを入れると、既存のデータを保持したまま必要な更新のみを適用します。チェックを外すと、インストール時に既存のデータがすべて削除されます。',
 
     'test_db_connection' => '接続テスト',
+    'db_sqlite_file_error' => 'SQLite データベースファイル（:path）を作成または書き込みできませんでした。ディレクトリが存在し、Web サーバーから書き込み可能かを確認してからやり直してください。',
     'db_connection_success' => 'データベース接続成功！',
     'db_connection_error' => 'データベース接続に失敗しました: :error',
     'db_test_required' => '⚠️ 次の画面へ進む前にデータベース接続テストを行ってください。',

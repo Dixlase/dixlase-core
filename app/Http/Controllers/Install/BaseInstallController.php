@@ -181,6 +181,46 @@ abstract class BaseInstallController extends Controller
      *
      * @param  mixed  $value
      */
+    /**
+     * Resolve the SQLite database path the wizard should use.
+     *
+     * Laravel's SQLite connector needs a path it can `realpath()`. The field
+     * may arrive empty or relative, so fall back to `database/database.sqlite`
+     * inside the installation. Every install step resolves the path the same
+     * way, so the file the connection test creates is the file the install
+     * later opens.
+     */
+    protected function resolveSqliteDatabasePath(?string $database): string
+    {
+        $database = trim((string) $database);
+
+        if ($database === '' || $database[0] !== '/') {
+            return database_path('database.sqlite');
+        }
+
+        return $database;
+    }
+
+    /**
+     * Make sure the SQLite file exists, creating it (and its directory) when
+     * it does not.
+     *
+     * The connector throws SQLiteDatabaseDoesNotExistException for a missing
+     * file instead of creating it, so an installation whose operator never
+     * ran the connection test would otherwise fail at the migration step.
+     *
+     * @return bool false when the file could not be created or is not writable
+     */
+    protected function ensureSqliteDatabaseFile(string $database): bool
+    {
+        if (! is_file($database)) {
+            @mkdir(dirname($database), 0775, true);
+            @touch($database);
+        }
+
+        return is_file($database) && is_writable($database);
+    }
+
     protected function formatEnvValue($value): string
     {
         // Empty string if null

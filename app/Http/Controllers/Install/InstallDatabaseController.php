@@ -129,13 +129,10 @@ class InstallDatabaseController extends BaseInstallController
         $connection = (string) $request->input('db_connection', 'mysql');
 
         if ($connection === 'sqlite') {
-            $database = (string) $request->input('db_database', '');
-            // Match the resolution that InstallConfirmController and the
-            // testConnection() endpoint use, so the .env value matches
-            // what the wizard actually opened during the test.
-            if ($database === '' || $database[0] !== '/') {
-                $database = database_path('database.sqlite');
-            }
+            // Resolve exactly like InstallConfirmController and the
+            // testConnection() endpoint, so the .env value matches
+            // the file the wizard actually opened during the test.
+            $database = $this->resolveSqliteDatabasePath($request->input('db_database'));
 
             $envData = [
                 'DB_CONNECTION' => 'sqlite',
@@ -193,17 +190,10 @@ class InstallDatabaseController extends BaseInstallController
             $database = $request->input('db_database');
 
             if ($connection === 'sqlite') {
-                // Laravel's SQLite connector requires an absolute path
-                // and an existing file. Fall back to database/database.sqlite
-                // when the field is empty or not absolute, then create the
-                // file if it is missing so the connection test can succeed.
-                if ($database === null || $database === '' || $database[0] !== '/') {
-                    $database = database_path('database.sqlite');
-                }
-                if (! is_file($database)) {
-                    @mkdir(dirname($database), 0775, true);
-                    @touch($database);
-                }
+                // Laravel's SQLite connector requires an absolute path and an
+                // existing file, so resolve and create before connecting.
+                $database = $this->resolveSqliteDatabasePath($database);
+                $this->ensureSqliteDatabaseFile($database);
                 $config = [
                     'driver' => 'sqlite',
                     'database' => $database,

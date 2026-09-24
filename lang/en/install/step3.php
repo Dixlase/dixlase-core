@@ -58,6 +58,7 @@ return [
     'preserve_database_help' => 'If checked, existing data will be preserved and only necessary updates will be applied. If unchecked, all existing data will be deleted during installation.',
 
     'test_db_connection' => 'Test Connection',
+    'db_sqlite_file_error' => 'Could not create or write the SQLite database file (:path). Check that the directory exists and is writable by the web server, then try again.',
     'db_connection_success' => 'Database connection successful!',
     'db_connection_error' => 'Failed to connect to database: :error',
     'db_test_required' => '⚠️ Please run database connection test before proceeding to the next screen.',
