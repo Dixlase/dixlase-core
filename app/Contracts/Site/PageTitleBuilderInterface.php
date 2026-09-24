@@ -48,30 +48,14 @@ namespace App\Contracts\Site;
  * per-page overrides or localised values.
  *
  * Themes should not call the implementation directly. They render the
- * `@pageTitle` directive, which reads the `title` section of the page
- * being rendered and emits the whole `<title>` element:
+ * `@pageTitle` Blade directive, which reads the `title` section of the
+ * page being rendered and emits the whole `<title>` element.
  *
- * ```blade
- *
- * @pageTitle
- * ```
- *
- * A theme that must also run on a core release without this API guards
- * the directive at runtime. An unregistered directive is left as literal
- * text by the Blade compiler rather than failing the compile, so the
- * guarded branch is simply never reached:
- *
- * ```blade
- *
- * @if (function_exists('dls_page_title'))
- *
- *     @pageTitle
- *
- * @else
- *     <title>{{ config('app.name', 'Dixlase') }} @yield('title')</title>
- *
- * @endif
- * ```
+ * A theme that must also run on a core release without this API wraps
+ * that one line in `@if (function_exists('dls_page_title'))` / `@else` /
+ * `@endif` and falls back to its own concatenation. An unregistered
+ * directive is left as literal text by the Blade compiler rather than
+ * failing the compile, so the guarded branch is never reached.
  *
  * @api Stable API available for use from plugins/themes
  */

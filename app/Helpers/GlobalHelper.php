@@ -63,19 +63,11 @@ if (! function_exists('dls_page_title')) {
      * document title instead of concatenating the site name by hand. The
      * `@pageTitle` directive wraps this helper and reads the `title`
      * section for you, so a Blade view normally uses the directive and
-     * calls this helper only to guard it on an older core:
-     *
-     * ```blade
-     *
-     * @if (function_exists('dls_page_title'))
-     *
-     *     @pageTitle
-     *
-     * @else
-     *     <title>{{ config('app.name') }} @yield('title')</title>
-     *
-     * @endif
-     * ```
+     * calls this helper only to guard it on an older core: the theme
+     * wraps the directive in `@if (function_exists('dls_page_title'))` /
+     * `@else` / `@endif` and falls back to its own concatenation. An
+     * unregistered directive is left as literal text by the Blade
+     * compiler rather than failing the compile.
      *
      * Called directly, pass plain text: the return value is plain text
      * too, so escape it at the call site. Content taken from a Blade
