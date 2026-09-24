@@ -249,10 +249,17 @@ jobs:
               docker exec compose-php-1 find /var/www/apps/$SITE/public -type d -exec chmod g+s {} +
 
               # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
+              # `-u www-data` は必須。付けないと docker exec は root で走り、
+              # artisan が書くファイルが root 所有になる。2026-09-24 に authority で
+              # bootstrap/cache/services.php と packages.php が root 所有で作られて
+              # いるのを確認した (作成時刻が #366 の deploy と一致)。当該ディレクトリ
+              # が 777 のうちは実害が出ないが、そうなるとパーミッションだけが
+              # 「PHP-FPM が書き換えられないファイル」との間に立っていることになる。
+              # 手順 1・6 の chown / chmod は root が必要なのでそのままにする。
               if [ -f artisan ]; then
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan config:clear
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan view:clear
-                docker exec compose-php-1 php /var/www/apps/$SITE/artisan route:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan config:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan view:clear
+                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan route:clear
               fi
             done
 
