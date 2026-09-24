@@ -117,4 +117,25 @@ return [
 
     'demo_expires_at' => null,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Page Title Composition
+    |--------------------------------------------------------------------------
+    |
+    | How Core composes the document title (see
+    | App\Services\Site\PageTitleBuilder). The site root leads with the
+    | site name followed by the tagline; every other page leads with the
+    | page name, because search results truncate the tail and the
+    | page-specific words have to survive.
+    |
+    | Available placeholders: :site, :tagline, :page, :separator.
+    |
+    */
+
+    'page_title' => [
+        'separator' => ' - ',
+        'root_format' => ':site:separator:tagline',
+        'page_format' => ':page:separator:site',
+    ],
+
 ];

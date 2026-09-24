@@ -50,6 +50,7 @@ use App\Contracts\Security\PolicyEvaluatorInterface;
 use App\Contracts\Security\RiskEvaluatorInterface;
 use App\Contracts\Security\SecretProviderInterface;
 use App\Contracts\Signature\SignatureWaiverServiceInterface;
+use App\Contracts\Site\PageTitleBuilderInterface;
 use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\Theme\ThemePermissionServiceInterface;
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
@@ -73,6 +74,7 @@ use App\Services\Security\EnvSecretProvider;
 use App\Services\Security\LowRiskEvaluator;
 use App\Services\Security\NullPolicyEvaluator;
 use App\Services\Signature\SignatureWaiverService;
+use App\Services\Site\PageTitleBuilder;
 use App\Services\Site\SettingDefinitionRegistry;
 use App\Services\Site\SiteContext;
 use App\Services\Theme\ThemePermissionService;
@@ -153,6 +155,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Bind log output service
         $this->app->bind(LogServiceInterface::class, LogService::class);
+
+        // Bind the document title composer. Core owns the rule so every
+        // theme renders the same `<title>` shape; an SEO or multilingual
+        // plugin may rebind it to add per-page or localised overrides.
+        $this->app->bind(PageTitleBuilderInterface::class, PageTitleBuilder::class);
 
         // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
@@ -304,6 +311,23 @@ class AppServiceProvider extends ServiceProvider
         // Remove data-navigate-once attribute from @livewireScripts output
         \Blade::directive('livewireScriptsWithoutNavigate', function () {
             return "<?php echo view('components.livewire-scripts-without-navigate')->render(); ?>";
+        });
+
+        // Custom Blade directive: @pageTitle
+        // Renders the whole <title> element from the `title` section, so a
+        // theme never concatenates the site name by hand. An explicit
+        // argument overrides the section: @pageTitle($post->title)
+        //
+        // Inline `@section('title', $value)` content arrives HTML escaped
+        // (Factory::startSection() runs it through e()), so it is decoded
+        // before composing and the finished title is escaped exactly once.
+        \Blade::directive('pageTitle', function ($expression) {
+            $expression = trim((string) $expression);
+            $argument = $expression === ''
+                ? "html_entity_decode((string) \$__env->yieldContent('title'), ENT_QUOTES)"
+                : "(string) ({$expression})";
+
+            return "<?php echo '<title>'.e(dls_page_title({$argument})).'</title>'; ?>";
         });
 
         // Force HTTPS URL generation when the request is served securely

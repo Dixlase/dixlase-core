@@ -39,7 +39,7 @@ Safe Theme Head - Minimal meta tags and Core CSS only
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<title>{{ config('app.name', 'Dixlase') }}</title>
+@pageTitle
 
 {{-- Core CSS only (no theme CSS/JS) --}}
 {!! load_core_assets(['scss/style.scss'], 'common') !!}

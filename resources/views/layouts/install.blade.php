@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') | {{ config('app.name') }}</title>
+    @pageTitle
 
     {{-- Favicon links. Kept in sync with auth / admin layouts so the
          browser tab icon is consistent across install wizard, login,
@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         }
     </script>
 
-    <!-- メインスクリプト -->
+    <!-- Main scripts -->
     @vite(['resources/src/common/css/tailwind.css', 'resources/src/install/js/app.js', 'resources/src/common/js/app.js', 'resources/src/common/scss/style.scss'], 'assets/build')
 
 

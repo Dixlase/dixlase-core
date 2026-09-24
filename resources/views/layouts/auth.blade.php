@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') | {{ config('app.name') }}</title>
+    @pageTitle
 
     {{-- Favicon links. Ordered SVG-first so modern browsers pick the
          vector; PNG fallbacks for browsers that ignore SVG icons. The
@@ -87,10 +87,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @hasSection('icon')
                 @php
                     $iconSection = trim(View::yieldContent('icon'));
-                    // アイコンが配列形式（JSON）かチェック
+                    // Check whether the icon section holds an array (JSON)
                     $icons = json_decode($iconSection, true);
                     if (!is_array($icons)) {
-                        // 配列でない場合は単一アイコンとして扱う
+                        // Not an array, so treat it as a single icon
                         $icons = [$iconSection];
                     }
                 @endphp
