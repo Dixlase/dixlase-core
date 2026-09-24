@@ -450,7 +450,12 @@ class CoreUpdater
             // in UpdateSeeder must be safe to re-run on every core
             // upgrade — typically insertOrIgnore / updateOrCreate
             // against settings tables to backfill newly-declared
-            // defaults. Silent no-op when the class is absent.
+            // defaults. Silent no-op when the class is absent, which
+            // is the normal state on main: core ships no UpdateSeeder
+            // of its own. The sandbox verification copy lives on the
+            // `test/core-update-sandbox-fixtures` branch, because a
+            // seeder that writes a marker row would otherwise run on
+            // every user's core update.
             if (class_exists(\Database\Seeders\UpdateSeeder::class)) {
                 $log('Running core UpdateSeeder...');
                 Artisan::call('db:seed', [
