@@ -171,6 +171,12 @@ class InstallCompleteController extends BaseInstallController
     {
         Log::channel('install')->info('=== InstallCompleteController::finalize() start ===');
 
+        // Only an install that reached the completion screen may be finalized
+        // (the middleware checks this too; this holds even if it is skipped).
+        if (! FinalizePendingMarker::isPending()) {
+            return redirect()->route('install.index');
+        }
+
         // The completion screen has been answered: the window it asked the
         // self-heal to keep out of is over, whichever way this request ends.
         FinalizePendingMarker::clear();
