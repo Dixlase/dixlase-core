@@ -28,6 +28,10 @@ repository to be notified of changes.
 
 ### Added
 
+- `App\Multilingual\SiteTaglineProvider` joins the Plugin API surface. It supplies the
+  primary-locale value for the core `site_tagline` setting, and DixlaseMultilingual names
+  it when registering the `core:site-tagline` singleton translatable type, so the class
+  has to be on the documented boundary for the plugin exception to cover that reference.
 - `dls:schema:retire` drops schema objects that an earlier beta created and a later
   beta no longer uses: the `webauthn_credentials` table, and the table, column and
   `global_settings` marker rows left by the core-update verification fixtures. Only

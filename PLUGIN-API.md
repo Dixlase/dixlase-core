@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-09-24
+**Last Updated:** 2026-09-25
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -565,6 +565,7 @@ return [
 The services marked with `@api` below can be directly injected via DI.
 The remaining services are accessed via their respective interfaces (see Section 1).
 
+- `App\Multilingual\SiteTaglineProvider` — `@api`, direct DI
 - `App\Services\Plugin\DeclaresVerifier` — `@api`, direct DI
 - `App\Services\Plugin\PluginPermissionService` — `@api`, direct DI
 - `App\Services\Plugin\PluginServiceResolver` — `@api`, direct DI
