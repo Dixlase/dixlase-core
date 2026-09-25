@@ -121,13 +121,35 @@ class Webhook extends Model
 
     /**
      * Scope to webhooks subscribed to an event
+     *
+     * SQLite needs the membership test written out by hand. Laravel's
+     * SQLite grammar renders `whereJsonContains` as
+     * `exists (select 1 from json_each("events") where "json_each"."value" is ?)`
+     * and wraps `json_each.value` as a qualified column, so a connection
+     * with a table prefix — Dixlase ships `dls_` — asks for
+     * `dls_json_each.value`. That column does not exist, the query throws,
+     * and because WebhookEventListener only logs the failure, a SQLite
+     * site silently delivers no webhooks at all. Raw SQL is not wrapped,
+     * so nothing prefixes `json_each` there.
      */
     public function scopeSubscribedTo($query, string $event)
     {
-        return $query->where(function ($q) use ($event) {
-            // Subscribe to all events if events is null
-            $q->whereNull('events')
-                ->orWhereJsonContains('events', $event)
+        $isSqlite = $query->getConnection()->getDriverName() === 'sqlite';
+
+        return $query->where(function ($q) use ($event, $isSqlite) {
+            // A null events list means every event.
+            $q->whereNull('events');
+
+            if ($isSqlite) {
+                $q->orWhereRaw(
+                    'exists (select 1 from json_each("events") where json_each.value in (?, ?))',
+                    [$event, '*']
+                );
+
+                return;
+            }
+
+            $q->orWhereJsonContains('events', $event)
                 ->orWhereJsonContains('events', '*');
         });
     }
