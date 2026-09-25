@@ -36,11 +36,9 @@
 namespace App\Http\Controllers\Install;
 
 use App\Models\CoreVersionHistory;
-use App\Services\AuditLogIntegrityService;
-use App\Services\Core\CoreUpdater;
+use App\Services\Install\InstallFinalizer;
 use App\Support\Install\FinalizePendingMarker;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -177,55 +175,26 @@ class InstallCompleteController extends BaseInstallController
         // self-heal to keep out of is over, whichever way this request ends.
         FinalizePendingMarker::clear();
 
-        // Set INSTALLED=true & restore session driver to guard-aware-database
+        // Everything that actually completes the installation lives in
+        // InstallFinalizer, so `dls:install` (which has no completion
+        // screen to answer) performs exactly the same steps.
         Log::channel('install')->info('Setting INSTALLED=true...');
-        $envUpdates = [
-            'INSTALLED' => 'true',
-            'SESSION_DRIVER' => 'guard-aware-database',
-        ];
+        $sessionCookie = app(InstallFinalizer::class)->finalize();
 
-        // Name the session cookie now, at the one point in the wizard where a
-        // rename costs nothing: the operator is leaving for the admin panel.
-        // Doing it earlier emptied the session mid-wizard, because the browser
-        // still held the previous name (see InstallConfirmController::store).
-        // The in-process config is updated too, so this response already sets
-        // the new name against the same session id and the flash message
-        // survives.
-        $sessionCookie = $this->resolveSessionCookieName();
+        // Naming the cookie here costs nothing — the operator is leaving for
+        // the admin panel. Doing it earlier emptied the session mid-wizard,
+        // because the browser still held the previous name (see
+        // InstallConfirmController::store). Update the in-process config too,
+        // so this response sets the new name against the same session id and
+        // the flash message survives.
         if ($sessionCookie !== null) {
-            $envUpdates['SESSION_COOKIE'] = $sessionCookie;
             config(['session.cookie' => $sessionCookie]);
-            Log::channel('install')->info('Session cookie named for this installation', ['cookie' => $sessionCookie]);
         }
 
-        $this->updateEnv($envUpdates);
-
-        // Apply environment variables immediately (reflect to current process with putenv)
-        putenv('INSTALLED=true');
-        $_ENV['INSTALLED'] = 'true';
-        $_SERVER['INSTALLED'] = 'true';
-
-        // Do not run Artisan commands (to prevent APP_KEY regeneration and session destruction)
         Log::channel('install')->info('INSTALLED=true set & session driver restored to guard-aware-database', [
             'env_INSTALLED' => env('INSTALLED'),
             'putenv_check' => getenv('INSTALLED'),
         ]);
-
-        // Record a baseline `core_version_history` row so subsequent
-        // `dls:core:update` runs record `from: <real version>` instead of
-        // `from: 0.0.0` (issue #171 Finding D). Extracted into its own
-        // method so tests can exercise the ledger-write branch without
-        // going through updateEnv() — which writes to .env and would
-        // leave the test environment in an INSTALLED=true state that
-        // breaks the rest of the install test suite (issue #171-D
-        // follow-up).
-        $this->recordBaselineVersionHistoryIfNeeded();
-
-        // Chain the audit log entries written during installation right
-        // away instead of leaving them unprotected until the first hourly
-        // `audit:integrity build` run (see routes/console.php). Calls the
-        // service directly — no Artisan here, see the note above.
-        $this->buildAuditLogHashChain();
 
         // Get redirect destination
         $redirectTo = $request->input('redirect_to');
@@ -278,44 +247,7 @@ class InstallCompleteController extends BaseInstallController
      */
     protected function recordBaselineVersionHistoryIfNeeded(): ?CoreVersionHistory
     {
-        try {
-            $onDiskVersion = CoreUpdater::readVersionFromDisk();
-            $ledgerEmpty = CoreVersionHistory::query()->doesntExist();
-
-            if ($onDiskVersion === null || ! $ledgerEmpty) {
-                Log::channel('install')->info('Baseline core_version_history row NOT recorded', [
-                    'on_disk_version' => $onDiskVersion,
-                    'ledger_empty' => $ledgerEmpty,
-                ]);
-
-                return null;
-            }
-
-            $row = CoreVersionHistory::create([
-                'old_version' => null,
-                'new_version' => $onDiskVersion,
-                'files_changed_count' => 0,
-                'lines_added' => 0,
-                'lines_removed' => 0,
-                'signing_key_changed' => false,
-                'author_id_changed' => false,
-                'installation_method' => 'install',
-                'installed_from_url' => null,
-                'downloaded_sha256' => null,
-                'applied_by_id' => null,
-                'applied_at' => now(),
-            ]);
-
-            Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
-            Log::channel('install')->info("Recorded baseline core_version_history row: v{$onDiskVersion} (installation_method=install)");
-
-            return $row;
-        } catch (\Throwable $e) {
-            // Never fail the install over a bookkeeping row — log and continue.
-            Log::channel('install')->warning('Failed to record baseline core_version_history row (non-fatal): '.$e->getMessage());
-
-            return null;
-        }
+        return app(InstallFinalizer::class)->recordBaselineVersionHistory();
     }
 
     /**
@@ -331,22 +263,7 @@ class InstallCompleteController extends BaseInstallController
      */
     protected function buildAuditLogHashChain(): ?int
     {
-        try {
-            $result = app(AuditLogIntegrityService::class)->buildPendingChains();
-
-            Log::channel('install')->info('Audit log hash chain built at install completion', [
-                'processed' => $result['processed'],
-                'remaining' => $result['remaining'],
-                'errors' => count($result['errors']),
-            ]);
-
-            return (int) $result['processed'];
-        } catch (\Throwable $e) {
-            // The hourly scheduler picks these rows up — log and continue.
-            Log::channel('install')->warning('Failed to build the audit log hash chain at install completion (non-fatal): '.$e->getMessage());
-
-            return null;
-        }
+        return app(InstallFinalizer::class)->buildAuditLogHashChain();
     }
 
     /**
@@ -358,19 +275,7 @@ class InstallCompleteController extends BaseInstallController
      */
     protected function resolveSessionCookieName(): ?string
     {
-        if ($this->readEnvValue('SESSION_COOKIE') !== '') {
-            return null;
-        }
-
-        $siteName = null;
-
-        try {
-            $siteName = app(\App\Services\Site\SettingResolver::class)->get('site_name');
-        } catch (\Throwable $e) {
-            Log::channel('install')->warning('Failed to read site_name for the session cookie name: '.$e->getMessage());
-        }
-
-        return $this->generateSessionCookieName(is_string($siteName) && $siteName !== '' ? $siteName : config('app.name'));
+        return app(InstallFinalizer::class)->resolveSessionCookieName();
     }
 
     /**

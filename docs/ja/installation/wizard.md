@@ -177,3 +177,60 @@
 - PHP の `max_execution_time` を確認（推奨: 300秒）
 - `storage/logs/install.log` でエラーを確認
 - マイグレーションとシードに十分なディスク容量があるか確認
+
+---
+
+## コマンドラインからのインストール
+
+`dls:install` は、ブラウザを使わずにウィザードと同じ処理を実行します。ウィザードを開く
+Web サーバーが無い場合や、インストールを自動化したい場合に使います。ワンライナー
+インストーラはこの方法を使います。
+
+```bash
+php artisan dls:install \
+    --site-name="My Site" \
+    --admin-name=admin \
+    --admin-email=admin@example.com \
+    --url=example.com \
+    --db=sqlite \
+    --force
+```
+
+指定しなかった項目は対話で尋ねるので、手作業でも使えます。`--no-interaction` を付けた
+場合、不足している項目は質問ではなくエラーになります。
+
+### パスワード
+
+`--admin-password` も使えますが、値がシェルの履歴とプロセス一覧に残ります。環境変数を
+推奨します。
+
+```bash
+DIXLASE_ADMIN_PASSWORD='…' php artisan dls:install …
+```
+
+データベースとメールのパスワードは `DIXLASE_DB_PASSWORD` と `DIXLASE_MAIL_PASSWORD` で
+同様に渡せます。対話実行の場合、管理者パスワードは画面に表示されずに入力できます。
+
+### 実行を拒否する条件
+
+次の場合、コマンドは何も書き込まずに停止します。
+
+- すでにインストール済み（`INSTALLED=true`）
+- 別の実行がロックを保持している（`storage/framework/install-running`）
+- 必須項目が不足しており、対話が許可されていない
+- ウィザードと同じ検証ルールに違反している
+- **確認が取れていない。** 既定では対象データベースの全テーブルを削除して作り直すため、
+  非対話実行には `--force` が必要です。削除せずにマイグレーションするには
+  `--preserve-data` を付けます。
+
+### データベース
+
+`--db=sqlite`（既定）はファイルが無ければディレクトリごと作成します。パスは
+`--db-database` で指定します。MySQL の場合は `--db-host` / `--db-port` /
+`--db-database` / `--db-username` を渡します。データベース自体は事前に作成され、
+ユーザーがそこにテーブルを作成できる必要があります。
+
+### 完了後
+
+サイトと管理画面の URL が表示され、`.env` は `INSTALLED=true` になります。ほかに必要な
+操作はありません。ウィザードの完了画面が行う最終処理は、コマンドが済ませています。

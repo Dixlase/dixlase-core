@@ -177,3 +177,62 @@ Click **Finalize** to set `INSTALLED=true` in your `.env` file. After finalizati
 - Check PHP's `max_execution_time` (recommended: 300 seconds)
 - Review `storage/logs/install.log` for errors
 - Ensure sufficient disk space for migrations and seeding
+
+---
+
+## Installing from the command line
+
+`dls:install` runs the same pipeline as the wizard without a browser. Use it when
+there is no web server to point at the wizard, or when the installation should be
+scripted — the one-liner installer does exactly this.
+
+```bash
+php artisan dls:install \
+    --site-name="My Site" \
+    --admin-name=admin \
+    --admin-email=admin@example.com \
+    --url=example.com \
+    --db=sqlite \
+    --force
+```
+
+Anything you leave out is asked for, so the command is also usable by hand. With
+`--no-interaction` a missing setting is an error instead of a prompt.
+
+### Passwords
+
+`--admin-password` works, but the value ends up in the shell history and in the
+process list. Prefer the environment:
+
+```bash
+DIXLASE_ADMIN_PASSWORD='…' php artisan dls:install …
+```
+
+`DIXLASE_DB_PASSWORD` and `DIXLASE_MAIL_PASSWORD` do the same for the other two.
+Run the command interactively and the administrator password is asked for without
+echoing.
+
+### What it refuses to do
+
+The command stops before writing when:
+
+- the installation is already complete (`INSTALLED=true`)
+- another run holds the lock (`storage/framework/install-running`)
+- a required setting is missing and prompting is not allowed
+- a setting fails the same validation the wizard applies
+- **it has not been confirmed.** By default every table in the target database is
+  dropped and recreated, so a non-interactive run needs `--force`. Pass
+  `--preserve-data` to migrate without dropping anything.
+
+### Database
+
+`--db=sqlite` (the default) creates the file if it does not exist, including its
+directory; `--db-database` sets the path. For MySQL, pass `--db-host`,
+`--db-port`, `--db-database` and `--db-username`; the database itself must already
+exist and the user must be able to create tables in it.
+
+### After it finishes
+
+The command prints the site and admin URLs, and `.env` is left with
+`INSTALLED=true`. Nothing else is needed — the completion screen the wizard shows
+only performs the same finalisation the command has already done.

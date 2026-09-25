@@ -29,6 +29,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ### 追加
 
+- `dls:install` でコマンドラインからインストールできるようにした。ブラウザのウィザードと
+  同じ処理を実行する。設定はオプション（`--site-name`、`--admin-email`、`--db=sqlite` など）
+  で渡し、不足分は対話で尋ねる。パスワードはコマンドラインではなく
+  `DIXLASE_ADMIN_PASSWORD` / `DIXLASE_DB_PASSWORD` / `DIXLASE_MAIL_PASSWORD` でも渡せる。
+  既定では対象データベースの全テーブルを削除して作り直すため、非対話実行には `--force` が
+  必要。`--preserve-data` を付ければ削除せずにマイグレーションする。ウィザードの実行処理は
+  `App\Services\Install\InstallRunner` に移し、両方の入口で共有する。
 - `App\Multilingual\SiteTaglineProvider` を Plugin API の境界に追加。コアの
   `site_tagline` 設定について主要ロケールの値を供給するクラスで、DixlaseMultilingual が
   `core:site-tagline` シングルトン翻訳型を登録する際にクラス名で参照するため、その参照が
