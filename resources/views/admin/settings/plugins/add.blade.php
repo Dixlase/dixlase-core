@@ -169,6 +169,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <img
                                             :src="plugin.thumbnail_url || '{{ asset('assets/images/plugin-default.svg') }}'"
                                             :alt="plugin.name || plugin.slug"
+                                            loading="lazy"
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
                                         >

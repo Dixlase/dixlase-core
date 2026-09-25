@@ -165,6 +165,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <img
                                             :src="theme.thumbnail_url || '{{ asset('assets/images/theme-default.svg') }}'"
                                             :alt="theme.name || theme.slug"
+                                            loading="lazy"
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             x-on:error="$el.src = '{{ asset('assets/images/theme-default.svg') }}'; $el.onerror = null;"
                                         >
