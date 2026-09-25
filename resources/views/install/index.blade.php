@@ -253,9 +253,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200" :class="open && 'rotate-180'"></i>
         </button>
         <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-2 mt-2">
+            {{-- A floor, not an exact value: `recommended_min` renders "60s or more".
+                 It is its own key because `install/common.recommended` is the bare word,
+                 shared with the extension rows below — appending "or more" there would
+                 turn "Redis (Recommended)" into "Redis (Recommended: or more)". --}}
             @foreach ($recommendedPhpSettings as $setting => $info)
                 <li>
-                    <strong>{{ $setting }}</strong> ({{ __('install/common.recommended') }}: {{ $info['required'] }}):
+                    <strong>{{ $setting }}</strong> ({{ __('install/index.php_settings.recommended_min', ['value' => $info['required']]) }}):
                     <span class="{{ $info['ok'] ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' }}">
                         {{ $info['current'] }}{{ $info['ok'] ? ' ' . __('install/common.ok') : '' }}
                     </span>
