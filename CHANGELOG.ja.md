@@ -27,6 +27,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 追加
+
+- `App\Multilingual\SiteTaglineProvider` を Plugin API の境界に追加。コアの
+  `site_tagline` 設定について主要ロケールの値を供給するクラスで、DixlaseMultilingual が
+  `core:site-tagline` シングルトン翻訳型を登録する際にクラス名で参照するため、その参照が
+  プラグイン例外の範囲に入るよう境界に載せる。
+
 ## [0.1.0] — TBD
 
 最初の安定版 Plugin API 凍結。このリリースは、AGPL プラグイン・テーマ例外

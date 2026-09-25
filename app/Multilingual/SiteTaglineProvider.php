@@ -27,6 +27,8 @@ use App\Helpers\ConfigHelper;
 use App\Helpers\LocaleHelper;
 
 /**
+ * @api Registered by DixlaseMultilingual against `core:site-tagline`.
+ *
  * Primary-locale value source for the core `site_tagline` singleton
  * translatable type.
  *
