@@ -39,6 +39,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 
+{{-- Interrupted previous run (see InstallRunLock) --}}
+@if(session('warning'))
+    <aside class="bg-amber-100 dark:bg-amber-900/20 border border-amber-400 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-4 py-3 rounded mb-6" role="status" aria-labelledby="install-warning-heading">
+        <div class="flex">
+            <div class="py-1" aria-hidden="true">
+                <svg class="fill-current h-6 w-6 text-amber-500 dark:text-amber-400 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M10 1.5l9 16H1l9-16zM9 8v4h2V8H9zm0 6v2h2v-2H9z"/>
+                </svg>
+            </div>
+            <div>
+                <p id="install-warning-heading" class="text-sm">{{ session('warning') }}</p>
+            </div>
+        </div>
+    </aside>
+@endif
+
 {{-- Error display section --}}
 @if(session('error'))
     <aside class="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6" role="alert" aria-labelledby="error-heading">
