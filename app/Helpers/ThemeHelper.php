@@ -50,6 +50,16 @@ class ThemeHelper
      */
     public static function getActiveTheme(): ?Theme
     {
+        // Routes ask for the active theme on every request, including the
+        // ones served while the install wizard is still running. At that
+        // point .env still carries the shipped defaults, so the lookup can
+        // only fail — and it did so loudly: a real wizard run left 19
+        // `Failed to get active theme` ERROR lines behind, which reads like
+        // a failed installation to anyone who opens the log afterwards.
+        if (! self::applicationIsInstalled()) {
+            return null;
+        }
+
         try {
             if (! Schema::hasTable('themes') || ! Schema::hasTable('theme_settings')) {
                 return null;
@@ -72,6 +82,23 @@ class ThemeHelper
 
             return null;
         }
+    }
+
+    /**
+     * Whether the installation has been completed.
+     *
+     * Mirrors CheckInstallationReady: the middleware writes the restored
+     * flag to $_SERVER, and route registration runs before it, so the
+     * process-level values are read first.
+     */
+    private static function applicationIsInstalled(): bool
+    {
+        // `config('app.installed')` is `env('INSTALLED', false)`; the
+        // process-level values come first because the middleware writes the
+        // restored flag there, and route registration runs before it.
+        $installed = $_SERVER['INSTALLED'] ?? $_ENV['INSTALLED'] ?? config('app.installed');
+
+        return $installed === 'true' || $installed === true;
     }
 
     /**

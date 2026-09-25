@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Install;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Base class for installation controllers
@@ -181,6 +182,41 @@ abstract class BaseInstallController extends Controller
      *
      * @param  mixed  $value
      */
+    /**
+     * Read a single value out of the .env file.
+     *
+     * Reads the file rather than env(), because the wizard rewrites .env
+     * within the same request and the process-level values go stale.
+     */
+    protected function readEnvValue(string $key, ?string $envPath = null): string
+    {
+        $envPath ??= base_path('.env');
+
+        if (! File::exists($envPath)) {
+            return '';
+        }
+
+        if (! preg_match('/^'.preg_quote($key, '/').'=(.*)$/m', File::get($envPath), $matches)) {
+            return '';
+        }
+
+        return trim(trim($matches[1]), "\"'");
+    }
+
+    /**
+     * Build a session cookie name unique to this installation.
+     *
+     * Two Dixlase sites on one hostname (localhost:8080 and localhost:8081,
+     * say) would otherwise share a cookie and overwrite each other's
+     * session, which surfaces as CSRF 419 errors.
+     */
+    protected function generateSessionCookieName(?string $siteName): string
+    {
+        $slug = Str::slug((string) $siteName) ?: 'dixlase';
+
+        return strtolower($slug.'_'.Str::random(4).'_session');
+    }
+
     /**
      * Resolve the SQLite database path the wizard should use.
      *

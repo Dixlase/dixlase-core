@@ -54,7 +54,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 /**
  * Install - Confirmation screen
@@ -279,26 +278,22 @@ class InstallConfirmController extends BaseInstallController
             // Get language settings from session
             $locale = session('install_locale', 'en');
 
-            // SESSION_COOKIE: generate a unique cookie name per install so multiple
-            // Dixlase environments sharing a hostname (e.g. localhost:8080 and
-            // localhost:8081) do not overwrite each other's session, which would
-            // otherwise cause CSRF 419 errors. Preserve any non-empty existing
-            // value to keep active sessions alive on re-install.
-            $envPath = base_path('.env');
-            $existingSessionCookie = '';
-            if (File::exists($envPath)) {
-                $existingEnv = File::get($envPath);
-                if (preg_match('/^SESSION_COOKIE=(.*)$/m', $existingEnv, $cookieMatches)) {
-                    $existingSessionCookie = trim(trim($cookieMatches[1]), "\"'");
-                }
-            }
+            // SESSION_COOKIE: an installation gets a cookie name of its own so
+            // two Dixlase sites on one hostname (localhost:8080 and
+            // localhost:8081, say) cannot overwrite each other's session.
+            //
+            // That name is NOT decided here. This request writes .env and then
+            // keeps working for another minute (migrations, seeds, the admin
+            // insert), and every later request in the wizard reads the new
+            // name while the browser still holds a cookie under the old one —
+            // the session comes back empty and the step middleware sends the
+            // operator back to step 1 with every field cleared. So keep
+            // whatever name is in place and let finalize() name it once the
+            // wizard is done. `config/session.php` falls back to
+            // `dixlase_session` while the entry is blank.
+            $existingSessionCookie = $this->readEnvValue('SESSION_COOKIE');
 
-            if ($existingSessionCookie !== '') {
-                $sessionCookie = $existingSessionCookie;
-            } else {
-                $cookieSlug = Str::slug($data['site_name'] ?? '') ?: 'dixlase';
-                $sessionCookie = strtolower($cookieSlug.'_'.Str::random(4).'_session');
-            }
+            $envPath = base_path('.env');
 
             $envData = [
                 'APP_NAME' => $data['site_name'],
@@ -316,7 +311,6 @@ class InstallConfirmController extends BaseInstallController
                 'SESSION_DRIVER' => 'database',
                 'SESSION_LIFETIME' => '120',
                 'SESSION_ENCRYPT' => 'false',
-                'SESSION_COOKIE' => $sessionCookie,
 
                 // Email settings
                 'MAIL_MAILER' => $data['mail_mailer'] ?? 'smtp',
@@ -336,6 +330,10 @@ class InstallConfirmController extends BaseInstallController
                 'DB_USERNAME' => $data['db_username'],
                 'DB_PASSWORD' => $dbPassword ?? '',
             ];
+
+            if ($existingSessionCookie !== '') {
+                $envData['SESSION_COOKIE'] = $existingSessionCookie;
+            }
 
             // Update .env file
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.update_env_file_started'));
