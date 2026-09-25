@@ -349,7 +349,8 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             if ($relPath === 'plugin.json') {
                 continue;
             }
-            if ($this->shouldExclude($relPath, $excludePatterns, $includePatterns)) {
+            if ($this->shouldExclude($relPath, $excludePatterns, $includePatterns)
+                && ! $this->isExecutableCode($relPath)) {
                 continue;
             }
 
@@ -359,6 +360,27 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         ksort($files);
 
         return $files;
+    }
+
+    /**
+     * Whether a file is PHP that the application could execute.
+     *
+     * The exclusion rules come partly from the plugin's own .gitignore, which
+     * is not itself signed (and the `.git` pattern matches `.gitignore` too).
+     * Without this check, appending `config/zz.php` to .gitignore and dropping
+     * that file in left every signed hash intact and the extra file invisible,
+     * while PluginServiceProvider requires every config/*.php of an enabled
+     * plugin. PHP therefore always takes part in the comparison: if it is on
+     * disk and not in the signed files[], it is reported as extra.
+     * `node_modules/` is the one exception -- nothing there is ever executed.
+     */
+    protected function isExecutableCode(string $relPath): bool
+    {
+        if (str_starts_with($relPath, 'node_modules/') || str_contains($relPath, '/node_modules/')) {
+            return false;
+        }
+
+        return preg_match('/\.(php|phtml|phar)$/i', $relPath) === 1;
     }
 
     /**
