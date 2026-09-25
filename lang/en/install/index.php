@@ -51,6 +51,7 @@ return [
     ],
     'php_settings' => [
         'required' => 'required',
+        'recommended_min' => 'Recommended: :value or more',
         'unlimited' => 'unlimited',
     ],
     'theme_check' => [

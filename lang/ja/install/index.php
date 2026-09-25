@@ -51,6 +51,7 @@ return [
     ],
     'php_settings' => [
         'required' => '必要',
+        'recommended_min' => '推奨: :value 以上',
         'unlimited' => '無制限',
     ],
     'theme_check' => [
