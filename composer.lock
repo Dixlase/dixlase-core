@@ -548,12 +548,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Dixlase/theme-dixlase-onepage.git",
-                "reference": "6b7f586e34b95b736968617466b88aa0de0567df"
+                "reference": "9bf03d876591a20b70ed6b17477f144c1dd2927a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/6b7f586e34b95b736968617466b88aa0de0567df",
-                "reference": "6b7f586e34b95b736968617466b88aa0de0567df",
+                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/9bf03d876591a20b70ed6b17477f144c1dd2927a",
+                "reference": "9bf03d876591a20b70ed6b17477f144c1dd2927a",
                 "shasum": ""
             },
             "require": {
