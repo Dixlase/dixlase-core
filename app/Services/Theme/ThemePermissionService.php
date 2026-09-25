@@ -296,7 +296,7 @@ class ThemePermissionService implements ThemePermissionServiceInterface
         $signaturePath = $themePath.'/signature.sig';
 
         $result = [
-            'status' => 'unsigned', // unsigned, valid, invalid
+            'status' => 'unsigned', // always unsigned until theme signatures are verified
             'type' => null,         // official, verified, partner
             'signed_by' => null,
             'signed_at' => null,
@@ -312,21 +312,15 @@ class ThemePermissionService implements ThemePermissionServiceInterface
                 $signing = $data['signing'];
                 $result['key_id'] = $signing['key_id'] ?? null;
 
-                // Check if signature.sig file exists
+                // Theme signatures are not verified yet: there is no theme
+                // signing pipeline and no verifier. Until there is, a theme is
+                // reported as unsigned whatever it ships. Treating the mere
+                // presence of signature.sig as "pending verification" (and
+                // deriving an "official" type from a key_id the theme wrote
+                // itself) let any theme pass the Strict preset's signature
+                // requirement and show an official badge.
                 if (File::exists($signaturePath)) {
-                    // TODO: Implement actual signature verification logic
-                    // Currently treat as valid if signature file exists (temporary implementation)
-                    $result['status'] = 'pending_verification';
-
-                    // Read signature file contents
-                    $sigContent = File::get($signaturePath);
-                    $sigData = json_decode($sigContent, true);
-
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        $result['signed_by'] = $sigData['signed_by'] ?? null;
-                        $result['signed_at'] = $sigData['signed_at'] ?? null;
-                        $result['type'] = $this->determineSignatureType($sigData['key_id'] ?? $signing['key_id'] ?? null);
-                    }
+                    $result['unverified_signature_present'] = true;
                 }
             }
         }
