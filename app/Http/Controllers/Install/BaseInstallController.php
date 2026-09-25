@@ -35,6 +35,8 @@
 
 namespace App\Http\Controllers\Install;
 
+use App\Support\Install\EnvFile;
+use App\Support\Install\SqliteDatabase;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -148,33 +150,7 @@ abstract class BaseInstallController extends Controller
      */
     protected function updateEnv(array $values): void
     {
-        $envPath = base_path('.env');
-
-        // Copy from .env.example if .env does not exist
-        if (! File::exists($envPath)) {
-            File::copy(base_path('.env.example'), $envPath);
-        }
-
-        $env = File::get($envPath);
-
-        foreach ($values as $key => $value) {
-            // Would like to use EnvHelper's formatEnvValue, but it's protected so implementing our own
-            $formattedValue = $this->formatEnvValue($value);
-
-            if (preg_match("/^{$key}=/m", $env)) {
-                // Update existing value
-                $env = preg_replace(
-                    "/^{$key}=.*/m",
-                    "{$key}={$formattedValue}",
-                    $env
-                );
-            } else {
-                // Append to end if not present in .env
-                $env .= "\n{$key}={$formattedValue}";
-            }
-        }
-
-        File::put($envPath, $env);
+        EnvFile::update($values);
     }
 
     /**
@@ -190,17 +166,7 @@ abstract class BaseInstallController extends Controller
      */
     protected function readEnvValue(string $key, ?string $envPath = null): string
     {
-        $envPath ??= base_path('.env');
-
-        if (! File::exists($envPath)) {
-            return '';
-        }
-
-        if (! preg_match('/^'.preg_quote($key, '/').'=(.*)$/m', File::get($envPath), $matches)) {
-            return '';
-        }
-
-        return trim(trim($matches[1]), "\"'");
+        return EnvFile::read($key, $envPath);
     }
 
     /**
@@ -228,13 +194,7 @@ abstract class BaseInstallController extends Controller
      */
     protected function resolveSqliteDatabasePath(?string $database): string
     {
-        $database = trim((string) $database);
-
-        if ($database === '' || $database[0] !== '/') {
-            return database_path('database.sqlite');
-        }
-
-        return $database;
+        return SqliteDatabase::resolvePath($database);
     }
 
     /**
@@ -249,41 +209,11 @@ abstract class BaseInstallController extends Controller
      */
     protected function ensureSqliteDatabaseFile(string $database): bool
     {
-        if (! is_file($database)) {
-            @mkdir(dirname($database), 0775, true);
-            @touch($database);
-        }
-
-        return is_file($database) && is_writable($database);
+        return SqliteDatabase::ensureFile($database);
     }
 
     protected function formatEnvValue($value): string
     {
-        // Empty string if null
-        if ($value === null) {
-            return '';
-        }
-
-        // Convert to string if boolean
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-
-        $value = (string) $value;
-
-        // Enclose in quotes if empty string, space, or special characters are included
-        if ($value === '' ||
-            preg_match('/[\s"\'#$]/', $value) ||
-            str_contains($value, '=')) {
-            // Leave as-is if already enclosed in quotes
-            if (preg_match('/^".*"$/', $value) || preg_match("/^'.*'$/", $value)) {
-                return $value;
-            }
-
-            // Enclose in double quotes (escape internal double quotes)
-            return '"'.str_replace('"', '\\"', $value).'"';
-        }
-
-        return $value;
+        return EnvFile::formatValue($value);
     }
 }

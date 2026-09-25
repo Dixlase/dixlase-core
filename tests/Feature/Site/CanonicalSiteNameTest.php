@@ -102,7 +102,7 @@ class CanonicalSiteNameTest extends TestCase
         $this->assertSame(
             'Main Site',
             DB::table('sites')->where('id', 1)->value('name'),
-            'InstallConfirmController::initializeDatabase() replaces this with the operator input; '
+            'InstallRunner::initializeDatabase() replaces this with the operator input; '
             .'if the placeholder changes, update that expectation too.'
         );
     }
@@ -111,11 +111,14 @@ class CanonicalSiteNameTest extends TestCase
      * The installer writes the operator's site name to the canonical column.
      * Pinned at the source level because initializeDatabase() runs a full
      * installation and cannot be invoked from a test.
+     *
+     * The pipeline moved out of InstallConfirmController into InstallRunner
+     * when `dls:install` started sharing it; the assertion follows it.
      */
     public function test_the_installer_writes_the_canonical_column(): void
     {
         $source = file_get_contents(
-            base_path('app/Http/Controllers/Install/InstallConfirmController.php')
+            base_path('app/Services/Install/InstallRunner.php')
         );
 
         $this->assertStringContainsString(

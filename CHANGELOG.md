@@ -28,6 +28,15 @@ repository to be notified of changes.
 
 ### Added
 
+- `dls:install` installs Dixlase from the command line, running the same pipeline as
+  the browser wizard. Settings come from options (`--site-name`, `--admin-email`,
+  `--db=sqlite`, …), anything missing is prompted for, and passwords may be passed
+  through `DIXLASE_ADMIN_PASSWORD` / `DIXLASE_DB_PASSWORD` / `DIXLASE_MAIL_PASSWORD`
+  instead of the command line. A non-interactive run needs `--force`, because the
+  default drops every table in the target database; `--preserve-data` migrates
+  without dropping. The wizard's execution path moved to
+  `App\Services\Install\InstallRunner` so both entry points share it. See
+  *Installation Wizard*.
 - `App\Multilingual\SiteTaglineProvider` joins the Plugin API surface. It supplies the
   primary-locale value for the core `site_tagline` setting, and DixlaseMultilingual names
   it when registering the `core:site-tagline` singleton translatable type, so the class
