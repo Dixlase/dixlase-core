@@ -46,6 +46,11 @@ use Illuminate\Support\Facades\Schema;
  * base64url ID, unique across the table. The owner column is `member_id`
  * rather than the package's `user_id`; App\Models\Passkey maps the
  * relation accordingly.
+ *
+ * The foreign key to `members` is added in
+ * 0001_01_01_999999_add_foreign_key_constraints, like every other
+ * `members_*` table: this file sorts before `create_members_table`, so an
+ * inline constraint would reference a table that does not exist yet.
  */
 return new class extends Migration
 {
@@ -61,7 +66,7 @@ return new class extends Migration
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
+            $table->unsignedBigInteger('member_id')->index();
             $table->string('name');
             $table->string('credential_id')->unique();
             $table->json('credential');
