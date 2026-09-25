@@ -110,6 +110,24 @@ trait PasskeyLoginTrait
     abstract protected function supportsAccountNameLogin(): bool;
 
     /**
+     * Whether the account may log in with a passkey right now.
+     *
+     * Password login rejects accounts whose state forbids authentication (for
+     * example a member an administrator has deactivated); passkey login must
+     * apply the same gate, or deactivating an account would not stop a holder
+     * of its passkey. The default uses the model's canAuthenticate() when it
+     * has one. Override to add further conditions.
+     */
+    protected function isPasskeyLoginAllowed(\Illuminate\Contracts\Auth\Authenticatable $user): bool
+    {
+        if (method_exists($user, 'canAuthenticate')) {
+            return (bool) $user->canAuthenticate();
+        }
+
+        return true;
+    }
+
+    /**
      * Get passkey authentication challenge
      *
      * @return \Illuminate\Http\JsonResponse
@@ -132,6 +150,16 @@ trait PasskeyLoginTrait
             return response()->json([
                 'success' => false,
                 'error' => $errorMessage,
+            ], 422);
+        }
+
+        // The account state gates passkey login exactly as it gates password
+        // login. Answer with the generic failure so the challenge endpoint does
+        // not reveal that the account exists but is disabled.
+        if (! $this->isPasskeyLoginAllowed($user)) {
+            return response()->json([
+                'success' => false,
+                'error' => __($this->getTranslationPrefix().'.failed'),
             ], 422);
         }
 
@@ -222,6 +250,17 @@ trait PasskeyLoginTrait
             if (! $verified) {
                 return response()->json([
                     'error' => __($this->getTranslationPrefix().'.failed'),
+                ], 422);
+            }
+
+            // Re-check the account state: it may have changed between the
+            // challenge and this response, and the check must hold here, on the
+            // request that actually logs the user in.
+            if (! $this->isPasskeyLoginAllowed($user)) {
+                session()->forget([$sessionKey, 'passkey_challenge_id']);
+
+                return response()->json([
+                    'error' => __('auth.account_inactive'),
                 ], 422);
             }
 
