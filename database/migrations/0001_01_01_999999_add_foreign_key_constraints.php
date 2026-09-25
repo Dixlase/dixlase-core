@@ -67,6 +67,14 @@ return new class extends Migration
                 ->nullOnDelete();
         });
 
+        // members_passkeys.member_id -> members.id
+        Schema::table('members_passkeys', function (Blueprint $table) {
+            $table->foreign('member_id')
+                ->references('id')
+                ->on('members')
+                ->cascadeOnDelete();
+        });
+
         // members_two_fa_attempts.member_id -> members.id
         Schema::table('members_two_fa_attempts', function (Blueprint $table) {
             $table->foreign('member_id')
@@ -718,6 +726,11 @@ return new class extends Migration
 
         // members_two_fa_attempts
         Schema::table('members_two_fa_attempts', function (Blueprint $table) {
+            $table->dropForeign(['member_id']);
+        });
+
+        // members_passkeys
+        Schema::table('members_passkeys', function (Blueprint $table) {
             $table->dropForeign(['member_id']);
         });
 

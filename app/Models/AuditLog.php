@@ -300,6 +300,11 @@ class AuditLog extends Model
     public const ACTION_BACKUP_ROLLED_BACK = 'backup_rolled_back';
 
     // ========================================
+    // Action constants - schema maintenance related
+    // ========================================
+    public const ACTION_SCHEMA_RETIRED = 'schema_retired';
+
+    // ========================================
     // Action constants - settings related
     // ========================================
     public const ACTION_SETTINGS_UPDATED = 'settings_updated';

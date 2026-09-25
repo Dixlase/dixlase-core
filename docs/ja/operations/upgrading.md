@@ -97,6 +97,21 @@ docker exec dixlase-php php artisan dls:migration:lint
 
 **失敗した場合はアップグレードを中止し原因を調査する** — ロック済みマイグレーションが改変されており、監査証跡の前提が崩れている状態。変更を revert するか、影響を把握した上で `dls:migration:lint --lock` を再発行してドリフトを受け入れるかを判断する（安易な再発行は避ける）。
 
+### 4.4.1 ベータ期間のみ: 番号を振り直したマイグレーションの台帳を合わせる
+
+GA までは、コアのマイグレーションファイルをその場で編集・番号変更する（マイグレーション
+編集ポリシー参照）。番号が変わったファイルは `migrate` から未実行に見えるため、既に存在する
+テーブルを作り直そうとして失敗する。既存サイトでマイグレーションを実行する前に、台帳を新しい
+ファイル名に合わせる:
+
+```bash
+docker exec dixlase-php php artisan dls:migration:resync --prune            # ドライラン
+docker exec dixlase-php php artisan dls:migration:resync --prune --confirm
+```
+
+書き換えるのはマイグレーション台帳テーブルの行だけで、データのテーブルには触れない。
+対象なしと表示されたら次へ進む。
+
 ### 4.5 マイグレーションを依存順序で実行
 
 ```bash
@@ -116,6 +131,23 @@ docker exec dixlase-php php artisan dls:theme:migrate --force
 ```
 
 本番環境では `--force` が必須（付けない場合 Laravel が中断する）。サイトにインストールされていないプラグインはスキップする。
+
+### 4.5.1 ベータ期間のみ: 使われなくなったスキーマを片付ける
+
+マイグレーションをその場で編集すると新規インストールで作られるものは変わるが、既存サイトには
+古いファイルが作ったものが残る。`dls:schema:retire` は、後のベータで使われなくなった残骸
+（例: `members_passkeys` に置き換わった `webauthn_credentials` テーブル）を削除する。対象は
+コマンド内に列挙したものだけ:
+
+```bash
+docker exec dixlase-php php artisan dls:schema:retire            # ドライラン
+docker exec dixlase-php php artisan dls:schema:retire --confirm
+```
+
+確定前にドライランの内容を確認すること。旧パスキーの行が削除されるという警告が出た場合、
+該当メンバーはパスキーを登録し直す必要がある（その行はもう読まれていないが、影響を受ける
+人数はドライランで分かる）。実行すると監査ログに記録され、再実行しても安全（2 回目は
+`Nothing to retire` と表示される）。
 
 ### 4.6 サプライチェーンメタデータの backfill（初回のみ）
 
