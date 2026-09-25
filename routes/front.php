@@ -44,7 +44,6 @@ use App\Http\Middleware\ContentSecurityPolicy;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -173,41 +172,6 @@ Route::get('/front/custom-style.css', [FrontCustomAssetController::class, 'style
 // locale-less URLs.
 Route::middleware(['web', 'front.ip'])->group(function () {
     Route::get('/', [FrontWelcomeController::class, 'index'])->name('welcome');
-
-    // Front log test route (development only).
-    Route::get('/test-front-log', function () {
-        Log::channel('front_activity')->info('Front activity log test', [
-            'action' => 'page_view',
-            'page' => 'test_page',
-            'user_id' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'url' => request()->fullUrl(),
-            'method' => request()->method(),
-            'timestamp' => now()->toDateTimeString(),
-        ]);
-
-        Log::channel('front_error')->error('Front error log test', [
-            'error' => 'test_error',
-            'error_type' => 'test_error',
-            'user_id' => null,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'url' => request()->fullUrl(),
-            'method' => request()->method(),
-            'timestamp' => now()->toDateTimeString(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Front log test executed.',
-            'logs' => [
-                'front_activity' => 'storage/logs/front_activity.log or front_activity-'.now()->format('Y-m-d').'.log',
-                'front_error' => 'storage/logs/front_error.log or front_error-'.now()->format('Y-m-d').'.log',
-            ],
-            'admin_url' => route('admin.settings.systems.logs.files', ['type' => 'front_activity']),
-        ]);
-    })->name('test.front.log');
 
     // Plugin web routes. v0.1.0 mounts them at their declared paths;
     // the multilingual plugin can opt-in by wrapping its loader inside
