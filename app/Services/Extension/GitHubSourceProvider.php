@@ -38,7 +38,9 @@ namespace App\Services\Extension;
 use App\Contracts\Extension\ExtensionSourceInterface;
 use App\DTO\Extension\ReleaseInfo;
 use App\Models\ExtensionSource;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -53,6 +55,15 @@ use RuntimeException;
  */
 class GitHubSourceProvider implements ExtensionSourceInterface
 {
+    /**
+     * Timeout for the small metadata lookups behind the admin screens
+     * (manifest, directory listing, thumbnail bytes).
+     *
+     * Downloads keep the longer default: a release ZIP is worth waiting
+     * for, a missing thumbnail is not.
+     */
+    protected const LOOKUP_TIMEOUT = 8;
+
     protected string $baseUrl;
 
     protected string $owner;
@@ -553,56 +564,143 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $repoName = $this->buildRepoName($slug, $extensionType);
         $manifest = $this->fetchManifest($repoName, $extensionType);
 
-        // Candidate paths, in priority order.
-        $candidates = [];
-
-        // Recommended location — extension repo root, alongside
-        // plugin.json / theme.json. Safe from every build tool's
-        // outDir wipe (nothing writes to the repo root during build).
+        // Names to accept at the repository root, in priority order. This is
+        // the recommended location — alongside plugin.json / theme.json,
+        // where no build tool's outDir wipe can reach it.
+        $rootNames = [];
         foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-            $candidates[] = "thumbnail.{$ext}";
-        }
-
-        // Manifest-declared override (`plugin.json` / `theme.json`).
-        $declared = is_array($manifest) && is_string($manifest['thumbnail'] ?? null)
-            ? ltrim($manifest['thumbnail'], '/')
-            : null;
-        if ($declared !== null) {
-            $candidates[] = $declared;
-        }
-
-        // Legacy location — same built-assets path older extensions
-        // ship the thumbnail under. Kept probed so existing repos do
-        // not need to move the file before the next release.
-        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-            $candidates[] = "resources/assets/thumbnail.{$ext}";
+            $rootNames[] = "thumbnail.{$ext}";
         }
         if ($extensionType === 'theme') {
             foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
-                $candidates[] = "screenshot.{$ext}";
+                $rootNames[] = "screenshot.{$ext}";
             }
         }
 
-        // De-duplicate while preserving order.
-        $candidates = array_values(array_unique($candidates));
+        // Ask the repository what it has instead of guessing twelve times.
+        // One directory listing answers every candidate at once; probing them
+        // one by one meant a round trip per name, and for an extension that
+        // ships no thumbnail at all, twelve of them.
+        $path = $this->firstExisting($repoName, '', $rootNames);
 
-        foreach ($candidates as $path) {
-            $bytes = $this->fetchRepoFileBytes($repoName, $path);
-            if ($bytes === null) {
-                continue;
+        // A manifest may point somewhere else entirely; that is a single
+        // known path, so fetch it directly rather than listing its directory.
+        if ($path === null) {
+            $declared = is_array($manifest) && is_string($manifest['thumbnail'] ?? null)
+                ? ltrim($manifest['thumbnail'], '/')
+                : null;
+
+            if ($declared !== null) {
+                $bytes = $this->fetchRepoFileBytes($repoName, $declared);
+                if ($bytes !== null) {
+                    return ['content' => $bytes, 'mime' => $this->thumbnailMime($declared)];
+                }
+            }
+        }
+
+        // Legacy location — where older extensions ship the file. Still
+        // probed so existing repositories do not have to move it before
+        // their next release.
+        if ($path === null) {
+            $legacyNames = [];
+            foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+                $legacyNames[] = "thumbnail.{$ext}";
             }
 
-            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
-                'webp' => 'image/webp',
-                'png' => 'image/png',
-                'jpg', 'jpeg' => 'image/jpeg',
-                default => 'application/octet-stream',
-            };
+            $found = $this->firstExisting($repoName, 'resources/assets', $legacyNames);
+            $path = $found === null ? null : 'resources/assets/'.$found;
+        }
 
-            return ['content' => $bytes, 'mime' => $mime];
+        if ($path === null) {
+            return null;
+        }
+
+        $bytes = $this->fetchRepoFileBytes($repoName, $path);
+
+        if ($bytes === null) {
+            return null;
+        }
+
+        return ['content' => $bytes, 'mime' => $this->thumbnailMime($path)];
+    }
+
+    /**
+     * The first of $names that the repository actually has in $directory.
+     *
+     * Costs one Contents API call regardless of how many names are asked
+     * about. Returns the file name (not the full path), or null when the
+     * directory is missing or holds none of them.
+     *
+     * @param  array<int, string>  $names
+     */
+    protected function firstExisting(string $repoName, string $directory, array $names): ?string
+    {
+        $entries = $this->listRepoDirectory($repoName, $directory);
+
+        if ($entries === null) {
+            return null;
+        }
+
+        foreach ($names as $name) {
+            if (in_array($name, $entries, true)) {
+                return $name;
+            }
         }
 
         return null;
+    }
+
+    /**
+     * File names directly inside a repository directory.
+     *
+     * Returns null when the directory does not exist or cannot be read —
+     * which the caller treats the same as "none of the names are there".
+     *
+     * @return array<int, string>|null
+     */
+    protected function listRepoDirectory(string $repoName, string $directory = ''): ?array
+    {
+        $path = trim($directory, '/');
+        $url = "{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents";
+        if ($path !== '') {
+            $url .= '/'.$path;
+        }
+
+        // A short timeout: this is a lookup behind an admin screen that draws
+        // one card per extension, not a download.
+        $response = $this->client(self::LOOKUP_TIMEOUT)->acceptJson()->get($url);
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $data = $response->json();
+
+        if (! is_array($data)) {
+            return null;
+        }
+
+        $names = [];
+        foreach ($data as $entry) {
+            if (is_array($entry) && ($entry['type'] ?? null) === 'file' && is_string($entry['name'] ?? null)) {
+                $names[] = $entry['name'];
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * Content type for a thumbnail path.
+     */
+    protected function thumbnailMime(string $path): string
+    {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'webp' => 'image/webp',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            default => 'application/octet-stream',
+        };
     }
 
     /**
@@ -612,7 +710,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     protected function fetchRepoFileBytes(string $repoName, string $path): ?string
     {
-        $response = $this->client()
+        $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$path}");
 
@@ -642,7 +740,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     {
         $manifestFile = $extensionType === 'theme' ? 'theme.json' : 'plugin.json';
 
-        $response = $this->client()
+        $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$manifestFile}");
 
@@ -742,11 +840,31 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     /**
      * Create an authenticated HTTP client
      */
-    protected function client(): PendingRequest
+    protected function client(int $timeout = 30): PendingRequest
     {
         $client = Http::accept('application/vnd.github+json')
-            ->timeout(30)
-            ->retry(2, 1000, throw: false);
+            ->timeout($timeout)
+            // Retry only what retrying can fix. Laravel's retry() treats any
+            // failed response as a failure, so the default retried 404s too:
+            // every "this file is not in the repo" answer cost a second of
+            // sleep plus a second request. Probing for a thumbnail asks that
+            // question a dozen times per extension, which is how a plugin
+            // list took two and a half minutes to draw.
+            ->retry(2, 1000, function (\Throwable $exception): bool {
+                if ($exception instanceof ConnectionException) {
+                    return true;
+                }
+
+                if ($exception instanceof RequestException && $exception->response !== null) {
+                    $status = $exception->response->status();
+
+                    // Rate limiting and server faults are worth another go;
+                    // 404 / 401 / 403 are answers, not failures.
+                    return $status === 429 || $status >= 500;
+                }
+
+                return false;
+            }, throw: false);
 
         if ($this->token) {
             $client = $client->withToken($this->token);

@@ -62,6 +62,15 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AdminExtensionThumbnailController extends Controller
 {
+    /**
+     * How long a "this extension has no thumbnail" answer is kept.
+     *
+     * Shorter than a hit, so a newly published thumbnail appears without
+     * much delay, but long enough that drawing the list does not ask the
+     * source about every thumbnail-less extension all over again.
+     */
+    private const MISS_TTL = 600;
+
     /** Extension image formats probed in priority order (modern/small first). */
     private const EXTENSIONS = ['webp', 'png', 'jpg', 'jpeg'];
 
@@ -185,23 +194,17 @@ class AdminExtensionThumbnailController extends Controller
         // bigger; a ~400 KB thumbnail becomes ~550 KB, well inside the
         // TEXT column limit for the sizes any extension realistically
         // ships as its card image.
-        $cached = Cache::remember($cacheKey, 1800, function () use ($source, $type, $slug, $manager) {
-            try {
-                $provider = $manager->makeProvider($source);
-                $fetched = $provider->fetchThumbnail($slug, $type);
-            } catch (\Throwable) {
-                return;
-            }
+        $cached = Cache::get($cacheKey);
 
-            if (! is_array($fetched) || ! isset($fetched['content'], $fetched['mime'])) {
-                return;
-            }
+        if ($cached === null) {
+            $cached = $this->fetchForCache($manager, $source, $slug, $type);
 
-            return [
-                'content_b64' => base64_encode($fetched['content']),
-                'mime' => $fetched['mime'],
-            ];
-        });
+            // Remember misses too, for a shorter while. `Cache::remember()`
+            // treats a null return as "nothing cached", so an extension that
+            // ships no thumbnail was looked up again on every visit to the
+            // list — the one case that costs the most round trips.
+            Cache::put($cacheKey, $cached, isset($cached['content_b64']) ? 1800 : self::MISS_TTL);
+        }
 
         if (! is_array($cached) || ! isset($cached['content_b64'], $cached['mime'])) {
             return $this->fallbackThumbnail($type);
@@ -226,6 +229,37 @@ class AdminExtensionThumbnailController extends Controller
             'Cache-Control' => 'private, max-age=1800',
             'ETag' => $etag,
         ]);
+    }
+
+    /**
+     * Ask the source for the thumbnail, in the shape the cache stores.
+     *
+     * Returns the miss marker rather than null, so the caller can tell
+     * "looked and found nothing" from "not looked up yet".
+     *
+     * @return array<string, mixed>
+     */
+    private function fetchForCache(
+        ExtensionSourceManager $manager,
+        ExtensionSource $source,
+        string $slug,
+        string $type,
+    ): array {
+        try {
+            $provider = $manager->makeProvider($source);
+            $fetched = $provider->fetchThumbnail($slug, $type);
+        } catch (\Throwable) {
+            return ['missing' => true];
+        }
+
+        if (! is_array($fetched) || ! isset($fetched['content'], $fetched['mime'])) {
+            return ['missing' => true];
+        }
+
+        return [
+            'content_b64' => base64_encode($fetched['content']),
+            'mime' => $fetched['mime'],
+        ];
     }
 
     /**
