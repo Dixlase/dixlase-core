@@ -38,6 +38,7 @@
 namespace App\Helpers;
 
 use App\Support\ComposerLocalManifest;
+use App\Support\Process\SubprocessEnvironment;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -140,9 +141,9 @@ class ComposerLocalHelper
     {
         try {
             $process = new Process(
-                ['composer', 'dump-autoload', '--optimize', '--no-scripts'],
+                self::composerCommand(['dump-autoload', '--optimize', '--no-scripts']),
                 base_path(),
-                null,
+                self::composerEnvironment(),
                 null,
                 60
             );
@@ -159,6 +160,114 @@ class ComposerLocalHelper
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Command line for a composer run.
+     *
+     * Composer is normally started through its `#!/usr/bin/env php` shebang,
+     * which needs both composer and php on the child's PATH. When the
+     * composer entry point can be located and is a PHP script, start it
+     * with this process's own interpreter instead, so the run no longer
+     * depends on how the web server's PATH is set up.
+     *
+     * @param  array<int, string>  $arguments
+     * @return array<int, string>
+     */
+    protected static function composerCommand(array $arguments): array
+    {
+        $composer = self::locateComposer();
+
+        if ($composer !== null) {
+            return array_merge([PHP_BINARY, $composer], $arguments);
+        }
+
+        return array_merge(['composer'], $arguments);
+    }
+
+    /**
+     * Path to a composer entry point that is a PHP script, or null.
+     */
+    protected static function locateComposer(): ?string
+    {
+        $candidates = [];
+
+        // Set by Composer itself when core runs inside a composer script.
+        $fromEnv = getenv('COMPOSER_BINARY') ?: ($_SERVER['COMPOSER_BINARY'] ?? '');
+        if (is_string($fromEnv) && $fromEnv !== '') {
+            $candidates[] = $fromEnv;
+        }
+
+        $candidates[] = base_path('composer.phar');
+
+        foreach (SubprocessEnvironment::pathDirectories() as $directory) {
+            $candidates[] = $directory.'/composer';
+            $candidates[] = $directory.'/composer.phar';
+        }
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate) && is_readable($candidate) && self::isPhpScript($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a file is a PHP script or phar this interpreter can run.
+     *
+     * Guards against a `composer` that is a shell wrapper (a docker or
+     * asdf shim, for instance) — handing that to PHP_BINARY would fail.
+     */
+    protected static function isPhpScript(string $path): bool
+    {
+        $handle = @fopen($path, 'rb');
+        if ($handle === false) {
+            return false;
+        }
+
+        $head = (string) fread($handle, 256);
+        fclose($handle);
+
+        if (str_starts_with($head, '<?php')) {
+            return true;
+        }
+
+        $firstLine = strtok($head, "\n");
+        if (! is_string($firstLine) || ! str_starts_with($firstLine, '#!')) {
+            return false;
+        }
+
+        return str_contains($firstLine, 'php');
+    }
+
+    /**
+     * Environment for the composer subprocess.
+     *
+     * PATH is restored (see SubprocessEnvironment), and composer is given a
+     * writable home when the process has none — under PHP-FPM, HOME is
+     * often unset, and composer then tries to write its cache to / and
+     * fails.
+     *
+     * @return array<string, string>
+     */
+    protected static function composerEnvironment(): array
+    {
+        $extra = [];
+
+        $home = getenv('HOME') ?: ($_SERVER['HOME'] ?? '');
+        if (! is_string($home) || $home === '' || ! is_writable($home)) {
+            $composerHome = storage_path('app/private/composer-home');
+            if (! is_dir($composerHome)) {
+                @mkdir($composerHome, 0775, true);
+            }
+            if (is_dir($composerHome)) {
+                $extra['COMPOSER_HOME'] = $composerHome;
+            }
+        }
+
+        return SubprocessEnvironment::inherit($extra);
     }
 
     /**

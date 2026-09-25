@@ -35,6 +35,7 @@
 
 namespace App\Console\Traits;
 
+use App\Support\Process\SubprocessEnvironment;
 use Symfony\Component\Process\Process;
 
 /**
@@ -264,7 +265,10 @@ trait BuildsExtensionAssets
             $env['NPM_CONFIG_CACHE'] = $cacheDir;
         }
 
-        $process = new Process($command, $cwd, $env);
+        // Restore PATH the same way the composer runs do: this trait is also
+        // reachable from the admin panel (theme/plugin asset builds), where
+        // the web SAPI can leave the child without one.
+        $process = new Process($command, $cwd, SubprocessEnvironment::inherit($env));
         $process->setTimeout(600);
 
         $process->run(function ($type, $buffer) {

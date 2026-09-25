@@ -179,10 +179,26 @@ class InstallCompleteController extends BaseInstallController
 
         // Set INSTALLED=true & restore session driver to guard-aware-database
         Log::channel('install')->info('Setting INSTALLED=true...');
-        $this->updateEnv([
+        $envUpdates = [
             'INSTALLED' => 'true',
             'SESSION_DRIVER' => 'guard-aware-database',
-        ]);
+        ];
+
+        // Name the session cookie now, at the one point in the wizard where a
+        // rename costs nothing: the operator is leaving for the admin panel.
+        // Doing it earlier emptied the session mid-wizard, because the browser
+        // still held the previous name (see InstallConfirmController::store).
+        // The in-process config is updated too, so this response already sets
+        // the new name against the same session id and the flash message
+        // survives.
+        $sessionCookie = $this->resolveSessionCookieName();
+        if ($sessionCookie !== null) {
+            $envUpdates['SESSION_COOKIE'] = $sessionCookie;
+            config(['session.cookie' => $sessionCookie]);
+            Log::channel('install')->info('Session cookie named for this installation', ['cookie' => $sessionCookie]);
+        }
+
+        $this->updateEnv($envUpdates);
 
         // Apply environment variables immediately (reflect to current process with putenv)
         putenv('INSTALLED=true');
@@ -331,6 +347,30 @@ class InstallCompleteController extends BaseInstallController
 
             return null;
         }
+    }
+
+    /**
+     * The session cookie name to write at finalize, or null to keep the
+     * existing one.
+     *
+     * Returns null when .env already carries a name — a re-install must not
+     * invalidate the sessions of an already-running site.
+     */
+    protected function resolveSessionCookieName(): ?string
+    {
+        if ($this->readEnvValue('SESSION_COOKIE') !== '') {
+            return null;
+        }
+
+        $siteName = null;
+
+        try {
+            $siteName = app(\App\Services\Site\SettingResolver::class)->get('site_name');
+        } catch (\Throwable $e) {
+            Log::channel('install')->warning('Failed to read site_name for the session cookie name: '.$e->getMessage());
+        }
+
+        return $this->generateSessionCookieName(is_string($siteName) && $siteName !== '' ? $siteName : config('app.name'));
     }
 
     /**
