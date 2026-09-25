@@ -16,14 +16,12 @@ Dixlase をリリース済みのバージョン間でアップグレードする
 プラグイン側のマイグレーションは以下の順序で実行しなければならない（外部キーが上流プラグインのテーブルを参照するため）。コアは常に最初。
 
 1. **コア**（`database/migrations/`）
-2. **DixlaseAuthority** — ロール／権限テーブル。members 連携プラグインから参照される
-3. **DixlasePages** — ページツリー。下流コンテンツから利用される
-4. **DixlaseLegal** — 法的ページ。Pages に依存する
-5. **DixlaseMenus** — メニュー項目。Pages / Legal / Authority のルートを参照しうる
-6. **DixlaseInquiry** — フォーム送信記録。下流依存なし
-7. **DixlaseOfficialDocs** — 文書レコード。Pages を参照する可能性あり
+2. **DixlasePages** — ページツリー。下流コンテンツから利用される
+3. **DixlaseLegal** — 法的ページ。Pages に依存する
+4. **DixlaseMenus** — メニュー項目。Pages / Legal のルートを参照しうる
+5. **DixlaseInquiry** — フォーム送信記録。下流依存なし
 
-マイグレーションが存在しないプラグイン（執筆時点で DixlaseSigner など）はスキップする。デプロイ後に `php artisan dls:plugin:list` で有効プラグインを確認すること。
+マイグレーションが存在しないプラグインはスキップする。デプロイ後に `php artisan dls:plugin:list` で有効プラグインを確認すること。
 
 ## 3. バックアップ
 
@@ -119,12 +117,10 @@ docker exec dixlase-php php artisan dls:migration:resync --prune --confirm
 docker exec dixlase-php php artisan migrate --force
 
 # プラグイン（依存順序で）
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseAuthority --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlasePages --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseLegal --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseMenus --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseInquiry --force
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseOfficialDocs --force
 
 # テーマ（存在する場合）
 docker exec dixlase-php php artisan dls:theme:migrate --force

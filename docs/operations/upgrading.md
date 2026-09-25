@@ -16,14 +16,12 @@ Runbook for upgrading a Dixlase installation between released versions (e.g. v0.
 Plugin migrations must run in the order below because foreign keys reference tables owned by upstream plugins. Core always runs first.
 
 1. **Core** (`database/migrations/`)
-2. **DixlaseAuthority** — role/permission tables referenced by members-linked plugins
-3. **DixlasePages** — page tree consumed by downstream content
-4. **DixlaseLegal** — legal pages depend on Pages
-5. **DixlaseMenus** — menu items may target Pages / Legal / Authority routes
-6. **DixlaseInquiry** — form submissions; no downstream dependents
-7. **DixlaseOfficialDocs** — document records; may reference Pages
+2. **DixlasePages** — page tree consumed by downstream content
+3. **DixlaseLegal** — legal pages depend on Pages
+4. **DixlaseMenus** — menu items may target Pages / Legal routes
+5. **DixlaseInquiry** — form submissions; no downstream dependents
 
-Plugins without migrations (e.g. DixlaseSigner at the time of writing) are skipped. Run `php artisan dls:plugin:list` after deployment to confirm the enabled plugin set.
+Plugins without migrations are skipped. Run `php artisan dls:plugin:list` after deployment to confirm the enabled plugin set.
 
 ## 3. Backup
 
@@ -119,12 +117,10 @@ When it reports nothing to do, continue.
 docker exec dixlase-php php artisan migrate --force
 
 # Plugins (in dependency order)
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseAuthority --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlasePages --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseLegal --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseMenus --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseInquiry --force
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseOfficialDocs --force
 
 # Themes (if any)
 docker exec dixlase-php php artisan dls:theme:migrate --force
