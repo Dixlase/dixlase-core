@@ -109,6 +109,9 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         // the UI scan runs, so it must be excluded to avoid a false "extra"
         // tampering verdict.
         '.dixlase-source.json',
+        // Core-managed pending-install marker (ComposerLocalManifest), present
+        // for the same "extracted but not yet installed" window.
+        '.dixlase-pending-install',
     ];
 
     public function __construct(

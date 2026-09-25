@@ -44,6 +44,7 @@ use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
+use App\Support\ComposerLocalManifest;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
@@ -242,6 +243,8 @@ class PluginInstall extends Command
         // .gitignore in step like the admin path does.
         GitExcludeHelper::addPluginExclusion($pluginName);
         GitIgnoreHelper::addPluginExclusion($pluginName);
+        // Installing is the point where the plugin's autoload.files may run.
+        ComposerLocalManifest::clearPendingInstall($pluginPath);
         if (ComposerLocalHelper::syncAutoload()) {
             $this->info('Updated composer.local.json');
         } else {

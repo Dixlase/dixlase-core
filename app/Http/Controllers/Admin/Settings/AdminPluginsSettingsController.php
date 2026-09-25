@@ -62,6 +62,7 @@ use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\SecuritySettingsRegistry;
+use App\Support\ComposerLocalManifest;
 use App\Support\ExtensionDirectories;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
@@ -1635,7 +1636,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      *
      * @return array{success: bool, directory?: string, error?: string}
      */
-    protected function extractAndPlacePlugin(string $zipPath): array
+    protected function extractAndPlacePlugin(string $zipPath, bool $pendingInstall = true): array
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -1715,14 +1716,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.composer_not_found')];
             }
 
+            // A fresh upload/download is not installed yet: keep its
+            // autoload.files out of composer.local.json until dls:plugin:install
+            // runs, or Composer would require them on the very next request --
+            // before the pre-install scan and before the operator confirms.
+            if ($pendingInstall) {
+                ComposerLocalManifest::markPendingInstall($destinationPath);
+            }
+
             // Update Git exclusion rules and composer.local.json
             GitExcludeHelper::addPluginExclusion($pluginDir);
             GitIgnoreHelper::addPluginExclusion($pluginDir);
             ComposerLocalHelper::syncAutoload();
 
-            // Audit is executed at install time (skipped at download time)
-            // Plugin files are not executed just by being placed in plugins/
-            // Audited at the appropriate timing in the 2-stage modal (scan → confirm) during installation
+            // The audit runs at install time, in the two-stage modal (scan → confirm).
 
             // Get display name from plugin.json
             $displayName = null;
@@ -1933,7 +1940,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
 
             // Extract and place ZIP
-            $result = $this->extractAndPlacePlugin($zipPath);
+            // An update replaces an installed plugin, so it is not pending install.
+            $result = $this->extractAndPlacePlugin($zipPath, pendingInstall: false);
 
             if (! $result['success']) {
                 // Restore from backup on failure
