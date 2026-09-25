@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Services\Site;
 
+use App\Contracts\Multilingual\SingletonTranslationResolver;
 use App\Contracts\Site\PageTitleBuilderInterface;
 use App\Helpers\ConfigHelper;
 
@@ -122,11 +123,38 @@ class PageTitleBuilder implements PageTitleBuilderInterface
     }
 
     /**
-     * The site tagline, or '' when the operator has not set one.
+     * The site tagline for the current request's locale, or '' when the
+     * operator has not set one.
+     *
+     * The tagline is a single site setting stored in the operator's
+     * primary locale. When DixlaseMultilingual is installed it
+     * registers a `core:site-tagline` singleton translatable type and
+     * binds {@see SingletonTranslationResolver}; the plugin's central
+     * translation editor then holds one value per enabled locale. This
+     * method consults the resolver first so `/ja` and `/en` can differ.
+     *
+     * Fall-through order:
+     *   1. Multilingual resolver returns a non-empty translation for
+     *      the current app locale → use it.
+     *   2. Resolver not bound, resolver returns null, or resolver
+     *      returns an empty string → use the stored primary value.
+     *
+     * Empty stored value stays empty (no `<title>` tagline segment).
      */
     protected function tagline(): string
     {
-        return ConfigHelper::getSiteTagline();
+        $primary = ConfigHelper::getSiteTagline();
+
+        if (! app()->bound(SingletonTranslationResolver::class)) {
+            return $primary;
+        }
+
+        $translated = app(SingletonTranslationResolver::class)
+            ->resolve('core:site-tagline', 'tagline', (string) app()->getLocale());
+
+        return is_string($translated) && $translated !== ''
+            ? $translated
+            : $primary;
     }
 
     /**
