@@ -47,6 +47,7 @@ use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
 use App\Services\Theme\ThemePermissionService;
 use App\Services\ThemeMigrator;
+use App\Support\Install\InstallRunLock;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -140,6 +141,18 @@ class InstallConfirmController extends BaseInstallController
                 ->with('error', __('install/common.missing_required_fields').__('http/controllers/install/install_confirm_controller.missing_field', ['field' => $firstMissing['field']]));
         }
 
+        // A marker older than the run window is what a killed execution
+        // leaves behind (the built-in server restarting on the .env write,
+        // a request timeout, a closed tab). Say so once, then clear it, so
+        // the operator knows why they are back here.
+        if (InstallRunLock::wasInterrupted()) {
+            Log::channel('install')->warning('A previous installation attempt did not finish', [
+                'started_at' => InstallRunLock::startedAt(),
+            ]);
+            InstallRunLock::release();
+            session()->flash('warning', __('install/confirm.previous_run_interrupted'));
+        }
+
         // Retrieve email test results from session
         $mailTestStatus = [
             'connection_tested' => (bool) ($data['mail_connection_tested'] ?? false),
@@ -190,6 +203,21 @@ class InstallConfirmController extends BaseInstallController
      */
     public function store()
     {
+        // One execution at a time. This method rewrites .env, migrates,
+        // seeds and creates the first administrator; a double-submitted
+        // form, an impatient reload or a proxy retry used to start a
+        // second run straight through the middle of the first, and two
+        // concurrent `migrate:fresh` calls against one database is the
+        // worst possible way to discover that.
+        if (! InstallRunLock::acquire()) {
+            Log::channel('install')->warning('Installation already running; refused a concurrent execution', [
+                'started_at' => InstallRunLock::startedAt(),
+            ]);
+
+            return redirect()->route('install.confirm')
+                ->with('error', __('install/confirm.already_running'));
+        }
+
         try {
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.installation_started'));
 
@@ -293,8 +321,6 @@ class InstallConfirmController extends BaseInstallController
             // `dixlase_session` while the entry is blank.
             $existingSessionCookie = $this->readEnvValue('SESSION_COOKIE');
 
-            $envPath = base_path('.env');
-
             $envData = [
                 'APP_NAME' => $data['site_name'],
                 'APP_ENV' => $data['app_env'],
@@ -368,20 +394,24 @@ class InstallConfirmController extends BaseInstallController
             }
             DB::purge();
 
-            // Temporarily change session driver to file during migration
-            $envContent = file_get_contents($envPath);
-
-            // Save original SESSION_DRIVER
-            preg_match('/SESSION_DRIVER=(.+)/', $envContent, $matches);
-            $originalSessionDriver = $matches[1] ?? 'guard-aware-database';
-
-            // Change SESSION_DRIVER to file
-            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER=file', $envContent);
-            file_put_contents($envPath, $envContent);
-
-            // Reload settings
-            Artisan::call('config:clear');
-            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_driver_changed_to_file'), ['original' => $originalSessionDriver]);
+            // Keep this request's session off the database while the
+            // migrations run — `migrate:fresh` drops the sessions table
+            // underneath it.
+            //
+            // This used to be done by rewriting SESSION_DRIVER in .env to
+            // `file` and back again, two extra writes plus two extra
+            // `config:clear` calls inside one request. None of that
+            // reached the running process: `config:clear` only deletes
+            // the cached file, and the Artisan sub-kernels below never
+            // touch a session. The setting that decides where this
+            // request stores its session is the in-memory one, so set
+            // that and leave the file alone. (CheckInstallationReady has
+            // already done the same for every install request; this is
+            // the belt to its braces, and it makes the intent local.)
+            config(['session.driver' => 'file']);
+            app()->forgetInstance('session');
+            app()->forgetInstance('session.store');
+            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_driver_changed_to_file'), ['original' => 'in-memory only']);
 
             // Check whether to reset database
             if (empty($data['preserve_data'])) {
@@ -399,14 +429,10 @@ class InstallConfirmController extends BaseInstallController
             // Safe to call when no plugins are installed yet — emits an empty stub.
             Artisan::call('dls:tailwind:regenerate-plugin-sources');
 
-            // Restore session driver
-            $envContent = file_get_contents($envPath);
-            $envContent = preg_replace('/SESSION_DRIVER=.+/', 'SESSION_DRIVER='.$originalSessionDriver, $envContent);
-            file_put_contents($envPath, $envContent);
-
-            // Reload settings
-            Artisan::call('config:clear');
-            Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_driver_restored'), ['driver' => $originalSessionDriver]);
+            // Nothing to restore: .env was written once, with the value
+            // the installed site should boot with. finalize() moves it to
+            // `guard-aware-database` when the operator leaves the
+            // completion screen.
 
             // Re-establish DB connection (to correctly apply table prefix)
             DB::purge();
@@ -618,6 +644,12 @@ class InstallConfirmController extends BaseInstallController
             return redirect()->route('install.mode')
                 ->with('error', $errorMessage)
                 ->with('error_details', $e->getMessage());
+        } finally {
+            // Whichever way this ended, the run is over. A crash that never
+            // reaches here leaves the marker behind on purpose: the next
+            // attempt reports the interruption instead of pretending
+            // nothing happened.
+            InstallRunLock::release();
         }
     }
 
