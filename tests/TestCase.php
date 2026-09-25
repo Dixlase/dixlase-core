@@ -120,7 +120,7 @@ abstract class TestCase extends BaseTestCase
      * Plugin migrations cannot simply be folded into core's
      * `migrate:fresh` run: a plugin's create-table migration is named
      * `0001_01_01_000NNN_*` and would sort *before* core's
-     * `0001_01_01_000027_create_members_table`, so an inline foreign key
+     * `0001_01_01_000028_create_members_table`, so an inline foreign key
      * to `dls_members` fails with "referenced table does not exist".
      *
      * Instead they run as a separate `migrate` pass driven off the

@@ -26,8 +26,22 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Added
+
+- `dls:schema:retire` drops schema objects that an earlier beta created and a later
+  beta no longer uses: the `webauthn_credentials` table, and the table, column and
+  `global_settings` marker rows left by the core-update verification fixtures. Only
+  objects listed in the command are touched. It previews by default, applies with
+  `--confirm`, warns when legacy passkey rows would be deleted, and writes an audit log
+  entry (`schema_retired`). See *Upgrading* §4.5.1.
+
 ### Changed
 
+- `create_members_passkeys_table` is renumbered from `0001_01_01_000048` to `000023`, so
+  it sorts with the other `members_*` tables, and the migrations it now precedes shift
+  by one (`000023`–`000047` → `000024`–`000048`). Its foreign key to `members` now
+  lives in `add_foreign_key_constraints`, like every other `members_*` table. Existing
+  sites run `dls:migration:resync --prune --confirm` before `migrate`.
 - **Passkeys now run on the official `laravel/passkeys` package.** `laragear/webauthn`
   was archived upstream (2026-05) and is removed, together with its composer patch and
   `cweagans/composer-patches`. Registration and login go through

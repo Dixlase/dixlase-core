@@ -97,6 +97,21 @@ This compares the current migration files on disk against `database/migration-lo
 
 **If this fails**, stop the upgrade and investigate: a locked migration has been modified, which breaks audit trail guarantees. Either revert the change or accept the drift by running `dls:migration:lint --lock` — but only after reviewing what changed.
 
+### 4.4.1 Beta series only: reconcile renamed migrations
+
+Until GA, core migrations are edited and renumbered in place (see the Migration
+Editing Policy). A renumbered file looks new to `migrate`, which would then try to
+create a table that already exists. Before running migrations on an existing site,
+point the ledger at the new filenames:
+
+```bash
+docker exec dixlase-php php artisan dls:migration:resync --prune            # dry-run preview
+docker exec dixlase-php php artisan dls:migration:resync --prune --confirm
+```
+
+It only rewrites rows of the `migrations` ledger tables; no data table is touched.
+When it reports nothing to do, continue.
+
 ### 4.5 Run migrations in dependency order
 
 ```bash
@@ -116,6 +131,24 @@ docker exec dixlase-php php artisan dls:theme:migrate --force
 ```
 
 `--force` is required in production (Laravel aborts otherwise). Skip any plugin that is not installed on this site.
+
+### 4.5.1 Beta series only: retire leftover schema objects
+
+Editing a migration in place changes what a fresh install creates, but an existing
+site keeps whatever the old file created. `dls:schema:retire` drops the leftovers
+that a later beta release no longer uses — for example the `webauthn_credentials`
+table that `members_passkeys` replaced. It only touches objects listed in the
+command itself:
+
+```bash
+docker exec dixlase-php php artisan dls:schema:retire            # dry-run preview
+docker exec dixlase-php php artisan dls:schema:retire --confirm
+```
+
+Read the preview before confirming. When it warns that legacy passkey rows will be
+deleted, the members concerned have to register their passkeys again (the rows are
+not read any more, but the dry-run tells you who is affected). The command writes an
+audit log entry and is safe to re-run; a second run reports `Nothing to retire`.
 
 ### 4.6 Backfill supply-chain metadata (first-time only)
 
