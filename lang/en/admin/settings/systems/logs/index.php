@@ -91,7 +91,7 @@ return [
     'cleanup_title' => 'Log Cleanup',
     'cleanup_days' => 'Retention Days',
     'cleanup_button' => 'Delete Old Logs',
-    'cleanup_description' => 'Delete audit logs older than the specified number of days. Setting 0 will delete all logs.',
+    'cleanup_description' => 'Delete audit logs older than the specified number of days (at least 1). Only a super administrator can run this, and the cleanup itself is recorded in the audit log.',
     'cleanup_confirm' => 'Are you sure you want to delete audit logs older than the specified days? This action cannot be undone.',
     'cleanup_success' => 'Successfully deleted :count audit log(s).',
     'cleanup_modal' => [

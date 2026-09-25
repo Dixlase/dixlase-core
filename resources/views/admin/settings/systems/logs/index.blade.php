@@ -391,7 +391,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             name="days"
                             id="cleanup_days"
                             :value="90"
-                            :min="0"
+                            :min="1"
                             class="!w-24"
                         />
                     </div>

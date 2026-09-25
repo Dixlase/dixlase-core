@@ -91,7 +91,7 @@ return [
     'cleanup_title' => 'ログクリーンアップ',
     'cleanup_days' => '保持日数',
     'cleanup_button' => '古いログを削除',
-    'cleanup_description' => '指定した日数より古い監査ログを削除します。0を指定すると全てのログを削除します。',
+    'cleanup_description' => '指定した日数 (1 日以上) より古い監査ログを削除します。実行できるのはスーパー管理者のみで、削除したこと自体が監査ログに記録されます。',
     'cleanup_confirm' => '指定した日数より古い監査ログを削除しますか？この操作は取り消せません。',
     'cleanup_success' => ':count 件の監査ログを削除しました。',
     'cleanup_modal' => [

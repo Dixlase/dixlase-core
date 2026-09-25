@@ -36,6 +36,9 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Enums\LogLevel;
+use App\Enums\MemberRole;
+use App\Facades\Audit;
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
@@ -731,16 +734,37 @@ class AdminSystemLogsController extends AdminLoggedInController
                 ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
         }
 
-        $days = (int) $request->input('days', 90);
-
-        if ($days === 0) {
-            $count = AuditLog::count();
-            AuditLog::truncate();
-        } else {
-            $cutoff = now()->subDays($days);
-            $count = AuditLog::where('occurred_at', '<', $cutoff)->count();
-            AuditLog::where('occurred_at', '<', $cutoff)->delete();
+        // Deleting audit evidence is SUPER_ADMIN-only. The route's menu key
+        // (settings.systems.logs) has no definition of its own and resolves
+        // through its ADMIN-level children, so the gate alone let an ADMIN
+        // wipe the log of what they had done.
+        $member = AdminHelper::getMember();
+        if ($member === null || $member->getAttribute('role') !== MemberRole::SUPER_ADMIN) {
+            abort(403);
         }
+
+        // At least one day is always kept. `0` used to truncate the whole
+        // table, and a negative value put the cutoff in the future, which
+        // deleted everything as well.
+        $validated = $request->validate([
+            'days' => ['required', 'integer', 'min:1', 'max:36500'],
+        ]);
+        $days = (int) $validated['days'];
+
+        $cutoff = now()->subDays($days);
+        $count = AuditLog::where('occurred_at', '<', $cutoff)->count();
+
+        // Record the cleanup itself before the rows go, so the deletion is
+        // part of the chain it shortens.
+        Audit::log([
+            'category' => 'system',
+            'action' => 'audit_log.cleanup',
+            'actor' => $member,
+            'severity' => 'high',
+            'context' => ['older_than_days' => $days, 'deleted' => $count],
+        ]);
+
+        AuditLog::where('occurred_at', '<', $cutoff)->delete();
 
         return redirect()->route('admin.settings.systems.logs.index')
             ->with('success', __('admin/settings/systems/logs/index.cleanup_success', ['count' => $count]));
