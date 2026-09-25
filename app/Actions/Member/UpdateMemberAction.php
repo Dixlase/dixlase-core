@@ -38,11 +38,13 @@ declare(strict_types=1);
 namespace App\Actions\Member;
 
 use App\Actions\AbstractAction;
+use App\Actors\MemberActor;
 use App\Contracts\Action\Actor;
 use App\DTO\Action\ActionResult;
 use App\Enums\Permission;
 use App\Facades\Audit;
 use App\Models\Member;
+use App\Services\Member\MemberHierarchyGuard;
 use App\Services\PasswordService;
 
 /**
@@ -70,6 +72,18 @@ class UpdateMemberAction extends AbstractAction
     protected function auditCategory(): string
     {
         return 'account';
+    }
+
+    /**
+     * Holding the members menu does not let an actor act on a member ranked above
+     * them, grant a role above their own, or change their own / the initial
+     * admin's role or status.
+     */
+    protected function validate(Actor $actor, array $data): void
+    {
+        if ($actor instanceof MemberActor) {
+            MemberHierarchyGuard::assertCanUpdate($actor->getMember(), $this->member, $data);
+        }
     }
 
     protected function handle(Actor $actor, array $data): ActionResult

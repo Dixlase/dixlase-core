@@ -51,6 +51,7 @@ use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
 use App\Services\MailServerValidatorService;
+use App\Services\Member\MemberHierarchyGuard;
 use App\Services\TwoFa\TwoFaStatusService;
 
 class AdminMemberFormController extends AdminLoggedInController
@@ -181,7 +182,7 @@ class AdminMemberFormController extends AdminLoggedInController
         $this->viewParams['requirePassword'] = false;
         $this->viewParams['verificationTranslationPrefix'] = 'admin/members/form';
 
-        $this->loadMemberFormParams();
+        $this->loadMemberFormParams($member);
 
         // Determine passkey mode using TwoFaStatusService
         $twoFaStatusService = new TwoFaStatusService();
@@ -244,11 +245,20 @@ class AdminMemberFormController extends AdminLoggedInController
     /**
      * Load parameters for form
      */
-    private function loadMemberFormParams(): void
+    private function loadMemberFormParams(?Member $target = null): void
     {
+        // Offer only the roles the actor may grant. On an edit screen keep the
+        // member's current role too, so the form still shows it correctly.
+        $roles = MemberHierarchyGuard::assignableRoles(AdminHelper::getMember());
+        $currentRole = $target?->getAttribute('role');
+        if ($currentRole instanceof MemberRole && ! in_array($currentRole, $roles, true)) {
+            $roles[] = $currentRole;
+        }
+        usort($roles, static fn (MemberRole $a, MemberRole $b): int => $b->value <=> $a->value);
+
         // Generate role options array for radio-card-group
         $roleCardOptions = [];
-        foreach (MemberRole::cases() as $role) {
+        foreach ($roles as $role) {
             $roleCardOptions[] = [
                 'value' => $role->value,
                 'label' => $role->label(),
