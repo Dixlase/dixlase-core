@@ -41,8 +41,7 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   `core:site-tagline` シングルトン翻訳型を登録する際にクラス名で参照するため、その参照が
   プラグイン例外の範囲に入るよう境界に載せる。
 
-## [0.1.0] — TBD
-
+## [0.1.0] — 2026-10-01
 最初の安定版 Plugin API 凍結。このリリースは、AGPL プラグイン・テーマ例外
 （`LICENSE` を参照）の下でプラグイン・テーマが依拠できる公開境界を確立します。
 

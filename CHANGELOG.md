@@ -91,8 +91,7 @@ repository to be notified of changes.
   screens (for example `admin/profile/common.passkey_deleted_all`) were added in both
   languages.
 
-## [0.1.0] — TBD
-
+## [0.1.0] — 2026-10-01
 The first stable Plugin API freeze. This release establishes the public boundary that
 plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `LICENSE`).
 
