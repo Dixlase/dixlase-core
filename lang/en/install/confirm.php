@@ -34,6 +34,8 @@
  */
 
 return [
+    'already_running' => 'An installation is already running. Wait for it to finish, then reload this page — do not submit twice.',
+    'previous_run_interrupted' => 'A previous installation attempt did not finish. Starting again is safe: the database is rebuilt from scratch unless you chose to keep existing data.',
     'confirm_title' => 'Confirm Installation Settings',
     'confirm_header' => 'Installation Confirmation',
     'confirm_message' => 'Please review your settings before finalizing the installation.',

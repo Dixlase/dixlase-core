@@ -22,6 +22,7 @@
 
 namespace Tests\Feature\Install;
 
+use App\Support\Install\InstallRunLock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -41,6 +42,42 @@ use Tests\TestCase;
 class InstallConfirmRequiredFieldsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        InstallRunLock::release();
+    }
+
+    protected function tearDown(): void
+    {
+        InstallRunLock::release();
+        parent::tearDown();
+    }
+
+    public function test_an_interrupted_run_is_reported_on_the_confirm_screen(): void
+    {
+        InstallRunLock::acquire();
+        touch(InstallRunLock::path(), time() - InstallRunLock::TTL_SECONDS - 60);
+        clearstatcache(true, InstallRunLock::path());
+
+        $response = $this->withSession(['install_data' => $this->sqliteSession()])
+            ->get('/install/confirm');
+
+        $response->assertStatus(200);
+        $response->assertSessionHas('warning');
+        // Reported once: the marker is cleared so the next visit is quiet.
+        $this->assertFalse(InstallRunLock::wasInterrupted());
+    }
+
+    public function test_a_clean_confirm_screen_reports_nothing(): void
+    {
+        $response = $this->withSession(['install_data' => $this->sqliteSession()])
+            ->get('/install/confirm');
+
+        $response->assertStatus(200);
+        $response->assertSessionMissing('warning');
+    }
 
     public function test_confirm_screen_renders_for_a_sqlite_installation(): void
     {
