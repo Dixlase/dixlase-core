@@ -127,7 +127,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-modal
             id="uninstallThemeModal-{{ $card['id'] }}"
             :title="__('admin/settings/themes/index.uninstall.confirm_title')"
-            :message="str_replace('{name}', $card['name'], __('admin/settings/themes/index.uninstall.confirm_message'))"
+            :message="str_replace('{name}', e($card['name']), __('admin/settings/themes/index.uninstall.confirm_message'))"
             :confirm_label="__('common.uninstall')"
             :cancel_label="__('common.cancel')"
             form="uninstallThemeForm-{{ $card['id'] }}"
@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-modal
             id="rollbackThemeModal-{{ $card['id'] }}"
             :title="__('admin/settings/themes/show.rollback.confirm_title')"
-            :message="str_replace('{name}', $card['name'], __('admin/settings/themes/show.rollback.confirm_message'))"
+            :message="str_replace('{name}', e($card['name']), __('admin/settings/themes/show.rollback.confirm_message'))"
             :confirm_label="__('admin/settings/themes/show.rollback.button')"
             :cancel_label="__('common.cancel')"
             form="rollbackThemeForm-{{ $card['id'] }}"

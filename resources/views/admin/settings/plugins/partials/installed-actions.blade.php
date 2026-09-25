@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-modal
             :id="$card['disableModalId']"
             :title="__('admin/settings/plugins/index.disabled.confirm_title')"
-            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.disabled.confirm_message'))"
+            :message="str_replace('{name}', e($card['name']), __('admin/settings/plugins/index.disabled.confirm_message'))"
             icon_type="warning"
             :confirm_label="__('common.disable')"
             :cancel_label="__('common.cancel')"
@@ -210,7 +210,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-modal
             id="uninstallModal-{{ $card['id'] }}"
             :title="__('admin/settings/plugins/index.uninstall.confirm_title')"
-            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.uninstall.confirm_message'))"
+            :message="str_replace('{name}', e($card['name']), __('admin/settings/plugins/index.uninstall.confirm_message'))"
             :confirm_label="__('common.uninstall')"
             :cancel_label="__('common.cancel')"
             :checkbox="true"
@@ -242,7 +242,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <x-ui-modal
             id="rollbackPluginModal-{{ $card['id'] }}"
             :title="__('admin/settings/plugins/show.rollback.confirm_title')"
-            :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/show.rollback.confirm_message'))"
+            :message="str_replace('{name}', e($card['name']), __('admin/settings/plugins/show.rollback.confirm_message'))"
             :confirm_label="__('admin/settings/plugins/show.rollback.button')"
             :cancel_label="__('common.cancel')"
             form="rollbackPluginForm-{{ $card['id'] }}"
