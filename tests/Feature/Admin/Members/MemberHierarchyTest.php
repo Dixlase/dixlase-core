@@ -78,8 +78,10 @@ class MemberHierarchyTest extends TestCase
         $adminTheme = config('themes.admin_theme', 'admin');
         View::addNamespace('admin', [resource_path("views/{$adminTheme}")]);
 
-        // Created first, so this is the initial admin (id 1).
+        // The initial admin is identified by id 1. Pin it explicitly: the
+        // auto-increment is not reset between tests on every CI database.
         $this->superAdmin = Member::factory()->create([
+            'id' => 1,
             'account_name' => 'owner',
             'email' => 'owner@example.com',
             'password' => Hash::make('password'),
