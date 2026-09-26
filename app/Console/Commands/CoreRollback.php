@@ -160,6 +160,20 @@ class CoreRollback extends Command
         $schemaTouched = false;
         $vendorSwapped = false;
 
+        // Resolve the subprocess launcher and exercise it once while the tree
+        // is still the version this process is running. A rollback replaces
+        // app/ with an older release's, and ArtisanProcess is newer than any
+        // release it can roll back to: resolving it after the source restore
+        // failed with "include(.../ArtisanProcess.php): Failed to open
+        // stream", which left a v0.3.54 to v0.3.53 rollback half-applied and
+        // the site on 500. Holding the instance keeps the class - and
+        // everything run() reaches - in memory for the rest of the command.
+        $artisan = app(ArtisanProcess::class);
+        $launcherBoots = $artisan->boots();
+        if (! $launcherBoots) {
+            $this->warn('A new PHP process could not boot the application before the rollback started; the post-restore boot check will be skipped.');
+        }
+
         try {
             // A dependency rollback re-fetches vendor/ from the target
             // release. Check that the release actually ships one before
@@ -298,7 +312,6 @@ class CoreRollback extends Command
                 // replaced; compiling Blade here goes through the providers
                 // it registered, which may belong to packages that are gone.
                 // Run the clears in a new process (see ArtisanProcess).
-                $artisan = app(ArtisanProcess::class);
                 foreach (['config:clear', 'route:clear', 'view:clear', 'view:cache', 'cache:clear'] as $clear) {
                     $artisan->run($clear);
                 }
@@ -321,6 +334,17 @@ class CoreRollback extends Command
             // Best-effort — never aborts the rollback.
             $this->line('Refreshing PHP-FPM cache...');
             app(\App\Services\Core\PhpFpmReloader::class)->reload();
+
+            // Ask a new process to boot the rolled-back tree before the site
+            // is let back in. Every step above can report success and still
+            // leave the application unbootable - a stale manifest in
+            // bootstrap/cache is enough - and until now the first thing to
+            // notice was a visitor. Only trusted when the same check passed
+            // before the rollback started, so a launcher that never worked in
+            // this environment cannot turn a good rollback into a recovery.
+            if ($launcherBoots && ! $artisan->boots()) {
+                throw new \RuntimeException('the rolled-back core does not boot in a new process');
+            }
 
             if ($maintenanceOn) {
                 $this->line('Lifting maintenance mode...');
@@ -389,7 +413,22 @@ class CoreRollback extends Command
                     // asset symlinks either.
                     $this->relinkPublicAssets();
 
+                    // bootstrap/cache/packages.php and services.php describe
+                    // whichever vendor/ was in place when they were written,
+                    // and a source restore deliberately keeps the live copies.
+                    // After a recovery that put a different vendor/ back they
+                    // list providers that are gone: the command reported the
+                    // pre-rollback state restored while every request died on
+                    // `Class "Laravel\Tinker\TinkerServiceProvider" not found`.
+                    $this->refreshPackageManifest($artisan);
+
                     $recovered = $this->reapplySchema($schemaTouched);
+
+                    if ($recovered && $launcherBoots && ! $artisan->boots()) {
+                        $recovered = false;
+                        $this->error('The restored core still does not boot in a new process.');
+                        $this->line("Manual recovery required from: {$safetySnapshot}");
+                    }
 
                     if ($recovered) {
                         $this->info('Pre-rollback state restored — the core is back where it was before this command ran.');
@@ -474,6 +513,47 @@ class CoreRollback extends Command
             '--force' => true,
         ]);
         $this->line('Schema rollback complete.');
+    }
+
+    /**
+     * Rebuild the package-discovery manifests against the tree on disk now.
+     *
+     * bootstrap/cache/packages.php and services.php are written from whatever
+     * vendor/ was installed when they were last generated, and a source
+     * restore keeps the live copies on purpose (bootstrap/cache is a
+     * protected path). So a recovery that puts a different vendor/ back is
+     * left with manifests describing the rejected one, and every request
+     * fatals on a provider whose package is no longer there.
+     *
+     * The files are deleted first: Laravel rebuilds a missing manifest on the
+     * next boot, so even a failing package:discover leaves a working site
+     * rather than a poisoned one. The rebuild runs in a new process, which
+     * boots from the restored vendor/ instead of the one this process loaded.
+     *
+     * ComposerLocalHelper::rebuildPackageManifest() warns that package:discover
+     * must not run in a new process, because that process would boot from the
+     * stale manifest and die on a provider that is gone before the command
+     * ran. Deleting the files first is what makes a new process safe here:
+     * with no manifest on disk the framework builds one from the restored
+     * vendor/composer/installed.json as it boots.
+     */
+    private function refreshPackageManifest(ArtisanProcess $artisan): void
+    {
+        foreach (['packages.php', 'services.php'] as $file) {
+            $path = base_path('bootstrap/cache/'.$file);
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+
+        try {
+            $artisan->run('package:discover');
+            $this->line('Rebuilt the package-discovery manifest for the restored tree.');
+        } catch (\Throwable $e) {
+            // The manifests are gone, so the framework regenerates them on
+            // the next request; say so rather than implying the site is down.
+            $this->warn("Could not rebuild the package manifest ({$e->getMessage()}); it will be regenerated on the next request.");
+        }
     }
 
     /**

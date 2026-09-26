@@ -88,6 +88,31 @@ PHP);
         $this->runner()->run('fail');
     }
 
+    public function test_boots_is_true_when_a_new_process_reaches_artisan(): void
+    {
+        $this->assertTrue($this->runner()->boots());
+        $this->assertSame(
+            ['--version', '--no-interaction'],
+            json_decode(File::get($this->dir.'/argv.json'), true),
+        );
+    }
+
+    public function test_boots_is_false_when_the_application_cannot_start(): void
+    {
+        File::put($this->dir.'/artisan', '<?php fwrite(STDERR, "boom"); exit(1);');
+
+        $this->assertFalse($this->runner()->boots());
+    }
+
+    public function test_boots_is_false_rather_than_throwing_when_artisan_is_gone(): void
+    {
+        File::delete($this->dir.'/artisan');
+
+        // What a rollback leaves behind if the restored release predates the
+        // file: the caller needs an answer, not an exception.
+        $this->assertFalse($this->runner()->boots());
+    }
+
     private function runner(): ArtisanProcess
     {
         return new ArtisanProcess($this->dir.'/artisan', PHP_BINARY);

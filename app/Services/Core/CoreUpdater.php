@@ -82,6 +82,15 @@ class CoreUpdater
     ) {}
 
     /**
+     * The subprocess launcher, resolved before the tree is touched.
+     *
+     * Held for the length of update() so the post-swap steps never have to
+     * read the class - or anything run() reaches - off a tree that has since
+     * been replaced. See ArtisanProcess::boots().
+     */
+    private ?ArtisanProcess $artisan = null;
+
+    /**
      * @param  ?Closure(string): void  $log  Optional sink for progress lines
      * @param  bool  $allowDowngrade  Override the on-disk version guard (Finding #1). Reserved for
      *                                deliberate rollback scenarios; the default `false` refuses any
@@ -135,6 +144,18 @@ class CoreUpdater
         // runs before the snapshot, i.e. outside the try below, so the
         // failure is recorded for the admin panel and the web launcher's
         // in-progress flag is cleared here rather than by the finally.
+        // Resolve the subprocess launcher and exercise it once before
+        // anything on disk changes: this loads the class, Symfony's Process
+        // and everything else run() needs into memory while the files still
+        // belong to the version this process booted from. The rollback path
+        // hit the reverse of this and died on a class its restored source no
+        // longer had.
+        $this->artisan = app(ArtisanProcess::class);
+        $launcherBoots = $this->artisan->boots();
+        if (! $launcherBoots) {
+            $log('WARNING: a new PHP process could not boot the application before the update started; the post-apply boot check will be skipped.');
+        }
+
         $log('Running preflight checks...');
         $preflight = app(CorePreflightChecker::class)->run();
         foreach ($preflight->lines() as $line) {
@@ -506,6 +527,17 @@ class CoreUpdater
             $log('Refreshing PHP-FPM cache...');
             $this->fpmReloader->reload();
 
+            // Ask a new process to boot the updated tree before the site is
+            // let back in. Each step above can succeed and still leave the
+            // application unbootable - a bootstrap/cache manifest describing
+            // the previous vendor/ is enough - and the first thing to notice
+            // used to be a visitor. Only trusted when the same check passed
+            // before the update started, so a launcher that never worked here
+            // cannot turn a good update into a rollback.
+            if ($launcherBoots && ! $this->artisan->boots()) {
+                throw new RuntimeException('the updated core does not boot in a new process');
+            }
+
             // The new code is in place and migrations passed; lift the
             // maintenance window before the (non-critical) bookkeeping
             // below so the site comes back as soon as it is safe.
@@ -636,6 +668,13 @@ class CoreUpdater
                     $log("VENDOR ROLLBACK FAILED: {$vendorError->getMessage()}");
                     $log('Manual recovery required: restore vendor/ from the previous release ZIP.');
                 }
+
+                // bootstrap/cache/packages.php and services.php still
+                // describe the vendor/ this update installed, and a source
+                // restore keeps the live copies on purpose. Left alone they
+                // list providers the restored vendor/ does not have, and the
+                // site answers 500 while this path reports a clean rollback.
+                $this->refreshPackageManifest($log);
             }
 
             // Same pattern as the vendor rollback above, for any bundled
@@ -655,6 +694,13 @@ class CoreUpdater
                     $log("THEME ROLLBACK FAILED for '{$slug}': {$themeError->getMessage()}");
                     $log("Manual recovery required: remove themes/{$slug} (it was not installed before this update).");
                 }
+            }
+
+            // Say whether the recovery actually produced a site that comes
+            // up. Restoring the files is not the same as restoring service,
+            // and an operator reading "rolled back" has no other signal.
+            if ($launcherBoots && ! ($this->artisan?->boots() ?? true)) {
+                $log("WARNING: the restored core does not boot in a new process. Manual recovery required from the snapshot at: {$snapshotPath}");
             }
 
             // Lift maintenance mode last, once the tree is consistent again.
@@ -711,12 +757,53 @@ class CoreUpdater
     private function runArtisan(string $command, array $options, bool $freshProcess): void
     {
         if ($freshProcess) {
-            app(ArtisanProcess::class)->run($command, $options);
+            ($this->artisan ??= app(ArtisanProcess::class))->run($command, $options);
 
             return;
         }
 
         Artisan::call($command, $options);
+    }
+
+    /**
+     * Rebuild the package-discovery manifests against the tree on disk now.
+     *
+     * bootstrap/cache/packages.php and services.php are generated from
+     * whichever vendor/ was installed when they were last written, and a
+     * source restore keeps the live copies on purpose (bootstrap/cache is a
+     * protected path). A failed update that puts the previous vendor/ back is
+     * therefore left with manifests listing packages that vendor/ does not
+     * have, and every request fatals on a missing provider.
+     *
+     * The files are deleted first, so even a failing package:discover leaves
+     * a site the framework can rebuild on the next boot rather than a
+     * poisoned one. The rebuild runs in a new process, which boots from the
+     * restored vendor/ rather than the one this process loaded.
+     *
+     * @param  Closure(string): void  $log
+     *
+     * ComposerLocalHelper::rebuildPackageManifest() warns that package:discover
+     * must not run in a new process, because that process would boot from the
+     * stale manifest and die on a provider that is gone before the command
+     * ran. Deleting the files first is what makes a new process safe here:
+     * with no manifest on disk the framework builds one from the restored
+     * vendor/composer/installed.json as it boots.
+     */
+    private function refreshPackageManifest(Closure $log): void
+    {
+        foreach (['packages.php', 'services.php'] as $file) {
+            $path = base_path('bootstrap/cache/'.$file);
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+
+        try {
+            ($this->artisan ??= app(ArtisanProcess::class))->run('package:discover');
+            $log('Rebuilt the package-discovery manifest for the restored tree.');
+        } catch (\Throwable $e) {
+            $log("Could not rebuild the package manifest ({$e->getMessage()}); it will be regenerated on the next request.");
+        }
     }
 
     /**
