@@ -136,7 +136,7 @@ More themes are planned for future releases.
 > Agreement (CLA) that has passed legal review (no date is set).
 
 Bug reports and feature proposals via **GitHub Issues** are welcome
-in the meantime, as are questions via **GitHub Discussions**. See
+in the meantime; questions can be sent to the contact address. See
 [CONTRIBUTING.md](./CONTRIBUTING.md) for the current contribution
 scope.
 

@@ -12,7 +12,7 @@ file when contributions open.
 Until then:
 
 - Dixlase is **not accepting external pull requests**.
-- Bug reports and feature suggestions are welcome via GitHub Issues and Discussions —
+- Bug reports and feature suggestions are welcome via GitHub Issues —
   see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the current contribution policy.
 - For the overall licensing structure, see [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md).
 
