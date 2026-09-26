@@ -197,6 +197,11 @@ class AppServiceProvider extends ServiceProvider
         // defeating the nonce).
         $this->app->scoped(\App\Services\Csp\CspNonceGenerator::class);
 
+        // Failed extension asset builds, read back by the admin controllers
+        // after Artisan::call() — request-scoped so one request's failure is
+        // never reported on the next.
+        $this->app->scoped(\App\Services\Extension\ExtensionAssetBuildReport::class);
+
         // Register legal page registry service as singleton
         $this->app->singleton(LegalPageService::class);
 

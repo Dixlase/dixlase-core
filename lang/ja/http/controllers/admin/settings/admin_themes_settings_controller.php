@@ -42,6 +42,7 @@ return [
     'theme_installation_failed_with_reason' => 'テーマのインストールに失敗しました: ',
     'theme_successfully_deleted' => 'テーマが正常に削除されました。',
     'theme_successfully_installed' => 'テーマが正常にインストールされました。',
+    'theme_asset_build_failed' => 'テーマはインストールされましたが、画面用ファイルのビルド(:command)に失敗したため、画面の JavaScript と CSS が無い状態です。npm の出力はログに記録されています。再実行するには: php artisan dls:theme:build :directory',
     'theme_switch_failed' => 'テーマの切り替えに失敗しました。',
     'theme_switch_failed_with_reason' => 'テーマの切り替えに失敗しました: ',
     'theme_switched' => 'テーマが切り替えられました。',

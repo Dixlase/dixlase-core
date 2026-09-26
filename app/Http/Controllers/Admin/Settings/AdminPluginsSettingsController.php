@@ -53,6 +53,7 @@ use App\Models\PluginVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
+use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceManager;
@@ -892,9 +893,22 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $successMessage = __('admin/settings/plugins/index.messages.install_success_no_plugin');
             }
 
-            return $this->redirectAfterPluginAction($request, $plugin?->slug)
+            $redirect = $this->redirectAfterPluginAction($request, $plugin?->slug)
                 ->with('success', $successMessage)
                 ->with('installed_plugin_id', $plugin ? $plugin->id : null);
+
+            // The install succeeds even when the asset build fails, but the
+            // console output is discarded by Artisan::call(), so say so here
+            // or the plugin silently runs without its JS / CSS.
+            $buildFailure = app(ExtensionAssetBuildReport::class)->failureFor(base_path("plugins/{$pluginDir}"));
+            if ($buildFailure !== null) {
+                $redirect->with('warning', __('admin/settings/plugins/index.messages.asset_build_failed', [
+                    'command' => $buildFailure['command'],
+                    'directory' => $pluginDir,
+                ]));
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             Log::error('Plugin installation failed', [
                 'directory' => $pluginDir,
