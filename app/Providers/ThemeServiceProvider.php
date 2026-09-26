@@ -291,7 +291,7 @@ class ThemeServiceProvider extends ServiceProvider
             \Route::prefix($adminUrl)->name('admin.')
                 ->middleware(['admin.ip'])
                 ->group(function () use ($adminRoutePath) {
-                    \Route::middleware(['auth:member', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
+                    \Route::middleware(['auth:member', 'member.active', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
                         include $adminRoutePath;
                     });
                 });

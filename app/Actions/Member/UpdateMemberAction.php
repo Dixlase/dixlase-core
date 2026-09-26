@@ -46,6 +46,7 @@ use App\Facades\Audit;
 use App\Models\Member;
 use App\Services\Member\MemberHierarchyGuard;
 use App\Services\PasswordService;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Update an existing member account
@@ -96,7 +97,17 @@ class UpdateMemberAction extends AbstractAction
             unset($data['password']);
         }
 
+        $wasActive = $this->member->canAuthenticate();
+
         $this->member->update($data);
+
+        // Deactivating an account ends its access now: drop its sessions and
+        // its remember-me token. (EnsureMemberCanAuthenticate would also catch
+        // it on the next request; this makes the change immediate.)
+        if ($wasActive && ! $this->member->fresh()->canAuthenticate()) {
+            DB::table('members_sessions')->where('member_id', $this->member->id)->delete();
+            $this->member->forceFill(['remember_token' => null])->saveQuietly();
+        }
 
         return ActionResult::success(
             model: $this->member,

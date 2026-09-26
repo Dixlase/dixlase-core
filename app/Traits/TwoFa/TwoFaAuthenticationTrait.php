@@ -374,6 +374,13 @@ trait TwoFaAuthenticationTrait
             }
         }
 
+        // The account may have been deactivated between the password step
+        // and this one; the password step's check does not carry over.
+        if (method_exists($user, 'canAuthenticate') && ! $user->canAuthenticate()) {
+            return redirect()->route($this->getLoginRoute())
+                ->withErrors(['login' => __('auth.account_inactive')]);
+        }
+
         // Login first (same order as AdminLoginController)
         Auth::guard($guardName)->login($user, $remember);
 

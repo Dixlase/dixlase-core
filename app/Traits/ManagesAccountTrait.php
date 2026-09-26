@@ -132,6 +132,11 @@ trait ManagesAccountTrait
                 ->delete();
         }
 
+        // Deleting the session rows alone left a remember-me cookie working:
+        // the guard re-authenticates from it on the next request. Clearing the
+        // stored token makes every outstanding cookie fail.
+        $model->forceFill(['remember_token' => null])->saveQuietly();
+
         return redirect()->route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id])
             ->with('success', __($successMessageKey));
     }

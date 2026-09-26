@@ -164,13 +164,17 @@ class AdminMemberSecurityController extends AdminLoggedInController
                 ->with('error', __('admin/members/force_logout_all_error'));
         }
 
+        $targets = Member::query()
+            ->where('id', '!=', $actor->id)
+            ->where('role', '<=', MemberHierarchyGuard::rank($actor));
+
         $deletedCount = DB::table('members_sessions')
             ->whereNotNull('member_id')
-            ->where('member_id', '!=', $actor->id)
-            ->whereIn('member_id', Member::query()
-                ->where('role', '<=', MemberHierarchyGuard::rank($actor))
-                ->select('id'))
+            ->whereIn('member_id', (clone $targets)->select('id'))
             ->delete();
+
+        // Also invalidate remember-me cookies, which survive session deletion.
+        (clone $targets)->update(['remember_token' => null]);
 
         return redirect()->route('admin.members.index')
             ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));

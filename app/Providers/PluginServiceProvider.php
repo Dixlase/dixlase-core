@@ -411,6 +411,7 @@ class PluginServiceProvider extends ServiceProvider
                         'web',
                         'admin.ip',
                         'auth:member',
+                        'member.active',
                         'verified',
                         'log.admin.activity',
                         'plugin.admin.access:'.$plugin->directory,
