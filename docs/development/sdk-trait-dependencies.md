@@ -124,7 +124,6 @@ The `mergeAdminNavigation()` method was the last direct reference to `\App\Helpe
 | DixlaseInquiry | Removed manual call (auto-load via `config/admin/navigation.php`) |
 | DixlasePages | Removed manual call (auto-load via `config/admin/navigation.php`) |
 | DixlaseDocs | Removed manual call (auto-load via `config/admin/navigation.php`) |
-| DixlaseMultilingual | Created `config/admin/navigation.php`, deleted `config/admin.php`, removed manual call |
 | DixlaseUsers | Removed conditional fallback (auto-load via `config/admin/navigation.php`) |
 | DixlaseMenus | Removed manual call (auto-load via `config/admin/navigation.php`) |
 

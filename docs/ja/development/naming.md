@@ -27,9 +27,8 @@
 | [イベント名](#イベント名) | `dixlase.<category>.<action>`（過去形） | `dixlase.backup.completed` |
 | [Webhook event type](#webhook-event-type) | イベント名と同一 | `dixlase.backup.completed` |
 | [監査ログ action](#監査ログ-action) | フラット `<resource>_<action>` snake_case | `password_changed` `login_failed` |
-| [プラグインケイパビリティ](#プラグインケイパビリティ) | kebab-case 機能ラベル | `seo-meta` `multilingual-content` |
+| [プラグインケイパビリティ](#プラグインケイパビリティ) | kebab-case 機能ラベル | `seo-meta` `linkable` |
 | [プラグイン permission カテゴリ](#プラグイン-permission-カテゴリ) | 単語 1 つ（lower-case） | `database` `storage` `members` |
-| [多言語コンテンツタイプキー](#多言語コンテンツタイプキー) | `<plugin-slug>:<resource>` | `dixlase-pages:page` |
 | [キャッシュキー](#キャッシュキー) | [cache-key-convention.md](cache-key-convention.md) を参照 | `dixlase:core:routes:list` |
 | [設定キー（env）](#設定キー) | `SCREAMING_SNAKE_CASE` | `TRUSTED_PROXIES` `AUDIT_LOG_RETENTION_DAYS` |
 | [設定キー（PHP パス）](#設定キー) | `lower.dot.path` | `security.audit_log.retention_days` |
@@ -163,7 +162,7 @@ AuditLog::ACTION_PASSKEY_REGISTERED // 'passkey_registered'
 
 ## プラグインケイパビリティ
 
-`plugin.json` の `capabilities` 配列で宣言される機能フラグ。コア側がプラグインの提供機能（SEO メタ、多言語コンテンツ等）を発見するために使う。
+`plugin.json` の `capabilities` 配列で宣言される機能フラグ。コア側がプラグインの提供機能（SEO メタ、リンク等）を発見するために使う。
 
 **フォーマット**: kebab-case 機能ラベル（名前空間なし）。
 
@@ -178,8 +177,7 @@ AuditLog::ACTION_PASSKEY_REGISTERED // 'passkey_registered'
 {
   "capabilities": [
     "seo-meta",
-    "linkable",
-    "multilingual-content"
+    "linkable"
   ]
 }
 ```
@@ -206,25 +204,6 @@ AuditLog::ACTION_PASSKEY_REGISTERED // 'passkey_registered'
     "settings": { "read_core": true, "write_own": false }
   }
 }
-```
-
----
-
-## 多言語コンテンツタイプキー
-
-プラグインが提供する翻訳可能なコンテンツタイプを `DixlaseMultilingual` がアドレスするための識別子。
-
-**フォーマット**: `<plugin-slug>:<resource>`
-
-- プラグインスラグは kebab-case（プラグインディレクトリ名の lower-case）。
-- リソースは lower_snake_case（単数形）。
-- コロンは「所有者」と「所有者内のタイプ」を分ける。
-
-**例**
-
-```
-dixlase-pages:page
-dixlase-blog:post
 ```
 
 ---

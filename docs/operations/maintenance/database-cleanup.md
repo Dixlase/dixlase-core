@@ -10,7 +10,7 @@ The Dixlase database cleanup feature periodically removes unnecessary database r
 - **Plugin/theme table cleanup**: Each extension can register its own tables as cleanup targets
 - **Flexible retention period settings**: Configurable retention days per table
 - **Conditional cleanup**: Supports conditions such as expired, used, or unused
-- **Multilingual support**: Descriptions displayed in Japanese and English
+- **Japanese and English**: Descriptions displayed in Japanese and English
 
 ## How to Access
 

@@ -42,9 +42,8 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   必要。`--preserve-data` を付ければ削除せずにマイグレーションする。ウィザードの実行処理は
   `App\Services\Install\InstallRunner` に移し、両方の入口で共有する。
 - `App\Multilingual\SiteTaglineProvider` を Plugin API の境界に追加。コアの
-  `site_tagline` 設定について主要ロケールの値を供給するクラスで、DixlaseMultilingual が
-  `core:site-tagline` シングルトン翻訳型を登録する際にクラス名で参照するため、その参照が
-  プラグイン例外の範囲に入るよう境界に載せる。
+  `site_tagline` 設定について主要ロケールの値を供給するクラスで、拡張機能がクラス名で
+  参照するため、その参照がプラグイン例外の範囲に入るよう境界に載せる。
 
 ## [0.1.0] — 2026-10-01
 Plugin API を初めて公開するリリースです。AGPL プラグイン・テーマ例外（`LICENSE` を
