@@ -106,6 +106,18 @@ repository to be notified of changes.
   came from the old `vendor/` (livewire/livewire), and failed on a file that was gone.
   After a `vendor/` swap the migrate, seed and cache steps now run in a new
   `php artisan` process; the core rollback clears its caches the same way.
+- A core rollback that swapped `vendor/` died at the cache-clear step with
+  `include(.../ArtisanProcess.php): Failed to open stream`, and its own recovery then left
+  the site answering 500. The class that starts the post-swap subprocess is newer than any
+  release a rollback can restore, so resolving it after the source had been replaced read
+  a file that was no longer there; the recovery put source, vendor and schema back but
+  kept `bootstrap/cache/packages.php` as written for the rejected `vendor/`, so every
+  request died on a provider that was gone. The launcher is now resolved and exercised
+  before anything on disk is touched, a recovery deletes and rebuilds the
+  package-discovery manifests, and both the update and the rollback ask a new process to
+  boot the application — on success before the site is let back in, and after a recovery
+  before it reports one. The same combination recurs on any rollback from a release that
+  changed the update code, including `0.1.1` back to `0.1.0`.
 - A failed core update now reverses the migrations it applied, before restoring the
   source. Before, the database kept the new schema, the next update recorded that schema
   as its starting point, and `dls:core:rollback` then had nothing to reverse.

@@ -95,6 +95,33 @@ class ArtisanProcess
     }
 
     /**
+     * Run the launcher once and report whether a new process boots the app.
+     *
+     * Called before the tree is touched it doubles as a warm-up: every class
+     * run() needs is loaded into memory while the files are still the ones
+     * this process was built against. That matters most on a rollback, where
+     * the target version predates this class — resolving it after the source
+     * swap fails with "include(.../ArtisanProcess.php): Failed to open
+     * stream", which is how a v0.3.54 to v0.3.53 rollback left the site
+     * answering 500.
+     *
+     * Called after a restore it answers the question the operator actually
+     * has: does the site come up. A recovery that puts files back but leaves
+     * a stale bootstrap/cache manifest behind reports success while every
+     * request fatals.
+     */
+    public function boots(): bool
+    {
+        try {
+            $this->run('--version');
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * @param  array<string, bool|int|string>  $options
      * @return list<string>
      */

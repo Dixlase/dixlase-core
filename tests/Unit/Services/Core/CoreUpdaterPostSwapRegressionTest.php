@@ -59,17 +59,73 @@ class CoreUpdaterPostSwapRegressionTest extends TestCase
             $source,
             'After a vendor swap, view:clear / view:cache must run in a new process.'
         );
-        $this->assertStringContainsString('app(ArtisanProcess::class)->run(', $source);
+        $this->assertStringContainsString('$this->artisan ??= app(ArtisanProcess::class)', $source);
+    }
+
+    public function test_the_updater_resolves_the_launcher_before_it_touches_the_tree(): void
+    {
+        $source = $this->updater();
+
+        $resolve = strpos($source, '$this->artisan = app(ArtisanProcess::class);');
+        $apply = strpos($source, '$this->applyToLiveTree($payloadRoot);');
+
+        $this->assertNotFalse($resolve, 'update() must resolve ArtisanProcess up front.');
+        $this->assertNotFalse($apply);
+        $this->assertLessThan(
+            $apply,
+            $resolve,
+            'The launcher must be loaded while the tree still holds the running version.'
+        );
     }
 
     public function test_core_rollback_clears_caches_in_a_new_process_after_a_vendor_swap(): void
     {
-        $source = (string) file_get_contents(app_path('Console/Commands/CoreRollback.php'));
+        $source = $this->rollback();
 
         $this->assertMatchesRegularExpression(
-            '/if \(\$vendorSwapped\) \{.*?app\(ArtisanProcess::class\).*?\x27view:cache\x27/s',
-            $source
+            '/if \(\$vendorSwapped\) \{.*?\$artisan->run\(\$clear\).*?\}/s',
+            $source,
+            'After a vendor swap the cache clears must run through the subprocess launcher.'
         );
+    }
+
+    public function test_the_rollback_resolves_the_launcher_before_it_touches_the_tree(): void
+    {
+        $source = $this->rollback();
+
+        $resolve = strpos($source, '$artisan = app(ArtisanProcess::class);');
+        $capture = strpos($source, '$safetySnapshot = $snapshotter->capture();');
+
+        $this->assertNotFalse($resolve, 'handle() must resolve ArtisanProcess up front.');
+        $this->assertNotFalse($capture);
+        $this->assertLessThan(
+            $capture,
+            $resolve,
+            'A rollback restores an older app/ that has no ArtisanProcess: it must be loaded first.'
+        );
+    }
+
+    public function test_a_failed_swap_rebuilds_the_package_manifest_before_reporting_success(): void
+    {
+        foreach ([$this->updater(), $this->rollback()] as $source) {
+            $this->assertStringContainsString(
+                'refreshPackageManifest',
+                $source,
+                'The recovery path must rebuild bootstrap/cache after restoring a different vendor/.'
+            );
+            $this->assertStringContainsString("base_path('bootstrap/cache/'.\$file)", $source);
+        }
+    }
+
+    public function test_both_paths_check_that_the_restored_tree_boots(): void
+    {
+        foreach ([$this->updater(), $this->rollback()] as $source) {
+            $this->assertStringContainsString(
+                '->boots()',
+                $source,
+                'Restoring files is not the same as restoring service: the result must be checked.'
+            );
+        }
     }
 
     public function test_a_failed_update_reverses_its_migrations_before_restoring_the_source(): void
@@ -95,5 +151,10 @@ class CoreUpdaterPostSwapRegressionTest extends TestCase
     private function updater(): string
     {
         return (string) file_get_contents(app_path('Services/Core/CoreUpdater.php'));
+    }
+
+    private function rollback(): string
+    {
+        return (string) file_get_contents(app_path('Console/Commands/CoreRollback.php'));
     }
 }
