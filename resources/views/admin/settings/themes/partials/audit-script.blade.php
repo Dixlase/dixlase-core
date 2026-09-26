@@ -90,11 +90,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'official' => __('admin/settings/themes/index.permissions.signature_official'),
             'verified' => __('admin/settings/themes/index.permissions.signature_verified'),
             'partner' => __('admin/settings/themes/index.permissions.signature_partner'),
+            // Keyed by the status CoreSignatureVerifier returns, which is what
+            // the scan result carries. Every SignatureVerificationResult::STATUS_*
+            // needs an entry here, or the modal prints the raw status.
+            'valid' => __('admin/settings/themes/index.permissions.signature_valid'),
             'signed' => __('admin/settings/themes/index.permissions.signature_signed'),
             'invalid' => __('admin/settings/themes/index.permissions.signature_invalid'),
             'unsigned' => __('admin/settings/themes/index.permissions.signature_unsigned'),
+            'pending_verification' => __('admin/settings/themes/index.permissions.signature_pending_verification'),
+            'unknown_key' => __('admin/settings/themes/index.permissions.signature_unknown_key'),
+            'expired' => __('admin/settings/themes/index.permissions.signature_expired'),
+            'error' => __('admin/settings/themes/index.permissions.signature_error'),
             'invalidWarning' => __('admin/settings/themes/index.permissions.signature_invalid_warning'),
             'unsignedInfo' => __('admin/settings/themes/index.permissions.signature_unsigned_info'),
+            'pendingVerificationInfo' => __('admin/settings/themes/index.permissions.signature_pending_verification_info'),
+            'unknownKeyInfo' => __('admin/settings/themes/index.permissions.signature_unknown_key_info'),
+            'expiredInfo' => __('admin/settings/themes/index.permissions.signature_expired_info'),
+            'errorInfo' => __('admin/settings/themes/index.permissions.signature_error_info'),
             'signedBy' => __('admin/settings/themes/index.permissions.signed_by'),
         ],
         'cspLabels' => [
