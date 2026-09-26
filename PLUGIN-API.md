@@ -373,8 +373,8 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 
 ### 6.2 UI Components
 
-`x-ui-modal`, `x-ui-modal-vanilla`, `x-ui-notification`, `x-ui-livewire-notification`,
-`x-ui-livewire-modal`, `x-ui-message`, `x-ui-flash-message`, `x-ui-status-badge`,
+`x-ui-modal`, `x-ui-modal-vanilla`, `x-ui-notification`,
+`x-ui-message`, `x-ui-flash-message`, `x-ui-status-badge`,
 `x-ui-pagination`, `x-ui-pagination-controls`, `x-ui-tooltip`, `x-ui-datetime`,
 `x-ui-maintenance-banner`, `x-ui-admin-maintenance-banner`, `x-ui-system-banner`,
 `x-ui-appearance-mode-selector`, `x-ui-language-switcher`, `x-ui-admin-bar`

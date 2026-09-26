@@ -467,14 +467,10 @@ Alpine.data('notificationDisplay', () => ({
 
 **Method A: Server-side rendering (recommended)**
 
-Output HTML using Blade's `{!! !!}` or Livewire components.
+Output the HTML from Blade.
 
 ```html
-<!-- Blade -->
 {!! $htmlContent !!}
-
-<!-- Livewire -->
-<livewire:markdown-preview :content="$content" />
 ```
 
 **Method B: DOM manipulation within methods**

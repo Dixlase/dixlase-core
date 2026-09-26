@@ -34,6 +34,15 @@ repository to be notified of changes.
 
 ### Added
 
+- **Removed:** `livewire/livewire` is no longer a dependency, and the two Livewire UI
+  components leave the Plugin API surface (`x-ui-livewire-modal`,
+  `x-ui-livewire-notification`). Nothing used them: the modal the admin panel renders is
+  `x-ui-modal` (Alpine), no class extended `Livewire\Component`, no view called
+  `@livewire(...)`, and no layout emitted `@livewireScripts`. They were left over from a
+  2026-02-06 experiment reverted the next day. A plugin that wants Livewire can require it
+  itself; core no longer ships it. Removed with them: `config/livewire.php`, the
+  `@livewireScriptsWithoutNavigate` directive (its target view never existed, so calling it
+  threw), and `livewire-notification.js` from the common bundle.
 - `dls:install` installs Dixlase from the command line, running the same pipeline as
   the browser wizard. Settings come from options (`--site-name`, `--admin-email`,
   `--db=sqlite`, …), anything missing is prompted for, and passwords may be passed

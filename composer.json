@@ -24,7 +24,6 @@
         "laravel/framework": "^13.0",
         "laravel/passkeys": "^0.2.1",
         "laravel/tinker": "^3.0",
-        "livewire/livewire": "^4.1",
         "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.1"
     },

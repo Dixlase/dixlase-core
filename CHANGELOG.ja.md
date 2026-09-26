@@ -34,6 +34,15 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ### 追加
 
+- **削除:** `livewire/livewire` を依存から外し、Livewire 版 UI コンポーネント 2 つ
+  （`x-ui-livewire-modal`、`x-ui-livewire-notification`）を Plugin API の境界から外した。
+  いずれも使われていなかった。管理画面が描画するモーダルは `x-ui-modal`（Alpine）で、
+  `Livewire\Component` を継承したクラスも `@livewire(...)` を呼ぶビューも
+  `@livewireScripts` を出すレイアウトも存在しない。2026-02-06 の試行が翌日に撤回された
+  際の残骸である。Livewire を使いたいプラグインは自身で require すればよく、コアは同梱を
+  やめる。あわせて `config/livewire.php`、`@livewireScriptsWithoutNavigate` ディレクティブ
+  （参照先ビューが存在せず、呼ぶと例外になっていた）、共通バンドルの
+  `livewire-notification.js` も削除した。
 - `dls:install` でコマンドラインからインストールできるようにした。ブラウザのウィザードと
   同じ処理を実行する。設定はオプション（`--site-name`、`--admin-email`、`--db=sqlite` など）
   で渡し、不足分は対話で尋ねる。パスワードはコマンドラインではなく

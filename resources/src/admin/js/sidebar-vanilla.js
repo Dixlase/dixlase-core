@@ -22,7 +22,7 @@
  * Admin Sidebar - Pure JavaScript Implementation
  * 
  * サイドバーのアコーディオン機能を実装
- * Alpine.js非依存版（Livewire v4対応）
+ * Alpine.js 非依存版
  */
 
 // アコーディオンの開閉状態を管理
@@ -321,5 +321,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 100);
 });
 
-// Livewire v4ではSPAナビゲーションが無効なので、livewire:navigatedイベントは不要
 // ページ遷移時は通常のページリロードが発生し、DOMContentLoadedで再初期化される
