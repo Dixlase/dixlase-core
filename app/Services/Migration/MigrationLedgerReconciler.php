@@ -66,7 +66,49 @@ class MigrationLedgerReconciler
         ?string $slug,
         string $migrationDir,
     ): int {
-        if ($slug === null || ! is_dir($migrationDir)) {
+        if ($slug === null) {
+            return 0;
+        }
+
+        return self::rename($db, $ledgerTable, $slugColumn, $slug, $migrationDir);
+    }
+
+    /**
+     * The same realignment for core's own ledger.
+     *
+     * Core has no slug column: every row in `migrations` is core's. The
+     * baseline files are renumbered in place during the beta series, and
+     * `migrations` keys on filename, so a renamed file looks new and its
+     * CREATE runs again over the existing table (SQLSTATE 42S01). Plugins
+     * and themes have been realigned before every migrate since the
+     * ledger reconciler landed; core was the one scope left out, which is
+     * why `dls:core:update` could stop half-way with the new source on
+     * disk and the site in maintenance mode.
+     *
+     * Rows whose suffix matches no current file are left alone — an
+     * orphan is `dls:migration:resync --prune`'s business, not this one's.
+     */
+    public static function reconcileCore(
+        ConnectionInterface $db,
+        string $ledgerTable,
+        string $migrationDir,
+    ): int {
+        return self::rename($db, $ledgerTable, null, null, $migrationDir);
+    }
+
+    /**
+     * Rename the ledger rows of one scope to match the files on disk.
+     *
+     * A null $slugColumn means "every row in the table" — core's case.
+     */
+    private static function rename(
+        ConnectionInterface $db,
+        string $ledgerTable,
+        ?string $slugColumn,
+        ?string $slug,
+        string $migrationDir,
+    ): int {
+        if (! is_dir($migrationDir)) {
             return 0;
         }
 
@@ -77,9 +119,11 @@ class MigrationLedgerReconciler
 
         $updated = 0;
 
-        $rows = $db->table($ledgerTable)
-            ->where($slugColumn, $slug)
-            ->get(['id', 'migration']);
+        $query = $db->table($ledgerTable);
+        if ($slugColumn !== null) {
+            $query->where($slugColumn, $slug);
+        }
+        $rows = $query->get(['id', 'migration']);
 
         foreach ($rows as $row) {
             $suffix = self::suffixOf($row->migration);
@@ -94,10 +138,11 @@ class MigrationLedgerReconciler
 
             // Never create a duplicate: if the target name is already
             // recorded for this slug, drop the stale row instead.
-            $targetExists = $db->table($ledgerTable)
-                ->where($slugColumn, $slug)
-                ->where('migration', $newName)
-                ->exists();
+            $targetQuery = $db->table($ledgerTable)->where('migration', $newName);
+            if ($slugColumn !== null) {
+                $targetQuery->where($slugColumn, $slug);
+            }
+            $targetExists = $targetQuery->exists();
 
             if ($targetExists) {
                 $db->table($ledgerTable)->where('id', $row->id)->delete();
