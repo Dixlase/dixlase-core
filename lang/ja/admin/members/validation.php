@@ -37,6 +37,7 @@ return [
     'account_name_required' => 'アカウント名を入力してください。',
     'account_name_alpha_num' => 'アカウント名は半角英数字のみ使用できます。',
     'account_name_length' => 'アカウント名は3〜20文字で入力してください。',
+    'account_name_unique' => 'このアカウント名は既に使用されています。',
     'email_required' => 'メールアドレスを入力してください。',
     'email_invalid' => '有効なメールアドレスを入力してください。',
     'email_unique' => 'このメールアドレスは既に使用されています。',

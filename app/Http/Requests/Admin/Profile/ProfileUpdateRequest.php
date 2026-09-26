@@ -83,7 +83,8 @@ class ProfileUpdateRequest extends FormRequest
         );
 
         $rules = [
-            'account_name' => 'required|string|alpha_num|min:3|max:20',
+            // Login identifier: must not collide with another live member's.
+            'account_name' => 'required|string|alpha_num|min:3|max:20|unique:members,account_name,'.$member->id.',id,deleted_at,NULL',
             'display_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => 'required|string|email|max:255|unique:members,email,'.$member->id,
