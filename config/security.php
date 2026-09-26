@@ -35,26 +35,10 @@
 
 return [
 
-    // IP addresses allowed to access the admin panel
-    'allowed_admin_ips' => [
-        // '127.0.0.1', // Example: Local IP
-        // '192.168.1.10',
-        '10.5.1.148',
-        '0.0.0.0',
-    ],
-    // IP addresses denied access to the admin panel
-    'blocked_admin_ips' => [
-        // '123.456.789.0', // Example: IP to deny
-    ],
-
-    // IP addresses allowed to access the frontend
-    'allowed_frontend_ips' => [
-        // Example: IP to allow
-    ],
-    // IP addresses denied access to the frontend
-    'blocked_frontend_ips' => [
-        // Example: IP to deny
-    ],
+    // Admin / front IP allow and deny lists are not configured here. They are
+    // security settings stored in the database, edited on the admin security
+    // settings screen; `php artisan security:reset-ip` clears them from the
+    // command line.
 
     // Whether to force SSL
     'force_ssl' => env('FORCE_SSL', false),
