@@ -683,6 +683,40 @@ class AdminFrontPageTest extends TestCase
     // Preview Frame (iframe)
     // =========================================================
 
+    /**
+     * Boot the bundled theme the way ThemeServiceProvider does for the active
+     * theme: its view namespace *and* the providers theme.json declares.
+     *
+     * Registering only the namespace renders the theme's Blade with none of
+     * its runtime. That passed for as long as the theme happened to declare
+     * its helper file in composer.json's autoload.files, because composer
+     * then loaded the functions whether or not the provider ever ran; once
+     * the theme moved to require_once-ing them from its provider, the same
+     * views died with "Call to undefined function
+     * dls_onepage_localized_setting()".
+     */
+    private function bootBundledTheme(): void
+    {
+        $themePath = base_path('themes/DixlaseOnePage');
+
+        View::addNamespace('themes', [$themePath.'/resources/views']);
+
+        $manifest = json_decode((string) file_get_contents($themePath.'/theme.json'), true);
+
+        foreach ((is_array($manifest) ? $manifest['providers'] ?? [] : []) as $provider) {
+            // Assert rather than skip: an unregistrable provider is exactly
+            // the failure this helper exists to catch, and ThemeServiceProvider
+            // passes over it in silence at runtime. If this trips, the
+            // autoloader does not map Themes\<Name>\App\ — run
+            // `php scripts/sync-local-autoload.php && composer dump-autoload`.
+            $this->assertTrue(
+                is_string($provider) && class_exists($provider),
+                "The bundled theme declares {$provider} but it is not autoloadable."
+            );
+            $this->app->register($provider);
+        }
+    }
+
     public function test_preview_frame_requires_authentication(): void
     {
         $response = $this->get(route('admin.front.preview-frame'));
@@ -692,10 +726,7 @@ class AdminFrontPageTest extends TestCase
 
     public function test_preview_frame_returns_themed_page(): void
     {
-        // テーマビューの名前空間を登録
-        View::addNamespace('themes', [
-            base_path('themes/DixlaseOnePage/resources/views'),
-        ]);
+        $this->bootBundledTheme();
 
         FrontPage::create([
             'page_type' => 'main_content',
@@ -717,10 +748,7 @@ class AdminFrontPageTest extends TestCase
 
     public function test_preview_frame_csp_allows_frame_ancestors_self(): void
     {
-        // テーマビューの名前空間を登録
-        View::addNamespace('themes', [
-            base_path('themes/DixlaseOnePage/resources/views'),
-        ]);
+        $this->bootBundledTheme();
 
         FrontPage::create([
             'page_type' => 'main_content',
@@ -746,10 +774,7 @@ class AdminFrontPageTest extends TestCase
 
     public function test_preview_frame_works_without_content(): void
     {
-        // テーマビューの名前空間を登録
-        View::addNamespace('themes', [
-            base_path('themes/DixlaseOnePage/resources/views'),
-        ]);
+        $this->bootBundledTheme();
 
         $response = $this->actingAs($this->admin, 'member')
             ->get(route('admin.front.preview-frame'));
