@@ -704,6 +704,75 @@ file is governed by the AGPL terms below.
                 </x-ui-modal>
             @endif
 
+            {{-- Single-item confirm modal shared by every per-row "更新"
+                 button. The target's display name is interpolated from
+                 the outer scope's `pendingSingleUpdate.name`, populated
+                 by askSingleUpdate() on click. The confirm button cannot
+                 use the modal's built-in form="..." mode because the
+                 target form is selected dynamically, so the footer slot
+                 is overridden and submits `pendingSingleUpdate.formId`
+                 directly via submitModalForm(). The confirm click also
+                 closes this modal and opens updatesInProgressModal so
+                 the single-update flow gets the same in-flight feedback
+                 as the bulk-apply path. --}}
+            <x-ui-modal
+                id="confirmSingleUpdateModal"
+                :title="__('admin/settings/systems/updates.single_confirm.title')"
+                message=""
+                icon_type="info"
+                :cancel_label="__('common.cancel')"
+            >
+                <p class="text-sm text-gray-700 dark:text-gray-300 text-center"
+                   x-text="`{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}`.replace('%name%', pendingSingleUpdate.name || '')"></p>
+                {{-- Same "先にバックアップを取る" toggle as the bulk
+                     modal. The single-item mini-form's hidden
+                     backup_first input is bound to the same outer
+                     backupFirst flag, so this checkbox's state reaches
+                     the controller when submitModalForm() fires from
+                     the confirm button below. --}}
+                <label class="mt-4 flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
+                    <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
+                </label>
+                <x-slot:footer>
+                    {{-- Buttons sit directly inside .modal-actions (which
+                         is flex items-center justify-center) so they
+                         centre to match the bulk-apply confirm modal's
+                         default layout. The mx-2 spacing matches the
+                         default footer's button gap. --}}
+                    <x-form-button
+                        type="button"
+                        variant="secondary"
+                        icon="fas fa-times"
+                        :label="__('common.cancel')"
+                        xDisabled="submitting"
+                        xClick="close()"
+                        class="mx-2"
+                    />
+                    <x-form-button
+                        type="button"
+                        variant="primary"
+                        icon="fas fa-cloud-arrow-down"
+                        :label="__('admin/settings/systems/updates.apply_one')"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
+                        xDisabled="submitting"
+                        xClick="closeModal('confirmSingleUpdateModal'); submitting = true; openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
+                        class="mx-2"
+                    />
+                </x-slot:footer>
+            </x-ui-modal>
+        @else
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+                <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
+                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">{{ __('admin/settings/systems/updates.all_up_to_date') }}</p>
+            </div>
+        @endif
+
+        {{-- Rendered outside the @if($totalCount > 0) block above: right after
+             an update nothing is left to update (totalCount is 0) but the
+             rollback button is shown, and it must be able to open its confirm
+             modal and the in-progress modal. --}}
             {{-- Core rollback confirm modal. Like the update modal, the core
                  rollback button opens this instead of submitting directly so
                  an accidental click cannot revert the core. The confirm
@@ -773,71 +842,6 @@ file is governed by the AGPL terms below.
                     </div>
                 </x-slot:footer>
             </x-ui-modal>
-
-            {{-- Single-item confirm modal shared by every per-row "更新"
-                 button. The target's display name is interpolated from
-                 the outer scope's `pendingSingleUpdate.name`, populated
-                 by askSingleUpdate() on click. The confirm button cannot
-                 use the modal's built-in form="..." mode because the
-                 target form is selected dynamically, so the footer slot
-                 is overridden and submits `pendingSingleUpdate.formId`
-                 directly via submitModalForm(). The confirm click also
-                 closes this modal and opens updatesInProgressModal so
-                 the single-update flow gets the same in-flight feedback
-                 as the bulk-apply path. --}}
-            <x-ui-modal
-                id="confirmSingleUpdateModal"
-                :title="__('admin/settings/systems/updates.single_confirm.title')"
-                message=""
-                icon_type="info"
-                :cancel_label="__('common.cancel')"
-            >
-                <p class="text-sm text-gray-700 dark:text-gray-300 text-center"
-                   x-text="`{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}`.replace('%name%', pendingSingleUpdate.name || '')"></p>
-                {{-- Same "先にバックアップを取る" toggle as the bulk
-                     modal. The single-item mini-form's hidden
-                     backup_first input is bound to the same outer
-                     backupFirst flag, so this checkbox's state reaches
-                     the controller when submitModalForm() fires from
-                     the confirm button below. --}}
-                <label class="mt-4 flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300">
-                    <input type="checkbox" x-model="backupFirst" class="rounded border-gray-300 dark:border-gray-600">
-                    <span>{{ __('admin/settings/systems/updates.backup.checkbox_label') }}</span>
-                </label>
-                <x-slot:footer>
-                    {{-- Buttons sit directly inside .modal-actions (which
-                         is flex items-center justify-center) so they
-                         centre to match the bulk-apply confirm modal's
-                         default layout. The mx-2 spacing matches the
-                         default footer's button gap. --}}
-                    <x-form-button
-                        type="button"
-                        variant="secondary"
-                        icon="fas fa-times"
-                        :label="__('common.cancel')"
-                        xDisabled="submitting"
-                        xClick="close()"
-                        class="mx-2"
-                    />
-                    <x-form-button
-                        type="button"
-                        variant="primary"
-                        icon="fas fa-cloud-arrow-down"
-                        :label="__('admin/settings/systems/updates.apply_one')"
-                        :disabled="$viewOnly"
-                        :title="$tooltipText"
-                        xDisabled="submitting"
-                        xClick="closeModal('confirmSingleUpdateModal'); submitting = true; openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
-                        class="mx-2"
-                    />
-                </x-slot:footer>
-            </x-ui-modal>
-        @else
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
-                <i class="fas fa-check-circle text-3xl text-green-500 mb-2"></i>
-                <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">{{ __('admin/settings/systems/updates.all_up_to_date') }}</p>
-            </div>
-        @endif
     </form>
 </div>
 @endsection

@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
 use App\Models\CoreVersionHistory;
+use App\Services\Core\ArtisanProcess;
 use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdater;
@@ -292,15 +293,26 @@ class CoreRollback extends Command
             }
 
             $this->line('Clearing caches...');
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            // view:clear + view:cache via the shared helper. The rebuild
-            // step avoids the dev-env "click a menu, land back on the
-            // same page" symptom (Vite watches storage/framework/views/
-            // during `npm run dev` and cancels any navigation whose
-            // Blade view compiles on demand mid-flight).
-            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
-            Artisan::call('cache:clear');
+            if ($vendorSwapped) {
+                // This process booted from the vendor/ that was just
+                // replaced; compiling Blade here goes through the providers
+                // it registered, which may belong to packages that are gone.
+                // Run the clears in a new process (see ArtisanProcess).
+                $artisan = app(ArtisanProcess::class);
+                foreach (['config:clear', 'route:clear', 'view:clear', 'view:cache', 'cache:clear'] as $clear) {
+                    $artisan->run($clear);
+                }
+            } else {
+                Artisan::call('config:clear');
+                Artisan::call('route:clear');
+                // view:clear + view:cache via the shared helper. The rebuild
+                // step avoids the dev-env "click a menu, land back on the
+                // same page" symptom (Vite watches storage/framework/views/
+                // during `npm run dev` and cancels any navigation whose
+                // Blade view compiles on demand mid-flight).
+                \App\Services\View\CompiledViewCacheRebuilder::rebuild();
+                Artisan::call('cache:clear');
+            }
 
             // Round 5 Finding D residual: refresh the PHP-FPM SAPI
             // (opcache SHM + realpath cache) before lifting maintenance

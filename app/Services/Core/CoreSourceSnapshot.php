@@ -77,6 +77,22 @@ class CoreSourceSnapshot
     ];
 
     /**
+     * Source directories whose inode must survive a swap: their contents
+     * are exchanged entry by entry instead of renaming the directory.
+     *
+     * The built-in server (`php -S`, which the one-line installer tells
+     * operators to run from public/) resolves every request against its
+     * working directory. Renaming public/ away and deleting it left that
+     * cwd unlinked, and every later request failed with "Failed opening
+     * required '/index.php'" until the server was restarted.
+     *
+     * @var list<string>
+     */
+    public const KEEP_DIRECTORY_INODE = [
+        'public',
+    ];
+
+    /**
      * Top-level files that may be replaced. `bootstrap/cache/` is excluded
      * via the directory list (we copy `bootstrap/` whole, but cache is
      * cleared after restore anyway).
@@ -292,6 +308,13 @@ class CoreSourceSnapshot
             self::moveProtectedChildrenInto($live, $newDir);
         }
 
+        // public/ keeps its inode (see KEEP_DIRECTORY_INODE).
+        if (is_dir($live) && $this->keepsDirectoryInode($live)) {
+            self::swapContents($newDir, $live, $oldDir);
+
+            return;
+        }
+
         // Atomic swap. Both renames are metadata-only kernel operations
         // and complete in microseconds. The window between them (during
         // which `$live` momentarily points at an inode belonging to
@@ -328,6 +351,79 @@ class CoreSourceSnapshot
         if (is_dir($oldDir)) {
             self::deleteRecursive($oldDir);
         }
+    }
+
+    private function keepsDirectoryInode(string $live): bool
+    {
+        foreach (self::KEEP_DIRECTORY_INODE as $relative) {
+            if (rtrim($live, '/') === rtrim($this->basePath, '/').'/'.$relative) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Replace the entries of $live with those of $newDir while $live itself
+     * stays the same directory.
+     *
+     * Each entry moves with a rename, so no file is ever half-written; the
+     * directory is only briefly missing an entry, and the swap runs inside
+     * the maintenance window. On failure every entry is put back and the
+     * pre-swap tree is left as it was.
+     */
+    private static function swapContents(string $newDir, string $live, string $oldDir): void
+    {
+        File::ensureDirectoryExists($oldDir);
+
+        $movedOut = [];
+        foreach (self::directoryEntries($live) as $name) {
+            if (! @rename($live.'/'.$name, $oldDir.'/'.$name)) {
+                self::undoContentSwap($live, $oldDir, $movedOut, []);
+                self::deleteRecursive($newDir);
+                throw new RuntimeException("Swap failed: could not move {$live}/{$name} aside. The pre-swap tree has been restored.");
+            }
+            $movedOut[] = $name;
+        }
+
+        $movedIn = [];
+        foreach (self::directoryEntries($newDir) as $name) {
+            if (! @rename($newDir.'/'.$name, $live.'/'.$name)) {
+                self::undoContentSwap($live, $oldDir, $movedOut, $movedIn);
+                self::deleteRecursive($newDir);
+                throw new RuntimeException("Swap failed: could not move {$newDir}/{$name} into place. The pre-swap tree has been restored.");
+            }
+            $movedIn[] = $name;
+        }
+
+        @rmdir($newDir);
+        self::deleteRecursive($oldDir);
+    }
+
+    /**
+     * @param  list<string>  $movedOut  entries moved from $live to $oldDir
+     * @param  list<string>  $movedIn  entries moved from the new tree into $live
+     */
+    private static function undoContentSwap(string $live, string $oldDir, array $movedOut, array $movedIn): void
+    {
+        foreach ($movedIn as $name) {
+            self::deleteRecursive($live.'/'.$name);
+        }
+        foreach ($movedOut as $name) {
+            @rename($oldDir.'/'.$name, $live.'/'.$name);
+        }
+        @rmdir($oldDir);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function directoryEntries(string $dir): array
+    {
+        $entries = @scandir($dir);
+
+        return $entries === false ? [] : array_values(array_diff($entries, ['.', '..']));
     }
 
     /**

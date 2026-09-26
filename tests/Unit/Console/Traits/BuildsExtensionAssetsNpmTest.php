@@ -132,6 +132,19 @@ SH);
         $this->assertNull(app(ExtensionAssetBuildReport::class)->failureFor($this->extension));
     }
 
+    public function test_core_prebuilt_assets_skip_the_build_in_auto_mode(): void
+    {
+        // dls:core:update runs the trait on base_path(); the release ZIP
+        // ships core's assets prebuilt in public/assets/build.
+        File::put($this->extension.'/package-lock.json', '{}');
+        File::ensureDirectoryExists($this->extension.'/public/assets/build');
+        File::put($this->extension.'/public/assets/build/manifest.json', '{}');
+
+        $this->assertTrue($this->makeHost()->build($this->extension, 'auto'));
+
+        $this->assertFileDoesNotExist($this->root.'/calls.log');
+    }
+
     /**
      * Symfony Process passes a variable to the child only when it is in
      * both getenv() and $_SERVER, so set it in both.
@@ -168,9 +181,9 @@ SH);
                 $this->output = new BufferedOutput();
             }
 
-            public function build(string $path): bool
+            public function build(string $path, string $mode = 'force'): bool
             {
-                return $this->buildExtensionAssets($path, 'force');
+                return $this->buildExtensionAssets($path, $mode);
             }
 
             public function info(string $message): void {}
