@@ -54,6 +54,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   `site_tagline` 設定について主要ロケールの値を供給するクラスで、拡張機能がクラス名で
   参照するため、その参照がプラグイン例外の範囲に入るよう境界に載せる。
 
+### 変更
+
+- インストールウィザードの完了画面で、管理画面のボタンを先頭に置き、プライマリ色にした。
+  各ボタンの下に遷移先の URL を表示する。どちらのボタンも同じ finalize を実行するため、
+  押し間違えるとインストールは完了したままフロントページに飛び、「インストールは終わったのに
+  管理画面に行けない」という不具合と同じ見え方になっていた。
+
 ### 修正
 
 - `dls:theme:migrate` / `dls:theme:migrate:refresh` / `dls:theme:migrate:rollback` / `dls:theme:seed` に
@@ -66,6 +73,25 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   更新中のプロセスの中で動き、そのプロセスが古い `vendor/` から読み込んだ Blade の拡張(livewire/livewire)が、
   もう無いファイルを読みに行っていた。`vendor/` を入れ替えたあとのマイグレーション・シーダー・キャッシュの
   クリアは、新しい `php artisan` のプロセスで実行する。コアのロールバックのキャッシュのクリアも同じ。
+- **PHP-FPM では `composer dump-autoload` が一度も成功していなかった。**コアは composer を
+  `[PHP_BINARY, composer, …]` で起動するが、PHP_BINARY が処理系になるのは実行中の SAPI が
+  CLI のときだけで、FPM では FPM のバイナリを指す。FPM は渡されたスクリプトを無視して自身の
+  usage を stdout に出し、終了コード 64 で終わる。そのため Web リクエストからコアが実行する
+  オートロードの更新は FPM 環境ですべて黙って無効になっていた — 管理画面からプラグインや
+  テーマを入れてもマップは更新されずクラスが解決できず、コア更新後の再同期も何もしていなかった。
+  処理系は決め打ちせず解決するようにし(`App\Support\Process\PhpBinary`)、失敗時は
+  コマンドと stdout も記録する(composer も php-fpm も stdout に出すため、stderr だけでは
+  何も分からなかった)。
+- **リリース ZIP からの新規インストールが、拡張機能のオートロード無しで起動していた。**
+  `composer.local.json` は生成物で gitignore されているため ZIP から除外されていた。
+  composer-merge-plugin はこのファイルを Composer の初期化時に読むが、それはコアの
+  pre-autoload-dump フックが書くより前なので、最初の `composer install` が拡張機能の PSR-4 を
+  一つも含まないオートローダーをダンプし、その後二度とダンプされなかった。同梱テーマの
+  `ServiceProvider` が解決できず、フロントページが
+  `Call to undefined function dls_onepage_localized_setting()` で 500 になっていた。ZIP に
+  `composer.local.json` を同梱し、さらに `scripts/verify-local-autoload.php` を
+  `post-autoload-dump` に追加して、マニフェストが宣言する PSR-4 がマップに無いときだけ
+  もう一度ダンプする。
 - `vendor/` を入れ替えるコアのロールバックが、キャッシュのクリアの段で
   `include(.../ArtisanProcess.php): Failed to open stream` で失敗し、その復旧のあともサイトが
   500 のままになっていた。入れ替え後のサブプロセスを起動するクラスは、ロールバック先のどの

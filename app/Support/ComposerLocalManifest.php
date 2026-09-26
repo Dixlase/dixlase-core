@@ -174,6 +174,76 @@ final class ComposerLocalManifest
     }
 
     /**
+     * PSR-4 prefixes composer.local.json declares that the dumped autoloader
+     * does not resolve.
+     *
+     * Composer's merge-plugin reads composer.local.json when it initialises,
+     * which is before core's pre-autoload-dump hook has had the chance to
+     * write it. On a tree where the file does not exist yet -- a release ZIP,
+     * which ships without it because it is generated and gitignored -- the
+     * very first `composer install` therefore dumps an autoloader with no
+     * extension roots at all, and never dumps again. The bundled theme's
+     * ServiceProvider is then unresolvable and the front page is a 500.
+     *
+     * A non-empty result means the tree needs one more dump.
+     *
+     * @return list<string>
+     */
+    public static function missingPsr4Roots(string $baseDir): array
+    {
+        $declared = self::declaredPsr4Roots($baseDir);
+
+        if ($declared === []) {
+            return [];
+        }
+
+        $dumpedPath = $baseDir.'/vendor/composer/autoload_psr4.php';
+
+        if (! is_file($dumpedPath)) {
+            return [];
+        }
+
+        $dumped = @include $dumpedPath;
+
+        if (! is_array($dumped)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $declared,
+            static fn (string $prefix): bool => ! array_key_exists($prefix, $dumped)
+        ));
+    }
+
+    /**
+     * PSR-4 prefixes composer.local.json declares, or none when it is absent.
+     *
+     * @return list<string>
+     */
+    public static function declaredPsr4Roots(string $baseDir): array
+    {
+        $path = $baseDir.'/composer.local.json';
+
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $document = json_decode((string) file_get_contents($path), true);
+
+        if (! is_array($document)) {
+            return [];
+        }
+
+        $psr4 = $document['autoload']['psr-4'] ?? [];
+
+        if (! is_array($psr4)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_keys($psr4), 'is_string'));
+    }
+
+    /**
      * Installed extension directory names directly under `$parentDir`, sorted.
      *
      * Registering a move-aside copy here is not a cosmetic problem: its

@@ -65,6 +65,11 @@ repository to be notified of changes.
 
 ### Changed
 
+- The install wizard's completion screen puts the admin-panel button first and gives it
+  the primary colour, with the destination URL under each button. Both buttons submit the
+  same finalize form, so a mis-click finished the install and landed the operator on the
+  front page — which reads exactly like the bug where an install completed but the admin
+  panel was unreachable.
 - `create_members_passkeys_table` is renumbered from `0001_01_01_000048` to `000023`, so
   it sorts with the other `members_*` tables, and the migrations it now precedes shift
   by one (`000023`–`000047` → `000024`–`000048`). Its foreign key to `members` now
@@ -106,6 +111,25 @@ repository to be notified of changes.
   came from the old `vendor/` (livewire/livewire), and failed on a file that was gone.
   After a `vendor/` swap the migrate, seed and cache steps now run in a new
   `php artisan` process; the core rollback clears its caches the same way.
+- **`composer dump-autoload` never ran under PHP-FPM.** Core starts composer as
+  `[PHP_BINARY, composer, …]`, and PHP_BINARY is only an interpreter when the running
+  SAPI is CLI — under FPM it is the FPM binary, which ignores the script it is handed,
+  prints its own usage on stdout and exits 64. Every autoload refresh core fires from a
+  web request was therefore a silent no-op on FPM: installing a plugin or theme from the
+  admin panel left the map untouched and its classes unresolvable, and a core update's
+  re-sync did nothing. The interpreter is now resolved (`App\Support\Process\PhpBinary`)
+  rather than assumed, and a failed run logs the command and stdout as well — composer
+  and php-fpm both report there, so logging stderr alone said nothing.
+- **A fresh install from the release ZIP booted without its extension autoload.**
+  `composer.local.json` is generated and gitignored, so it was excluded from the ZIP;
+  composer-merge-plugin reads it when Composer initialises, which is before core's
+  pre-autoload-dump hook writes it, so the first `composer install` dumped an autoloader
+  with no extension PSR-4 roots and nothing dumped again. The bundled theme's
+  `ServiceProvider` was unresolvable and the front page answered 500 with
+  `Call to undefined function dls_onepage_localized_setting()`. The ZIP now ships
+  `composer.local.json`, and `scripts/verify-local-autoload.php` (wired into
+  `post-autoload-dump`) dumps once more whenever the map is missing a root the manifest
+  declares.
 - A core rollback that swapped `vendor/` died at the cache-clear step with
   `include(.../ArtisanProcess.php): Failed to open stream`, and its own recovery then left
   the site answering 500. The class that starts the post-swap subprocess is newer than any
