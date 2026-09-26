@@ -303,16 +303,6 @@ class AppServiceProvider extends ServiceProvider
         // This prevents Vite from generating its own nonce
         config(['vite.csp_nonce' => false]);
 
-        // Disable Livewire's navigate feature (remove data-navigate-once attribute)
-        // This ensures Livewire components initialize properly on initial page load
-        config(['livewire.navigate' => false]);
-
-        // Custom Blade directive: @livewireScriptsWithoutNavigate
-        // Remove data-navigate-once attribute from @livewireScripts output
-        \Blade::directive('livewireScriptsWithoutNavigate', function () {
-            return "<?php echo view('components.livewire-scripts-without-navigate')->render(); ?>";
-        });
-
         // Custom Blade directive: @pageTitle
         // Renders the whole <title> element from the `title` section, so a
         // theme never concatenates the site name by hand. An explicit

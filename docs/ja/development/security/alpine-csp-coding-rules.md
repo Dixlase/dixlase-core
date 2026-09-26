@@ -467,14 +467,10 @@ Alpine.data('notificationDisplay', () => ({
 
 **方法A: サーバーサイドレンダリング（推奨）**
 
-Bladeの`{!! !!}`やLivewireコンポーネントでHTMLを出力する。
+Blade で HTML を出力する。
 
 ```html
-<!-- Blade -->
 {!! $htmlContent !!}
-
-<!-- Livewire -->
-<livewire:markdown-preview :content="$content" />
 ```
 
 **方法B: メソッド内でDOM操作**

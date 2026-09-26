@@ -9,7 +9,7 @@ Dixlaseは、Laravelで構築されたオープンソースのコンテンツ管
 - **テーマシステム** — インストール可能なテーマでサイトの外観をカスタマイズ
 - **日本語・英語に対応** — 管理画面とメッセージを日本語・英語で表示
 - **セキュリティファースト** — CSPヘッダー、二段階認証（TOTPおよびWebAuthn）、監査ログ、CAPTCHA、ログイン通知など
-- **モダンな技術スタック** — Laravel 12、Livewire 4、Alpine.js 3、Tailwind CSS 3
+- **モダンな技術スタック** — Laravel 13、Alpine.js 3、Tailwind CSS 4
 
 ## アーキテクチャ
 
