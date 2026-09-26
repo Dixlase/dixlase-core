@@ -38,7 +38,10 @@
 namespace App\Services\Theme;
 
 use App\Contracts\Theme\ThemePermissionServiceInterface;
+use App\Models\SignatureWaiver;
 use App\Models\ThemeAudit;
+use App\Services\Plugin\CoreSignatureVerifier;
+use App\Services\Signature\SignatureWaiverService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -286,69 +289,20 @@ class ThemePermissionService implements ThemePermissionServiceInterface
     }
 
     /**
-     * Get theme signature information
+     * Get theme signature information.
+     *
+     * Themes are verified by the same CoreSignatureVerifier as plugins (same
+     * signer, theme.json as the manifest), with the operator waiver for the
+     * theme scope overlaid. The verifier status is left untouched.
      */
     public function getSignatureInfo(string $themeSlug): array
     {
-        $themeName = $this->slugToName($themeSlug);
-        $themePath = base_path("themes/{$themeName}");
-        $themeJsonPath = $themePath.'/theme.json';
-        $signaturePath = $themePath.'/signature.sig';
+        $result = app(CoreSignatureVerifier::class)->verifyTheme($themeSlug);
 
-        $result = [
-            'status' => 'unsigned', // always unsigned until theme signatures are verified
-            'type' => null,         // official, verified, partner
-            'signed_by' => null,
-            'signed_at' => null,
-            'key_id' => null,
-        ];
+        $waived = app(SignatureWaiverService::class)
+            ->isWaived(SignatureWaiver::SCOPE_THEME, $themeSlug);
 
-        // Read signing information from theme.json
-        if (File::exists($themeJsonPath)) {
-            $content = File::get($themeJsonPath);
-            $data = json_decode($content, true);
-
-            if (json_last_error() === JSON_ERROR_NONE && isset($data['signing'])) {
-                $signing = $data['signing'];
-                $result['key_id'] = $signing['key_id'] ?? null;
-
-                // Theme signatures are not verified yet: there is no theme
-                // signing pipeline and no verifier. Until there is, a theme is
-                // reported as unsigned whatever it ships. Treating the mere
-                // presence of signature.sig as "pending verification" (and
-                // deriving an "official" type from a key_id the theme wrote
-                // itself) let any theme pass the Strict preset's signature
-                // requirement and show an official badge.
-                if (File::exists($signaturePath)) {
-                    $result['unverified_signature_present'] = true;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Determine signature type
-     */
-    protected function determineSignatureType(?string $keyId): ?string
-    {
-        if ($keyId === null) {
-            return null;
-        }
-
-        // Determine by key ID prefix
-        if (str_starts_with($keyId, 'dixlase-official')) {
-            return 'official';
-        }
-        if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
-            return 'verified';
-        }
-        if (str_starts_with($keyId, 'partner-')) {
-            return 'partner';
-        }
-
-        return null;
+        return $result->withWaived($waived)->toArray();
     }
 
     /**
