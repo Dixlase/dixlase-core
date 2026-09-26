@@ -41,6 +41,7 @@ use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\ThemeMigrator;
+use App\Support\ComposerLocalManifest;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Filesystem\Filesystem;
@@ -252,6 +253,9 @@ class ThemeInstall extends Command
             'installed_at' => now(),
         ]);
         $sidecar->delete($themeDir);
+
+        // Installing is the point where the theme's autoload.files may run.
+        ComposerLocalManifest::clearPendingInstall($themeDir);
 
         // Update composer.local.json
         ComposerLocalHelper::syncAutoload();

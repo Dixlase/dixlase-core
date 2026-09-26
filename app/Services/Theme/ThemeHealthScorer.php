@@ -161,19 +161,22 @@ class ThemeHealthScorer
         $issues = [];
         $signatureInfo = $this->permissionService->getSignatureInfo($themeSlug);
 
-        if ($signatureInfo['status'] === 'unsigned') {
-            $issues[] = new HealthIssue(
-                type: 'signature_unsigned',
-                severity: 'warning',
-                description: __('services/theme/theme_health_scorer.no_signature_recommend_signing'),
-                deduction: $deductionRules['signature_unsigned'] ?? -10,
-            );
-        } elseif ($signatureInfo['status'] === 'invalid') {
+        // Only a verified signature satisfies the check. Any other status --
+        // including one a future verifier has not produced yet -- counts as
+        // unsigned, so the Strict preset's signature requirement fails closed.
+        if ($signatureInfo['status'] === 'invalid') {
             $issues[] = new HealthIssue(
                 type: 'signature_invalid',
                 severity: 'critical',
                 description: __('services/theme/theme_health_scorer.invalid_signature_tampering'),
                 deduction: $deductionRules['signature_invalid'] ?? -50,
+            );
+        } elseif ($signatureInfo['status'] !== 'valid') {
+            $issues[] = new HealthIssue(
+                type: 'signature_unsigned',
+                severity: 'warning',
+                description: __('services/theme/theme_health_scorer.no_signature_recommend_signing'),
+                deduction: $deductionRules['signature_unsigned'] ?? -10,
             );
         }
 

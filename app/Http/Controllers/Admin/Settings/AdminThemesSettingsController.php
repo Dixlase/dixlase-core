@@ -56,6 +56,7 @@ use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
+use App\Support\ComposerLocalManifest;
 use App\Support\ExtensionDirectories;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -1224,7 +1225,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
      *
      * @return array{success: bool, directory?: string, error?: string}
      */
-    protected function extractAndPlaceTheme(string $zipPath): array
+    protected function extractAndPlaceTheme(string $zipPath, bool $pendingInstall = true): array
     {
         $zip = new \ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -1308,6 +1309,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 File::deleteDirectory($destinationPath);
 
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.theme_json_not_found')];
+            }
+
+            // A fresh upload/download is not installed yet: keep its
+            // autoload.files out of composer.local.json until dls:theme:install.
+            if ($pendingInstall) {
+                ComposerLocalManifest::markPendingInstall($destinationPath);
             }
 
             // Update Git exclusion rules and composer.local.json
@@ -1420,7 +1427,8 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
 
             // Extract and place ZIP
-            $result = $this->extractAndPlaceTheme($zipPath);
+            // An update replaces an installed theme, so it is not pending install.
+            $result = $this->extractAndPlaceTheme($zipPath, pendingInstall: false);
 
             if (! $result['success']) {
                 $this->restoreFromBackup($backupPath, $themePath);

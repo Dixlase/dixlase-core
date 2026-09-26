@@ -62,6 +62,47 @@ namespace App\Support;
 final class ComposerLocalManifest
 {
     /**
+     * Marker left in an extension directory that has been uploaded or
+     * downloaded but not installed yet.
+     *
+     * Composer requires every hoisted `autoload.files` entry unconditionally on
+     * every request, so hoisting them for an extension that has only been
+     * extracted would run its code before the pre-install scan and before the
+     * operator confirmed the install. While the marker is present the
+     * extension's `autoload.files` are withheld; the install command clears it.
+     * PSR-4 mappings are still emitted -- they load nothing until a class is
+     * referenced.
+     */
+    public const PENDING_INSTALL_MARKER = '.dixlase-pending-install';
+
+    /**
+     * Flag a freshly extracted extension as not installed yet.
+     */
+    public static function markPendingInstall(string $extensionDir): void
+    {
+        @file_put_contents(
+            rtrim($extensionDir, '/').'/'.self::PENDING_INSTALL_MARKER,
+            'Extracted '.date('c').'; withheld from autoload.files until installed.'.PHP_EOL
+        );
+    }
+
+    /**
+     * Clear the pending-install flag once the extension is being installed.
+     */
+    public static function clearPendingInstall(string $extensionDir): void
+    {
+        $marker = rtrim($extensionDir, '/').'/'.self::PENDING_INSTALL_MARKER;
+        if (is_file($marker)) {
+            @unlink($marker);
+        }
+    }
+
+    public static function isPendingInstall(string $extensionDir): bool
+    {
+        return is_file(rtrim($extensionDir, '/').'/'.self::PENDING_INSTALL_MARKER);
+    }
+
+    /**
      * The whole `composer.local.json` document for the tree at `$baseDir`.
      *
      * @return array<string, mixed>
@@ -191,6 +232,11 @@ final class ComposerLocalManifest
      */
     private static function autoloadFiles(string $extensionDir, string $relPrefix): array
     {
+        // Not installed yet: its files would run on the next request.
+        if (self::isPendingInstall($extensionDir)) {
+            return [];
+        }
+
         $composerJson = $extensionDir.'/composer.json';
         if (! is_file($composerJson) || ! is_readable($composerJson)) {
             return [];
@@ -211,7 +257,16 @@ final class ComposerLocalManifest
             if (! is_string($entry) || $entry === '') {
                 continue;
             }
-            $result[] = $relPrefix.ltrim($entry, '/');
+            // An entry must stay inside the extension's own directory. A path
+            // with `..`, a backslash or a NUL could otherwise point Composer at
+            // any PHP file under the application root.
+            $relative = ltrim($entry, '/');
+            if (str_contains($relative, "\0") || str_contains($relative, '\\')
+                || in_array('..', explode('/', $relative), true)) {
+                continue;
+            }
+
+            $result[] = $relPrefix.$relative;
         }
 
         return $result;

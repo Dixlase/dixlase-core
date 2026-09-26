@@ -177,10 +177,13 @@ class ComposerLocalManifestTest extends TestCase
     }
 
     /**
-     * Two plugins listing the same shared bootstrap file must not make
-     * Composer require it twice.
+     * Two plugins used to be able to list the same shared bootstrap file by
+     * reaching outside their own directory ("../shared/boot.php"); the list is
+     * de-duplicated for that case. Such paths are now refused outright -- an
+     * entry may only name a file inside its own extension -- so nothing outside
+     * the two plugins is hoisted. No shipped extension relied on this.
      */
-    public function test_a_shared_autoload_file_is_listed_once(): void
+    public function test_a_shared_file_outside_the_extensions_is_not_hoisted(): void
     {
         foreach (['DixlaseA', 'DixlaseB'] as $name) {
             $dir = $this->root.'/plugins/'.$name;
@@ -189,10 +192,7 @@ class ComposerLocalManifestTest extends TestCase
             file_put_contents($dir.'/composer.json', '{"autoload":{"files":["../shared/boot.php"]}}');
         }
 
-        $files = ComposerLocalManifest::build($this->root)['autoload']['files'];
-
-        $this->assertCount(2, $files);
-        $this->assertSame(array_values(array_unique($files)), $files);
+        $this->assertArrayNotHasKey('files', ComposerLocalManifest::build($this->root)['autoload']);
     }
 
     /**
@@ -208,5 +208,51 @@ class ComposerLocalManifestTest extends TestCase
         $this->assertStringEndsWith("\n", $encoded);
         $this->assertStringContainsString('"plugins/Foo/app"', $encoded);
         $this->assertStringNotContainsString('\\/', $encoded);
+    }
+
+    /**
+     * An uploaded or downloaded extension is extracted into plugins/ before
+     * the pre-install scan runs. Composer requires every hoisted
+     * autoload.files entry on every request, so hoisting it at that point ran
+     * the ZIP's code before anyone had scanned or confirmed it.
+     */
+    public function test_a_pending_install_withholds_autoload_files_but_keeps_psr4(): void
+    {
+        $this->makeExtension('plugins', 'Uploaded', 'plugin.json');
+        ComposerLocalManifest::markPendingInstall($this->root.'/plugins/Uploaded');
+
+        $autoload = ComposerLocalManifest::build($this->root)['autoload'];
+
+        $this->assertSame('plugins/Uploaded/app', $autoload['psr-4']['Plugins\\Uploaded\\App\\']);
+        $this->assertArrayNotHasKey('files', $autoload);
+    }
+
+    public function test_clearing_the_pending_install_restores_autoload_files(): void
+    {
+        $this->makeExtension('plugins', 'Uploaded', 'plugin.json');
+        ComposerLocalManifest::markPendingInstall($this->root.'/plugins/Uploaded');
+        ComposerLocalManifest::clearPendingInstall($this->root.'/plugins/Uploaded');
+
+        $autoload = ComposerLocalManifest::build($this->root)['autoload'];
+
+        $this->assertSame(['plugins/Uploaded/app/Helpers/Helpers.php'], $autoload['files']);
+    }
+
+    public function test_autoload_files_cannot_point_outside_the_extension(): void
+    {
+        $this->makeExtension('plugins', 'Escaping', 'plugin.json');
+        file_put_contents(
+            $this->root.'/plugins/Escaping/composer.json',
+            json_encode(['autoload' => ['files' => [
+                '../../bootstrap/evil.php',
+                'app/../../Other/app/x.php',
+                'app\\..\\..\\x.php',
+                'app/Helpers/Helpers.php',
+            ]]])
+        );
+
+        $autoload = ComposerLocalManifest::build($this->root)['autoload'];
+
+        $this->assertSame(['plugins/Escaping/app/Helpers/Helpers.php'], $autoload['files']);
     }
 }
