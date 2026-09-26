@@ -16,12 +16,6 @@ To comply with Dixlase's strict CSP mode, three variants of save button and moda
 - **Use case**: Pages that require strict CSP compliance
 - **CSP**: Strict mode compliant
 
-### 3. Livewire Version
-- **Component**: `<x-admin.livewire-save-button>`
-- **Modal**: `<x-ui-livewire-modal>`
-- **Use case**: Inside Livewire components
-- **CSP**: Strict mode compliant
-
 ## Usage
 
 ### Alpine.js Version (Legacy)
@@ -78,61 +72,6 @@ To comply with Dixlase's strict CSP mode, three variants of save button and moda
 @endsection
 ```
 
-### Livewire Version
-
-```php
-// app/Livewire/Admin/Settings/SecuritySettings.php
-namespace App\Livewire\Admin\Settings;
-
-use Livewire\Component;
-
-class SecuritySettings extends Component
-{
-    public $showSaveConfirmation = false;
-
-    // Setting properties
-    public $setting1;
-    public $setting2;
-
-    public function save()
-    {
-        $this->validate();
-
-        // Save logic
-
-        $this->showSaveConfirmation = false;
-        session()->flash('success', 'Settings have been updated.');
-    }
-
-    public function render()
-    {
-        return view('livewire.admin.settings.security-settings');
-    }
-}
-```
-
-```blade
-{{-- resources/views/livewire/admin/settings/security-settings.blade.php --}}
-<div>
-    <form wire:submit.prevent="save">
-        <!-- Form fields -->
-        <input type="text" wire:model="setting1">
-        <input type="text" wire:model="setting2">
-    </form>
-
-    <!-- Save button -->
-    <x-admin.livewire-save-button
-        wireClick="save"
-        showConfirmation="showSaveConfirmation"
-        :label="__('common.save')"
-        :title="__('common.save_confirmation_title')"
-        :message="__('common.save_confirmation_message')"
-        :confirmLabel="__('common.save')"
-        :cancelLabel="__('common.cancel')"
-    />
-</div>
-```
-
 ## Parameter Reference
 
 ### Common Parameters
@@ -157,13 +96,6 @@ class SecuritySettings extends Component
 | `modalId` | string | `'confirmationModal'` | Modal ID (Vanilla version) |
 | `id_confirmation` | string | `'confirmationModal'` | Modal ID (Alpine version) |
 
-### Livewire Version Parameters
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `wireClick` | string | `'save'` | Livewire method to execute on confirmation |
-| `showConfirmation` | string | `'showSaveConfirmation'` | Property name for modal visibility state |
-
 ## Layout Placement
 
 All versions can be placed using `@section('save')` in the same way.
@@ -176,8 +108,6 @@ All versions can be placed using `@section('save')` in the same way.
     <!-- Vanilla JS version -->
     <x-admin.save-button-vanilla ... />
 
-    <!-- Livewire version -->
-    <x-admin.livewire-save-button ... />
 @endsection
 ```
 
@@ -228,24 +158,6 @@ All components support both snake_case (`confirm_label`) and camelCase (`confirm
   />
 ```
 
-### Migrating from Vanilla JS to Livewire Version
-
-1. Create a Livewire component
-2. Change the component name
-3. Adjust the parameters
-
-```diff
-- <x-admin.save-button-vanilla
-+ <x-admin.livewire-save-button
--     modalId="confirmationModal"
-+     wireClick="save"
-+     showConfirmation="showSaveConfirmation"
-      :confirmLabel="__('common.save')"
-      :cancelLabel="__('common.cancel')"
--     form="settings-form"
-  />
-```
-
 ## Troubleshooting
 
 ### Modal Does Not Open (Vanilla JS Version)
@@ -270,26 +182,9 @@ Ensure the `form` parameter is set to the correct form ID.
 />
 ```
 
-### Modal Does Not Close (Livewire Version)
-
-Verify that the `showSaveConfirmation` property is defined in the Livewire component.
-
-```php
-class MyComponent extends Component
-{
-    public $showSaveConfirmation = false;  // Required
-
-    public function save()
-    {
-        // Save logic
-        $this->showSaveConfirmation = false;  // Close the modal
-    }
-}
-```
-
 ## Summary
 
-- **New development**: Use the Vanilla JS or Livewire version
+- **New development**: Use the Vanilla JS version
 - **Existing pages**: Can continue using the Alpine.js version
-- **Strict CSP mode**: Vanilla JS or Livewire version is required
+- **Strict CSP mode**: the Vanilla JS version is required
 - **Usage**: Simply place any version inside `@section('save')`

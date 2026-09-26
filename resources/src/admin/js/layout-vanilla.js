@@ -22,7 +22,7 @@
  * Admin Layout - Pure JavaScript Implementation
  * 
  * 管理画面レイアウトの状態管理（サイドバー開閉、ユーザーメニュー等）
- * Alpine.js非依存版（Livewire v4対応）
+ * Alpine.js 非依存版
  */
 
 // サイドバーの状態管理

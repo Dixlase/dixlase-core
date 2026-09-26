@@ -35,6 +35,7 @@
 
 namespace Tests\Feature\Security;
 
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Tests\TestCase;
@@ -48,6 +49,12 @@ class PluginMiddlewareGroupsTest extends TestCase
 {
     public function test_plugin_groups_include_csrf_and_cookie_encryption(): void
     {
+        // The groups declared in bootstrap/app.php reach the router only once
+        // the HTTP kernel is resolved, and the test application boots the
+        // console kernel. Resolve it here instead of relying on some other
+        // package doing it as a side effect of booting.
+        app()->make(HttpKernel::class);
+
         $groups = app('router')->getMiddlewareGroups();
 
         foreach (['plugin', 'plugin.web', 'plugin.admin'] as $group) {

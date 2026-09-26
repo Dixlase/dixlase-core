@@ -42,6 +42,9 @@ return [
         'csp-report',
         'email',
         'install',
+        // Kept although core dropped the livewire/livewire dependency: a
+        // plugin may still require it, and its package registers /livewire
+        // routes on boot.
         'livewire',
         'locale',
         'login',
