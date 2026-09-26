@@ -199,10 +199,12 @@ class PluginInstall extends Command
             $composerName,
         );
 
-        // Register in database
+        // Register in database. The query builder's updateOrInsert() writes
+        // no timestamps, which left created_at NULL on every installed
+        // plugin; the callable form sets created_at only when inserting.
         DB::table('plugins')->updateOrInsert(
             ['name' => $pluginName],
-            [
+            fn (bool $exists) => ($exists ? [] : ['created_at' => now()]) + [
                 'package_name' => $packageName,
                 'namespace' => "Plugins\\$pluginName",
                 'directory' => $pluginName,
@@ -218,6 +220,7 @@ class PluginInstall extends Command
                 'installed_from_url' => $linkage['installed_from_url'] ?? null,
                 'installation_method' => $linkage['installation_method'] ?? null,
                 'installed_at' => now(),
+                'updated_at' => now(),
             ]
         );
 

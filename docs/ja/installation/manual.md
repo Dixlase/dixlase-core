@@ -217,7 +217,7 @@ https://your-domain.com
 * * * * * cd /var/www/dixlase && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-- キューワーカーを設定（オプションだが推奨）：
+- キュー（任意）。既定の `QUEUE_CONNECTION=sync` ではワーカーは不要で、Webhook の送信やキューに入れたメールは、それを起こしたリクエストの中で実行されます。バックグラウンドで送りたい場合は `.env` で `QUEUE_CONNECTION=database` にします。上のスケジューラが毎分キューを処理します。すぐに送りたい場合は、専用のワーカーも動かします：
 
 ```bash
 # systemd を使用
@@ -233,7 +233,7 @@ After=network.target
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/dixlase
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+ExecStart=/usr/bin/php artisan queue:work --queue=webhooks,default --sleep=3 --tries=1 --max-time=3600
 Restart=always
 
 [Install]

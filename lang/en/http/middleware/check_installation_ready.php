@@ -38,6 +38,7 @@ return [
     'app_already_installed' => 'This application is already installed.',
     'check_install_admin_user_check' => 'CheckInstallationReady: Checking admin user existence',
     'check_install_migration_check_error' => 'CheckInstallationReady: Migration check error - ',
+    'check_install_database_not_ready' => "CheckInstallationReady: Database not reachable yet (expected until the wizard's database step; logged once per session) - ",
     'check_install_migration_completed' => 'CheckInstallationReady: ✅ Migration completed (all checks passed)',
     'check_install_no_admin_user' => 'CheckInstallationReady: Admin user does not exist (initial data not seeded)',
     'check_install_no_db_connection' => 'CheckInstallationReady: No database connection',

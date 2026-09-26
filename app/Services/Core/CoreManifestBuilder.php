@@ -89,7 +89,7 @@ class CoreManifestBuilder implements CoreManifestBuilderInterface
     public function build(?string $basePath = null): array
     {
         return [
-            'version' => (string) config('app.version', '0.0.0'),
+            'version' => \App\Support\CoreVersion::current($basePath),
             'files' => $this->fileHashes($basePath),
         ];
     }

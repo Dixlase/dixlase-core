@@ -137,7 +137,7 @@ final readonly class BaselineDTO implements JsonSerializable
 
         return new self(
             generatedAt: $meta['generated_at'] ?? now()->toIso8601String(),
-            appVersion: $meta['app_version'] ?? config('app.version', '1.0.0'),
+            appVersion: $meta['app_version'] ?? \App\Support\CoreVersion::current(),
             hashAlgo: $meta['hash_algo'] ?? 'sha256',
             scope: $meta['scope'] ?? ScanTargetDTO::SCOPE_CORE,
             identifier: $meta['identifier'] ?? null,

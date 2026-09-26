@@ -121,7 +121,7 @@ class CoreRelease extends Model
      */
     public function hasUpdateAvailable(): bool
     {
-        $current = (string) config('app.version', '0.0.0');
+        $current = \App\Support\CoreVersion::current();
 
         return $this->available_version !== null
             && version_compare($this->available_version, $current, '>');

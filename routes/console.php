@@ -54,6 +54,23 @@ Schedule::call(function () {
     ->everyMinute()
     ->withoutOverlapping();
 
+// Queue drain for sites that set QUEUE_CONNECTION=database without running a
+// dedicated worker (shared hosting has cron but no long-running process).
+// Each minute, work through whatever is queued -- webhook deliveries on the
+// `webhooks` queue, queued mail on `default` -- and exit. A site with its own
+// `queue:work` process simply finds the queue empty here. Under the default
+// `sync` connection nothing is ever queued, so this does not run.
+Schedule::command('queue:work', [
+    '--queue' => 'webhooks,default',
+    '--stop-when-empty' => true,
+    '--max-time' => 50,
+    '--tries' => 1,
+])
+    ->name('dixlase-queue-drain')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->when(fn () => config('queue.default') === 'database');
+
 // File integrity scan (runs daily at 3:00 AM)
 Schedule::command('dls:integrity:scan --scheduled')
     ->dailyAt('03:00')

@@ -129,7 +129,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $baseline = [
             'meta' => [
                 'generated_at' => now()->toIso8601String(),
-                'app_version' => config('app.version', '1.0.0'),
+                'app_version' => \App\Support\CoreVersion::current(),
                 'hash_algo' => $this->hashAlgo,
                 'paths' => $this->corePaths,
                 'ignore_patterns' => $this->ignorePatterns,
@@ -699,7 +699,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
 
         return new BaselineDTO(
             generatedAt: now()->toIso8601String(),
-            appVersion: config('app.version', '1.0.0'),
+            appVersion: \App\Support\CoreVersion::current(),
             hashAlgo: $target->hashAlgo,
             scope: $target->scope,
             identifier: $target->identifier,

@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <div class="flex flex-col items-center gap-y-1 lg:flex-row lg:flex-wrap lg:justify-center lg:gap-x-2">
         <span class="whitespace-nowrap">
             <span class="font-semibold">{{ config('app.software_name', 'Dixlase') }}</span>
-            v{{ $coreVersion ?? config('app.version', '1.0.0') }}
+            v{{ $coreVersion ?? \App\Support\CoreVersion::current() }}
         </span>
         <span aria-hidden="true" class="hidden lg:inline">&middot;</span>
         <span class="whitespace-nowrap">&copy; {{ date('Y') }} exc-D inc. and Dixlase contributors</span>

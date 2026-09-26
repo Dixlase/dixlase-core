@@ -129,7 +129,9 @@ class ThemeSwitch extends Command
         DB::table('theme_settings')
             ->updateOrInsert(
                 ['key' => 'enabled_theme_id'],
-                ['value' => $theme->id, 'updated_at' => now()]
+                // created_at only on insert: the query builder writes no timestamps itself.
+                fn (bool $exists) => ($exists ? [] : ['created_at' => now()])
+                    + ['value' => $theme->id, 'updated_at' => now()]
             );
 
         $this->info(__('admin/command/theme-switch.switched', ['themeName' => $theme->name]));
