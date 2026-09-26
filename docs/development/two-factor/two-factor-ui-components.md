@@ -678,7 +678,7 @@ Dixlase's 2FA UI components have the following characteristics:
 - **Customizable**: Flexibly adjustable via properties
 - **Accessible**: Mobile-friendly with keyboard navigation support
 - **Dark mode support**: Automatically adapts to dark mode
-- **Multilingual support**: Easily localized via translation keys
+- **Japanese and English**: Messages come from translation keys
 
 By using these components, you can easily implement beautiful, consistent 2FA authentication screens.
 

@@ -27,9 +27,8 @@ A renamed identifier silently breaks every consumer that hard-coded the old name
 | [Event name](#event-names) | `dixlase.<category>.<action>` (past tense) | `dixlase.backup.completed` |
 | [Webhook event type](#webhook-event-types) | same as event name | `dixlase.backup.completed` |
 | [Audit log action](#audit-log-actions) | flat `<resource>_<action>` snake_case | `password_changed`, `login_failed` |
-| [Plugin capability](#plugin-capabilities) | kebab-case feature label | `seo-meta`, `multilingual-content` |
+| [Plugin capability](#plugin-capabilities) | kebab-case feature label | `seo-meta`, `linkable` |
 | [Plugin permission category](#plugin-permission-categories) | single lower-case word | `database`, `storage`, `members` |
-| [Multilingual content type key](#multilingual-content-type-keys) | `<plugin-slug>:<resource>` | `dixlase-pages:page` |
 | [Cache key](#cache-keys) | see [cache-key-convention.md](cache-key-convention.md) | `dixlase:core:routes:list` |
 | [Config key (env)](#config-keys) | `SCREAMING_SNAKE_CASE` | `TRUSTED_PROXIES`, `AUDIT_LOG_RETENTION_DAYS` |
 | [Config key (PHP path)](#config-keys) | `lower.dot.path` | `security.audit_log.retention_days` |
@@ -163,7 +162,7 @@ AuditLog::ACTION_PASSKEY_REGISTERED // 'passkey_registered'
 
 ## Plugin capabilities
 
-Feature flags declared in `plugin.json` `capabilities` array, used by core to discover plugin-provided features (SEO meta, multilingual content, etc.).
+Feature flags declared in `plugin.json` `capabilities` array, used by core to discover plugin-provided features (SEO meta, links, etc.).
 
 **Format**: kebab-case feature label (no namespace).
 
@@ -178,8 +177,7 @@ Feature flags declared in `plugin.json` `capabilities` array, used by core to di
 {
   "capabilities": [
     "seo-meta",
-    "linkable",
-    "multilingual-content"
+    "linkable"
   ]
 }
 ```
@@ -206,25 +204,6 @@ Top-level keys of the `permissions` object in `plugin.json`. They classify what 
     "settings": { "read_core": true, "write_own": false }
   }
 }
-```
-
----
-
-## Multilingual content type keys
-
-Identifiers used by `DixlaseMultilingual` to address translatable content types provided by plugins.
-
-**Format**: `<plugin-slug>:<resource>`
-
-- The plugin slug is kebab-case (matching the plugin directory name lower-cased).
-- The resource is lower_snake_case (singular).
-- The colon separates "owner" from "type within owner".
-
-**Example**
-
-```
-dixlase-pages:page
-dixlase-blog:post
 ```
 
 ---
