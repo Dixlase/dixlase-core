@@ -103,6 +103,18 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Re-generate autoload mappings after composer installed the theme
+        # composer/installers creates themes/<Name>/ during the install above,
+        # so the pass before it could not see the theme, and merge-plugin had
+        # already read the old composer.local.json when the autoloader was
+        # dumped. Without this second pass the theme's ServiceProvider class is
+        # not autoloadable, ThemeServiceProvider's class_exists() check skips
+        # it, and anything the provider registers (helper functions, view
+        # composers) is missing at runtime.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-interaction --no-scripts
+
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -213,6 +225,18 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Re-generate autoload mappings after composer installed the theme
+        # composer/installers creates themes/<Name>/ during the install above,
+        # so the pass before it could not see the theme, and merge-plugin had
+        # already read the old composer.local.json when the autoloader was
+        # dumped. Without this second pass the theme's ServiceProvider class is
+        # not autoloadable, ThemeServiceProvider's class_exists() check skips
+        # it, and anything the provider registers (helper functions, view
+        # composers) is missing at runtime.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-interaction --no-scripts
 
       - name: Prepare environment
         run: |
@@ -379,6 +403,18 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Re-generate autoload mappings after composer installed the theme
+        # composer/installers creates themes/<Name>/ during the install above,
+        # so the pass before it could not see the theme, and merge-plugin had
+        # already read the old composer.local.json when the autoloader was
+        # dumped. Without this second pass the theme's ServiceProvider class is
+        # not autoloadable, ThemeServiceProvider's class_exists() check skips
+        # it, and anything the provider registers (helper functions, view
+        # composers) is missing at runtime.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-interaction --no-scripts
+
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -445,6 +481,18 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Re-generate autoload mappings after composer installed the theme
+        # composer/installers creates themes/<Name>/ during the install above,
+        # so the pass before it could not see the theme, and merge-plugin had
+        # already read the old composer.local.json when the autoloader was
+        # dumped. Without this second pass the theme's ServiceProvider class is
+        # not autoloadable, ThemeServiceProvider's class_exists() check skips
+        # it, and anything the provider registers (helper functions, view
+        # composers) is missing at runtime.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-interaction --no-scripts
+
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -489,6 +537,18 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Re-generate autoload mappings after composer installed the theme
+        # composer/installers creates themes/<Name>/ during the install above,
+        # so the pass before it could not see the theme, and merge-plugin had
+        # already read the old composer.local.json when the autoloader was
+        # dumped. Without this second pass the theme's ServiceProvider class is
+        # not autoloadable, ThemeServiceProvider's class_exists() check skips
+        # it, and anything the provider registers (helper functions, view
+        # composers) is missing at runtime.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-interaction --no-scripts
 
       - name: Prepare minimal environment
         run: |

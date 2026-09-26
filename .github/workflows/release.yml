@@ -93,6 +93,16 @@ jobs:
         # extra.installer-paths), so no separate clone step is needed.
         run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
+      - name: Re-generate autoload mappings after composer installed the theme
+        # The bundled theme is created by composer/installers during the step
+        # above, after merge-plugin read composer.local.json, so the dumped
+        # autoloader does not map Themes\<Name>\App\ yet. Without this the
+        # released vendor/ cannot autoload the theme's ServiceProvider, and
+        # everything it registers is missing on a fresh install.
+        run: |
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-dev --optimize --no-interaction --no-scripts
+
       - name: Install npm dependencies
         run: npm ci
 
