@@ -38,7 +38,7 @@ return [
     'app_already_installed' => 'このアプリケーションは既にインストールされています。',
     'check_install_admin_user_check' => 'CheckInstallationReady: 管理者ユーザー存在確認',
     'check_install_migration_check_error' => 'CheckInstallationReady: マイグレーションチェックエラー - ',
-    'check_install_database_not_ready' => "CheckInstallationReady: データベースにまだ接続できません（ウィザードのデータベース設定までは想定どおり。セッションごとに 1 回だけ記録） - ",
+    'check_install_database_not_ready' => 'CheckInstallationReady: データベースにまだ接続できません（ウィザードのデータベース設定までは想定どおり。セッションごとに 1 回だけ記録） - ',
     'check_install_migration_completed' => 'CheckInstallationReady: ✅ マイグレーション完了を確認（全チェック通過）',
     'check_install_no_admin_user' => 'CheckInstallationReady: 管理者ユーザーが存在しません（初期データ未投入）',
     'check_install_no_db_connection' => 'CheckInstallationReady: データベース接続なし',
