@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Theme;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -64,7 +65,11 @@ class ThemeSeed extends Command
      */
     public function handle()
     {
-        $themeName = Str::studly($this->argument('theme'));
+        // Accept the slug or the directory name. Str::studly() alone turned
+        // the slug 'dixlase-onepage' into 'DixlaseOnepage', but the directory
+        // is DixlaseOnePage.
+        $themeName = Theme::resolveDirectoryFromSlug($this->argument('theme'))
+            ?? Str::studly($this->argument('theme'));
         $themePath = base_path("themes/{$themeName}");
         $seederClassName = $this->option('class');
 

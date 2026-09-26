@@ -35,6 +35,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Theme;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -63,7 +64,11 @@ class ThemeMigrateRefresh extends Command
      */
     public function handle()
     {
-        $themeName = Str::studly($this->argument('theme'));
+        // Accept the slug or the directory name. Str::studly() alone turned
+        // the slug 'dixlase-onepage' into 'DixlaseOnepage', but the directory
+        // is DixlaseOnePage.
+        $themeName = Theme::resolveDirectoryFromSlug($this->argument('theme'))
+            ?? Str::studly($this->argument('theme'));
         $themePath = base_path("themes/{$themeName}");
         $migrationsPath = "{$themePath}/database/migrations";
 
