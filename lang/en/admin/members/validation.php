@@ -37,6 +37,7 @@ return [
     'account_name_required' => 'Please enter an account name.',
     'account_name_alpha_num' => 'Account name must contain only alphanumeric characters.',
     'account_name_length' => 'Account name must be between 3 and 20 characters.',
+    'account_name_unique' => 'This account name is already in use.',
     'email_required' => 'Please enter an email address.',
     'email_invalid' => 'Please enter a valid email address.',
     'email_unique' => 'This email address is already in use.',

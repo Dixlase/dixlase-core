@@ -289,9 +289,21 @@ class ThemeServiceProvider extends ServiceProvider
 
             // Load admin routes within the secure admin group
             \Route::prefix($adminUrl)->name('admin.')
-                ->middleware(['admin.ip'])
+                ->middleware(['admin.ip', 'admin.no-cache'])
                 ->group(function () use ($adminRoutePath) {
-                    \Route::middleware(['auth:member', 'member.active', 'verified', 'log.admin.activity'])->group(function () use ($adminRoutePath) {
+                    // A theme's admin screens are its settings, so the whole
+                    // group is gated on the core `settings.themes.settings`
+                    // key (ADMIN by default). Without it any verified member
+                    // of any role reached every theme admin endpoint unless
+                    // the theme remembered to add its own check.
+                    \Route::middleware([
+                        'auth:member',
+                        'member.active',
+                        'verified',
+                        'log.admin.activity',
+                        \App\Http\Middleware\CheckLockdown::class.':admin',
+                        'check.menu.access:settings.themes.settings',
+                    ])->group(function () use ($adminRoutePath) {
                         include $adminRoutePath;
                     });
                 });

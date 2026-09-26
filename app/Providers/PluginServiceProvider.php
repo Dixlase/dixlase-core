@@ -407,13 +407,18 @@ class PluginServiceProvider extends ServiceProvider
                 // DixlaseSEO).
                 $router->group([
                     'prefix' => $adminUrl,
+                    // Same stack as core's authenticated admin group
+                    // (routes/admin.php): no-cache and the admin lockdown
+                    // apply to plugin screens exactly as to core ones.
                     'middleware' => [
                         'web',
                         'admin.ip',
+                        'admin.no-cache',
                         'auth:member',
                         'member.active',
                         'verified',
                         'log.admin.activity',
+                        \App\Http\Middleware\CheckLockdown::class.':admin',
                         'plugin.admin.access:'.$plugin->directory,
                     ],
                 ], function () use ($adminRoutePath) {

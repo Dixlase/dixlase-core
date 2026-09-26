@@ -532,47 +532,52 @@ Route::prefix($adminUrl)->name('admin.')
             });
 
             // Theme settings (with permission check)
-            Route::middleware('check.menu.access:settings.themes')->group(function () {
+            // Gate on the defined leaf keys, never on the bare `settings.themes`
+            // parent: it has no roles of its own, so PermissionRegistry falls
+            // back to its children and the ADMIN-level `settings.themes.settings`
+            // (the active theme's settings page) would open upload / install /
+            // switch -- i.e. arbitrary theme PHP -- to ADMIN.
+            Route::middleware('check.menu.access:settings.themes.index')->group(function () {
                 Route::get('/settings/themes', [AdminThemesSettingsController::class, 'index'])->name('settings.themes.index');
                 Route::get('/settings/themes/add', [AdminThemesSettingsController::class, 'add'])->name('settings.themes.add');
                 Route::get('/settings/themes/show/{slug}', [AdminThemesSettingsController::class, 'show'])->name('settings.themes.show');
                 Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.upload');
                 Route::post('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.install');
                 Route::post('/settings/themes/uninstall/{id}', [AdminThemesSettingsController::class, 'uninstall'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.uninstall');
                 Route::post('/settings/themes/switch/{id}', [AdminThemesSettingsController::class, 'switch'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.switch');
                 Route::post('/settings/themes/delete', [AdminThemesSettingsController::class, 'delete'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.delete');
                 Route::post('/settings/themes/audit', [AdminThemesSettingsController::class, 'audit'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.audit');
                 Route::post('/settings/themes/audit-all', [AdminThemesSettingsController::class, 'auditAll'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.audit-all');
                 Route::get('/settings/themes/available-from-source', [AdminThemesSettingsController::class, 'availableFromSource'])
                     ->name('settings.themes.available-from-source');
                 Route::post('/settings/themes/download-from-source', [AdminThemesSettingsController::class, 'downloadFromSource'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.download-from-source');
                 Route::post('/settings/themes/check-updates', [AdminThemesSettingsController::class, 'checkUpdates'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.check-updates');
                 Route::post('/settings/themes/update/{id}', [AdminThemesSettingsController::class, 'updateTheme'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.update');
                 Route::post('/settings/themes/rollback/{id}', [AdminThemesSettingsController::class, 'rollbackTheme'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.rollback');
                 Route::post('/settings/themes/update-all', [AdminThemesSettingsController::class, 'bulkUpdate'])
-                    ->middleware('check.menu.edit:settings.themes')
+                    ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.update-all');
             });
 

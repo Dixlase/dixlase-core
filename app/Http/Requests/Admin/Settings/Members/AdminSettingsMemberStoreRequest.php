@@ -86,7 +86,19 @@ class AdminSettingsMemberStoreRequest extends FormRequest
         );
 
         $rules = [
-            'account_name' => 'required|string|alpha_num|min:3|max:20',
+            // account_name is a login identifier and lookups take the first
+            // match, so a duplicate would shadow (or be shadowed by) another
+            // member's login. Unique among non-deleted members, like email.
+            'account_name' => [
+                'required',
+                'string',
+                'alpha_num',
+                'min:3',
+                'max:20',
+                Rule::unique('members', 'account_name')
+                    ->ignore($this->route('member'))
+                    ->whereNull('deleted_at'),
+            ],
             'display_name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
             'email' => [
@@ -185,6 +197,7 @@ class AdminSettingsMemberStoreRequest extends FormRequest
             'account_name.alpha_num' => __('admin/members/validation.account_name_alpha_num'),
             'account_name.min' => __('admin/members/validation.account_name_length'),
             'account_name.max' => __('admin/members/validation.account_name_length'),
+            'account_name.unique' => __('admin/members/validation.account_name_unique'),
             'email.required' => __('admin/members/validation.email_required'),
             'email.email' => __('admin/members/validation.email_invalid'),
             'email.unique' => __('admin/members/validation.email_unique'),
