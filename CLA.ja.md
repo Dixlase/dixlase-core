@@ -7,7 +7,7 @@ Dixlase のコントリビューターライセンス契約（CLA）は、弁護
 それまでの間:
 
 - Dixlase は **外部からの Pull Request を受け付けていません**。
-- バグ報告・機能提案は GitHub Issues / Discussions で歓迎します — 現在のコントリビューション方針は [`CONTRIBUTING.ja.md`](./CONTRIBUTING.ja.md) をご覧ください。
+- バグ報告・機能提案は GitHub Issues で歓迎します — 現在のコントリビューション方針は [`CONTRIBUTING.ja.md`](./CONTRIBUTING.ja.md) をご覧ください。
 - ライセンス構造の全体像は [`COPYRIGHT-POLICY.ja.md`](./COPYRIGHT-POLICY.ja.md) をご覧ください。
 
 お問い合わせ: info@dixlase.org

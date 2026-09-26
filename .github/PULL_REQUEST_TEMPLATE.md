@@ -6,8 +6,7 @@
 >
 > If you've found a bug or have a suggestion, please use:
 >
-> - [Issues](https://github.com/Dixlase/dixlase-core/issues) — bug reports / バグ報告
-> - [Discussions](https://github.com/Dixlase/dixlase-core/discussions) — questions, ideas / 質問・提案
+> - [Issues](https://github.com/Dixlase/dixlase-core/issues) — bug reports, feature ideas / バグ報告・機能提案
 >
 > ---
 >

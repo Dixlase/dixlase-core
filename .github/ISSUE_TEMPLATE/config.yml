@@ -4,12 +4,12 @@ contact_links:
     url: https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md
     about: >-
       Dixlase is in early development. External pull requests are NOT
-      currently accepted; bug reports and discussions are welcome. Code
+      currently accepted; bug reports and feature ideas are welcome. Code
       snippets posted in Issues are treated as reference only — a maintainer
       will rewrite any fix independently. This is required for the dual-license
       model until the CLA's formal legal review is complete.
       / Dixlase は初期開発期にあり、外部からの Pull Request は現在受け付けていません。
-      バグ報告と Discussions は歓迎します。Issue 内のコードスニペットは参考情報として扱い、
+      バグ報告と機能提案は歓迎します。Issue 内のコードスニペットは参考情報として扱い、
       メンテナーが独立して書き直します。これは CLA 法務レビュー完了までの暫定運用です。
   - name: Security Vulnerability / セキュリティ脆弱性の報告
     url: https://github.com/Dixlase/dixlase-core/security/advisories/new
@@ -20,7 +20,7 @@ contact_links:
       GitHub のプライベート脆弱性報告または security@dixlase.org へメールしてください。
       詳細は SECURITY.md を参照。
   - name: Question / 質問・相談
-    url: https://github.com/Dixlase/dixlase-core/discussions
+    url: https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md#questions
     about: >-
-      For usage questions, ideas, or general discussion, please use GitHub
-      Discussions. / 使い方の質問やアイディア共有は GitHub Discussions へ。
+      For usage questions, email info@dixlase.org. / 使い方の質問は
+      info@dixlase.org までメールでどうぞ。

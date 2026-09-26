@@ -8,7 +8,7 @@ Dixlase にご関心をお寄せいただきありがとうございます。
 
 Dixlase は初期開発期にあります。**外部からの Pull Request は現在受け付けていません。** コードコントリビューションの受付は、コントリビューターライセンス契約（[CLA](./CLA.ja.md)）の確定を前提に、コア API の安定化と初期リリース後の運用状況・反響を見極めた上で開始します（時期は未定）。受付開始時に、本ドキュメントを PR ベースのコントリビューションガイドへ全面差し替えます。
 
-**現在歓迎しているもの（[Issues](https://github.com/Dixlase/dixlase-core/issues) / [Discussions](https://github.com/Dixlase/dixlase-core/discussions) にて）:**
+**現在歓迎しているもの（[Issues](https://github.com/Dixlase/dixlase-core/issues) にて）:**
 
 - バグ報告 — 問題の説明、再現手順、期待される動作と実際の動作、環境の詳細（OS、PHP バージョン、ブラウザ）
 - 機能提案 — ユースケース、提案する動作、検討した代替案
@@ -42,6 +42,6 @@ Dixlase は英語のソースコメントを正本として配布されます。
 
 ## ご質問
 
-GitHub で [Discussion](https://github.com/Dixlase/dixlase-core/discussions) を開くか、info@dixlase.org までメールでどうぞ。
+info@dixlase.org までメールでどうぞ。
 
 PR 受付開始前であっても、皆様のバグ報告とフィードバックは Dixlase を改善する貴重な貢献です。

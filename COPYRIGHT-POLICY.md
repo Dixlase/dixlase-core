@@ -54,7 +54,7 @@ Under the CLA model:
 
 This Policy applies to contributions to the **core repository**. Plugins and themes distributed separately are outside its scope (see Section 3).
 
-> **Current operating policy.** Dixlase is **not currently accepting external pull requests**. The CLA framework above will be activated when external code contributions open. The timing of opening will be decided, with a finalized CLA as a prerequisite, based on the stability of the core API and operational experience after the initial release. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the contributions currently being welcomed (Issue-based bug reports, Discussions, etc.).
+> **Current operating policy.** Dixlase is **not currently accepting external pull requests**. The CLA framework above will be activated when external code contributions open. The timing of opening will be decided, with a finalized CLA as a prerequisite, based on the stability of the core API and operational experience after the initial release. See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the contributions currently being welcomed (Issue-based bug reports and feature ideas).
 
 ## 5. Operative Legal Instruments
 

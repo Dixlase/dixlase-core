@@ -8,7 +8,7 @@ Thank you for your interest in Dixlase.
 
 Dixlase is in early development. **External pull requests are not currently accepted** — code contributions will open once the Contributor License Agreement ([CLA](./CLA.md)) is finalized and, additionally, once we have assessed the stability of the core API and how the project operates after the initial release (no date is set). This document will be replaced with the full PR-based contribution guide at that time.
 
-**Welcome now (via [Issues](https://github.com/Dixlase/dixlase-core/issues) / [Discussions](https://github.com/Dixlase/dixlase-core/discussions)):**
+**Welcome now (via [Issues](https://github.com/Dixlase/dixlase-core/issues)):**
 
 - Bug reports — a clear description, steps to reproduce, expected vs. actual behavior, and environment details (OS, PHP version, browser)
 - Feature suggestions — the use case, proposed behavior, and alternatives considered
@@ -42,6 +42,6 @@ Dixlase ships with English source comments as the canonical form; per-locale dic
 
 ## Questions?
 
-Open a [Discussion](https://github.com/Dixlase/dixlase-core/discussions) or email info@dixlase.org.
+Email info@dixlase.org.
 
 Even before PRs open, your bug reports and feedback are valuable contributions.
