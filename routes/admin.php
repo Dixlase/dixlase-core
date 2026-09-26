@@ -127,7 +127,7 @@ Route::prefix($adminUrl)->name('admin.')
             ->middleware('signed');
 
         // Email verification notification (for logged-in, unverified users)
-        Route::middleware('auth:member')->group(function () {
+        Route::middleware(['auth:member', 'member.active'])->group(function () {
             Route::get('/email/verify', [AdminEmailVerificationPromptController::class, '__invoke'])->name('verification.notice');
             Route::post('/email/verification-notification', [AdminEmailVerificationNotificationController::class, 'store'])->name('verification.send');
         });
@@ -135,6 +135,7 @@ Route::prefix($adminUrl)->name('admin.')
         // Authenticated routes
         Route::middleware([
             'auth:member',
+            'member.active',
             'verified',
             'log.admin.activity',
             \App\Http\Middleware\CheckLockdown::class.':admin',

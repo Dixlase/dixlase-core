@@ -210,6 +210,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => Authenticate::class, // Authentication
             'verified' => EnsureEmailIsVerified::class, // Email verification
+            'member.active' => \App\Http\Middleware\EnsureMemberCanAuthenticate::class, // End the session of a deactivated member
             'admin.ip' => AdminIpFilter::class, // IP address filter
             'admin.no-cache' => PreventAdminResponseCaching::class, // Force browsers not to cache authenticated admin responses
             'front.ip' => FrontIpFilter::class, // Front IP filter
