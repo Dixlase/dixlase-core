@@ -38,6 +38,7 @@
 namespace App\Helpers;
 
 use App\Support\ComposerLocalManifest;
+use App\Support\Process\PhpBinary;
 use App\Support\Process\SubprocessEnvironment;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -140,8 +141,10 @@ class ComposerLocalHelper
     protected static function regenerateAutoload(): void
     {
         try {
+            $command = self::composerCommand(['dump-autoload', '--optimize', '--no-scripts']);
+
             $process = new Process(
-                self::composerCommand(['dump-autoload', '--optimize', '--no-scripts']),
+                $command,
                 base_path(),
                 self::composerEnvironment(),
                 null,
@@ -150,9 +153,15 @@ class ComposerLocalHelper
             $process->run();
 
             if (! $process->isSuccessful()) {
+                // Both composer and php-fpm report on stdout, so a failure
+                // logged from stderr alone said nothing at all. Record the
+                // command too: without it an exit code cannot be traced back
+                // to the binary that produced it.
                 Log::warning('composer dump-autoload failed after composer.local.json sync', [
+                    'command' => implode(' ', $command),
                     'exit_code' => $process->getExitCode(),
-                    'stderr' => $process->getErrorOutput(),
+                    'stdout' => mb_substr(trim($process->getOutput()), 0, 2000),
+                    'stderr' => mb_substr(trim($process->getErrorOutput()), 0, 2000),
                 ]);
             }
         } catch (\Throwable $e) {
@@ -167,9 +176,15 @@ class ComposerLocalHelper
      *
      * Composer is normally started through its `#!/usr/bin/env php` shebang,
      * which needs both composer and php on the child's PATH. When the
-     * composer entry point can be located and is a PHP script, start it
-     * with this process's own interpreter instead, so the run no longer
-     * depends on how the web server's PATH is set up.
+     * composer entry point can be located and a CLI interpreter resolved,
+     * start it with that interpreter instead, so the run no longer depends
+     * on how the web server's PATH is set up.
+     *
+     * The interpreter comes from PhpBinary, not from PHP_BINARY: under
+     * PHP-FPM the latter is the FPM binary, which ignores the script it is
+     * handed, prints its usage to stdout and exits 64. Every dump-autoload
+     * core fired from a web request died that way — logged as a warning
+     * with an empty stderr, and otherwise silent.
      *
      * @param  array<int, string>  $arguments
      * @return array<int, string>
@@ -179,7 +194,17 @@ class ComposerLocalHelper
         $composer = self::locateComposer();
 
         if ($composer !== null) {
-            return array_merge([PHP_BINARY, $composer], $arguments);
+            $php = PhpBinary::cli();
+
+            if ($php !== null) {
+                return array_merge([$php, $composer], $arguments);
+            }
+
+            // No CLI interpreter: fall back to the shebang, which needs php
+            // on the child's PATH (SubprocessEnvironment guarantees one).
+            if (is_executable($composer)) {
+                return array_merge([$composer], $arguments);
+            }
         }
 
         return array_merge(['composer'], $arguments);

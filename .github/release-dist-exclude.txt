@@ -37,8 +37,15 @@ node_modules/
 # error rendering during updates — see #171 / Round 4 Finding A.
 /dist/
 
-# ----- Composer overrides used only during local development -----
-composer.local.json
+# ----- Composer overrides -----
+# composer.local.json is NOT excluded. It is generated and gitignored, so it
+# used to be left out, and a fresh ZIP install then dumped its autoloader
+# before core's pre-autoload-dump hook had written one: composer-merge-plugin
+# reads the file when Composer initialises, so the very first dump carried no
+# extension PSR-4 roots and nothing dumped again. The bundled theme's
+# ServiceProvider was unresolvable and the front page answered 500 (v0.3.55).
+# Shipping the build's copy makes that first dump correct; the hook rewrites
+# it from the operator's actual tree straight afterwards either way.
 composer.local.json.example
 
 # ----- Developer-facing docs (operators do not need these — README,
