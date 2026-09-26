@@ -63,6 +63,10 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ### 修正
 
+- リリース ZIP に同梱する公式テーマが、インストールするたびに署名の検証に失敗していた。コア向けに書いた
+  リリースの除外リストが、テーマの署名対象の `CHANGELOG.md` / `CONTRIBUTING*` / `SECURITY.md` / `tests/` /
+  `phpunit.xml` と `.gitignore` まで外していたため。同梱テーマは composer が置いたままの形でコピーし直し、
+  署名に含まれるファイルが 1 つでも欠けていればリリースのビルドを失敗させる。
 - `dls:theme:migrate` / `dls:theme:migrate:refresh` / `dls:theme:migrate:rollback` / `dls:theme:seed` に
   テーマの slug を渡すと失敗していた。ディレクトリ名を `Str::studly()` だけで作っていたため、`dixlase-onepage` が
   `DixlaseOnePage` ではなく `DixlaseOnepage` を探していた。先にテーマのレコードから引くようにした。
