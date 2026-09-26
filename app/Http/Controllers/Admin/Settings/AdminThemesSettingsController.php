@@ -57,6 +57,7 @@ use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
 use App\Support\ComposerLocalManifest;
+use App\Support\ExtensionArchive;
 use App\Support\ExtensionDirectories;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -1237,16 +1238,10 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $themeDirectory = resource_path('views/themes/');
 
         try {
-            // Get the first directory name in the ZIP
-            $extractedRootDir = null;
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $stat = $zip->statIndex($i);
-                $filename = $stat['name'];
-                if (strpos($filename, '/') !== false) {
-                    $extractedRootDir = explode('/', $filename)[0];
-                    break;
-                }
-            }
+            // The archive must hold exactly one top-level directory (see
+            // ExtensionArchive): anything else in it would be extracted next to
+            // the theme without being checked.
+            $extractedRootDir = ExtensionArchive::singleRootDirectory($zip);
 
             if (! $extractedRootDir) {
                 $zip->close();
@@ -1265,10 +1260,14 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.directory_exists', ['directory' => $directoryName])];
             }
 
-            // Extract ZIP
-            $zip->extractTo($themeDirectory);
+            // Extract into a staging directory and move only that directory
+            $extracted = ExtensionArchive::extractSingleRoot($zip, $extractedRootDir, $themeDirectory);
             $zip->close();
             File::delete($zipPath);
+
+            if (! $extracted) {
+                return ['success' => false, 'error' => __('admin/settings/themes/add.messages.zip_extract_failed')];
+            }
 
             // Extracted directory path
             $extractedDirPath = $themeDirectory.$extractedRootDir;

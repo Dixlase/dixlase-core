@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
+use App\Support\ComposerLocalManifest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
@@ -147,6 +148,11 @@ class PluginDownload extends Command
 
                 return self::FAILURE;
             }
+
+            // Not installed yet: withhold its autoload.files until
+            // dls:plugin:install clears this, so an unrelated autoload sync in
+            // between (another install, a core update) cannot run its code.
+            ComposerLocalManifest::markPendingInstall($pluginDir);
 
             $this->info("Extracted to: {$pluginDir}");
 

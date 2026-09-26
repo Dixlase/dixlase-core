@@ -63,6 +63,7 @@ use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Services\SecuritySettingsRegistry;
 use App\Support\ComposerLocalManifest;
+use App\Support\ExtensionArchive;
 use App\Support\ExtensionDirectories;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
@@ -1646,19 +1647,11 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         try {
-            // Get plugin folder name (first directory in ZIP)
-            $dirs = [];
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $entry = $zip->getNameIndex($i);
-                if ($entry !== false) {
-                    $pathParts = explode('/', $entry);
-                    if (! empty($pathParts[0])) {
-                        $dirs[] = $pathParts[0];
-                    }
-                }
-            }
-            $dirs = array_unique($dirs);
-            $pluginDir = reset($dirs);
+            // The archive must hold exactly one top-level directory. Taking the
+            // first one and extracting everything let a second directory land
+            // unmarked (its autoload.files ran on the next request) and let an
+            // entry overwrite files of an installed plugin.
+            $pluginDir = ExtensionArchive::singleRootDirectory($zip);
 
             if (! $pluginDir) {
                 $zip->close();
@@ -1676,10 +1669,14 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.directory_exists', ['directory' => $pluginDir])];
             }
 
-            // Extract ZIP
-            $zip->extractTo(base_path('plugins'));
+            // Extract into a staging directory and move only that directory
+            $extracted = ExtensionArchive::extractSingleRoot($zip, $pluginDir, base_path('plugins'));
             $zip->close();
             File::delete($zipPath);
+
+            if (! $extracted) {
+                return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.zip_extract_failed')];
+            }
 
             // Get correct directory name from plugin.json and rename
             $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
