@@ -195,7 +195,15 @@ class CheckInstallationReady
                     }
                     // It's the completion screen itself, so let it pass through
                 } elseif ($request->is('install/finalize') || $currentRoute === 'install.finalize') {
-                    // Always allow finalize process (POST request)
+                    // Finalize writes INSTALLED=true. It is only meaningful
+                    // after the migrations ran and the completion screen was
+                    // shown (which sets the finalize-pending marker). Letting
+                    // it through unconditionally allowed any visitor to mark
+                    // an empty database as installed, which left every page
+                    // failing and closed /install behind it.
+                    if (! $isMigrated || ! FinalizePendingMarker::isPending()) {
+                        return redirect()->route('install.index');
+                    }
                 } else {
                     // Other installation flow (index, environment, settings, database, confirm)
                     if ($isMigrated) {

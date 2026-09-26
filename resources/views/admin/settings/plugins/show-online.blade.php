@@ -181,7 +181,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-ui-modal
         id="confirmDownloadPluginModal"
         :title="__('admin/settings/plugins/add.online.download_confirm_title')"
-        :message="__('admin/settings/plugins/add.online.download_confirm_message', ['name' => $details['name'] ?? $details['slug']])"
+        :message="__('admin/settings/plugins/add.online.download_confirm_message', ['name' => e($details['name'] ?? $details['slug'])])"
         iconType="info"
         confirmColor="blue"
     >
@@ -222,7 +222,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @push('scripts')
     <script @cspNonce>
-        // サムネイル取得失敗時のフォールバック（CSP対応）
+        // Fallback when the thumbnail fails to load (CSP-compliant)
         (function () {
             document.querySelectorAll('img[data-fallback-src]').forEach(function (img) {
                 img.addEventListener('error', function () {
@@ -242,14 +242,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 return;
             }
 
-            // 詳細ページのダウンロードボタンをクリック → 確認モーダルを開く
+            // Download button on the detail page opens the confirmation modal
             triggerBtn.addEventListener('click', function () {
                 if (typeof window.openModal === 'function') {
                     window.openModal('confirmDownloadPluginModal');
                 }
             });
 
-            // 確認モーダル内のダウンロードボタンをクリック → 進行モーダルを開いて送信
+            // Download button inside the confirmation modal opens the progress modal and submits
             confirmBtn.addEventListener('click', function () {
                 if (confirmBtn.disabled) {
                     return;

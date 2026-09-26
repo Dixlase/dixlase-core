@@ -38,11 +38,13 @@ declare(strict_types=1);
 namespace App\Actions\Member;
 
 use App\Actions\AbstractAction;
+use App\Actors\MemberActor;
 use App\Contracts\Action\Actor;
 use App\DTO\Action\ActionResult;
 use App\Enums\Permission;
 use App\Models\Member;
 use App\Services\MailServerValidatorService;
+use App\Services\Member\MemberHierarchyGuard;
 use App\Services\PasswordService;
 use Illuminate\Support\Facades\Log;
 
@@ -67,6 +69,16 @@ class CreateMemberAction extends AbstractAction
     protected function auditCategory(): string
     {
         return 'account';
+    }
+
+    /**
+     * An actor may not create a member with a role above their own.
+     */
+    protected function validate(Actor $actor, array $data): void
+    {
+        if ($actor instanceof MemberActor) {
+            MemberHierarchyGuard::assertCanAssignRole($actor->getMember(), $data['role'] ?? null);
+        }
     }
 
     protected function handle(Actor $actor, array $data): ActionResult

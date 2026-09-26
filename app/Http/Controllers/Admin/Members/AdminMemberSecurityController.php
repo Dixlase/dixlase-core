@@ -35,12 +35,13 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
+use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Member;
+use App\Services\Member\MemberHierarchyGuard;
 use App\Traits\ManagesAccountTrait;
 use App\Traits\ManagesTwoFaTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AdminMemberSecurityController extends AdminLoggedInController
@@ -65,6 +66,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function forceLogout(Member $member)
     {
+        $this->assertCanManage($member);
+
         return $this->forceLogoutModel(
             $member,
             'admin/members/edit.messages.force_logout_success',
@@ -77,6 +80,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function unlockTwoFa(Member $member)
     {
+        $this->assertCanManage($member);
+
         return $this->unlockTwoFaForModel(
             $member,
             \App\Models\MemberTwoFaAttempt::class,
@@ -92,6 +97,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function sendVerificationEmail(Member $member)
     {
+        $this->assertCanManage($member);
+
         return $this->sendVerificationEmailToModel(
             $member,
             'admin/members/edit.messages.verification_email_sent',
@@ -105,6 +112,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokePasskey(Request $request, Member $member, string $credentialId)
     {
+        $this->assertCanManage($member);
+
         return $this->revokePasskeyForModel(
             $request,
             $member,
@@ -129,6 +138,8 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function revokeRecoveryCodes(Request $request, Member $member)
     {
+        $this->assertCanManage($member);
+
         return $this->revokeRecoveryCodesForModel(
             $request,
             $member,
@@ -142,20 +153,34 @@ class AdminMemberSecurityController extends AdminLoggedInController
      */
     public function forceLogoutAll()
     {
-        $currentUserId = Auth::guard('member')->id();
-        $sessionTable = config('session.table', 'sessions');
+        $actor = AdminHelper::getMember();
 
-        if ($sessionTable && DB::getSchemaBuilder()->hasTable($sessionTable)) {
-            $deletedCount = DB::table($sessionTable)
-                ->where('user_id', '!=', $currentUserId)
-                ->whereNotNull('user_id')
-                ->delete();
-
+        // Members' sessions live in members_sessions keyed by member_id. The
+        // previous query targeted the framework `sessions` table on user_id, so
+        // it logged out nobody. An actor also only logs out members at or below
+        // their own rank.
+        if (! DB::getSchemaBuilder()->hasTable('members_sessions')) {
             return redirect()->route('admin.members.index')
-                ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));
+                ->with('error', __('admin/members/force_logout_all_error'));
         }
 
+        $deletedCount = DB::table('members_sessions')
+            ->whereNotNull('member_id')
+            ->where('member_id', '!=', $actor->id)
+            ->whereIn('member_id', Member::query()
+                ->where('role', '<=', MemberHierarchyGuard::rank($actor))
+                ->select('id'))
+            ->delete();
+
         return redirect()->route('admin.members.index')
-            ->with('error', __('admin/members/force_logout_all_error'));
+            ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));
+    }
+
+    /**
+     * Refuse security operations on a member ranked above the actor.
+     */
+    private function assertCanManage(Member $member): void
+    {
+        MemberHierarchyGuard::assertCanManage(AdminHelper::getMember(), $member);
     }
 }

@@ -165,7 +165,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-ui-modal
         id="deleteModal-{{ $card['directory'] }}"
         :title="__('admin/settings/plugins/index.delete.confirm_title')"
-        :message="str_replace('{name}', $card['name'], __('admin/settings/plugins/index.delete.confirm_message'))"
+        :message="str_replace('{name}', e($card['name']), __('admin/settings/plugins/index.delete.confirm_message'))"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         form="deleteForm-{{ $card['directory'] }}"

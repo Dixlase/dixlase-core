@@ -39,6 +39,7 @@ use App\Enums\LoginIdentifierMode;
 use App\Helpers\TwoFaHelper;
 use App\Models\Member;
 use App\Services\TwoFa\TwoFaPasskeyService;
+use App\Services\TwoFa\TwoFaStatusService;
 use App\Traits\PasskeyLoginTrait;
 use Illuminate\Http\Request;
 
@@ -161,5 +162,17 @@ class AdminPasskeyLoginController extends AdminController
     protected function supportsAccountNameLogin(): bool
     {
         return $this->getLoginIdentifierMode()->supportsAccountName();
+    }
+
+    /**
+     * A member may log in with a passkey only while the account is active and
+     * passkeys are enabled for them (the global passkey mode or, when that
+     * follows the profile, the member's own setting).
+     */
+    protected function isPasskeyLoginAllowed(\Illuminate\Contracts\Auth\Authenticatable $user): bool
+    {
+        return $user instanceof Member
+            && $user->canAuthenticate()
+            && app(TwoFaStatusService::class)->isPasskeyEnabled($user);
     }
 }

@@ -51,4 +51,7 @@ return [
     'status_invalid' => 'Invalid status selected.',
     'two_fa_cannot_enable' => 'Cannot enable two-factor authentication. A mail server configuration, passkey registration, or recovery code generation is required.',
     'two_fa_cannot_enable_new_member' => 'To enable two-factor authentication for a new member, a mail server must be configured.',
+    'role_above_own' => 'You cannot assign a role higher than your own.',
+    'initial_admin_locked' => 'The role and status of the initial administrator cannot be changed.',
+    'own_role_locked' => 'You cannot change your own role or status.',
 ];

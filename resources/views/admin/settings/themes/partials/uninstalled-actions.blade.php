@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <x-ui-modal
         id="deleteThemeModal-{{ $card['directory'] }}"
         :title="__('admin/settings/themes/index.delete.confirm_title')"
-        :message="str_replace('{name}', $card['name'], __('admin/settings/themes/index.delete.confirm_message'))"
+        :message="str_replace('{name}', e($card['name']), __('admin/settings/themes/index.delete.confirm_message'))"
         :confirm_label="__('common.delete')"
         :cancel_label="__('common.cancel')"
         form="deleteThemeForm-{{ $card['directory'] }}"
