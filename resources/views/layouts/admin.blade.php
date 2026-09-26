@@ -148,26 +148,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </aside>
 
                 {{-- Sidebar Toggle Button (Desktop / Tablet).
-                     lg+ (mouse-primary desktops) keeps the original slim
-                     tab (px-1.5, text-sm chevron). Below lg — i.e. the
-                     sm/md tablet range, since the button is hidden under
-                     sm — the max-lg: variants grow it to a 44px touch
-                     target (min-w-11, px-3.5, text-base) so a finger can
-                     hit it, matching the mobile drawer tab. The page
-                     heading's sm:pl-5 keeps clear of the wider tab (see
-                     the header below). bg-*/90 (was /75) keeps the tab
-                     legible against busy page backgrounds. --}}
+                     Three widths, narrowest where the pointer is most
+                     precise: lg+ (mouse-primary desktops) is ~22px
+                     (lg:px-1, lg:text-xs chevron); the sm/md tablet range
+                     is ~32px (px-2, text-sm), wide enough for a thumb
+                     without dominating the page header; the phone drawer
+                     tab in partials/sidebar.blade.php stays at the 44px
+                     touch target, since this button is hidden under sm.
+                     The page heading's sm:pl-5 keeps clear of the tab
+                     (see the header below). bg-*/90 (was /75) keeps the
+                     tab legible against busy page backgrounds. --}}
                 <button type="button"
                         id="admin-sidebar-toggle"
                         @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
-                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-1.5 py-4 max-lg:px-3.5 max-lg:min-w-11 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :class="{
                             'translate-x-0': sidebarCollapsed,
                             'translate-x-64': !sidebarCollapsed
                         }"
                         :style="sidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
                         aria-label="Toggle sidebar menu">
-                    <i class="fas text-sm max-lg:text-base" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                    <i class="fas text-sm lg:text-xs" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
 
                 {{-- Main Content Area.
@@ -236,9 +237,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                          that overlaps this row:
                            - below sm: pl-8 (32px) — the 44px mobile drawer
                              tab sits at x=0, heading lands at 64px.
-                           - sm..lg: sm:pl-5 (20px) — the 44px tablet tab
-                             docks to the sidebar edge (open) or x=0
-                             (collapsed); heading lands 8px past it.
+                           - sm..lg: sm:pl-5 (20px) — the ~32px tablet
+                             tab docks to the sidebar edge (open) or x=0
+                             (collapsed); the heading clears it.
                            - lg+: lg:pl-0 — the slim desktop tab needs no
                              extra clearance, so the original indent is
                              restored. --}}
