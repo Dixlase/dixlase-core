@@ -36,11 +36,22 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Process\Exceptions\ProcessTimedOutException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 class ThemeBuild extends Command
 {
+    /**
+     * Timeout for each npm step, in seconds.
+     *
+     * A cold `npm install` (empty npm cache, first install from a release ZIP)
+     * took longer than the old 600 seconds on a real install; the same step
+     * finishes in about 20 seconds once the cache is warm.
+     */
+    private const NPM_TIMEOUT = 1800;
+
     /**
      * The name and signature of the console command.
      */
@@ -123,7 +134,11 @@ CSS);
 
         if (! $this->option('no-install')) {
             $this->info("Running npm install in themes/{$theme}...");
-            $install = Process::path($themePath)->env($npmEnv)->timeout(600)->run('npm install');
+            $install = $this->runNpm($themePath, $npmEnv, 'npm install', $theme);
+
+            if ($install === null) {
+                return self::FAILURE;
+            }
 
             if ($install->failed()) {
                 $this->error($install->errorOutput() ?: $install->output());
@@ -133,7 +148,11 @@ CSS);
         }
 
         $this->info("Running npm run build in themes/{$theme}...");
-        $build = Process::path($themePath)->env($npmEnv)->timeout(600)->run('npm run build');
+        $build = $this->runNpm($themePath, $npmEnv, 'npm run build', $theme);
+
+        if ($build === null) {
+            return self::FAILURE;
+        }
 
         if ($build->failed()) {
             $this->error($build->errorOutput() ?: $build->output());
@@ -159,5 +178,26 @@ CSS);
         $this->info("Theme '{$theme}' built successfully.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Run one npm step. On a timeout, print what happened and how to retry
+     * instead of letting the exception surface as a stack trace — this runs at
+     * the end of a first install, where a trace is all the operator would see.
+     *
+     * @param  array<string, string>  $env
+     */
+    private function runNpm(string $path, array $env, string $command, string $theme): ?ProcessResult
+    {
+        try {
+            return Process::path($path)->env($env)->timeout(self::NPM_TIMEOUT)->run($command);
+        } catch (ProcessTimedOutException) {
+            $this->error("`{$command}` did not finish within ".self::NPM_TIMEOUT.' seconds.');
+            $this->line('The site itself is installed. Build the theme again with:');
+            $this->line("  php artisan dls:theme:build {$theme}");
+            $this->line('A second run is usually much faster because npm has cached the packages.');
+
+            return null;
+        }
     }
 }
