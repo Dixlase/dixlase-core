@@ -93,6 +93,10 @@ repository to be notified of changes.
 
 ### Fixed
 
+- `dls:theme:migrate`, `dls:theme:migrate:refresh`, `dls:theme:migrate:rollback` and
+  `dls:theme:seed` accept the theme's slug again: they built the directory with
+  `Str::studly()` alone, so `dixlase-onepage` looked for `DixlaseOnepage` instead of
+  `DixlaseOnePage`. They now resolve the argument through the theme record first.
 - A core update or rollback no longer replaces `public/` as a directory: its entries are
   swapped and the directory itself stays, so a built-in server (`php -S`, as the one-line
   installer runs it from `public/`) keeps working instead of failing every request with

@@ -56,6 +56,9 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ### 修正
 
+- `dls:theme:migrate` / `dls:theme:migrate:refresh` / `dls:theme:migrate:rollback` / `dls:theme:seed` に
+  テーマの slug を渡すと失敗していた。ディレクトリ名を `Str::studly()` だけで作っていたため、`dixlase-onepage` が
+  `DixlaseOnePage` ではなく `DixlaseOnepage` を探していた。先にテーマのレコードから引くようにした。
 - コアの更新・ロールバックで `public/` をディレクトリごと置き換えないようにした。中身だけを入れ替え、
   ディレクトリ自体は残すので、組み込みサーバ(`php -S`。ワンライナーは `public/` から起動する)が
   `Failed opening required '/index.php'` で止まらず、再起動しなくても動き続ける。
