@@ -174,6 +174,15 @@ class PatternRegistry
                 }
             }
 
+            // Files the pattern resolves itself (e.g. manifest-declared assets)
+            foreach ($pattern->detectFiles($extensionDir) as $relativeFile) {
+                $found = true;
+                $foundEvidence[] = [
+                    'type' => 'file_exists',
+                    'file' => $relativeFile,
+                ];
+            }
+
             // Code scan
             if (! empty($pattern->regexPatterns())) {
                 $codeFiles = $this->getCodeFiles($extensionDir, $type);

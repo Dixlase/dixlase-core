@@ -69,6 +69,19 @@ abstract class DetectionPattern
     }
 
     /**
+     * Files this pattern finds by its own logic, relative to the extension root.
+     *
+     * For checks a fixed glob cannot express -- for example resolving the
+     * assets an extension declares in its manifest. Default: none.
+     *
+     * @return array<string>
+     */
+    public function detectFiles(string $extensionDir): array
+    {
+        return [];
+    }
+
+    /**
      * Regular expression patterns for detection
      *
      * @return array<string>

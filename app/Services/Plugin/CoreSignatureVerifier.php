@@ -133,8 +133,35 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         if ($pluginName === null) {
             return SignatureVerificationResult::unsigned(__('services/plugin/core_signature_verifier.plugin_json_not_found'));
         }
-        $pluginPath = base_path("plugins/{$pluginName}");
-        $pluginJsonPath = "{$pluginPath}/plugin.json";
+
+        return $this->verifyExtensionDirectory(base_path("plugins/{$pluginName}"), 'plugin.json');
+    }
+
+    /**
+     * Verify a theme signature.
+     *
+     * Themes are signed by the same signer as plugins (DixlaseSigner's
+     * `dls:signer:sign-theme` runs PluginSigner with theme.json as the
+     * manifest), so the format is identical: files[] and a signing section in
+     * theme.json, the Ed25519 signature in signature.sig. Only the directory
+     * and the manifest name differ.
+     */
+    public function verifyTheme(string $themeSlug): SignatureVerificationResult
+    {
+        $themeName = \App\Models\Theme::resolveDirectoryFromSlug($themeSlug);
+        if ($themeName === null) {
+            return SignatureVerificationResult::unsigned(__('services/plugin/core_signature_verifier.plugin_json_not_found'));
+        }
+
+        return $this->verifyExtensionDirectory(base_path("themes/{$themeName}"), 'theme.json');
+    }
+
+    /**
+     * Verify the signed extension at $pluginPath whose manifest is $manifestFile.
+     */
+    protected function verifyExtensionDirectory(string $pluginPath, string $manifestFile): SignatureVerificationResult
+    {
+        $pluginJsonPath = "{$pluginPath}/{$manifestFile}";
         $signaturePath = "{$pluginPath}/signature.sig";
 
         // When plugin.json does not exist
@@ -198,7 +225,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             return SignatureVerificationResult::invalid(__('services/plugin/core_signature_verifier.plugin_json_no_files_section'));
         }
 
-        $tamper = $this->verifyFileHashes($pluginPath, $pluginData['files']);
+        $tamper = $this->verifyFileHashes($pluginPath, $pluginData['files'], $manifestFile);
         if (! $tamper['valid']) {
             return SignatureVerificationResult::invalid(__('services/plugin/core_signature_verifier.plugin_file_tampering_detected'), [
                 'mismatched' => $tamper['mismatched'] ?? [],
@@ -289,9 +316,9 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      * @param  array<string, string>  $expectedFiles  files[] section (path => "algo:hash")
      * @return array{valid: bool, mismatched: array<string>, missing: array<string>, extra: array<string>}
      */
-    protected function verifyFileHashes(string $pluginPath, array $expectedFiles): array
+    protected function verifyFileHashes(string $pluginPath, array $expectedFiles, string $manifestFile = 'plugin.json'): array
     {
-        $actualFiles = $this->collectFileHashes($pluginPath);
+        $actualFiles = $this->collectFileHashes($pluginPath, $manifestFile);
 
         $missing = array_diff_key($expectedFiles, $actualFiles);
         $extra = array_diff_key($actualFiles, $expectedFiles);
@@ -316,11 +343,11 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
 
     /**
      * Collect file hashes in the plugin directory
-     * Exclude plugin.json itself, signature.sig, and paths excluded by .gitignore
+     * Exclude the manifest itself (plugin.json / theme.json), signature.sig, and paths excluded by .gitignore
      *
      * @return array<string, string> path => "algo:hash"
      */
-    protected function collectFileHashes(string $pluginPath): array
+    protected function collectFileHashes(string $pluginPath, string $manifestFile = 'plugin.json'): array
     {
         $files = [];
         $gitignore = $this->parseGitignore($pluginPath);
@@ -343,10 +370,10 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             $relPath = str_replace('\\', '/', str_replace($pluginPath.DIRECTORY_SEPARATOR, '', $file->getPathname()));
 
             // Same exclusion rules as PluginSigner side:
-            //  - Exclude plugin.json itself from files[] (to avoid circular self-hashing)
+            //  - Exclude the manifest itself from files[] (to avoid circular self-hashing)
             //  - Exclude DEFAULT_EXCLUDE_PATTERNS and .gitignore paths,
             //    honoring `!`-prefixed re-include rules from .gitignore
-            if ($relPath === 'plugin.json') {
+            if ($relPath === $manifestFile) {
                 continue;
             }
             if ($this->shouldExclude($relPath, $excludePatterns, $includePatterns)
