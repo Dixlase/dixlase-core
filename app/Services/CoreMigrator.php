@@ -35,6 +35,8 @@
 
 namespace App\Services;
 
+use App\Services\Migration\MigrationLedgerReconciler;
+use Illuminate\Console\View\Components\Info;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\Log;
 
@@ -132,8 +134,79 @@ class CoreMigrator extends Migrator
     public function run($paths = [], array $options = [])
     {
         $this->noteDroppedExtensionPaths();
+        $this->realignLedger();
 
         return parent::run($paths, $options);
+    }
+
+    /**
+     * Point the ledger at the files that are on disk now, before working
+     * out what is still pending.
+     *
+     * Core's baseline migrations are renumbered in place during the beta
+     * series, and `migrations` keys on filename: after a renumber, 26
+     * already-applied files look new and the first one dies with
+     * SQLSTATE 42S01 trying to create a table that is already there.
+     * `dls:migration:resync` exists for exactly this and upgrading.md
+     * §4.4.1 tells operators to run it — but nothing ran it for them.
+     * `dls:core:update` reaches its `migrate` only after the backup,
+     * `artisan down` and the source swap, so the failure left sites in
+     * maintenance mode with new source and an un-migrated database.
+     *
+     * PluginMigrator and ThemeMigrator have done this before every
+     * migrate since the reconciler landed; doing it here covers core's
+     * update path, the installer's `php artisan migrate --force`, and a
+     * plain `php artisan migrate` alike.
+     *
+     * A no-op when the names already match, which is every ordinary run.
+     */
+    protected function realignLedger(): void
+    {
+        try {
+            if (! $this->repositoryExists()) {
+                return;
+            }
+
+            $renamed = MigrationLedgerReconciler::reconcileCore(
+                $this->resolveConnection($this->connection),
+                $this->ledgerTable(),
+                base_path('database/migrations'),
+            );
+
+            if ($renamed === 0) {
+                return;
+            }
+
+            // A silent ledger rewrite during an update would be the one
+            // thing missing from the update log, so say it in both places.
+            Log::info('Realigned the core migration ledger with the files on disk', [
+                'rows_renamed' => $renamed,
+            ]);
+
+            $this->write(Info::class, "Realigned {$renamed} migration ledger row(s) to the current file names.");
+        } catch (\Throwable $e) {
+            // Never let the realignment be the reason an update stops: a
+            // migrate that then fails on a renamed file reports the real
+            // problem, and `dls:migration:resync` remains available.
+            Log::warning('Could not realign the core migration ledger: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * The table the core ledger lives in.
+     *
+     * `database.migrations` may be a string or, since Laravel 11, an
+     * array carrying the table name.
+     */
+    protected function ledgerTable(): string
+    {
+        $configured = config('database.migrations');
+
+        if (is_array($configured)) {
+            return is_string($configured['table'] ?? null) ? $configured['table'] : 'migrations';
+        }
+
+        return is_string($configured) && $configured !== '' ? $configured : 'migrations';
     }
 
     /**

@@ -110,6 +110,26 @@ docker exec dixlase-php php artisan dls:migration:resync --prune --confirm
 It only rewrites rows of the `migrations` ledger tables; no data table is touched.
 When it reports nothing to do, continue.
 
+Since core 0.3.47 `migrate` realigns core's own ledger by itself, so a renumbered
+baseline no longer stops an update part-way. Run the command above anyway when you
+want to see what would change, and to cover plugin and theme ledgers, which it also
+handles — and `--prune`, which removes rows for files that no longer exist, is still
+only done on request.
+
+#### A body edit to an already-run migration never applies
+
+The realignment fixes **renames**. It cannot apply a change to the *contents* of a
+file that the ledger already records as run: `migrate` will not execute that file
+again, so whatever was added is silently missing on every existing site — while a
+fresh install gets it.
+
+During the beta series this can happen to any baseline file, including
+`0001_01_01_999999_add_foreign_key_constraints.php`, which is where new foreign keys
+are added. If a release note says a constraint, column or index was added to an
+existing migration, an already-installed site needs either a follow-up migration or
+the repair step the release names. Compare `migrate:status` against the schema before
+assuming an upgrade is complete.
+
 ### 4.5 Run migrations in dependency order
 
 ```bash
