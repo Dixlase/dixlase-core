@@ -548,16 +548,16 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Dixlase/theme-dixlase-onepage.git",
-                "reference": "121bb7716f2b349942062657e29c6fe0f3cfef80"
+                "reference": "a752b4e26eba27a75ae91e71d3e76efb70e94fb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/121bb7716f2b349942062657e29c6fe0f3cfef80",
-                "reference": "121bb7716f2b349942062657e29c6fe0f3cfef80",
+                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/a752b4e26eba27a75ae91e71d3e76efb70e94fb5",
+                "reference": "a752b4e26eba27a75ae91e71d3e76efb70e94fb5",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.2"
+                "php": ">=8.3"
             },
             "default-branch": true,
             "type": "dixlase-theme",
@@ -565,19 +565,11 @@
                 "dixlase": {
                     "type": "theme",
                     "slug": "dixlase-onepage",
-                    "version": "0.1.8"
+                    "version": "0.1.0"
                 }
             },
-            "autoload": {
-                "psr-4": {
-                    "Dixlase\\Themes\\OnePage\\": "src/"
-                },
-                "files": [
-                    "app/Helpers/DixlaseOnePageHelpers.php"
-                ]
-            },
             "license": [
-                "GPL-3.0"
+                "GPL-3.0-or-later"
             ],
             "authors": [
                 {
@@ -591,7 +583,7 @@
                 "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/main",
                 "issues": "https://github.com/Dixlase/theme-dixlase-onepage/issues"
             },
-            "time": "2026-09-25T12:07:50+00:00"
+            "time": "2026-09-26T13:43:25+00:00"
         },
         {
             "name": "doctrine/deprecations",
