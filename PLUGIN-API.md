@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-09-25
+**Last Updated:** 2026-09-26
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -14,13 +14,22 @@ AGPL copyleft obligations under the Dixlase Plugin and Theme Exception.
 
 ## Stability Pledge
 
-**Frozen as of:** v0.1.0 release (see `CHANGELOG.md` for the exact release date)
-**Coverage:** every Plugin API element listed in this document, for the version range `^0.1`
-**Backward compatibility:** no breaking changes will be introduced within `^0.1`. Plugins and themes built against v0.1.0 will continue to work on every v0.1.x release without modification.
+**Status:** published, not yet frozen (0.x beta series)
+**Coverage:** every Plugin API element listed in this document
 
-### Deprecation Policy
+**Until the freeze**
 
-When a Plugin API element must change in a backward-incompatible way:
+- Breaking changes may occur, but only in MINOR releases (e.g. v0.2.0) — never in a PATCH release. An extension that declares `^0.1` is not affected by any v0.1.x update.
+- Each breaking change is listed in `CHANGELOG.md` under "Plugin API — Breaking" with migration notes, kept as `@deprecated` for one release where practical, and bumps the `dixlase_api` version.
+
+**When it freezes**
+
+- The freeze is announced in `CHANGELOG.md` and tagged `plugin-api-v1.0`. It is not tied to a core version number, including 1.0.
+- From then on the Deprecation Policy below applies: breaking changes ship only in MAJOR releases, with at least one full MINOR cycle to migrate.
+
+### Deprecation Policy (after the freeze)
+
+When a frozen Plugin API element must change in a backward-incompatible way:
 
 1. **Minor release** (e.g. v0.2.0): the change ships as an additive new symbol. The old symbol remains and is marked with PHPDoc `@deprecated`, plus a runtime warning where feasible.
 2. **Next major release** (e.g. v1.0.0 after a v0.x deprecation): the deprecated symbol is removed. A migration guide is published in `CHANGELOG.md` and the replacement is described in this document.
@@ -31,8 +40,7 @@ When a Plugin API element must change in a backward-incompatible way:
 Additions, deprecations, and breaking changes to the Plugin API are announced through:
 
 - **`CHANGELOG.md`** in the core repository (authoritative source)
-- **GitHub Releases** of `Dixlase/Core`
-- **GitHub Discussions** of `Dixlase/Core` for advance notice and migration guidance
+- **GitHub Releases** of `Dixlase/dixlase-core`
 
 Plugin and theme authors are encouraged to subscribe to GitHub releases of the core repository.
 
@@ -57,7 +65,7 @@ This is the contract the extension agrees to follow. Core verifies this declarat
 - **Field:** `requires.dixlase_api` (semver constraint, e.g. `"^0.1"`)
 - **Current core API version:** `0.1.0` (constant `App\Extension\ExtensionApi::CURRENT_VERSION`)
 - **Supported range:** `^0.1` (constant `App\Extension\ExtensionApi::SUPPORTED_RANGE`)
-- **Bump rules:** MINOR bumps (0.1 → 0.2) ship additive, non-breaking changes; MAJOR bumps (0.x → 1.0) ship breaking changes to the surface documented below.
+- **Bump rules:** before the freeze, MINOR bumps (0.1 → 0.2) may include breaking changes to the surface documented below; PATCH releases never do. After the freeze, only MAJOR bumps do.
 
 Enforcement schedule:
 
@@ -678,7 +686,7 @@ the full format reference, tag rules, and worked examples.
 
 ### 9.8 Events
 
-- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks). Delivers a frozen, versioned `App\DTO\Audit\AuditLogPayload` as `$event->payload`. Schema version: `AuditLogCreated::SCHEMA_VERSION`.
+- `App\Events\AuditLogCreated` — Audit log creation event (for SIEM integration and plugin hooks). Delivers a versioned `App\DTO\Audit\AuditLogPayload` as `$event->payload`. Schema version: `AuditLogCreated::SCHEMA_VERSION`.
 - `App\Events\SecurityAlertEvent` — Security alert event
 - `App\Events\DixlaseEvents` — Constants for all core event names that plugins can listen to (see below)
 

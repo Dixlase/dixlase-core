@@ -13,15 +13,20 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 ## バージョニングと Plugin API
 
 - リリースはセマンティックバージョニング（`MAJOR.MINOR.PATCH`）に従います。
-- `PLUGIN-API.md` に列挙された Plugin API 要素（インターフェース、DTO、サービス、
-  イベント、Blade コンポーネント等）の集合は、メジャーバージョン内で **凍結** されます。
-- `^0.1`（すなわち `>=0.1.0, <0.2.0`）の範囲内では、Plugin API に破壊的変更は
-  導入されません。`0.1.0` に対してビルドされたプラグイン・テーマは、すべての
-  `0.1.x` リリースで修正なしに動作し続けます。
-- 非推奨化: Plugin API 要素を非互換に変更する必要がある場合、非推奨となる旧
-  シンボルと並べて、新しいシンボルを次のマイナーリリースで提供します。非推奨
-  シンボルは次のメジャーリリースでのみ削除されます。これにより、プラグイン作者に
-  移行のための最低 1 マイナーサイクルを保証します。
+- 0.x のベータ期間中、Plugin API（`PLUGIN-API.md` に列挙したインターフェース、DTO、
+  サービス、イベント、Blade コンポーネント等の要素）は **公開済みですが、まだ凍結して
+  いません**。設計が固まるまでは、互換性のない変更が入ることがあります。
+- Plugin API の破壊的変更は MINOR リリース（例: `0.1` → `0.2`）でのみ行い、PATCH
+  リリースでは行いません。`^0.1` を宣言した拡張は、`0.1.x` の更新で壊れません。
+- 破壊的変更はすべて、このファイルの **「Plugin API — 破壊的変更」** の見出しに
+  移行方法とともに記載します。可能な場合は、旧シンボルを `@deprecated` として
+  1 リリース分残します。
+- 破壊的変更のたびに `dixlase_api` のバージョン
+  （`App\Extension\ExtensionApi::CURRENT_VERSION`）を上げます。
+- Plugin API は、設計が固まった時点で凍結します。凍結はこのファイルで告知し、
+  `plugin-api-v1.0` タグで示します。**特定のコアのバージョン（1.0 を含む）とは
+  結び付けません**。凍結後の破壊的変更は MAJOR リリースでのみ行い、少なくとも
+  MINOR 1 サイクル分の非推奨期間を設けます。
 
 ---
 
@@ -42,8 +47,9 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   プラグイン例外の範囲に入るよう境界に載せる。
 
 ## [0.1.0] — 2026-10-01
-最初の安定版 Plugin API 凍結。このリリースは、AGPL プラグイン・テーマ例外
-（`LICENSE` を参照）の下でプラグイン・テーマが依拠できる公開境界を確立します。
+Plugin API を初めて公開するリリースです。AGPL プラグイン・テーマ例外（`LICENSE` を
+参照）の下で、プラグイン・テーマが依拠できる境界を定めます。この境界は公開済みですが、
+まだ凍結していません — 冒頭の「バージョニングと Plugin API」を参照してください。
 
 ### 動作要件
 
@@ -55,7 +61,7 @@ PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照し�
 
 ### 追加
 
-#### Plugin API サーフェス（凍結）
+#### Plugin API サーフェス（公開）
 
 - `App\Contracts\PluginIntegration\` 配下の **プラグイン統合 Contract**:
   `LinkableInterface`, `LinkableProviderInterface`, `MenuProviderInterface`,
@@ -104,7 +110,7 @@ PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照し�
 #### 監査・マルチサイト・プライバシー・キャッシュ・i18n の基盤
 
 - `App\Events\AuditLogCreated::SCHEMA_VERSION = 1` および
-  `App\DTO\Audit\AuditLogPayload` — SIEM サブスクライバ向けに凍結された監査
+  `App\DTO\Audit\AuditLogPayload` — SIEM サブスクライバ向けにバージョン管理された監査
   イベントのペイロード形状。
 - `App\Contracts\Site\SiteContextInterface` および `App\Facades\SiteContext` —
   マルチサイト解決の境界。`BelongsToSite` トレイトはモデルをアクティブサイトに
@@ -130,7 +136,7 @@ PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照し�
 
 #### 安定性インフラ
 
-- 凍結、サポートするバージョン範囲、非推奨化ポリシー、告知チャネルを文書化した
+- 安定性の状態、変更の告知手順、非推奨化ポリシー、告知チャネルを文書化した
   `PLUGIN-API.md` の Stability Pledge セクション。
 - `PLUGIN-API.md` §9 のサービスクラス命名規約表（`*Service` / `*Registry` /
   `*Manager` / `*Resolver`）。

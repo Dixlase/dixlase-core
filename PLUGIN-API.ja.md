@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-09-25
+**最終更新日:** 2026-09-26
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -14,13 +14,22 @@
 
 ## 安定性宣言（Stability Pledge）
 
-**凍結時点:** v0.1.0 リリース時（正確なリリース日は `CHANGELOG.md` を参照）
-**対象範囲:** 本ドキュメントに列挙された全 Plugin API 要素、バージョン範囲 `^0.1`
-**後方互換性:** `^0.1` の範囲では破壊的変更を行いません。v0.1.0 向けに作成したプラグイン・テーマは、全ての v0.1.x リリースで修正不要のまま動作し続けます。
+**状態:** 公開済み・未凍結（0.x ベータ期間）
+**対象範囲:** 本ドキュメントに列挙された全 Plugin API 要素
 
-### 廃止ポリシー
+**凍結までの扱い**
 
-Plugin API の要素を後方非互換に変更する必要が生じた場合:
+- 破壊的変更はありえますが、MINOR リリース（例: v0.2.0）でのみ行い、PATCH リリースでは行いません。`^0.1` を宣言した拡張は、v0.1.x の更新で壊れません。
+- 破壊的変更は `CHANGELOG.md` の「Plugin API — 破壊的変更」に移行方法とともに記載し、可能な場合は 1 リリース分 `@deprecated` として残し、`dixlase_api` のバージョンを上げます。
+
+**凍結したら**
+
+- 凍結は `CHANGELOG.md` で告知し、`plugin-api-v1.0` タグを付けます。コアのバージョン番号（1.0 を含む）とは結び付けません。
+- それ以降は下の廃止ポリシーに従います。破壊的変更は MAJOR リリースでのみ行い、移行のために最低 1 マイナーサイクル分の猶予を設けます。
+
+### 廃止ポリシー（凍結後）
+
+凍結後の Plugin API の要素を後方非互換に変更する必要が生じた場合:
 
 1. **マイナーリリース**（例: v0.2.0）: 新しいシンボルを追加形式で導入し、旧シンボルは残したまま PHPDoc `@deprecated` を付与し、可能な箇所ではランタイム警告を発します。
 2. **次のメジャーリリース**（例: v0.x で deprecation した場合は v1.0.0）: 廃止予定シンボルを削除します。`CHANGELOG.md` に移行ガイドを掲載し、置換先を本ドキュメントに記載します。
@@ -31,8 +40,7 @@ Plugin API の要素を後方非互換に変更する必要が生じた場合:
 Plugin API への追加・廃止予告・破壊的変更は、以下のチャネルで告知します:
 
 - **`CHANGELOG.md`**（コアリポジトリ、正本）
-- **GitHub Releases**（`Dixlase/Core`）
-- **GitHub Discussions**（`Dixlase/Core`、事前告知と移行ガイダンス）
+- **GitHub Releases**（`Dixlase/dixlase-core`）
 
 プラグイン・テーマ作者はコアリポジトリの GitHub Releases を subscribe しておくことを推奨します。
 
@@ -57,7 +65,7 @@ Dixlase が公開する文字列識別子（API スコープ、permission キー
 - **フィールド:** `requires.dixlase_api`（semver 制約、例: `"^0.1"`）
 - **現在のコア API バージョン:** `0.1.0`（定数 `App\Extension\ExtensionApi::CURRENT_VERSION`）
 - **サポート範囲:** `^0.1`（定数 `App\Extension\ExtensionApi::SUPPORTED_RANGE`）
-- **bump ルール:** MINOR bump（0.1 → 0.2）は追加的・非破壊的変更、MAJOR bump（0.x → 1.0）は本ドキュメント記載の面に対する破壊的変更を含みます。
+- **bump ルール:** 凍結前は、MINOR bump（0.1 → 0.2）で本ドキュメント記載の面に対する破壊的変更を含むことがあります。PATCH リリースでは含みません。凍結後は MAJOR bump でのみ含みます。
 
 強制スケジュール:
 
@@ -677,7 +685,7 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 
 ### 9.8 イベント
 
-- `App\Events\AuditLogCreated` — 監査ログ作成イベント（SIEM 連携・プラグインフック用）。`$event->payload` で凍結された型付き `App\DTO\Audit\AuditLogPayload` を運ぶ。スキーマバージョン: `AuditLogCreated::SCHEMA_VERSION`。
+- `App\Events\AuditLogCreated` — 監査ログ作成イベント（SIEM 連携・プラグインフック用）。`$event->payload` でバージョン管理された型付き `App\DTO\Audit\AuditLogPayload` を運ぶ。スキーマバージョン: `AuditLogCreated::SCHEMA_VERSION`。
 - `App\Events\SecurityAlertEvent` — セキュリティアラートイベント
 - `App\Events\DixlaseEvents` — プラグインがリッスン可能なコアイベント名定数（下表参照）
 
