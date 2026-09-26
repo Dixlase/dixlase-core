@@ -178,6 +178,10 @@ class CoreUpdater
         $vendorSwapped = false;
         $maintenanceOn = false;
 
+        // Set just before this run's migrate step, so the catch block knows
+        // whether migrations this run applied need reversing.
+        $migrationsStarted = false;
+
         // Slugs of bundled themes this update bootstrapped (copied into
         // place because they were not installed before). An installed
         // theme is never touched by a core update — see
@@ -434,11 +438,15 @@ class CoreUpdater
             // application lifecycle (dls:plugin:install runs them via
             // PluginMigrator), so the core's migrate has no business
             // touching them anyway.
-            Artisan::call('migrate', [
+            //
+            // After a vendor swap this and the steps below run in a new
+            // process (see runArtisan()).
+            $migrationsStarted = true;
+            $this->runArtisan('migrate', [
                 '--path' => 'database/migrations',
                 '--force' => true,
                 '--no-interaction' => true,
-            ]);
+            ], $vendorSwapped);
             $log('Migrations complete.');
 
             // Run the core UpdateSeeder if the class exists — the
@@ -458,24 +466,33 @@ class CoreUpdater
             // every user's core update.
             if (class_exists(\Database\Seeders\UpdateSeeder::class)) {
                 $log('Running core UpdateSeeder...');
-                Artisan::call('db:seed', [
+                $this->runArtisan('db:seed', [
                     '--class' => \Database\Seeders\UpdateSeeder::class,
                     '--force' => true,
                     '--no-interaction' => true,
-                ]);
+                ], $vendorSwapped);
                 $log('Core UpdateSeeder complete.');
             }
 
             $log('Clearing caches...');
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
+            $this->runArtisan('config:clear', [], $vendorSwapped);
+            $this->runArtisan('route:clear', [], $vendorSwapped);
             // view:clear + view:cache via the shared helper. The rebuild
             // step avoids the dev-env "click a menu, land back on the
             // same page" symptom (Vite watches storage/framework/views/
             // during `npm run dev` and cancels any navigation whose
-            // Blade view compiles on demand mid-flight).
-            \App\Services\View\CompiledViewCacheRebuilder::rebuild();
-            Artisan::call('cache:clear');
+            // Blade view compiles on demand mid-flight). After a vendor
+            // swap it runs in a new process: compiling Blade in this one
+            // goes through the Blade extensions of the providers this
+            // process booted with, and a package the release dropped
+            // (livewire/livewire) then fails on a file that is gone.
+            if ($vendorSwapped) {
+                $this->runArtisan('view:clear', [], true);
+                $this->runArtisan('view:cache', [], true);
+            } else {
+                \App\Services\View\CompiledViewCacheRebuilder::rebuild();
+            }
+            $this->runArtisan('cache:clear', [], $vendorSwapped);
             $log('Caches cleared.');
 
             // Round 5 Finding D residual: opcache_reset() and
@@ -589,6 +606,16 @@ class CoreUpdater
         } catch (\Throwable $e) {
             $log("Update failed: {$e->getMessage()} — rolling back source from snapshot...");
 
+            // Reverse the migrations this run applied BEFORE the source is
+            // restored: their down() methods live in the new release's files,
+            // which the restore removes. Without this the database kept the
+            // new schema, the next update recorded that schema as its
+            // starting point, and dls:core:rollback then had nothing to
+            // reverse — old code on a new schema.
+            if ($migrationsStarted) {
+                $this->rollBackMigrationsSince($preMigrateBatch, $vendorSwapped, $backupRecordId, $log);
+            }
+
             try {
                 $this->snapshotter->restore($snapshotPath);
                 $log("Source rolled back from snapshot {$snapshotPath}");
@@ -667,6 +694,58 @@ class CoreUpdater
             // placeholder. CLI invocations never set the flag, so this
             // is a no-op for them.
             @unlink(self::inProgressFlagPath());
+        }
+    }
+
+    /**
+     * Run an Artisan command, in a new process when vendor/ was swapped.
+     *
+     * This process booted from the previous vendor/: its class loader and
+     * the service providers it registered still describe packages that may
+     * be gone. A new process boots from the new vendor/ and the package
+     * manifest rebuilt after the swap (see ArtisanProcess). Without a
+     * vendor swap the command runs in-process as before.
+     *
+     * @param  array<string, bool|int|string>  $options
+     */
+    private function runArtisan(string $command, array $options, bool $freshProcess): void
+    {
+        if ($freshProcess) {
+            app(ArtisanProcess::class)->run($command, $options);
+
+            return;
+        }
+
+        Artisan::call($command, $options);
+    }
+
+    /**
+     * Reverse the core migrations applied after $preMigrateBatch.
+     *
+     * Best-effort: a failure is logged with the way back (restore the
+     * pre-update database backup) and never masks the original error.
+     */
+    private function rollBackMigrationsSince(int $preMigrateBatch, bool $freshProcess, ?int $backupRecordId, Closure $log): void
+    {
+        try {
+            $applied = DB::table('migrations')->where('batch', '>', $preMigrateBatch)->count();
+            if ($applied === 0) {
+                return;
+            }
+
+            $log("Reversing {$applied} migration(s) applied by this update...");
+            $this->runArtisan('migrate:rollback', [
+                '--path' => 'database/migrations',
+                '--step' => $applied,
+                '--force' => true,
+                '--no-interaction' => true,
+            ], $freshProcess);
+            $log('Migrations reversed.');
+        } catch (\Throwable $rollbackError) {
+            $log("MIGRATION ROLLBACK FAILED: {$rollbackError->getMessage()}");
+            $log($backupRecordId !== null
+                ? "The database may be on the new schema. Restore it with: php artisan dls:backup:restore {$backupRecordId}"
+                : 'The database may be on the new schema. Restore it from a backup taken before the update.');
         }
     }
 

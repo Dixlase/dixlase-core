@@ -245,6 +245,11 @@ trait BuildsExtensionAssets
             $extensionPath.'/resources/assets',
             $extensionPath.'/public/build',
             $extensionPath.'/dist',
+            // Core's own Vite outDir. dls:core:update runs this trait on
+            // base_path(), and without this entry the prebuilt assets in
+            // the release ZIP went unnoticed: every core update ran npm
+            // install + vite build on the operator's machine.
+            $extensionPath.'/public/assets/build',
         ];
 
         foreach ($candidates as $dir) {

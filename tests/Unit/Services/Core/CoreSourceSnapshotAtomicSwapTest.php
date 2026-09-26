@@ -243,6 +243,47 @@ class CoreSourceSnapshotAtomicSwapTest extends TestCase
      *
      * @return array{0: string, 1: string}
      */
+    public function test_public_keeps_its_directory_inode(): void
+    {
+        // `php -S` runs with public/ as its cwd; renaming public/ away and
+        // deleting it left that cwd unlinked and every request failed with
+        // "Failed opening required '/index.php'".
+        [$source, $live] = $this->makePair('public');
+        $this->writeFile($live.'/index.php', 'OLD');
+        $this->writeFile($live.'/assets/build/old.js', 'OLD');
+        $this->writeFile($source.'/index.php', 'NEW');
+        $this->writeFile($source.'/assets/build/new.js', 'NEW');
+        $target = $this->workDir.'/external-storage';
+        mkdir($target, 0755, true);
+        symlink($target, $live.'/storage');
+        $inode = fileinode($live);
+
+        $this->snapshotter->replaceLiveDirectory($source, $live);
+
+        clearstatcache();
+        $this->assertSame($inode, fileinode($live), 'public/ must stay the same directory (inode) across the swap.');
+        $this->assertSame('NEW', (string) file_get_contents($live.'/index.php'));
+        $this->assertFileExists($live.'/assets/build/new.js');
+        $this->assertFileDoesNotExist($live.'/assets/build/old.js');
+        $this->assertSame($target, readlink($live.'/storage'));
+        $this->assertDirectoryDoesNotExist($live.'.new');
+        $this->assertDirectoryDoesNotExist($live.'.old');
+    }
+
+    public function test_other_source_directories_are_still_swapped_by_rename(): void
+    {
+        [$source, $live] = $this->makePair('app');
+        $this->writeFile($live.'/foo.php', 'OLD');
+        $this->writeFile($source.'/foo.php', 'NEW');
+        $inode = fileinode($live);
+
+        $this->snapshotter->replaceLiveDirectory($source, $live);
+
+        clearstatcache();
+        $this->assertNotSame($inode, fileinode($live));
+        $this->assertSame('NEW', (string) file_get_contents($live.'/foo.php'));
+    }
+
     private function makePair(string $liveBasename = 'app'): array
     {
         $source = $this->workDir.'/source-'.uniqid();

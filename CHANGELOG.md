@@ -93,6 +93,23 @@ repository to be notified of changes.
 
 ### Fixed
 
+- A core update or rollback no longer replaces `public/` as a directory: its entries are
+  swapped and the directory itself stays, so a built-in server (`php -S`, as the one-line
+  installer runs it from `public/`) keeps working instead of failing every request with
+  `Failed opening required '/index.php'` until it is restarted.
+- A core update that removes a package failed on its first attempt: after `vendor/` was
+  swapped, `view:cache` ran in the updater's own process, whose Blade extensions still
+  came from the old `vendor/` (livewire/livewire), and failed on a file that was gone.
+  After a `vendor/` swap the migrate, seed and cache steps now run in a new
+  `php artisan` process; the core rollback clears its caches the same way.
+- A failed core update now reverses the migrations it applied, before restoring the
+  source. Before, the database kept the new schema, the next update recorded that schema
+  as its starting point, and `dls:core:rollback` then had nothing to reverse.
+- The admin rollback button did nothing right after a core update: its confirm modal was
+  only rendered while something was left to update.
+- `dls:core:update` ran `npm install` and `vite build` on every update, because the
+  prebuilt-assets check did not look at core's own output directory,
+  `public/assets/build`. The prebuilt assets in the release ZIP are now used as shipped.
 - Installing a signed plugin or theme that ships no prebuilt assets made its signature
   invalid before it could be activated: the asset build ran `npm install`, which rewrites
   the signed `package-lock.json` in the local npm's format. The build now uses `npm ci`
