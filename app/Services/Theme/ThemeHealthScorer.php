@@ -161,22 +161,29 @@ class ThemeHealthScorer
         $issues = [];
         $signatureInfo = $this->permissionService->getSignatureInfo($themeSlug);
 
-        // Only a verified signature satisfies the check. Any other status --
-        // including one a future verifier has not produced yet -- counts as
-        // unsigned, so the Strict preset's signature requirement fails closed.
-        if ($signatureInfo['status'] === 'invalid') {
+        // Mirrors PluginHealthScorer::evaluateSignature(): each status the
+        // verifier can report maps to its own issue. Anything else that is
+        // not `valid` still counts as unsigned, so the Strict preset's
+        // signature requirement fails closed.
+        $status = $signatureInfo['status'] ?? 'unsigned';
+
+        $issue = match ($status) {
+            'valid' => null,
+            'invalid' => ['signature_invalid', 'critical', 'services/theme/theme_health_scorer.invalid_signature_tampering', -50],
+            'pending_verification' => ['signature_pending_verification', 'warning', 'services/plugin/plugin_health_scorer.signature_verification_incomplete_keyserver', -5],
+            'unknown_key' => ['signature_unknown_key', 'warning', 'services/plugin/plugin_health_scorer.signing_key_not_trusted', -15],
+            'expired' => ['signature_expired', 'warning', 'services/plugin/plugin_health_scorer.signing_key_revoked', -20],
+            'error' => ['signature_error', 'warning', 'services/plugin/plugin_health_scorer.signature_verification_error', -10],
+            default => ['signature_unsigned', 'warning', 'services/theme/theme_health_scorer.no_signature_recommend_signing', -10],
+        };
+
+        if ($issue !== null) {
+            [$type, $severity, $descriptionKey, $defaultDeduction] = $issue;
             $issues[] = new HealthIssue(
-                type: 'signature_invalid',
-                severity: 'critical',
-                description: __('services/theme/theme_health_scorer.invalid_signature_tampering'),
-                deduction: $deductionRules['signature_invalid'] ?? -50,
-            );
-        } elseif ($signatureInfo['status'] !== 'valid') {
-            $issues[] = new HealthIssue(
-                type: 'signature_unsigned',
-                severity: 'warning',
-                description: __('services/theme/theme_health_scorer.no_signature_recommend_signing'),
-                deduction: $deductionRules['signature_unsigned'] ?? -10,
+                type: $type,
+                severity: $severity,
+                description: __($descriptionKey),
+                deduction: $deductionRules[$type] ?? $defaultDeduction,
             );
         }
 
