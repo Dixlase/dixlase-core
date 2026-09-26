@@ -329,6 +329,7 @@ return [
     'messages' => [
         'install_success' => 'Plugin has been installed successfully.',
         'install_success_no_plugin' => 'Plugin has been installed successfully.',
+        'asset_build_failed' => 'The plugin was installed, but building its screen files (:command) failed, so its pages may be missing JavaScript and CSS. The npm output is in the log. To try again, run: php artisan dls:plugin:install :directory --build',
         'enable_here' => 'click here',
         'enable_cta' => 'Enable ":name"',
         'download_complete_cta' => 'Install ":name"',

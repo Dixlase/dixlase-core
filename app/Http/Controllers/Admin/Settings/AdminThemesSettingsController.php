@@ -49,6 +49,7 @@ use App\Models\Theme;
 use App\Models\ThemeAudit;
 use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
+use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionSourceSidecar;
@@ -656,8 +657,21 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 );
             }
 
-            return redirect()->route('admin.settings.themes.index')
+            $redirect = redirect()->route('admin.settings.themes.index')
                 ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_successfully_installed'));
+
+            // The install succeeds even when the asset build fails, but the
+            // console output is discarded by Artisan::call(), so say so here
+            // or the theme silently renders without its JS / CSS.
+            $buildFailure = app(ExtensionAssetBuildReport::class)->failureFor(base_path("themes/{$themeDir}"));
+            if ($buildFailure !== null) {
+                $redirect->with('warning', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_asset_build_failed', [
+                    'command' => $buildFailure['command'],
+                    'directory' => $themeDir,
+                ]));
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             Log::error('Theme installation failed', [
                 'directory' => $themeDir,

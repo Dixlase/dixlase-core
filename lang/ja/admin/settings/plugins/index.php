@@ -329,6 +329,7 @@ return [
     'messages' => [
         'install_success' => 'プラグインが正常にインストールされました。',
         'install_success_no_plugin' => 'プラグインが正常にインストールされました。',
+        'asset_build_failed' => 'プラグインはインストールされましたが、画面用ファイルのビルド(:command)に失敗したため、画面の JavaScript と CSS が無い状態です。npm の出力はログに記録されています。再実行するには: php artisan dls:plugin:install :directory --build',
         'enable_here' => 'こちら',
         'enable_cta' => '「:name」を有効化',
         'download_complete_cta' => '「:name」をインストール',

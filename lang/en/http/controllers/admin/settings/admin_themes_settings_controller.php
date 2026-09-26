@@ -42,6 +42,7 @@ return [
     'theme_installation_failed_with_reason' => 'Theme installation failed: ',
     'theme_successfully_deleted' => 'Theme successfully deleted.',
     'theme_successfully_installed' => 'Theme successfully installed.',
+    'theme_asset_build_failed' => 'The theme was installed, but building its screen files (:command) failed, so its pages may be missing JavaScript and CSS. The npm output is in the log. To try again, run: php artisan dls:theme:build :directory',
     'theme_switch_failed' => 'Theme switch failed.',
     'theme_switch_failed_with_reason' => 'Theme switch failed: ',
     'theme_switched' => 'Theme switched.',

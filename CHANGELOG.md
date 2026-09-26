@@ -93,6 +93,17 @@ repository to be notified of changes.
 
 ### Fixed
 
+- Installing a signed plugin or theme that ships no prebuilt assets made its signature
+  invalid before it could be activated: the asset build ran `npm install`, which rewrites
+  the signed `package-lock.json` in the local npm's format. The build now uses `npm ci`
+  when a lock file is shipped (`npm install` only when there is none), in both the
+  extension install / update commands and `dls:theme:build`.
+- A failed extension asset build was invisible when the install ran from the admin panel:
+  the npm output was discarded and the install reported success, leaving the extension
+  without its JS / CSS. The failed step is now logged with the tail of npm's output, and
+  the plugin and theme install screens show a warning with the command to retry. The
+  admin flash message component (`x-ui-flash-message`) now renders `warning` messages,
+  which it previously dropped.
 - Admin passkey login sent the assertion in plain base64; it now uses base64url as
   WebAuthn requires.
 - The passkey cleanup rule aged passkeys by registration date, so a passkey registered

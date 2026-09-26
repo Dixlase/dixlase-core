@@ -57,13 +57,13 @@ class ThemeBuild extends Command
      */
     protected $signature = 'dls:theme:build
                             {theme : The directory name of the theme to build}
-                            {--no-install : Skip npm install (use existing node_modules)}
+                            {--no-install : Skip installing npm packages (use existing node_modules)}
                             {--no-symlink : Skip dls:theme:symlink invocation after build}';
 
     /**
      * The console command description.
      */
-    protected $description = 'Run npm install + npm run build for a theme and create its public symlink';
+    protected $description = 'Install npm packages (npm ci when a lock file is shipped) and run npm run build for a theme, then create its public symlink';
 
     /**
      * Execute the console command.
@@ -133,8 +133,15 @@ CSS);
         $npmEnv = ['NPM_CONFIG_CACHE' => $npmCache];
 
         if (! $this->option('no-install')) {
-            $this->info("Running npm install in themes/{$theme}...");
-            $install = $this->runNpm($themePath, $npmEnv, 'npm install', $theme);
+            // npm ci when the theme ships a lock file: npm install rewrites
+            // package-lock.json, which is a signed file, and a signed theme
+            // would then fail verification. See BuildsExtensionAssets.
+            $installCommand = File::exists("{$themePath}/package-lock.json")
+                || File::exists("{$themePath}/npm-shrinkwrap.json")
+                ? 'npm ci'
+                : 'npm install';
+            $this->info("Running {$installCommand} in themes/{$theme}...");
+            $install = $this->runNpm($themePath, $npmEnv, $installCommand, $theme);
 
             if ($install === null) {
                 return self::FAILURE;

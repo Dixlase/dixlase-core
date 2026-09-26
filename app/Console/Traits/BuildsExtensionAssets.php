@@ -35,7 +35,9 @@
 
 namespace App\Console\Traits;
 
+use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Support\Process\SubprocessEnvironment;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 
 /**
@@ -79,6 +81,24 @@ use Symfony\Component\Process\Process;
  *
  * Extensions with no front-end pipeline (no package.json) are
  * unaffected: buildExtensionAssets() returns immediately.
+ *
+ * # Signed files are left alone
+ *
+ * package-lock.json is part of a signed extension, and `npm install`
+ * rewrites it in the local npm's own format even when the dependencies
+ * are unchanged — which turned every signed plugin without prebuilt
+ * assets "tampered" between install and activation. When a lock file
+ * is shipped the dependencies are installed with `npm ci`, which only
+ * reads it. There is deliberately no fallback to `npm install` when
+ * `npm ci` fails: that would rewrite the lock file and break the
+ * signature, so the failure is reported instead.
+ *
+ * # Failures are visible
+ *
+ * A failed step is logged with the tail of npm's output and recorded in
+ * ExtensionAssetBuildReport, so the admin panel — which runs the
+ * install through Artisan::call() and never sees the console — can warn
+ * the operator. The install itself still succeeds.
  */
 trait BuildsExtensionAssets
 {
@@ -93,8 +113,9 @@ trait BuildsExtensionAssets
      *   - 'skip'  Never build. Useful when an operator handles asset
      *             pipelines outside of the install flow.
      *
-     * Runs `npm install` and (when a `build` script is declared) `npm
-     * run build` inside the extension directory. Returns true on
+     * Runs `npm ci` (or `npm install` when no lock file is shipped) and,
+     * when a `build` script is declared, `npm run build` inside the
+     * extension directory. Returns true on
      * success or when the extension has no package.json (= nothing to
      * build); false only when a build was attempted and failed.
      *
@@ -104,6 +125,7 @@ trait BuildsExtensionAssets
     protected function buildExtensionAssets(string $extensionPath, string $mode = 'auto'): bool
     {
         $packageJsonPath = $extensionPath.'/package.json';
+        app(ExtensionAssetBuildReport::class)->clear($extensionPath);
 
         if (! file_exists($packageJsonPath)) {
             // No front-end pipeline shipped — nothing to do.
@@ -129,9 +151,10 @@ trait BuildsExtensionAssets
             return false;
         }
 
+        $installCommand = $this->npmInstallCommand($extensionPath);
         $this->info('Installing npm packages for the extension...');
-        if (! $this->runProcess(['npm', 'install'], $extensionPath)) {
-            $this->warn('npm install failed — extension assets may not be available.');
+        if (! $this->runProcess($installCommand, $extensionPath)) {
+            $this->warn(implode(' ', $installCommand).' failed — extension assets may not be available.');
 
             return false;
         }
@@ -156,6 +179,24 @@ trait BuildsExtensionAssets
         $this->info('Extension front-end assets built successfully.');
 
         return true;
+    }
+
+    /**
+     * The command that installs the extension's npm dependencies.
+     *
+     * `npm ci` when a lock file is shipped, so the signed lock file is
+     * read but never rewritten; `npm install` only when there is none.
+     *
+     * @return list<string>
+     */
+    private function npmInstallCommand(string $extensionPath): array
+    {
+        if (file_exists($extensionPath.'/package-lock.json')
+            || file_exists($extensionPath.'/npm-shrinkwrap.json')) {
+            return ['npm', 'ci'];
+        }
+
+        return ['npm', 'install'];
     }
 
     /**
@@ -234,6 +275,10 @@ trait BuildsExtensionAssets
     /**
      * Run a command in $cwd, streaming output to the console.
      *
+     * On failure the tail of the output is logged and the step is
+     * recorded in ExtensionAssetBuildReport, because callers that go
+     * through Artisan::call() discard the console stream.
+     *
      * We use Symfony Process directly rather than $this->call() because
      * the build step shells out to npm (an external binary), not to an
      * Artisan command. Timeout is generous because cold npm installs
@@ -271,10 +316,25 @@ trait BuildsExtensionAssets
         $process = new Process($command, $cwd, SubprocessEnvironment::inherit($env));
         $process->setTimeout(600);
 
-        $process->run(function ($type, $buffer) {
+        $captured = '';
+        $process->run(function ($type, $buffer) use (&$captured) {
             $this->getOutput()->write($buffer);
+            $captured .= $buffer;
         });
 
-        return $process->isSuccessful();
+        if ($process->isSuccessful()) {
+            return true;
+        }
+
+        $commandLine = implode(' ', $command);
+        Log::warning('Extension asset build step failed', [
+            'path' => $cwd,
+            'command' => $commandLine,
+            'exit_code' => $process->getExitCode(),
+            'output' => mb_substr($captured, -4000),
+        ]);
+        app(ExtensionAssetBuildReport::class)->recordFailure($cwd, $commandLine, $process->getExitCode());
+
+        return false;
     }
 }

@@ -59,6 +59,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 @endif
 
+@if (session('warning'))
+    <div class="my-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200" role="alert">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-amber-500 dark:text-amber-400 text-sm"></i>
+            </div>
+            <div class="ml-2 flex-1 font-medium">
+                {{ session("warning") }}
+            </div>
+        </div>
+    </div>
+@endif
+
 @if (session('error'))
     <div class="my-4 p-4 rounded-lg bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
         <div class="flex items-start">
