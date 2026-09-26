@@ -210,6 +210,21 @@ jobs:
           # directory the operator unzipped in.
           rsync -a --exclude-from=.github/release-dist-exclude.txt . "$WRAPPER/"
 
+          # The exclude list is written for core and its patterns are not
+          # anchored, so it also stripped CHANGELOG.md, CONTRIBUTING*,
+          # SECURITY.md, tests/, phpunit.xml and .gitignore out of the
+          # bundled theme. Those are signed files: the theme then failed
+          # verification on every install from this ZIP, and without its
+          # .gitignore the built resources/assets/ counted as extra files.
+          # Copy each bundled theme again exactly as composer placed it
+          # (the signed tree plus the CI-built assets).
+          shopt -s nullglob
+          for theme_dir in themes/*/; do
+            theme_name="$(basename "$theme_dir")"
+            rsync -a --delete --exclude=.git/ --exclude=node_modules/ \
+              "$theme_dir" "$WRAPPER/themes/$theme_name/"
+          done
+
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "wrapper=$WRAPPER" >> "$GITHUB_OUTPUT"
           echo "Staged: $(du -sh "$WRAPPER" | cut -f1)"
@@ -296,6 +311,29 @@ jobs:
           EOF
           echo "Wrote manifest:"
           cat "$MANIFEST"
+
+      - name: Verify bundled themes carry every signed file
+        # The theme's signature lists its files in theme.json `files`. A
+        # file missing from the ZIP makes the installed theme "tampered",
+        # so fail the release here instead.
+        run: |
+          set -e
+          shopt -s nullglob
+          for theme_json in "${{ steps.stage.outputs.wrapper }}"/themes/*/theme.json; do
+            theme_dir="$(dirname "$theme_json")"
+            php -r '
+              $dir = $argv[1];
+              $manifest = json_decode(file_get_contents($dir."/theme.json"), true);
+              $files = array_keys($manifest["files"] ?? []);
+              if ($files === []) { echo basename($dir).": unsigned, nothing to check\n"; exit(0); }
+              $missing = array_values(array_filter($files, fn ($f) => ! is_file($dir."/".$f)));
+              if ($missing !== []) {
+                  fwrite(STDERR, "::error::".basename($dir)." is missing signed files: ".implode(", ", $missing)."\n");
+                  exit(1);
+              }
+              echo basename($dir).": all ".count($files)." signed files present\n";
+            ' "$theme_dir"
+          done
 
       - name: Build ZIP
         id: zip

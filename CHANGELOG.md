@@ -93,6 +93,11 @@ repository to be notified of changes.
 
 ### Fixed
 
+- The official theme bundled in the release ZIP failed signature verification on every
+  install: the release's exclude list, written for core, also stripped the theme's signed
+  `CHANGELOG.md`, `CONTRIBUTING*`, `SECURITY.md`, `tests/`, `phpunit.xml` and its
+  `.gitignore`. The release now copies each bundled theme as composer placed it, and
+  fails the build if any file its signature lists is missing.
 - `dls:theme:migrate`, `dls:theme:migrate:refresh`, `dls:theme:migrate:rollback` and
   `dls:theme:seed` accept the theme's slug again: they built the directory with
   `Str::studly()` alone, so `dixlase-onepage` looked for `DixlaseOnepage` instead of
