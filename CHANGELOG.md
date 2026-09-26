@@ -12,15 +12,21 @@ repository to be notified of changes.
 ## Versioning and the Plugin API
 
 - Releases follow semantic versioning (`MAJOR.MINOR.PATCH`).
-- The set of Plugin API elements (interfaces, DTOs, services, events, Blade components, etc.)
-  enumerated in `PLUGIN-API.md` is **frozen** within a major version.
-- Within `^0.1` (i.e. `>=0.1.0, <0.2.0`), no breaking changes will be introduced to the
-  Plugin API. Plugins and themes built against `0.1.0` will continue to work on every
-  `0.1.x` release without modification.
-- Deprecation: when a Plugin API element must change incompatibly, a new symbol ships in
-  the next minor release alongside the deprecated old symbol. The deprecated symbol is
-  removed only in the next major release. This guarantees plugin authors at least one
-  full minor cycle to migrate.
+- During the 0.x beta series the Plugin API — the elements (interfaces, DTOs, services,
+  events, Blade components, etc.) enumerated in `PLUGIN-API.md` — is **published but not
+  frozen**. Elements may still change in backward-incompatible ways while the design settles.
+- Breaking changes to the Plugin API ship only in a MINOR release (e.g. `0.1` → `0.2`),
+  never in a PATCH release. An extension that declares `^0.1` is not affected by any
+  `0.1.x` update.
+- Every breaking change is listed in this file under a **"Plugin API — Breaking"** heading
+  with migration notes. Where practical, the old symbol is kept for one release and marked
+  `@deprecated`.
+- Each breaking change also bumps the `dixlase_api` version
+  (`App\Extension\ExtensionApi::CURRENT_VERSION`).
+- The Plugin API will be frozen once it has settled. The freeze is announced here and
+  marked with the `plugin-api-v1.0` tag. It is **not tied to a particular core version**,
+  including 1.0. From that point on, breaking changes ship only in MAJOR releases, with at
+  least one full MINOR cycle of deprecation.
 
 ---
 
@@ -92,8 +98,9 @@ repository to be notified of changes.
   languages.
 
 ## [0.1.0] — 2026-10-01
-The first stable Plugin API freeze. This release establishes the public boundary that
-plugins and themes can rely on under the AGPL Plugin and Theme Exception (see `LICENSE`).
+The first public release of the Plugin API. This release defines the boundary that
+plugins and themes can build on under the AGPL Plugin and Theme Exception (see `LICENSE`).
+The boundary is published but not yet frozen — see *Versioning and the Plugin API* above.
 
 ### Requirements
 
@@ -105,7 +112,7 @@ environment matrix (database, web server, PHP extensions).
 
 ### Added
 
-#### Plugin API surface (frozen)
+#### Plugin API surface (published)
 
 - **Plugin Integration Contracts** under `App\Contracts\PluginIntegration\`:
   `LinkableInterface`, `LinkableProviderInterface`, `MenuProviderInterface`,
@@ -152,7 +159,7 @@ environment matrix (database, web server, PHP extensions).
 #### Audit, multisite, privacy, cache, and i18n foundations
 
 - `App\Events\AuditLogCreated::SCHEMA_VERSION = 1` and `App\DTO\Audit\AuditLogPayload`
-  — frozen audit-event payload shape for SIEM subscribers.
+  — versioned audit-event payload shape for SIEM subscribers.
 - `App\Contracts\Site\SiteContextInterface` and `App\Facades\SiteContext` —
   multisite resolution boundary; the `BelongsToSite` trait scopes models to the
   active site.
@@ -176,8 +183,8 @@ environment matrix (database, web server, PHP extensions).
 
 #### Stability infrastructure
 
-- `PLUGIN-API.md` Stability Pledge section documenting the freeze, supported version
-  range, deprecation policy, and announcement channels.
+- `PLUGIN-API.md` Stability Pledge section documenting the stability status, the
+  change-notice process, the deprecation policy, and announcement channels.
 - Service class naming convention table (`*Service` / `*Registry` / `*Manager` /
   `*Resolver`) in `PLUGIN-API.md` §9.
 - Public identifier naming conventions frozen in `docs/development/naming.md`
