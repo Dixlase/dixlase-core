@@ -44,6 +44,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckInstallationReady
 {
+    /** Session flag: the "database not reachable yet" line was already logged. */
+    private const DB_NOT_READY_LOGGED_KEY = 'install_db_not_ready_logged';
+
     /**
      * Paths excluded from installation check
      */
@@ -452,6 +455,8 @@ class CheckInstallationReady
             //    If it doesn't exist, skip and proceed to next check
             // Consider table prefix: dls_migrations or migrations
             $hasMigrationsTable = DB::getSchemaBuilder()->hasTable('migrations');
+            // The database answered: a later connection failure is news again.
+            session()->forget(self::DB_NOT_READY_LOGGED_KEY);
             $debugInfo['step2_migrations_table'] = $hasMigrationsTable ? 'OK' : __('http/middleware/check_installation_ready.skip_direct_sql_execution');
 
             if ($hasMigrationsTable) {
@@ -536,11 +541,44 @@ class CheckInstallationReady
         } catch (\Exception $e) {
             $debugInfo['error'] = $e->getMessage();
             if ($logToInstall) {
-                Log::channel('install')->info(__('http/middleware/check_installation_ready.check_install_migration_check_error').$e->getMessage());
+                if ($this->isConnectionFailure($e)) {
+                    // Until the wizard's database step, .env still holds the
+                    // example connection (host "mysql" for Docker), so every
+                    // wizard page failed to connect and logged it -- which
+                    // reads like an error to anyone opening install.log.
+                    // Record it once per session, worded as what it is.
+                    if (! session()->has(self::DB_NOT_READY_LOGGED_KEY)) {
+                        session()->put(self::DB_NOT_READY_LOGGED_KEY, true);
+                        Log::channel('install')->info(__('http/middleware/check_installation_ready.check_install_database_not_ready').$e->getMessage());
+                    }
+                } else {
+                    Log::channel('install')->info(__('http/middleware/check_installation_ready.check_install_migration_check_error').$e->getMessage());
+                }
             }
 
             return false;
         }
+    }
+
+    /**
+     * Whether the exception means "the database cannot be reached / does not
+     * exist yet" rather than a problem with a reachable database.
+     */
+    private function isConnectionFailure(\Throwable $e): bool
+    {
+        if ($e instanceof \Illuminate\Database\SQLiteDatabaseDoesNotExistException) {
+            return true;
+        }
+
+        $message = $e->getMessage();
+
+        foreach (['[2002]', '[2005]', '[2006]', 'getaddrinfo', 'Connection refused', 'could not translate host name', 'could not connect to server'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

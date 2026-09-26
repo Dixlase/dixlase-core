@@ -217,7 +217,7 @@ After the wizard completes:
 * * * * * cd /var/www/dixlase && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-- Configure a queue worker (optional but recommended):
+- Queue (optional). The default `QUEUE_CONNECTION=sync` needs no worker: webhook deliveries and queued mail run inside the request that triggers them. To send them in the background instead, set `QUEUE_CONNECTION=database` in `.env`. The scheduler above then works through the queue every minute; for immediate delivery, also run a dedicated worker:
 
 ```bash
 # Using systemd
@@ -233,7 +233,7 @@ After=network.target
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/dixlase
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+ExecStart=/usr/bin/php artisan queue:work --queue=webhooks,default --sleep=3 --tries=1 --max-time=3600
 Restart=always
 
 [Install]
