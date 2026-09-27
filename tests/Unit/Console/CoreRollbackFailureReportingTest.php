@@ -22,9 +22,11 @@
 
 namespace Tests\Unit\Console;
 
+use App\Models\AuditLog;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreVendorManager;
 use App\Services\Update\SystemUpdateFlash;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use RuntimeException;
 use Tests\TestCase;
@@ -41,6 +43,11 @@ use Tests\TestCase;
  */
 class CoreRollbackFailureReportingTest extends TestCase
 {
+    // The failed rollback writes a core_rollback_failed audit row; without a
+    // reset it leaks into the shared test database and breaks row counts
+    // in later tests.
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -87,6 +94,11 @@ class CoreRollbackFailureReportingTest extends TestCase
         $this->assertSame('0.3.32', $result['to']);
         $this->assertTrue($result['recovered'], 'Nothing changed, so the core is still where it was.');
         $this->assertStringContainsString('no prebuilt vendor/', $result['error']);
+
+        $audit = AuditLog::where('action', AuditLog::ACTION_CORE_ROLLBACK_FAILED)->sole();
+        $this->assertSame(AuditLog::OUTCOME_FAILURE, $audit->outcome);
+        $this->assertSame('0.3.32', $audit->context['to']);
+        $this->assertTrue($audit->context['recovered']);
     }
 
     public function test_vendor_check_runs_before_the_safety_snapshot_and_maintenance(): void

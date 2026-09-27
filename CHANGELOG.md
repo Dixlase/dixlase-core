@@ -98,6 +98,11 @@ repository to be notified of changes.
 
 ### Fixed
 
+- Core updates and rollbacks now write to the audit log: `core_updated`,
+  `core_update_failed` (including a preflight refusal), `core_rolled_back` and
+  `core_rollback_failed`, with the member who started them, the from/to versions and the
+  backup id. Before, only the version ledger recorded them — not the hash-chained log that
+  `audit:integrity verify` protects.
 - The official theme bundled in the release ZIP failed signature verification on every
   install: the release's exclude list, written for core, also stripped the theme's signed
   `CHANGELOG.md`, `CONTRIBUTING*`, `SECURITY.md`, `tests/`, `phpunit.xml` and its

@@ -38,10 +38,12 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
+use App\Models\AuditLog;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\ArtisanProcess;
 use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreSourceSnapshot;
+use App\Services\Core\CoreUpdateAudit;
 use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
 use App\Services\Core\PublicAssetRelinker;
@@ -362,6 +364,11 @@ class CoreRollback extends Command
                 'applied_at' => now(),
             ]);
 
+            CoreUpdateAudit::record(AuditLog::ACTION_CORE_ROLLED_BACK, true, $current !== '' ? $current : $to, $from, $this->appliedById(), [
+                'dependency_update' => $dependencyUpdate,
+                'backup_record_id' => $meta['backup_record_id'] ?? null,
+            ]);
+
             // Consume the rollback point so a subsequent dls:core:rollback
             // steps back to the PREVIOUS update rather than repeating this
             // one. The DB backup is retained as a safety net.
@@ -457,6 +464,11 @@ class CoreRollback extends Command
                 // Reporting must not mask the rollback failure itself.
             }
 
+            CoreUpdateAudit::record(AuditLog::ACTION_CORE_ROLLBACK_FAILED, false, $current !== '' ? $current : $to, $from, $this->appliedById(), [
+                'error' => mb_substr($e->getMessage(), 0, 1000),
+                'recovered' => $recovered,
+            ]);
+
             if ($maintenanceOn) {
                 try {
                     Artisan::call('up');
@@ -478,6 +490,13 @@ class CoreRollback extends Command
             // is a no-op for them — mirrors CoreUpdater::update()'s finally.
             @unlink(CoreUpdater::inProgressFlagPath());
         }
+    }
+
+    private function appliedById(): ?int
+    {
+        $appliedBy = $this->option('applied-by');
+
+        return ($appliedBy !== null && $appliedBy !== '') ? (int) $appliedBy : null;
     }
 
     /**
