@@ -71,19 +71,15 @@ The script checks PHP version and required extensions, downloads the latest rele
 
 ### Docker installer
 
-For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker), which brings up Dixlase via `docker compose`. See the installer repository's README for prerequisites and step-by-step instructions.
+For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase/dixlase-docker-installer), which brings up Dixlase via `docker compose`. See the installer repository's README for prerequisites and step-by-step instructions.
 
 ### Composer create-project
 
-For Composer-friendly environments, scaffold a new install in one command:
-
-```bash
-composer create-project dixlase/dixlase-core dixlase
-```
+Coming after Dixlase is registered on Packagist. Until then, use the quick install script or the Docker installer above.
 
 ---
 
-To work on the Core itself, clone this repository; using the development Docker stack provided by the [Docker installer](https://github.com/Dixlase/dixlase-installer-docker) is recommended. Dedicated developer documentation is in preparation.
+To work on the Core itself, clone this repository; using the development Docker stack provided by the [Docker installer](https://github.com/Dixlase/dixlase-docker-installer) is recommended. Dedicated developer documentation is in preparation.
 
 ---
 
