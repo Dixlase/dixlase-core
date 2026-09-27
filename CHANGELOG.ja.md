@@ -63,6 +63,10 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ### 修正
 
+- コアの更新とロールバックを監査ログに記録するようにした: `core_updated`・`core_update_failed`(事前チェックでの
+  中止を含む)・`core_rolled_back`・`core_rollback_failed`。実行したメンバー・更新前後のバージョン・バックアップの ID
+  を残す。これまではバージョンの履歴にしか残らず、`audit:integrity verify` が守るハッシュチェーンの監査ログには
+  1 行も無かった。
 - リリース ZIP に同梱する公式テーマが、インストールするたびに署名の検証に失敗していた。コア向けに書いた
   リリースの除外リストが、テーマの署名対象の `CHANGELOG.md` / `CONTRIBUTING*` / `SECURITY.md` / `tests/` /
   `phpunit.xml` と `.gitignore` まで外していたため。同梱テーマは composer が置いたままの形でコピーし直し、

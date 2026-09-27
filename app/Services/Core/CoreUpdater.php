@@ -39,6 +39,7 @@ namespace App\Services\Core;
 
 use App\Contracts\Backup\BackupServiceInterface;
 use App\Helpers\ComposerLocalHelper;
+use App\Models\AuditLog;
 use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Models\Theme;
@@ -168,6 +169,7 @@ class CoreUpdater
                 'update_failure_reason' => $this->truncateReason($reason),
             ])->save();
             @unlink(self::inProgressFlagPath());
+            $this->auditPreflightRefusal($current, $version, $appliedById, $reason);
 
             throw new RuntimeException($reason);
         }
@@ -570,6 +572,13 @@ class CoreUpdater
                 'downloaded_sha256' => $downloadedSha256,
             ]);
 
+            CoreUpdateAudit::record(AuditLog::ACTION_CORE_UPDATED, true, $current, $version, $appliedById, [
+                'history_id' => $history->id,
+                'backup_record_id' => $backupRecordId,
+                'dependency_update' => $dependencyUpdate,
+                'downloaded_sha256' => $downloadedSha256,
+            ]);
+
             // Clear the available_version on the singleton so the UI no
             // longer advertises the same upgrade.
             $coreState->forceFill([
@@ -729,6 +738,12 @@ class CoreUpdater
                 'update_failed_at' => now(),
                 'update_failure_reason' => $this->truncateReason($e->getMessage()),
             ])->save();
+            CoreUpdateAudit::record(AuditLog::ACTION_CORE_UPDATE_FAILED, false, $current, $version, $appliedById, [
+                'error' => $this->truncateReason($e->getMessage()),
+                'backup_record_id' => $backupRecordId,
+                'migrations_started' => $migrationsStarted,
+                'dependency_update' => $dependencyUpdate,
+            ]);
 
             $this->cleanupStaging($stagingPath);
 
@@ -741,6 +756,18 @@ class CoreUpdater
             // is a no-op for them.
             @unlink(self::inProgressFlagPath());
         }
+    }
+
+    /**
+     * Audit a refused update. Nothing changed, but who tried to update the
+     * core, and why it was refused, belongs in the audit log too.
+     */
+    private function auditPreflightRefusal(string $current, string $version, ?int $appliedById, string $reason): void
+    {
+        CoreUpdateAudit::record(AuditLog::ACTION_CORE_UPDATE_FAILED, false, $current, $version, $appliedById, [
+            'stage' => 'preflight',
+            'error' => $this->truncateReason($reason),
+        ]);
     }
 
     /**

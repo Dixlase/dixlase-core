@@ -305,6 +305,17 @@ class AuditLog extends Model
     public const ACTION_SCHEMA_RETIRED = 'schema_retired';
 
     // ========================================
+    // Action constants - core update related
+    // ========================================
+    public const ACTION_CORE_UPDATED = 'core_updated';
+
+    public const ACTION_CORE_UPDATE_FAILED = 'core_update_failed';
+
+    public const ACTION_CORE_ROLLED_BACK = 'core_rolled_back';
+
+    public const ACTION_CORE_ROLLBACK_FAILED = 'core_rollback_failed';
+
+    // ========================================
     // Action constants - settings related
     // ========================================
     public const ACTION_SETTINGS_UPDATED = 'settings_updated';
