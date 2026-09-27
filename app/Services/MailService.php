@@ -225,7 +225,7 @@ class MailService implements MailServiceInterface
     {
         if (! $config->isSmtp()) {
             return MailResultDTO::failed(
-                __('mail-server/test.test_functions.mailer_not_supported', ['mailer' => $config->mailer])
+                __('mail-server/config.controller_messages.mailer_not_supported', ['mailer' => $config->mailer])
             );
         }
 

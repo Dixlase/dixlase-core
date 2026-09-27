@@ -235,7 +235,7 @@ class AdminMemberFormController extends AdminLoggedInController
 
         if (! $result->success) {
             return redirect()->route('admin.members.index')
-                ->with('error', __('admin/members/index.messages.cannot_delete_initial_admin'));
+                ->with('error', __('admin/members/index.messages.initial_member_cannot_delete'));
         }
 
         return redirect()->route('admin.members.index')

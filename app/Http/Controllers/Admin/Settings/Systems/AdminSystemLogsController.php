@@ -374,7 +374,7 @@ class AdminSystemLogsController extends AdminLoggedInController
                 $results['error'] = 'success';
             }
 
-            $message = __('admin/settings/systems/logs.system.test_success', ['results' => implode(', ', array_keys($results))]);
+            $message = __('admin/settings/systems/logs/files.test_success', ['results' => implode(', ', array_keys($results))]);
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
@@ -608,7 +608,7 @@ class AdminSystemLogsController extends AdminLoggedInController
 
         if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
+                ->with('error', __('admin/settings/systems/logs/index.table_not_exists'));
         }
 
         $auditLog = AuditLog::findOrFail($id);
@@ -639,7 +639,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     {
         if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
+                ->with('error', __('admin/settings/systems/logs/index.table_not_exists'));
         }
 
         $query = AuditLog::query()->orderByDesc('occurred_at');
@@ -731,7 +731,7 @@ class AdminSystemLogsController extends AdminLoggedInController
     {
         if (! Schema::hasTable('audit_logs')) {
             return redirect()->route('admin.settings.systems.logs', ['type' => 'audit', 'view' => 'db'])
-                ->with('error', __('admin/settings/systems/logs.audit.table_not_exists'));
+                ->with('error', __('admin/settings/systems/logs/index.table_not_exists'));
         }
 
         // Deleting audit evidence is SUPER_ADMIN-only. The route's menu key

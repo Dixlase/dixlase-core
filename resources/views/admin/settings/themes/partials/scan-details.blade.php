@@ -216,7 +216,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <i class="fas fa-check-circle mr-1"></i>
                     {{ __('admin/settings/themes/index.verification.permission_ok') }}
                 </span>
-                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/themes/index.modal.healthy_body') }}</span>
+                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/themes/index.permissions.healthy_body') }}</span>
             </div>
         @endif
     </div>

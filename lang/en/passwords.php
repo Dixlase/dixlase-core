@@ -63,6 +63,22 @@ return [
         'symbol_optional' => 'Include symbols (!@#$%^&* etc.) for stronger password (recommended)',
         'uppercase_required' => '1 or more uppercase letters',
         'uppercase_optional' => 'Include uppercase letters for stronger password (recommended)',
+        'password_min_length' => 'Minimum Password Length',
+        'password_min_length_options' => [
+            8 => '8 characters or more',
+            12 => '12 characters or more',
+            16 => '16 characters or more',
+        ],
+        'password_require_uppercase' => 'Require Uppercase Letters',
+        'password_require_uppercase_options' => [
+            1 => 'Require',
+            0 => 'Do not require',
+        ],
+        'password_require_symbol' => 'Require Symbols',
+        'password_require_symbol_options' => [
+            1 => 'Require',
+            0 => 'Do not require',
+        ],
         'weak' => 'Weak',
         'normal' => 'Normal',
         'strong' => 'Strong',

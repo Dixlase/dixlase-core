@@ -47,7 +47,7 @@ enum MemberStatus: int
 
     public function label(): string
     {
-        return trans('admin.status.'.$this->name);
+        return trans('common.'.strtolower($this->name));
     }
 
     /**

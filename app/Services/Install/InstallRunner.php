@@ -412,7 +412,7 @@ class InstallRunner
                 'started_at' => now(),
                 'finished_at' => now(),
                 'duration_ms' => 0,
-                'summary' => __('command.integrity.baseline_generated'),
+                'summary' => __('admin/command/integrity.baseline_generated'),
             ]);
 
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.file_integrity_baseline_completed'), [

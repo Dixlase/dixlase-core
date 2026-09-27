@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     
     <section>
         <fieldset>
-            <legend class="sr-only">{{ __('admin/auth.forgot_password.email_label') }}</legend>
+            <legend class="sr-only">{{ __('admin/auth.forgot_password.email') }}</legend>
             
             <x-form-text
                 type="email"

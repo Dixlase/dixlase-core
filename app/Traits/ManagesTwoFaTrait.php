@@ -254,7 +254,7 @@ trait ManagesTwoFaTrait
         if ($recoveryCodeService->hasRecoveryCodes($model)) {
             return response()->json([
                 'success' => false,
-                'message' => __('two_fa.recovery_codes.already_exists'),
+                'message' => __('two-fa/management.recovery_codes.already_exists'),
             ], 400);
         }
 

@@ -38,6 +38,7 @@ return [
     'description' => 'インストール済みテーマの管理、新しいテーマの追加、テーマの切り替えを行います。',
     'installed_heading' => 'インストール済みテーマ',
     'update_available' => 'v:version が利用可能',
+    'update_failed_at' => ':date にアップデートに失敗しました',
     'updates' => [
         'check' => 'アップデートを確認',
         'checking' => '確認中...',

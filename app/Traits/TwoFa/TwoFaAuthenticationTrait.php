@@ -218,7 +218,7 @@ trait TwoFaAuthenticationTrait
             $remainingMinutes = $attemptService->getRemainingLockoutTime($member);
 
             return redirect()->route($this->getLoginRoute())
-                ->withErrors(['email' => __('two_fa.lockout.message', ['minutes' => $remainingMinutes])]);
+                ->withErrors(['email' => __('two-fa/common.lockout.message', ['minutes' => $remainingMinutes])]);
         }
 
         // Get available authentication methods (exclude Passkey when Passkey device is not registered)
@@ -405,7 +405,7 @@ trait TwoFaAuthenticationTrait
         // Check if user has registered a passkey
         $credentials = $twoFaPasskeyService->getCredentials($user);
         if ($credentials->isEmpty()) {
-            throw new \Exception(__('auth.passkey_not_registered'));
+            throw new \Exception(__('auth.no_passkey_registered'));
         }
 
         // Generate authentication challenge
@@ -607,7 +607,7 @@ trait TwoFaAuthenticationTrait
 
         if ($lockoutStatus['locked_out']) {
             return back()->withErrors([
-                'code' => __('two_fa.lockout.message', [
+                'code' => __('two-fa/common.lockout.message', [
                     'minutes' => $lockoutStatus['remaining_minutes'],
                 ]),
             ]);
@@ -625,7 +625,7 @@ trait TwoFaAuthenticationTrait
 
         if (! $this->verifyEmailCode($user, $request->code)) {
             return back()->withErrors([
-                'code' => __('two_fa.email.invalid_code'),
+                'code' => __('two-fa/email.invalid_code'),
             ]);
         }
 
@@ -662,7 +662,7 @@ trait TwoFaAuthenticationTrait
 
             return response()->json([
                 'success' => false,
-                'message' => __('two_fa.email.send_failed'),
+                'message' => __('two-fa/email.send_failed'),
             ], 500);
         }
     }
@@ -718,7 +718,7 @@ trait TwoFaAuthenticationTrait
 
         if ($lockoutStatus['locked_out']) {
             return back()->withErrors([
-                'recovery_code' => __('two_fa.lockout.message', [
+                'recovery_code' => __('two-fa/common.lockout.message', [
                     'minutes' => $lockoutStatus['remaining_minutes'],
                 ]),
             ]);
@@ -735,7 +735,7 @@ trait TwoFaAuthenticationTrait
 
         if (! $this->verifyRecoveryCodeValue($user, $request->recovery_code)) {
             return back()->withErrors([
-                'recovery_code' => __('two_fa.recovery_code.invalid'),
+                'recovery_code' => __('two-fa/recovery-code.invalid'),
             ]);
         }
 

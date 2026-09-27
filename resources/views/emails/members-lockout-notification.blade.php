@@ -32,25 +32,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <x-mail::message>
-# {{ __('mail.lockout_notification.title') }}
+# {{ __('mail.lockout.title') }}
 
-{{ __('mail.lockout_notification.message') }}
+{{ __('mail.lockout.message') }}
 
-**{{ __('mail.lockout_notification.details') }}**
+**{{ __('mail.lockout.details') }}**
 
-- **{{ __('mail.lockout_notification.identifier') }}:** {{ $details['identifier'] }}
-- **{{ __('mail.lockout_notification.ip_address') }}:** {{ $details['ip_address'] }}
-- **{{ __('mail.lockout_notification.user_agent') }}:** {{ $details['user_agent'] }}
-- **{{ __('mail.lockout_notification.timestamp') }}:** {{ $details['timestamp'] }}
+- **{{ __('mail.lockout.identifier') }}:** {{ $details['identifier'] }}
+- **{{ __('mail.lockout.ip_address') }}:** {{ $details['ip_address'] }}
+- **{{ __('mail.lockout.user_agent') }}:** {{ $details['user_agent'] }}
+- **{{ __('mail.lockout.timestamp') }}:** {{ $details['timestamp'] }}
 
-**{{ __('mail.lockout_notification.settings') }}**
+**{{ __('mail.lockout.settings') }}**
 
-- **{{ __('mail.lockout_notification.max_attempts') }}:** {{ $details['max_attempts'] }}{{ __('mail.lockout_notification.times') }}
-- **{{ __('mail.lockout_notification.time_window') }}:** {{ $details['time_window'] }}{{ __('mail.lockout_notification.minutes') }}
-- **{{ __('mail.lockout_notification.lockout_duration') }}:** {{ $details['lockout_duration'] }}{{ __('mail.lockout_notification.minutes') }}
+- **{{ __('mail.lockout.max_attempts') }}:** {{ __('mail.lockout.times', ['count' => $details['max_attempts']]) }}
+- **{{ __('mail.lockout.time_window') }}:** {{ __('mail.lockout.minutes', ['minutes' => $details['time_window']]) }}
+- **{{ __('mail.lockout.lockout_duration') }}:** {{ __('mail.lockout.minutes', ['minutes' => $details['lockout_duration']]) }}
 
-{{ __('mail.lockout_notification.action_required') }}
+{{ __('mail.lockout.action_required') }}
 
-{{ __('mail.lockout_notification.thanks') }}<br>
+{{ __('mail.lockout.thanks') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

@@ -41,4 +41,9 @@ return [
         'contributor' => 'Contributor',
         'guest' => 'Guest',
     ],
+    'actor_types' => [
+        'human' => 'Human',
+        'ai' => 'AI',
+        'service' => 'Service',
+    ],
 ];

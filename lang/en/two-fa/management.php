@@ -58,5 +58,6 @@ return [
         'confirm_saved' => 'I have saved the recovery codes in a safe place',
         'auto_generated_title' => 'Recovery Codes Auto-Generated',
         'auto_generated_message' => 'After your first successful two-factor authentication, recovery codes have been automatically generated for emergencies. These codes will not be shown again, so please save them.',
+        'already_exists' => 'Recovery codes have already been generated. Regenerate them if you need new codes.',
     ],
 ];

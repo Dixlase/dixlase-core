@@ -340,6 +340,7 @@ return [
 
     'color' => 'カラー',
     'font' => 'フォント',
+    'appearance_mode' => '外観モード',
 
     /*
     |--------------------------------------------------------------------------
@@ -419,6 +420,8 @@ return [
     'method' => 'メソッド',
     'uri' => 'URI',
     'controller' => 'コントローラー',
+    'route' => 'ルート',
+    'ip' => 'IPアドレス',
     'user_agent' => 'ユーザーエージェント',
     'time' => '時間',
     'admin_logs' => '管理画面ログ',
@@ -630,4 +633,17 @@ return [
 
     'source_code' => 'ソース',
     'source_code_title' => 'この Dixlase CMS のソースコードを取得（AGPL §13）',
+
+    // 汎用ラベル
+    'filter' => 'フィルター',
+    'codes' => '個',
+    'done' => '完了',
+    'open_settings' => '設定を開く',
+    'close_settings' => '設定を閉じる',
+    'delete_confirmation_message' => '本当に削除しますか？この操作は取り消せません。',
+
+    // 汎用エラー
+    'errors' => [
+        'unauthorized' => 'この操作を行う権限がありません。',
+    ],
 ];

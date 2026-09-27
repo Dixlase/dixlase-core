@@ -111,7 +111,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     data-msg-normal="{{ __('components/form-password-tools.requirements.normal') }}"
     data-msg-strong="{{ __('components/form-password-tools.requirements.strong') }}"
     data-msg-very-strong="{{ __('components/form-password-tools.requirements.very_strong') }}"
-    data-msg-paste-error="{{ __('install.password_paste_error') }}">
+    data-msg-paste-error="{{ __('install/common.password_paste_error') }}">
     <div class="relative">
         <input
             :type="showPassword ? 'text' : 'password'"

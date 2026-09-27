@@ -57,7 +57,7 @@ class AdminProfilePasskeyPromptController extends AdminLoggedInController
 
         return response()->json([
             'success' => true,
-            'message' => __('two_fa.passkey_prompt.dismissed'),
+            'message' => __('two-fa/passkey.prompt_modal.dismissed'),
         ]);
     }
 
@@ -74,7 +74,7 @@ class AdminProfilePasskeyPromptController extends AdminLoggedInController
 
         return response()->json([
             'success' => true,
-            'message' => __('two_fa.passkey_prompt.reset'),
+            'message' => __('two-fa/passkey.prompt_modal.reset'),
         ]);
     }
 }

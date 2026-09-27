@@ -104,6 +104,7 @@ return [
 
     // Search & Display
     'search' => 'Search',
+    'loading' => 'Loading',
     'preview' => 'Preview',
 
     // File Operations
@@ -276,6 +277,7 @@ return [
     'filters' => [
         'all_roles' => 'All Roles',
         'all_statuses' => 'All Statuses',
+        'search_keyword' => 'Keyword',
         'role_filter' => 'Role Filter',
         'status_filter' => 'Status Filter',
         'clear_button' => 'Clear',
@@ -314,6 +316,7 @@ return [
     'account_settings' => 'Account Settings',
     'notification_settings' => 'Notification Settings',
     'two_fa_settings' => 'Two-Factor Authentication Settings',
+    'password_settings' => 'Password Settings',
     'management_operations' => 'Management Operations',
     'appearance_settings' => 'Appearance Settings',
     'language_settings' => 'Language Settings',
@@ -441,4 +444,17 @@ return [
 
     'source_code' => 'Source',
     'source_code_title' => 'Get the source code of this Dixlase CMS instance (AGPL §13)',
+
+    // Generic labels
+    'filter' => 'Filter',
+    'codes' => 'codes',
+    'done' => 'Done',
+    'open_settings' => 'Open settings',
+    'close_settings' => 'Close settings',
+    'delete_confirmation_message' => 'Are you sure you want to delete this? This action cannot be undone.',
+
+    // Generic errors
+    'errors' => [
+        'unauthorized' => 'You are not authorized to perform this action.',
+    ],
 ];

@@ -133,7 +133,7 @@ class AdminMemberRolesController extends AdminLoggedInController
 
             // Check that edit permission is not lower than view permission
             if ($accessRoles < $viewRoles) {
-                $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
+                $errors[] = __('admin/members/roles.validation.access_must_be_greater_than_view', [
                     'menu_key' => $menuKey,
                 ]);
             }
@@ -162,7 +162,7 @@ class AdminMemberRolesController extends AdminLoggedInController
 
                 // Check that edit permission is not lower than view permission
                 if ($accessRoles < $viewRoles) {
-                    $errors[] = __('admin/members/settings/roles.validation.access_must_be_greater_than_view', [
+                    $errors[] = __('admin/members/roles.validation.access_must_be_greater_than_view', [
                         'menu_key' => "{$pluginSlug}.{$menuKey}",
                     ]);
                 }

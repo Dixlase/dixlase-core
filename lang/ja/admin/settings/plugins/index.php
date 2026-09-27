@@ -38,6 +38,7 @@ return [
     'description' => 'インストール済みプラグインの管理、新しいプラグインの追加、プラグインの有効化・無効化を行います。',
     'installed_heading' => 'インストール済みプラグイン',
     'update_available' => 'v:version が利用可能',
+    'update_failed_at' => ':date にアップデートに失敗しました',
     'updates' => [
         'check' => 'アップデートを確認',
         'checking' => '確認中...',

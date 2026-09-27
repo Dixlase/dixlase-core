@@ -50,6 +50,15 @@ return [
     'lockout' => 'ログイン試行回数が上限に達しました。:minutes分後に再度お試しください。',
     'two_fa_locked_out' => '二段階認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
     'account_inactive' => 'このアカウントは現在無効化されています。サイト管理者にお問い合わせください。',
+    'email_not_verified' => 'このアカウントはメール認証が完了していません。登録されたメールアドレスに送信された認証メールを確認し、アカウントの認証を完了してください。',
+    'session_expired' => 'セッションの有効期限が切れました。再度ログインしてください。',
+    'captcha_verification_failed' => 'CAPTCHA認証に失敗しました。もう一度お試しください。',
+
+    // メール認証
+    'verification_token_expired' => '認証トークンの有効期限が切れています。新しい認証メールをリクエストしてください。',
+    'verification_member_mismatch' => 'ログインしたアカウントと認証待ちのアカウントが一致しません。',
+    'verification_invalid' => '認証トークンが無効です。',
+    'verification_failed' => 'メール認証に失敗しました。もう一度お試しください。',
 
     // パスワードリセット
     'reset' => [
@@ -84,6 +93,7 @@ return [
     'passkey_login' => 'パスキーでログイン',
     'login_with_passkey' => 'パスキーでログイン',
     'passkey_cancelled' => 'パスキー認証がキャンセルされました',
+    'passkey_https_required' => 'パスキー認証にはHTTPS接続が必要です。',
     'no_passkey_registered' => 'パスキーが登録されていません',
     'two_fa_disabled' => '二段階認証が無効になっています',
     'change_account' => 'アカウントを変更',

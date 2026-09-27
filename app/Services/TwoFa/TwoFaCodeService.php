@@ -96,7 +96,7 @@ class TwoFaCodeService
         $helper = app(\App\Helpers\TwoFaHelper::class);
         if (! $helper->isMailConfigured()) {
             Log::error('[2FA Code] Mail not configured');
-            throw new \Exception(__('admin/profile/common.two_fa.mail_not_configured'));
+            throw new \Exception(__('admin/profile/common.two_factor_requires_mail_server'));
         }
 
         $code = $this->generate($user, $expireMinutes);

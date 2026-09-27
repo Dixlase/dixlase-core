@@ -48,8 +48,8 @@ enum TwoFaMethod: int
     public function label(): string
     {
         return match ($this) {
-            self::EMAIL => __('two_fa.method.email'),
-            self::PASSKEY => __('two_fa.method.passkey'),
+            self::EMAIL => __('two-fa/common.method.email'),
+            self::PASSKEY => __('two-fa/common.method.passkey'),
         };
     }
 
@@ -76,8 +76,8 @@ enum TwoFaMethod: int
     public function translationKey(): string
     {
         return match ($this) {
-            self::EMAIL => 'two_fa.method.email',
-            self::PASSKEY => 'two_fa.method.passkey',
+            self::EMAIL => 'two-fa/common.method.email',
+            self::PASSKEY => 'two-fa/common.method.passkey',
         };
     }
 
@@ -98,8 +98,8 @@ enum TwoFaMethod: int
     public function securityLevelLabel(): string
     {
         return match ($this) {
-            self::PASSKEY => __('two_fa.security.level.very_high'),
-            self::EMAIL => __('two_fa.security.level.medium'),
+            self::PASSKEY => __('two-fa/common.security.level.very_high'),
+            self::EMAIL => __('two-fa/common.security.level.medium'),
         };
     }
 
@@ -109,8 +109,8 @@ enum TwoFaMethod: int
     public function securityDescription(): string
     {
         return match ($this) {
-            self::PASSKEY => __('two_fa.security.description.passkey'),
-            self::EMAIL => __('two_fa.security.description.email'),
+            self::PASSKEY => __('two-fa/common.security.description.passkey'),
+            self::EMAIL => __('two-fa/common.security.description.email'),
         };
     }
 

@@ -334,7 +334,7 @@ class ThemeInstall extends Command
         \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
         $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
-        $this->info(__('admin/command/theme-install.activate_help', ['themeName' => $themeName]));
+        $this->info(__('admin/command/theme-install.enable_help', ['themeName' => $themeName]));
 
         return Command::SUCCESS;
     }

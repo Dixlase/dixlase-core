@@ -89,7 +89,7 @@ class TwoFaDeviceMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.two_fa_device',
+            markdown: 'emails.two-fa-device',
             with: [
                 'token' => $this->token,
                 'user' => $this->user,

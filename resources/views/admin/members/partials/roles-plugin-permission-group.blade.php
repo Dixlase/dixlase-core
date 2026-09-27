@@ -132,10 +132,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <!-- Access Permissions (編集権限) -->
                         <fieldset class="permission-section">
                             <legend class="permission-section__title text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                {{ __('admin/members/settings.roles.access_roles') }}
+                                {{ __('admin/members/roles.access_roles') }}
                             </legend>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                {{ __('admin/members/settings.roles.access_roles_help') }}
+                                {{ __('admin/members/roles.access_roles_help') }}
                             </p>
                             
                             <div class="permission-section__options" 
@@ -168,10 +168,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <!-- View Permissions (閲覧権限) -->
                         <fieldset class="permission-section">
                             <legend class="permission-section__title text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                {{ __('admin/members/settings.roles.view_roles') }}
+                                {{ __('admin/members/roles.view_roles') }}
                             </legend>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                {{ __('admin/members/settings.roles.view_roles_help') }}
+                                {{ __('admin/members/roles.view_roles_help') }}
                             </p>
                             
                             <div class="permission-section__options"
