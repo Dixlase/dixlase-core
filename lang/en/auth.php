@@ -50,6 +50,15 @@ return [
     'lockout' => 'Too many login attempts. Please try again in :minutes minutes.',
     'two_fa_locked_out' => 'Too many two-factor authentication attempts. Please try again in :minutes minutes.',
     'account_inactive' => 'This account is currently inactive. Please contact a site administrator.',
+    'email_not_verified' => 'This account has not been verified. Please check the verification email sent to your registered email address and complete the account verification.',
+    'session_expired' => 'Your session has expired. Please log in again.',
+    'captcha_verification_failed' => 'CAPTCHA verification failed. Please try again.',
+
+    // Email verification
+    'verification_token_expired' => 'The verification token has expired. Please request a new verification email.',
+    'verification_member_mismatch' => 'The logged-in account does not match the account pending verification.',
+    'verification_invalid' => 'The verification token is invalid.',
+    'verification_failed' => 'Email verification failed. Please try again.',
 
     // Password Reset
     'reset' => [
@@ -84,6 +93,7 @@ return [
     'passkey_login' => 'Login with Passkey',
     'login_with_passkey' => 'Login with Passkey',
     'passkey_cancelled' => 'Passkey authentication was cancelled',
+    'passkey_https_required' => 'Passkey authentication requires an HTTPS connection.',
     'no_passkey_registered' => 'No passkey registered',
     'two_fa_disabled' => 'Two-factor authentication is disabled',
     'change_account' => 'Change Account',

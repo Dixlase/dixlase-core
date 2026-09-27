@@ -69,6 +69,7 @@ return [
     // Layout Related
     'installation_progress' => 'Installation Progress',
     'language_selection' => 'Language Selection',
+    'language_changed' => 'Language changed.',
     'error_label' => 'Error',
     'validation_errors' => 'Validation Errors',
     'form_navigation' => 'Form Navigation',

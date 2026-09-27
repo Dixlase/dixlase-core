@@ -41,4 +41,9 @@ return [
         'contributor' => '寄稿者',
         'guest' => 'ゲスト',
     ],
+    'actor_types' => [
+        'human' => '人間',
+        'ai' => 'AI',
+        'service' => 'サービス',
+    ],
 ];

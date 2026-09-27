@@ -58,4 +58,5 @@ return [
     'error_title' => 'System Lockdown',
     'error_message' => 'Access to the system is currently restricted for security reasons.',
     'contact_admin' => 'Please contact the administrator.',
+    'title' => 'Service Temporarily Unavailable',
 ];

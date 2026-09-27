@@ -109,6 +109,7 @@ return [
     'notification' => [
         'title' => '拡張機能操作通知',
         'description' => 'プラグインやテーマの操作時にシステム管理者へメール通知を送信します。通知先は基本設定のシステム管理者メールアドレスです。',
+        'mail_test_required' => '拡張機能操作通知を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">メール設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
         'notify_on_install' => 'インストール時に通知',
         'notify_on_install_help' => 'プラグインやテーマがインストールされた時にメール通知を送信します。',
         'notify_on_uninstall' => 'アンインストール時に通知',

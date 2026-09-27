@@ -52,6 +52,7 @@ return [
     'total_members' => '総メンバー数',
     'members_with_roles' => 'ロール割当済み',
     'super_admins' => 'スーパー管理者数',
+    'admins' => '管理者数',
     'warning_no_super_admin' => '⚠️ スーパー管理者がいません！管理画面にアクセスできなくなる可能性があります。',
     'roles_title' => '【ロール一覧】',
     'no_roles' => 'ロールが存在しません。',

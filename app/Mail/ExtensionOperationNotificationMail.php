@@ -93,7 +93,7 @@ class ExtensionOperationNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.extension_operation_notification',
+            markdown: 'emails.extension-operation-notification',
         );
     }
 

@@ -277,7 +277,7 @@ class LoginLockoutHelper
                 return false;
             }
 
-            $subject = __('mail.lockout_notification.subject');
+            $subject = __('mail.lockout.subject');
             $details = [
                 'identifier' => $identifier,
                 'ip_address' => $request->ip(),

@@ -129,4 +129,18 @@ return [
         'csp_mode' => 'development: Relaxed, standard: Standard, strict: Strict',
         'extension_security_preset' => 'relaxed: Relaxed, balanced: Balanced, strict: Strict',
     ],
+
+    // Validation
+    'validation' => [
+        'allowed_admin_ips_format' => 'Please enter IP addresses in comma-separated format (e.g., 192.168.1.1, 127.0.0.1).',
+        'blocked_admin_ips_format' => 'Please enter IP addresses in comma-separated format (e.g., 192.168.1.1, 127.0.0.1).',
+        'allowed_front_ips_format' => 'Please enter IP addresses in comma-separated format (e.g., 192.168.1.1, 127.0.0.1).',
+        'blocked_front_ips_format' => 'Please enter IP addresses in comma-separated format (e.g., 192.168.1.1, 127.0.0.1).',
+        'captcha_google_version_invalid' => 'Please select a valid Google reCAPTCHA version.',
+        'captcha_google_min_score_range' => 'The score must be between 0 and 1.',
+        'captcha_driver_invalid' => 'Please select a valid CAPTCHA provider.',
+        'captcha_site_key_required' => 'CAPTCHA Site Key is required when CAPTCHA is enabled.',
+        'captcha_secret_key_required' => 'CAPTCHA Secret Key is required when CAPTCHA is enabled.',
+        'captcha_google_project_id_required' => 'Google Cloud Project ID is required when using Google reCAPTCHA Enterprise.',
+    ],
 ];

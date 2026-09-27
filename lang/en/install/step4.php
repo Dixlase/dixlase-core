@@ -50,6 +50,7 @@ return [
     ],
     'mail_test_description' => 'You can test mail server connection and mail sending.',
     'mail_test_description_admin_email' => 'Test email will be sent to the admin email address entered in basic settings.',
+    'admin_email_not_found' => 'The admin email address could not be found. Please enter it in the basic settings step.',
 
     'mail_test_advanced' => [
         'three_stage_test_incomplete' => '3-stage mail test incomplete',

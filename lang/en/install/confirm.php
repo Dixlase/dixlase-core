@@ -73,4 +73,9 @@ return [
     'db_name' => 'Database Name',
     'db_user' => 'Database Username',
     'db_password' => 'Database Password',
+
+    // Core integrity check
+    'integrity' => [
+        'blocked' => 'Installation was blocked because the core signature could not be verified. Please obtain a genuine, unmodified release and try again.',
+    ],
 ];

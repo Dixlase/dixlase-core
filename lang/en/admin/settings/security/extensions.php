@@ -108,6 +108,7 @@ return [
     'notification' => [
         'title' => 'Extension Operation Notifications',
         'description' => 'Send email notifications to system administrator when plugins or themes are operated. Notification destination is the system administrator email in basic settings.',
+        'mail_test_required' => 'To use extension operation notifications, please complete mail server settings and mail tests in <a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">mail settings</a>.',
         'notify_on_install' => 'Notify on Install',
         'notify_on_install_help' => 'Send email notification when plugins or themes are installed.',
         'notify_on_uninstall' => 'Notify on Uninstall',

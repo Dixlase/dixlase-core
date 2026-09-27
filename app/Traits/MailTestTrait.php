@@ -283,7 +283,7 @@ trait MailTestTrait
             if ($mailSettings['mail_mailer'] !== 'smtp') {
                 return response()->json([
                     'success' => false,
-                    'message' => __('mail-server/test.test_functions.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']]),
+                    'message' => __('mail-server/config.controller_messages.mailer_not_supported', ['mailer' => $mailSettings['mail_mailer']]),
                 ], 400);
             }
 

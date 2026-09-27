@@ -412,7 +412,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
         if (! $slug) {
             return response()->json([
                 'success' => false,
-                'message' => __('admin/settings/themes.audit.invalid_slug'),
+                'message' => __('admin/settings/themes/index.audit.invalid_slug'),
             ], 400);
         }
 
@@ -452,7 +452,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return response()->json([
                 'success' => true,
-                'message' => __('admin/settings/themes.audit.completed'),
+                'message' => __('admin/settings/themes/index.audit.completed'),
                 'audit' => $result,
                 'healthScore' => $healthScore,
                 'healthStatus' => $healthStatus,
@@ -467,7 +467,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
             return response()->json([
                 'success' => false,
-                'message' => __('admin/settings/themes.audit.failed').': '.$e->getMessage(),
+                'message' => __('admin/settings/themes/index.audit.failed').': '.$e->getMessage(),
             ], 500);
         }
     }

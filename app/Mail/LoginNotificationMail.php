@@ -75,7 +75,7 @@ class LoginNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.login_notification',
+            markdown: 'emails.login-notification',
             with: [
                 'user' => $this->user,
                 'ip' => $this->ip,

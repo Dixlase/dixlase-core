@@ -129,4 +129,18 @@ return [
         'csp_mode' => 'development: 開発用（緩い）、standard: 標準、strict: 厳格',
         'extension_security_preset' => 'relaxed: 緩い、balanced: バランス、strict: 厳格',
     ],
+
+    // バリデーション
+    'validation' => [
+        'allowed_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+        'blocked_admin_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+        'allowed_front_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+        'blocked_front_ips_format' => 'IPアドレスはカンマ区切りの形式で入力してください (例: 192.168.1.1, 127.0.0.1)。',
+        'captcha_google_version_invalid' => '有効なGoogle reCAPTCHAバージョンを選択してください。',
+        'captcha_google_min_score_range' => 'スコアは0から1の間で入力してください。',
+        'captcha_driver_invalid' => '有効なCAPTCHAプロバイダーを選択してください。',
+        'captcha_site_key_required' => 'CAPTCHAを有効にした場合はCAPTCHAサイトキーは必須です。',
+        'captcha_secret_key_required' => 'CAPTCHAを有効にした場合はCAPTCHAシークレットキーは必須です。',
+        'captcha_google_project_id_required' => 'Google reCAPTCHA Enterpriseを使用する場合、プロジェクトIDは必須です。',
+    ],
 ];

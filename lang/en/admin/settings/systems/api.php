@@ -73,6 +73,8 @@ return [
     'no_expiry' => 'No expiration',
     'description' => 'Description',
     'description_placeholder' => 'Describe the purpose of this API key',
+    'key_description' => 'Description',
+    'key_description_placeholder' => 'Describe the purpose of this API key',
     'created_at' => 'Created At',
     'generate' => 'Generate Key',
     'regenerate' => 'Regenerate',

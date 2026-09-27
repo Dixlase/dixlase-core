@@ -52,6 +52,7 @@ return [
     'total_members' => 'Total Members',
     'members_with_roles' => 'Members with Roles',
     'super_admins' => 'Super Admins',
+    'admins' => 'Admins',
     'warning_no_super_admin' => '⚠️ No super admins exist! Admin panel access may be impossible.',
     'roles_title' => '【Roles】',
     'no_roles' => 'No roles exist.',

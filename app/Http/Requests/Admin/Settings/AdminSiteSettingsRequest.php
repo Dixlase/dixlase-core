@@ -97,14 +97,14 @@ class AdminSiteSettingsRequest extends FormRequest
     public function messages()
     {
         return [
-            'app_name.required' => __('admin/settings/base/validation.app_name_required'),
-            'locale.required' => __('admin/settings/base/validation.locale_required'),
-            'timezone.timezone' => __('admin/settings/base/validation.timezone_invalid'),
+            'app_name.required' => __('admin/settings/base/mail.validation.app_name_required'),
+            'locale.required' => __('admin/settings/base/mail.validation.locale_required'),
+            'timezone.timezone' => __('admin/settings/base/mail.validation.timezone_invalid'),
             'mail_mailer.required' => __('mail-server/config.validation.mail_mailer_required'),
             'mail_host.required' => __('mail-server/config.validation.mail_host_required'),
             'mail_port.required' => __('mail-server/config.validation.mail_port_required'),
             'mail_port.numeric' => __('mail-server/config.validation.mail_port_numeric'),
-            'maintenance_mode.required' => __('admin/settings/base/validation.maintenance_mode_required'),
+            'maintenance_mode.required' => __('admin/settings/base/mail.validation.maintenance_mode_required'),
         ];
     }
 }

@@ -157,6 +157,6 @@ class AdminLoginNotification extends Notification
      */
     protected function getContextKey(): string
     {
-        return 'mail.login_notification.context.admin';
+        return 'mail.login-notification.context.admin';
     }
 }

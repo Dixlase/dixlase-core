@@ -50,6 +50,7 @@ return [
     ],
     'mail_test_description' => 'メールサーバーの接続とメール送信をテストできます。',
     'mail_test_description_admin_email' => 'テストメールは基本設定で入力した管理者メールアドレスに送信されます。',
+    'admin_email_not_found' => '管理者メールアドレスが見つかりません。基本設定で管理者メールアドレスを入力してください。',
 
     'mail_test_advanced' => [
         'three_stage_test_incomplete' => '3段階メールテストが未完了です',

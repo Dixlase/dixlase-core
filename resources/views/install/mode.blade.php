@@ -114,7 +114,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </p>
 
     {{-- Navigation --}}
-    <nav aria-label="{{ __('install.form_navigation') }}" class="flex justify-center mt-6">
+    <nav aria-label="{{ __('install/common.form_navigation') }}" class="flex justify-center mt-6">
         <a href="{{ route('install.index') }}"
             class="bg-gray-500 dark:bg-gray-600 text-white py-2 px-4 mx-4 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-700 transition">
             {{ __('install/common.back') }}
