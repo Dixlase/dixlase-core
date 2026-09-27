@@ -68,16 +68,27 @@ class InstallCompleteButtonsTest extends TestCase
         $this->assertStringNotContainsString('bg-blue-600', $siteForm);
     }
 
-    public function test_each_button_names_its_destination(): void
+    public function test_the_buttons_do_not_repeat_the_urls_under_them(): void
+    {
+        // Both URLs are already on this screen in copy-to-clipboard fields.
+        // Printing them again under the buttons also pushed the buttons off
+        // centre (text-align does not centre a block-level child).
+        $buttons = substr($this->completeView(), (int) strpos($this->completeView(), 'value="{{ $adminLoginUrl }}"'));
+
+        $this->assertStringNotContainsString('{{ $adminLoginUrl }}</p>', $buttons);
+        $this->assertStringNotContainsString('{{ $appUrl }}</p>', $buttons);
+    }
+
+    public function test_both_buttons_are_centred_at_the_same_width(): void
     {
         $view = $this->completeView();
 
-        // The URLs are printed elsewhere on the page too; what matters is
-        // that each button block carries its own.
-        $buttons = substr($view, (int) strpos($view, 'value="{{ $adminLoginUrl }}"'));
+        foreach (['{{ $adminLoginUrl }}', '{{ $appUrl }}'] as $destination) {
+            $form = substr($view, (int) strpos($view, 'value="'.$destination.'"'), 400);
 
-        $this->assertStringContainsString('{{ $adminLoginUrl }}</p>', $buttons);
-        $this->assertStringContainsString('{{ $appUrl }}</p>', $buttons);
+            $this->assertStringContainsString('mx-auto', $form, "The {$destination} button must be centred.");
+            $this->assertStringContainsString('min-w-[14rem]', $form, "The {$destination} button must share the common width.");
+        }
     }
 
     private function completeView(): string
