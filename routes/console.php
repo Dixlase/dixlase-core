@@ -62,7 +62,9 @@ Schedule::call(function () {
 // `sync` connection nothing is ever queued, so this does not run.
 Schedule::command('queue:work', [
     '--queue' => 'webhooks,default',
-    '--stop-when-empty' => true,
+    // A VALUE_NONE flag: pass it positionally. As a key => true pair it is
+    // compiled to --stop-when-empty='1', which queue:work rejects every run.
+    '--stop-when-empty',
     '--max-time' => 50,
     '--tries' => 1,
 ])
