@@ -47,7 +47,7 @@ use JsonSerializable;
  *   - GENUINE : manifest signature valid AND files match (🟢)
  *   - MODIFIED: manifest signature valid but files differ — often a legitimate
  *               local customization (🟡); changed-file lists are populated
- *   - UNSIGNED: no manifest/signature present (⚪ dev build)
+ *   - UNSIGNED: no manifest/signature present (⚪ not verifiable — core releases are not signed yet)
  *   - PENDING : trusted public key not yet available (offline / no cache)
  *   - INVALID : signature fails crypto verification or key_id mismatch (🔴)
  *   - ERROR   : sodium missing / unreadable manifest (⚠️)
@@ -171,7 +171,7 @@ final readonly class CoreIntegrityResult implements JsonSerializable
     {
         return new self(
             status: self::STATUS_UNSIGNED,
-            message: $message ?? 'Core is unsigned (development build).',
+            message: $message ?? 'Core carries no signed manifest, so it cannot be checked against a signed release (core releases are not signed yet).',
         );
     }
 

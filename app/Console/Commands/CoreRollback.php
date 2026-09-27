@@ -41,6 +41,7 @@ use App\Helpers\ComposerLocalHelper;
 use App\Models\AuditLog;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\ArtisanProcess;
+use App\Services\Core\CoreIntegrityBaselineRefresher;
 use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreSourceSnapshot;
 use App\Services\Core\CoreUpdateAudit;
@@ -192,6 +193,10 @@ class CoreRollback extends Command
             // is itself recoverable if a later step fails. This is a bare
             // snapshot with no metadata sidecar, so it is never itself
             // picked up as a rollback point.
+            // Same rule as the update: regenerate the integrity baseline after
+            // the rollback only if the tree matched it before anything changed.
+            $integrityMatchedBefore = $this->integrityMatchesBaseline();
+
             $this->line('Capturing pre-rollback safety snapshot...');
             $safetySnapshot = $snapshotter->capture();
             $this->line("Safety snapshot at {$safetySnapshot}");
@@ -369,6 +374,12 @@ class CoreRollback extends Command
                 'backup_record_id' => $meta['backup_record_id'] ?? null,
             ]);
 
+            app(CoreIntegrityBaselineRefresher::class)->refreshAfter(
+                $integrityMatchedBefore,
+                $this->appliedById(),
+                fn (string $line) => $this->line($line),
+            );
+
             // Consume the rollback point so a subsequent dls:core:rollback
             // steps back to the PREVIOUS update rather than repeating this
             // one. The DB backup is retained as a safety net.
@@ -489,6 +500,21 @@ class CoreRollback extends Command
             // replaces resources/ mid-flight). CLI runs never set it, so this
             // is a no-op for them — mirrors CoreUpdater::update()'s finally.
             @unlink(CoreUpdater::inProgressFlagPath());
+        }
+    }
+
+    /**
+     * Whether the core tree matches its integrity baseline before the
+     * rollback; a hashing failure counts as "did not match".
+     */
+    private function integrityMatchesBaseline(): ?bool
+    {
+        try {
+            return app(CoreIntegrityBaselineRefresher::class)->treeMatchesBaseline();
+        } catch (\Throwable $e) {
+            $this->warn('Could not compare core files with the integrity baseline: '.$e->getMessage());
+
+            return false;
         }
     }
 

@@ -98,6 +98,14 @@ repository to be notified of changes.
 
 ### Fixed
 
+- A successful core update or rollback now regenerates the file-integrity baseline, so the
+  daily integrity scan no longer reports every file the release changed as tampering. It
+  is regenerated only when the core files matched the baseline before the operation
+  started; a tree that was already modified keeps its old baseline and keeps being
+  reported. The regeneration is recorded as an `update` scan.
+- `dls:core:verify` no longer calls an unsigned core a "development build": core releases
+  are not signed yet, so it now says the core carries no signed manifest and cannot be
+  checked against a signed release.
 - Core updates and rollbacks now write to the audit log: `core_updated`,
   `core_update_failed` (including a preflight refusal), `core_rolled_back` and
   `core_rollback_failed`, with the member who started them, the from/to versions and the

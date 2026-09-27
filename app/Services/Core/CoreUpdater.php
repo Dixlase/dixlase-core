@@ -174,6 +174,11 @@ class CoreUpdater
             throw new RuntimeException($reason);
         }
 
+        // Whether the tree still matches its integrity baseline, taken before
+        // anything changes: only then is the baseline regenerated after a
+        // successful update (see CoreIntegrityBaselineRefresher).
+        $integrityMatchedBefore = $this->integrityMatchesBaseline($log);
+
         $log('Capturing source snapshot...');
         $snapshotPath = $this->snapshotter->capture();
         $log("Snapshot captured at {$snapshotPath}");
@@ -579,6 +584,10 @@ class CoreUpdater
                 'downloaded_sha256' => $downloadedSha256,
             ]);
 
+            // The release's files are now the genuine ones: without this the
+            // daily integrity scan reports every file the update changed.
+            app(CoreIntegrityBaselineRefresher::class)->refreshAfter($integrityMatchedBefore, $appliedById, $log);
+
             // Clear the available_version on the singleton so the UI no
             // longer advertises the same upgrade.
             $coreState->forceFill([
@@ -756,6 +765,29 @@ class CoreUpdater
             // is a no-op for them.
             @unlink(self::inProgressFlagPath());
         }
+    }
+
+    /**
+     * treeMatchesBaseline(), logged. A failure to hash the tree counts as
+     * "did not match", so the baseline is left alone rather than rewritten.
+     */
+    private function integrityMatchesBaseline(Closure $log): ?bool
+    {
+        try {
+            $matched = app(CoreIntegrityBaselineRefresher::class)->treeMatchesBaseline();
+        } catch (\Throwable $e) {
+            $log('WARNING: could not compare core files with the integrity baseline: '.$e->getMessage());
+
+            return false;
+        }
+
+        $log(match ($matched) {
+            true => 'Core files match the integrity baseline.',
+            false => 'WARNING: core files do not match the integrity baseline; it will not be regenerated after the update.',
+            null => 'No integrity baseline yet; one will be written after the update.',
+        });
+
+        return $matched;
     }
 
     /**
