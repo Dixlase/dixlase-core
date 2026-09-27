@@ -72,19 +72,15 @@ curl -sS https://install.dixlase.net | php
 
 ### Docker インストーラ
 
-Docker 環境のホストでは [Docker インストーラ](https://github.com/Dixlase/dixlase-installer-docker) を利用し、`docker compose` 経由で Dixlase を立ち上げます。前提条件と手順はインストーラリポジトリの README をご確認ください。
+Docker 環境のホストでは [Docker インストーラ](https://github.com/Dixlase/dixlase-docker-installer) を利用し、`docker compose` 経由で Dixlase を立ち上げます。前提条件と手順はインストーラリポジトリの README をご確認ください。
 
 ### Composer create-project
 
-Composer が使える環境では、1 コマンドで新規インストールをスキャフォールドできます:
-
-```bash
-composer create-project dixlase/dixlase-core dixlase
-```
+Packagist 登録後に提供予定です。それまでは、上のクイックインストールスクリプトか Docker インストーラをご利用ください。
 
 ---
 
-コア自体の開発を行う場合は、本リポジトリを clone し、[Docker インストーラ](https://github.com/Dixlase/dixlase-installer-docker) が提供する開発用 Docker スタックの利用を推奨します。開発者向けドキュメントは準備中です。
+コア自体の開発を行う場合は、本リポジトリを clone し、[Docker インストーラ](https://github.com/Dixlase/dixlase-docker-installer) が提供する開発用 Docker スタックの利用を推奨します。開発者向けドキュメントは準備中です。
 
 ---
 

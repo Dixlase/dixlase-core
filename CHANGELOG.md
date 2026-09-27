@@ -32,166 +32,6 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
-### Added
-
-- **Removed:** `livewire/livewire` is no longer a dependency, and the two Livewire UI
-  components leave the Plugin API surface (`x-ui-livewire-modal`,
-  `x-ui-livewire-notification`). Nothing used them: the modal the admin panel renders is
-  `x-ui-modal` (Alpine), no class extended `Livewire\Component`, no view called
-  `@livewire(...)`, and no layout emitted `@livewireScripts`. They were left over from a
-  2026-02-06 experiment reverted the next day. A plugin that wants Livewire can require it
-  itself; core no longer ships it. Removed with them: `config/livewire.php`, the
-  `@livewireScriptsWithoutNavigate` directive (its target view never existed, so calling it
-  threw), and `livewire-notification.js` from the common bundle.
-- `dls:install` installs Dixlase from the command line, running the same pipeline as
-  the browser wizard. Settings come from options (`--site-name`, `--admin-email`,
-  `--db=sqlite`, …), anything missing is prompted for, and passwords may be passed
-  through `DIXLASE_ADMIN_PASSWORD` / `DIXLASE_DB_PASSWORD` / `DIXLASE_MAIL_PASSWORD`
-  instead of the command line. A non-interactive run needs `--force`, because the
-  default drops every table in the target database; `--preserve-data` migrates
-  without dropping. The wizard's execution path moved to
-  `App\Services\Install\InstallRunner` so both entry points share it. See
-  *Installation Wizard*.
-- `App\Multilingual\SiteTaglineProvider` joins the Plugin API surface. It supplies the
-  primary-locale value for the core `site_tagline` setting, and extensions reference it by
-  class name, so it is on the documented boundary for the plugin exception to cover that
-  reference.
-- `dls:schema:retire` drops schema objects that an earlier beta created and a later
-  beta no longer uses: the `webauthn_credentials` table, and the table, column and
-  `global_settings` marker rows left by the core-update verification fixtures. Only
-  objects listed in the command are touched. It previews by default, applies with
-  `--confirm`, warns when legacy passkey rows would be deleted, and writes an audit log
-  entry (`schema_retired`). See *Upgrading* §4.5.1.
-
-### Changed
-
-- The install wizard's completion screen puts the admin-panel button first and gives it
-  the primary colour, with the destination URL under each button. Both buttons submit the
-  same finalize form, so a mis-click finished the install and landed the operator on the
-  front page — which reads exactly like the bug where an install completed but the admin
-  panel was unreachable.
-- `create_members_passkeys_table` is renumbered from `0001_01_01_000048` to `000023`, so
-  it sorts with the other `members_*` tables, and the migrations it now precedes shift
-  by one (`000023`–`000047` → `000024`–`000048`). Its foreign key to `members` now
-  lives in `add_foreign_key_constraints`, like every other `members_*` table. Existing
-  sites run `dls:migration:resync --prune --confirm` before `migrate`.
-- **Passkeys now run on the official `laravel/passkeys` package.** `laragear/webauthn`
-  was archived upstream (2026-05) and is removed, together with its composer patch and
-  `cweagans/composer-patches`. Registration and login go through
-  `App\Services\TwoFa\Passkeys\PasskeyCeremony`; `TwoFaPasskeyServiceInterface` keeps
-  its method signatures, but the WebAuthn option arrays it returns are now the standard
-  `PublicKeyCredential*OptionsJSON` shape (base64url binary fields).
-- Admin member passkeys are stored in **`members_passkeys`** (replacing
-  `webauthn_credentials`); the credential is kept as one JSON record with a COSE public
-  key. Existing passkeys are not converted and must be registered again.
-- `App\Models\WebAuthnCredential` is replaced by `App\Models\Passkey`
-  (extends `Laravel\Passkeys\Passkey`). `Member` implements
-  `Laravel\Passkeys\Contracts\PasskeyUser`; its Laragear methods
-  (`webAuthnCredentials()`, `webAuthnId()`, `webAuthnData()`, `flushCredentials()`,
-  `disableAllCredentials()`, `makeWebAuthnCredential()`) are removed — use
-  `passkeys()` / `twoFaPasskeys()`.
-- `config/webauthn.php` is removed. By default the RP ID is the request's host when that
-  host is APP_URL's host or an active site's `host`, and APP_URL's host otherwise, so an
-  arbitrary `Host` header can no longer choose the RP ID. Pin the RP ID and origins with
-  `PASSKEYS_RP_ID` / `PASSKEYS_ALLOWED_ORIGINS` (see the `passkeys` section of
-  `config/fortify.php`).
-
-### Fixed
-
-- A successful core update or rollback now regenerates the file-integrity baseline, so the
-  daily integrity scan no longer reports every file the release changed as tampering. It
-  is regenerated only when the core files matched the baseline before the operation
-  started; a tree that was already modified keeps its old baseline and keeps being
-  reported. The regeneration is recorded as an `update` scan.
-- `dls:core:verify` no longer calls an unsigned core a "development build": core releases
-  are not signed yet, so it now says the core carries no signed manifest and cannot be
-  checked against a signed release.
-- Core updates and rollbacks now write to the audit log: `core_updated`,
-  `core_update_failed` (including a preflight refusal), `core_rolled_back` and
-  `core_rollback_failed`, with the member who started them, the from/to versions and the
-  backup id. Before, only the version ledger recorded them — not the hash-chained log that
-  `audit:integrity verify` protects.
-- The official theme bundled in the release ZIP failed signature verification on every
-  install: the release's exclude list, written for core, also stripped the theme's signed
-  `CHANGELOG.md`, `CONTRIBUTING*`, `SECURITY.md`, `tests/`, `phpunit.xml` and its
-  `.gitignore`. The release now copies each bundled theme as composer placed it, and
-  fails the build if any file its signature lists is missing.
-- `dls:theme:migrate`, `dls:theme:migrate:refresh`, `dls:theme:migrate:rollback` and
-  `dls:theme:seed` accept the theme's slug again: they built the directory with
-  `Str::studly()` alone, so `dixlase-onepage` looked for `DixlaseOnepage` instead of
-  `DixlaseOnePage`. They now resolve the argument through the theme record first.
-- A core update or rollback no longer replaces `public/` as a directory: its entries are
-  swapped and the directory itself stays, so a built-in server (`php -S`, as the one-line
-  installer runs it from `public/`) keeps working instead of failing every request with
-  `Failed opening required '/index.php'` until it is restarted.
-- A core update that removes a package failed on its first attempt: after `vendor/` was
-  swapped, `view:cache` ran in the updater's own process, whose Blade extensions still
-  came from the old `vendor/` (livewire/livewire), and failed on a file that was gone.
-  After a `vendor/` swap the migrate, seed and cache steps now run in a new
-  `php artisan` process; the core rollback clears its caches the same way.
-- **`composer dump-autoload` never ran under PHP-FPM.** Core starts composer as
-  `[PHP_BINARY, composer, …]`, and PHP_BINARY is only an interpreter when the running
-  SAPI is CLI — under FPM it is the FPM binary, which ignores the script it is handed,
-  prints its own usage on stdout and exits 64. Every autoload refresh core fires from a
-  web request was therefore a silent no-op on FPM: installing a plugin or theme from the
-  admin panel left the map untouched and its classes unresolvable, and a core update's
-  re-sync did nothing. The interpreter is now resolved (`App\Support\Process\PhpBinary`)
-  rather than assumed, and a failed run logs the command and stdout as well — composer
-  and php-fpm both report there, so logging stderr alone said nothing.
-- **A fresh install from the release ZIP booted without its extension autoload.**
-  `composer.local.json` is generated and gitignored, so it was excluded from the ZIP;
-  composer-merge-plugin reads it when Composer initialises, which is before core's
-  pre-autoload-dump hook writes it, so the first `composer install` dumped an autoloader
-  with no extension PSR-4 roots and nothing dumped again. The bundled theme's
-  `ServiceProvider` was unresolvable and the front page answered 500 with
-  `Call to undefined function dls_onepage_localized_setting()`. The ZIP now ships
-  `composer.local.json`, and `scripts/verify-local-autoload.php` (wired into
-  `post-autoload-dump`) dumps once more whenever the map is missing a root the manifest
-  declares.
-- A core rollback that swapped `vendor/` died at the cache-clear step with
-  `include(.../ArtisanProcess.php): Failed to open stream`, and its own recovery then left
-  the site answering 500. The class that starts the post-swap subprocess is newer than any
-  release a rollback can restore, so resolving it after the source had been replaced read
-  a file that was no longer there; the recovery put source, vendor and schema back but
-  kept `bootstrap/cache/packages.php` as written for the rejected `vendor/`, so every
-  request died on a provider that was gone. The launcher is now resolved and exercised
-  before anything on disk is touched, a recovery deletes and rebuilds the
-  package-discovery manifests, and both the update and the rollback ask a new process to
-  boot the application — on success before the site is let back in, and after a recovery
-  before it reports one. The same combination recurs on any rollback from a release that
-  changed the update code, including `0.1.1` back to `0.1.0`.
-- A failed core update now reverses the migrations it applied, before restoring the
-  source. Before, the database kept the new schema, the next update recorded that schema
-  as its starting point, and `dls:core:rollback` then had nothing to reverse.
-- The admin rollback button did nothing right after a core update: its confirm modal was
-  only rendered while something was left to update.
-- `dls:core:update` ran `npm install` and `vite build` on every update, because the
-  prebuilt-assets check did not look at core's own output directory,
-  `public/assets/build`. The prebuilt assets in the release ZIP are now used as shipped.
-- Installing a signed plugin or theme that ships no prebuilt assets made its signature
-  invalid before it could be activated: the asset build ran `npm install`, which rewrites
-  the signed `package-lock.json` in the local npm's format. The build now uses `npm ci`
-  when a lock file is shipped (`npm install` only when there is none), in both the
-  extension install / update commands and `dls:theme:build`.
-- A failed extension asset build was invisible when the install ran from the admin panel:
-  the npm output was discarded and the install reported success, leaving the extension
-  without its JS / CSS. The failed step is now logged with the tail of npm's output, and
-  the plugin and theme install screens show a warning with the command to retry. The
-  admin flash message component (`x-ui-flash-message`) now renders `warning` messages,
-  which it previously dropped.
-- Admin passkey login sent the assertion in plain base64; it now uses base64url as
-  WebAuthn requires.
-- The passkey cleanup rule aged passkeys by registration date, so a passkey registered
-  more than a year ago was deleted even if it had just been used; it only stayed
-  harmless because its extra condition referenced a `last_used_at` column the old table
-  lacked, which made the cleanup fail with an SQL error. It now ages passkeys by
-  `last_used_at` (updated on every sign-in) and leaves never-used passkeys alone.
-- The member edit screen built its passkey and recovery-code delete URLs with a hard-coded
-  `admin/` prefix, so every delete returned 404 on installs with a custom admin path.
-  They are now built from route names. Missing passkey messages on the profile and member
-  screens (for example `admin/profile/common.passkey_deleted_all`) were added in both
-  languages.
-
 ## [0.1.0] — 2026-10-01
 The first public release of the Plugin API. This release defines the boundary that
 plugins and themes can build on under the AGPL Plugin and Theme Exception (see `LICENSE`).
@@ -307,6 +147,171 @@ environment matrix (database, web server, PHP extensions).
   status and last verification time.
 - `AUDIT_LOG_SECRET` is wired to `config('app.audit_log_secret')` as an optional
   dedicated HMAC key for the daily seals (falls back to `APP_KEY`).
+
+#### Commands and installation
+
+- `dls:install` installs Dixlase from the command line, running the same pipeline as
+  the browser wizard. Settings come from options (`--site-name`, `--admin-email`,
+  `--db=sqlite`, …), anything missing is prompted for, and passwords may be passed
+  through `DIXLASE_ADMIN_PASSWORD` / `DIXLASE_DB_PASSWORD` / `DIXLASE_MAIL_PASSWORD`
+  instead of the command line. A non-interactive run needs `--force`, because the
+  default drops every table in the target database; `--preserve-data` migrates
+  without dropping. The wizard's execution path moved to
+  `App\Services\Install\InstallRunner` so both entry points share it. See
+  *Installation Wizard*.
+- `App\Multilingual\SiteTaglineProvider` joins the Plugin API surface. It supplies the
+  primary-locale value for the core `site_tagline` setting, and extensions reference it by
+  class name, so it is on the documented boundary for the plugin exception to cover that
+  reference.
+- `dls:schema:retire` drops schema objects that an earlier beta created and a later
+  beta no longer uses: the `webauthn_credentials` table, and the table, column and
+  `global_settings` marker rows left by the core-update verification fixtures. Only
+  objects listed in the command are touched. It previews by default, applies with
+  `--confirm`, warns when legacy passkey rows would be deleted, and writes an audit log
+  entry (`schema_retired`). See *Upgrading* §4.5.1.
+
+### Changes since the pre-release builds
+
+Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` verification builds, such as the brand and demo sites). A fresh v0.1.0 install already has everything below.
+
+#### Changed
+
+- **Removed:** `livewire/livewire` is no longer a dependency, and the two Livewire UI
+  components leave the Plugin API surface (`x-ui-livewire-modal`,
+  `x-ui-livewire-notification`). Nothing used them: the modal the admin panel renders is
+  `x-ui-modal` (Alpine), no class extended `Livewire\Component`, no view called
+  `@livewire(...)`, and no layout emitted `@livewireScripts`. They were left over from a
+  2026-02-06 experiment reverted the next day. A plugin that wants Livewire can require it
+  itself; core no longer ships it. Removed with them: `config/livewire.php`, the
+  `@livewireScriptsWithoutNavigate` directive (its target view never existed, so calling it
+  threw), and `livewire-notification.js` from the common bundle.
+- The install wizard's completion screen puts the admin-panel button first and gives it
+  the primary colour; both buttons are centred at the same width, and the URLs are not
+  repeated under them (they are already on the screen in copy fields). Both buttons submit
+  the same finalize form, so a mis-click finished the install and landed the operator on
+  the front page — which reads exactly like the bug where an install completed but the
+  admin panel was unreachable.
+- `create_members_passkeys_table` is renumbered from `0001_01_01_000048` to `000023`, so
+  it sorts with the other `members_*` tables, and the migrations it now precedes shift
+  by one (`000023`–`000047` → `000024`–`000048`). Its foreign key to `members` now
+  lives in `add_foreign_key_constraints`, like every other `members_*` table. Existing
+  sites run `dls:migration:resync --prune --confirm` before `migrate`.
+- **Passkeys now run on the official `laravel/passkeys` package.** `laragear/webauthn`
+  was archived upstream (2026-05) and is removed, together with its composer patch and
+  `cweagans/composer-patches`. Registration and login go through
+  `App\Services\TwoFa\Passkeys\PasskeyCeremony`; `TwoFaPasskeyServiceInterface` keeps
+  its method signatures, but the WebAuthn option arrays it returns are now the standard
+  `PublicKeyCredential*OptionsJSON` shape (base64url binary fields).
+- Admin member passkeys are stored in **`members_passkeys`** (replacing
+  `webauthn_credentials`); the credential is kept as one JSON record with a COSE public
+  key. Existing passkeys are not converted and must be registered again.
+- `App\Models\WebAuthnCredential` is replaced by `App\Models\Passkey`
+  (extends `Laravel\Passkeys\Passkey`). `Member` implements
+  `Laravel\Passkeys\Contracts\PasskeyUser`; its Laragear methods
+  (`webAuthnCredentials()`, `webAuthnId()`, `webAuthnData()`, `flushCredentials()`,
+  `disableAllCredentials()`, `makeWebAuthnCredential()`) are removed — use
+  `passkeys()` / `twoFaPasskeys()`.
+- `config/webauthn.php` is removed. By default the RP ID is the request's host when that
+  host is APP_URL's host or an active site's `host`, and APP_URL's host otherwise, so an
+  arbitrary `Host` header can no longer choose the RP ID. Pin the RP ID and origins with
+  `PASSKEYS_RP_ID` / `PASSKEYS_ALLOWED_ORIGINS` (see the `passkeys` section of
+  `config/fortify.php`).
+
+#### Fixed
+
+- A successful core update or rollback now regenerates the file-integrity baseline, so the
+  daily integrity scan no longer reports every file the release changed as tampering. It
+  is regenerated only when the core files matched the baseline before the operation
+  started; a tree that was already modified keeps its old baseline and keeps being
+  reported. The regeneration is recorded as an `update` scan.
+- `dls:core:verify` no longer calls an unsigned core a "development build": core releases
+  are not signed yet, so it now says the core carries no signed manifest and cannot be
+  checked against a signed release.
+- Core updates and rollbacks now write to the audit log: `core_updated`,
+  `core_update_failed` (including a preflight refusal), `core_rolled_back` and
+  `core_rollback_failed`, with the member who started them, the from/to versions and the
+  backup id. Before, only the version ledger recorded them — not the hash-chained log that
+  `audit:integrity verify` protects.
+- The official theme bundled in the release ZIP failed signature verification on every
+  install: the release's exclude list, written for core, also stripped the theme's signed
+  `CHANGELOG.md`, `CONTRIBUTING*`, `SECURITY.md`, `tests/`, `phpunit.xml` and its
+  `.gitignore`. The release now copies each bundled theme as composer placed it, and
+  fails the build if any file its signature lists is missing.
+- `dls:theme:migrate`, `dls:theme:migrate:refresh`, `dls:theme:migrate:rollback` and
+  `dls:theme:seed` accept the theme's slug again: they built the directory with
+  `Str::studly()` alone, so `dixlase-onepage` looked for `DixlaseOnepage` instead of
+  `DixlaseOnePage`. They now resolve the argument through the theme record first.
+- A core update or rollback no longer replaces `public/` as a directory: its entries are
+  swapped and the directory itself stays, so a built-in server (`php -S`, as the one-line
+  installer runs it from `public/`) keeps working instead of failing every request with
+  `Failed opening required '/index.php'` until it is restarted.
+- A core update that removes a package failed on its first attempt: after `vendor/` was
+  swapped, `view:cache` ran in the updater's own process, whose Blade extensions still
+  came from the old `vendor/` (livewire/livewire), and failed on a file that was gone.
+  After a `vendor/` swap the migrate, seed and cache steps now run in a new
+  `php artisan` process; the core rollback clears its caches the same way.
+- **`composer dump-autoload` never ran under PHP-FPM.** Core starts composer as
+  `[PHP_BINARY, composer, …]`, and PHP_BINARY is only an interpreter when the running
+  SAPI is CLI — under FPM it is the FPM binary, which ignores the script it is handed,
+  prints its own usage on stdout and exits 64. Every autoload refresh core fires from a
+  web request was therefore a silent no-op on FPM: installing a plugin or theme from the
+  admin panel left the map untouched and its classes unresolvable, and a core update's
+  re-sync did nothing. The interpreter is now resolved (`App\Support\Process\PhpBinary`)
+  rather than assumed, and a failed run logs the command and stdout as well — composer
+  and php-fpm both report there, so logging stderr alone said nothing.
+- **A fresh install from the release ZIP booted without its extension autoload.**
+  `composer.local.json` is generated and gitignored, so it was excluded from the ZIP;
+  composer-merge-plugin reads it when Composer initialises, which is before core's
+  pre-autoload-dump hook writes it, so the first `composer install` dumped an autoloader
+  with no extension PSR-4 roots and nothing dumped again. The bundled theme's
+  `ServiceProvider` was unresolvable and the front page answered 500 with
+  `Call to undefined function dls_onepage_localized_setting()`. The ZIP now ships
+  `composer.local.json`, and `scripts/verify-local-autoload.php` (wired into
+  `post-autoload-dump`) dumps once more whenever the map is missing a root the manifest
+  declares.
+- A core rollback that swapped `vendor/` died at the cache-clear step with
+  `include(.../ArtisanProcess.php): Failed to open stream`, and its own recovery then left
+  the site answering 500. The class that starts the post-swap subprocess is newer than any
+  release a rollback can restore, so resolving it after the source had been replaced read
+  a file that was no longer there; the recovery put source, vendor and schema back but
+  kept `bootstrap/cache/packages.php` as written for the rejected `vendor/`, so every
+  request died on a provider that was gone. The launcher is now resolved and exercised
+  before anything on disk is touched, a recovery deletes and rebuilds the
+  package-discovery manifests, and both the update and the rollback ask a new process to
+  boot the application — on success before the site is let back in, and after a recovery
+  before it reports one. The same combination recurs on any rollback from a release that
+  changed the update code, including `0.1.1` back to `0.1.0`.
+- A failed core update now reverses the migrations it applied, before restoring the
+  source. Before, the database kept the new schema, the next update recorded that schema
+  as its starting point, and `dls:core:rollback` then had nothing to reverse.
+- The admin rollback button did nothing right after a core update: its confirm modal was
+  only rendered while something was left to update.
+- `dls:core:update` ran `npm install` and `vite build` on every update, because the
+  prebuilt-assets check did not look at core's own output directory,
+  `public/assets/build`. The prebuilt assets in the release ZIP are now used as shipped.
+- Installing a signed plugin or theme that ships no prebuilt assets made its signature
+  invalid before it could be activated: the asset build ran `npm install`, which rewrites
+  the signed `package-lock.json` in the local npm's format. The build now uses `npm ci`
+  when a lock file is shipped (`npm install` only when there is none), in both the
+  extension install / update commands and `dls:theme:build`.
+- A failed extension asset build was invisible when the install ran from the admin panel:
+  the npm output was discarded and the install reported success, leaving the extension
+  without its JS / CSS. The failed step is now logged with the tail of npm's output, and
+  the plugin and theme install screens show a warning with the command to retry. The
+  admin flash message component (`x-ui-flash-message`) now renders `warning` messages,
+  which it previously dropped.
+- Admin passkey login sent the assertion in plain base64; it now uses base64url as
+  WebAuthn requires.
+- The passkey cleanup rule aged passkeys by registration date, so a passkey registered
+  more than a year ago was deleted even if it had just been used; it only stayed
+  harmless because its extra condition referenced a `last_used_at` column the old table
+  lacked, which made the cleanup fail with an SQL error. It now ages passkeys by
+  `last_used_at` (updated on every sign-in) and leaves never-used passkeys alone.
+- The member edit screen built its passkey and recovery-code delete URLs with a hard-coded
+  `admin/` prefix, so every delete returned 404 on installs with a custom admin path.
+  They are now built from route names. Missing passkey messages on the profile and member
+  screens (for example `admin/profile/common.passkey_deleted_all`) were added in both
+  languages.
 
 ### Notes for plugin authors
 
