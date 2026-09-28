@@ -93,7 +93,10 @@ class AdminBaseAdminController extends AdminLoggedInController
         $validated = $request->validated();
         $currentAdminUrl = AdminHelper::getAdminUrl();
         $newAdminUrl = $validated['admin_url'];
-        $forceSsl = $request->has('force_ssl') ? 1 : 0;
+        // boolean(), not has(): <x-form-toggle> always submits a hidden
+        // "<name>=0" alongside the checkbox, so has() is true even when the
+        // toggle is off and force_ssl was being switched on by every save.
+        $forceSsl = $request->boolean('force_ssl') ? 1 : 0;
 
         $actor = new \App\Actors\MemberActor(AdminHelper::getMember());
 
@@ -119,19 +122,16 @@ class AdminBaseAdminController extends AdminLoggedInController
             Auth::guard('member')->logout();
             Session::flush();
 
+            // The scheme is decided by the URL generator (see HttpsEnforcement):
+            // rewriting it here bypassed that decision and could redirect the
+            // operator to a TLS port that only speaks HTTP.
             $newAdminLoginUrl = url($newAdminUrl.'/login');
-            if ($forceSsl) {
-                $newAdminLoginUrl = str_replace('http://', 'https://', $newAdminLoginUrl);
-            }
 
             return redirect($newAdminLoginUrl)
                 ->with('success', __('admin/settings/base/admin.admin_url_changed'));
         }
 
         $baseUrl = url($newAdminUrl.'/settings/base/admin');
-        if ($forceSsl) {
-            $baseUrl = str_replace('http://', 'https://', $baseUrl);
-        }
 
         return redirect($baseUrl)->with('success', __('admin/settings/base/admin.settings_updated'));
     }
