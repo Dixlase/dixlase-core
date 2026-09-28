@@ -62,6 +62,7 @@ use App\Services\Core\DependencyIntegrityService;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
+use App\Support\HttpsEnforcement;
 use Illuminate\Support\Carbon;
 
 /**
@@ -191,7 +192,17 @@ class DashboardPresenter
         // HTTPS (force_ssl is saved in site_settings)
         $forceSsl = (bool) (int) SiteSetting::get('force_ssl', 0);
         $isCurrentSecure = request()->isSecure();
-        if ($forceSsl) {
+        if ($forceSsl && ! HttpsEnforcement::isForceable((string) config('app.url'))) {
+            // The setting is on but deliberately not applied: APP_URL points at
+            // a plain-HTTP listener on a non-standard port, so forcing the
+            // scheme would make the site unreachable. Say so instead of
+            // reporting HTTPS as enforced.
+            $httpsStatus = 'warning';
+            $httpsDescription = __('admin/dashboard.https_force_ssl_not_applied', [
+                'url' => (string) config('app.url'),
+            ]);
+            $httpsIcon = 'fas fa-unlock';
+        } elseif ($forceSsl) {
             $httpsStatus = 'ok';
             $httpsDescription = __('admin/dashboard.https_force_ssl_enabled');
             $httpsIcon = 'fas fa-lock';

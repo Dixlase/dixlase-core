@@ -52,6 +52,7 @@ return [
     'environment_other' => '「:env」モードで稼働中です。',
     'https_status' => 'HTTPS',
     'https_force_ssl_enabled' => 'Force SSLが有効です。すべてのリクエストはHTTPSにリダイレクトされます。',
+    'https_force_ssl_not_applied' => 'Force SSLは有効ですが適用されていません。APP_URL（:url）がHTTPのポートを指しているため、HTTPSを強制するとサイトに接続できなくなります。HTTPSで公開してAPP_URLを合わせるか、Force SSLを無効にしてください。',
     'https_production_no_force' => '本番環境でHTTPSが強制されていません。Force SSLの有効化を推奨します。',
     'https_current_secure' => '現在のリクエストはHTTPSです。Force SSLは無効です。',
     'https_disabled' => 'HTTPSが使用されていません。HTTPSの有効化を強く推奨します。',

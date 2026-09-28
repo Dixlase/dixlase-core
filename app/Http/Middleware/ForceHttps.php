@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\HttpsEnforcement;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,6 +75,14 @@ class ForceHttps
     protected function handleHttpsRedirect(Request $request, Closure $next): Response
     {
         if (! config('app.force_ssl')) {
+            return $next($request);
+        }
+
+        // Skip when the redirect target cannot be served: the secure redirect
+        // keeps the port of the current URL, so on an HTTP-only site published
+        // on a non-standard port it would send every visitor to a TLS port that
+        // speaks HTTP, leaving the site (and the admin panel) unreachable.
+        if (! HttpsEnforcement::isForceable((string) config('app.url'))) {
             return $next($request);
         }
 
