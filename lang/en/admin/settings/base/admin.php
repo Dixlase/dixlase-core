@@ -42,6 +42,7 @@ return [
     'admin_url_help' => 'Choose a prefix and enter a suffix to set the admin panel URL path.<br>The suffix must be at least 4 characters (lowercase letters and numbers only).<br>Warning: Changing the admin URL will log you out of the admin panel.',
     'force_ssl' => 'Force SSL',
     'force_ssl_help' => 'Force HTTPS access. Only enable if SSL certificate is configured.',
+    'force_ssl_unavailable' => 'Force SSL cannot be enabled while APP_URL (:url) points at a plain-HTTP port: every asset and form would be requested over HTTPS from a port that speaks HTTP, and this screen could no longer be saved. Serve the site over HTTPS and set APP_URL accordingly first.',
     'login_notice' => 'Login screen notice',
     'login_notice_help' => 'Optional message shown on the admin login screen (leave empty to hide).',
     'settings_updated' => 'Admin panel settings have been updated.',

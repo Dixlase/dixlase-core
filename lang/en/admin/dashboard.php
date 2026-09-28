@@ -52,6 +52,7 @@ return [
     'environment_other' => 'Running in ":env" mode.',
     'https_status' => 'HTTPS',
     'https_force_ssl_enabled' => 'Force SSL is enabled. All requests are redirected to HTTPS.',
+    'https_force_ssl_not_applied' => 'Force SSL is enabled but not applied: APP_URL (:url) points at a plain-HTTP port, so enforcing HTTPS would make the site unreachable. Serve the site over HTTPS and set APP_URL accordingly, or turn Force SSL off.',
     'https_production_no_force' => 'Production environment is not enforcing HTTPS. Enabling Force SSL is recommended.',
     'https_current_secure' => 'Current request is over HTTPS. Force SSL is not enabled.',
     'https_disabled' => 'HTTPS is not in use. Enabling HTTPS is strongly recommended.',

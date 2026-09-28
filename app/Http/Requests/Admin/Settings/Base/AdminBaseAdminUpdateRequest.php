@@ -36,6 +36,8 @@
 namespace App\Http\Requests\Admin\Settings\Base;
 
 use App\Rules\UniqueRouteSlug;
+use App\Support\HttpsEnforcement;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -77,6 +79,32 @@ class AdminBaseAdminUpdateRequest extends FormRequest
             'admin_url' => ['required', 'string', 'max:100', UniqueRouteSlug::for('core:admin_url')],
             'admin_login_notice' => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    /**
+     * Refuse force_ssl when the site cannot be served over https.
+     *
+     * Saving it in that state used to leave the admin panel unstyled and
+     * unusable, and this very screen is the only one that can switch it back.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if (! $this->boolean('force_ssl')) {
+                return;
+            }
+
+            if (HttpsEnforcement::isForceable((string) config('app.url'))) {
+                return;
+            }
+
+            $validator->errors()->add(
+                'force_ssl',
+                __('admin/settings/base/admin.force_ssl_unavailable', [
+                    'url' => (string) config('app.url'),
+                ]),
+            );
+        });
     }
 
     /**

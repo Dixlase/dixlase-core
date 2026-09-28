@@ -84,6 +84,7 @@ use App\Settings\ApiSettingDefinitions;
 use App\Settings\BackupSettingDefinitions;
 use App\Settings\CoreSettingDefinitions;
 use App\Settings\SecuritySettingDefinitions;
+use App\Support\HttpsEnforcement;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
 use App\Traits\ThemeLoaderTrait;
@@ -367,7 +368,13 @@ class AppServiceProvider extends ServiceProvider
                 $forceSsl = config('security.force_ssl');
             }
 
-            if ($forceSsl) {
+            // Only force the scheme when the resulting URL can actually be
+            // served. force_ssl keeps the host and port of APP_URL, so on an
+            // HTTP-only site published on a non-standard port the rewrite would
+            // point every asset and form at a TLS port that speaks HTTP — and
+            // the screen that could turn force_ssl off is itself a form whose
+            // cross-scheme submission CSP blocks. See HttpsEnforcement.
+            if ($forceSsl && HttpsEnforcement::isForceable($appUrl)) {
                 $this->app['request']->server->set('HTTPS', true);
                 URL::forceRootUrl(Config::get('app.url')); // Set root URL
                 URL::forceScheme('https');
