@@ -32,6 +32,45 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-10-01
+
+### Security
+Fixes for the seven findings of the security re-review of v0.1.0 (#437).
+- A plugin ZIP whose `plugin.json` declares no `slug` no longer skips the pre-install scan
+  gate. The slug is resolved the way `dls:plugin:install` records it, so with a
+  scan-required preset an unscanned plugin is refused whatever its manifest says. A failed
+  health check now blocks the install as well, and a ZIP that claims the slug of another
+  plugin is refused when it is added, so it can no longer clear that plugin's scan records
+- The member-roles screen no longer loads the PHP config files of plugins that were added
+  but not installed (or of move-aside copies). Only installed plugins are read
+- Raw HTML inside Markdown can now be escaped by the caller. Core's own front-page Markdown,
+  which only ADMIN can author, is unchanged. DixlasePages 0.1.2 uses the escaped form for
+  its pages, which editors below ADMIN may write
+- The member delete confirmation escapes the member's display name
+- Password resets and login alerts go to the confirmed email address; only the
+  confirmation mail for an address change goes to the new, unconfirmed address. A password
+  reset also cancels a pending address change
+- A password reset ends every existing session of the account
+- Theme admin routes are registered once, behind the `settings.themes.settings`
+  permission. A second, ungated registration from `routes/admin.php` used to override it
+
+### Fixed
+- Installing the latest release of a plugin or theme asks GitHub for the release once
+  instead of twice (one fewer API request per extension without a token)
+- The Japanese GitHub rate-limit message no longer has a space between its two sentences
+
+### Added
+- Plugin API: `ContentPreviewService::render()` and `renderFromSlug()` take an optional
+  `$allowRawHtml` argument (default `true`, the previous behaviour). Pass `false` to render
+  raw HTML inside Markdown as text
+- Plugin API: `PermissionRegistry::installedPluginDirectories()` lists the directories of
+  installed plugins whose config files may be loaded
+
+### Changed
+- In a plugin card, a plugin without a `slug` in `plugin.json` is now scanned under the
+  slug it will be installed with (e.g. `DixlaseFoo` → `dixlase-foo`, previously
+  `dixlasefoo`). Rescan such a plugin once before installing it
+
 ## [0.1.2] — 2026-10-01
 
 ### Fixed
