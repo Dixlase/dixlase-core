@@ -196,6 +196,69 @@ final class CoreMaintenanceGuard
     }
 
     /**
+     * Stop the operator's bypass from working, without lifting maintenance.
+     *
+     * The operator who started an update or rollback carries the bypass
+     * cookie, so their admin requests pass the maintenance check in
+     * public/index.php. Between swapping vendor/ and re-syncing the
+     * extension autoload such a request reaches route registration and
+     * fails on a plugin class that cannot be loaded yet (HTTP 500).
+     * Laravel's maintenance stub reads the secret from storage/framework/down
+     * on every request, so replacing it with a throwaway value invalidates
+     * the cookie: the operator sees the same 503 page as everyone else.
+     *
+     * Returns the payload to hand back to restoreOperatorBypass(), or null
+     * when there was nothing to suspend. Never throws.
+     *
+     * Kept on this class on purpose: a rollback replaces app/ with an older
+     * release's, and this class is already loaded by claim() before that.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function suspendOperatorBypass(): ?array
+    {
+        try {
+            $mode = app()->maintenanceMode();
+            if (! $mode->active()) {
+                return null;
+            }
+
+            $payload = $mode->data();
+            if (empty($payload['secret'])) {
+                return null;
+            }
+
+            $mode->activate(array_merge($payload, ['secret' => bin2hex(random_bytes(32))]));
+
+            return $payload;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Put back the payload suspendOperatorBypass() replaced, so the bypass URL
+     * logged at the start of the operation works again. Never throws.
+     *
+     * @param  array<string, mixed>|null  $payload
+     */
+    public function restoreOperatorBypass(?array $payload): void
+    {
+        if ($payload === null) {
+            return;
+        }
+
+        try {
+            $mode = app()->maintenanceMode();
+            if ($mode->active()) {
+                $mode->activate($payload);
+            }
+        } catch (\Throwable) {
+            // Maintenance is lifted at the end of the operation anyway.
+        }
+    }
+
+    /**
      * Operator-facing bypass URL for the secret handed to `artisan down`.
      */
     public static function bypassUrl(string $secret): string

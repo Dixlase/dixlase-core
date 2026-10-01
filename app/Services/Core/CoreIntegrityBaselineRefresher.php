@@ -75,7 +75,11 @@ class CoreIntegrityBaselineRefresher
 
         $current = $this->integrity->generateCoreBaseline()['files'];
 
-        return $current == $baseline['files'];
+        // A generated file (the plugin Tailwind sources) is rewritten on
+        // every plugin change; older baselines still list it. Comparing it
+        // kept the refresh from ever running on a site with a plugin.
+        return $this->integrity->withoutGeneratedFiles($current)
+            == $this->integrity->withoutGeneratedFiles($baseline['files']);
     }
 
     /**

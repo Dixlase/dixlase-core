@@ -381,31 +381,39 @@ class CoreUpdater
             }
 
             if ($dependencyUpdate) {
-                $log('Swapping vendor/ (prebuilt dependencies from the release)...');
-                $this->vendorManager->swap($payloadRoot);
-                $vendorSwapped = true;
-                $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
+                // Hold the operator at the 503 page too while vendor/ and the
+                // extension autoload disagree (see suspendOperatorBypass()).
+                $bypass = app(CoreMaintenanceGuard::class)->suspendOperatorBypass();
 
-                // The swapped-in vendor/composer/autoload_psr4.php is the
-                // release's pristine copy; it does NOT carry the site-local
-                // theme/plugin PSR-4 (Themes\<Dir>\App\, Plugins\<Dir>\App\)
-                // the installer persisted there. Re-persist them now, or every
-                // extension admin/settings page 500s with a ReflectionException
-                // after the update. syncAutoload() rewrites composer.local.json
-                // and runs composer dump-autoload; non-fatal (returns false and
-                // logs if Composer is unavailable).
-                $log('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
-                if (! ComposerLocalHelper::syncAutoload()) {
-                    $log('WARNING: extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
-                }
+                try {
+                    $log('Swapping vendor/ (prebuilt dependencies from the release)...');
+                    $this->vendorManager->swap($payloadRoot);
+                    $vendorSwapped = true;
+                    $log('vendor/ swapped (previous vendor/ retained at vendor.old for rollback).');
 
-                // The swap also leaves bootstrap/cache/packages.php describing
-                // the previous vendor/; a provider that is no longer there
-                // 500s the whole site on the next boot. See
-                // ComposerLocalHelper::rebuildPackageManifest().
-                $log('Rebuilding the package-discovery manifest after vendor swap...');
-                if (! ComposerLocalHelper::rebuildPackageManifest()) {
-                    $log('WARNING: package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                    // The swapped-in vendor/composer/autoload_psr4.php is the
+                    // release's pristine copy; it does NOT carry the site-local
+                    // theme/plugin PSR-4 (Themes\<Dir>\App\, Plugins\<Dir>\App\)
+                    // the installer persisted there. Re-persist them now, or every
+                    // extension admin/settings page 500s with a ReflectionException
+                    // after the update. syncAutoload() rewrites composer.local.json
+                    // and runs composer dump-autoload; non-fatal (returns false and
+                    // logs if Composer is unavailable).
+                    $log('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
+                    if (! ComposerLocalHelper::syncAutoload()) {
+                        $log('WARNING: extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                    }
+
+                    // The swap also leaves bootstrap/cache/packages.php describing
+                    // the previous vendor/; a provider that is no longer there
+                    // 500s the whole site on the next boot. See
+                    // ComposerLocalHelper::rebuildPackageManifest().
+                    $log('Rebuilding the package-discovery manifest after vendor swap...');
+                    if (! ComposerLocalHelper::rebuildPackageManifest()) {
+                        $log('WARNING: package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                    }
+                } finally {
+                    app(CoreMaintenanceGuard::class)->restoreOperatorBypass($bypass);
                 }
             }
 
@@ -500,6 +508,17 @@ class CoreUpdater
                     '--no-interaction' => true,
                 ], $vendorSwapped);
                 $log('Core UpdateSeeder complete.');
+            }
+
+            // The source apply replaced the plugin Tailwind sources file with
+            // the release's empty placeholder. Rebuild it from the enabled
+            // plugins, or the next theme build drops every class only a
+            // plugin's content uses. Non-fatal.
+            $log('Regenerating plugin Tailwind sources...');
+            try {
+                $this->runArtisan('dls:tailwind:regenerate-plugin-sources', [], $vendorSwapped);
+            } catch (\Throwable $sourcesError) {
+                $log('WARNING: plugin Tailwind sources were not regenerated ('.$sourcesError->getMessage().'); run `php artisan dls:tailwind:regenerate-plugin-sources`.');
             }
 
             $log('Clearing caches...');

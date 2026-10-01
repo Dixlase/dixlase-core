@@ -63,6 +63,26 @@ class CoreIntegrityBaselineRefresherTest extends TestCase
         $this->assertNull($this->refresher(null, self::NEW)->treeMatchesBaseline());
     }
 
+    public function test_the_generated_plugin_sources_file_does_not_count_as_a_modification(): void
+    {
+        // Enabling any plugin rewrites this file, and baselines written
+        // before it was excluded still list it. It must not stop the
+        // refresh on a site that has a plugin (almost every site).
+        $generated = 'resources/src/common/css/dixlase-tailwind-plugin-sources.css';
+        $baseline = ['meta' => ['app_version' => '0.1.0'], 'files' => ['app/A.php' => 'aaa', $generated => 'placeholder']];
+        $current = ['meta' => ['app_version' => '0.1.0'], 'files' => ['app/A.php' => 'aaa']];
+
+        $this->assertTrue($this->refresher($baseline, $current)->treeMatchesBaseline());
+
+        $edited = $current;
+        $edited['files'][$generated] = 'with-pages';
+        $this->assertTrue($this->refresher($baseline, $edited)->treeMatchesBaseline());
+
+        $tampered = $current;
+        $tampered['files']['app/A.php'] = 'evil';
+        $this->assertFalse($this->refresher($baseline, $tampered)->treeMatchesBaseline());
+    }
+
     public function test_a_successful_update_writes_a_new_baseline_and_records_it(): void
     {
         $integrity = $this->integrity(self::OLD, self::NEW);
@@ -120,7 +140,8 @@ class CoreIntegrityBaselineRefresherTest extends TestCase
 
     private function integrity(?array $baseline, array $current): FileIntegrityService
     {
-        $integrity = Mockery::mock(FileIntegrityService::class);
+        // Partial: withoutGeneratedFiles() is the real implementation.
+        $integrity = Mockery::mock(FileIntegrityService::class)->makePartial();
         $integrity->shouldReceive('loadBaselineArray')->andReturn($baseline);
         $integrity->shouldReceive('generateCoreBaseline')->andReturn($current);
 

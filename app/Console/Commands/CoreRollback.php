@@ -286,31 +286,53 @@ class CoreRollback extends Command
             $this->relinkPublicAssets();
 
             if ($dependencyUpdate) {
-                // vendor.old was discarded when the update succeeded, so we
-                // re-fetch the matching dependencies from the OLD release ZIP
-                // (the same mechanism dls:backup:restore --refetch-vendor uses).
-                $this->line("Re-fetching vendor/ to match v{$from}...");
-                $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l), null, $vendorZip);
-                $vendorSwapped = true;
-                $this->info('vendor/ restored to match the rolled-back source.');
+                // Hold the operator at the 503 page too while vendor/ and the
+                // extension autoload disagree (see suspendOperatorBypass()).
+                $bypass = app(CoreMaintenanceGuard::class)->suspendOperatorBypass();
 
-                // The re-fetched vendor/composer/autoload_psr4.php is the old
-                // release's pristine copy and lacks the site-local theme/plugin
-                // PSR-4 the installer persisted; re-persist it or extension
-                // admin/settings pages 500 after rollback (same as the update
-                // path). Non-fatal.
-                $this->line('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
-                if (! ComposerLocalHelper::syncAutoload()) {
-                    $this->warn('Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
-                }
+                try {
+                    // vendor.old was discarded when the update succeeded, so we
+                    // re-fetch the matching dependencies from the OLD release ZIP
+                    // (the same mechanism dls:backup:restore --refetch-vendor uses).
+                    $this->line("Re-fetching vendor/ to match v{$from}...");
+                    $vendorManager->refetchAndSwap($from, fn (string $l) => $this->line($l), null, $vendorZip);
+                    $vendorSwapped = true;
+                    $this->info('vendor/ restored to match the rolled-back source.');
 
-                // Same as the update path: the re-fetched vendor/ can lack a
-                // package the stale bootstrap/cache/packages.php still lists.
-                // See ComposerLocalHelper::rebuildPackageManifest().
-                $this->line('Rebuilding the package-discovery manifest after vendor swap...');
-                if (! ComposerLocalHelper::rebuildPackageManifest()) {
-                    $this->warn('Package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                    // The re-fetched vendor/composer/autoload_psr4.php is the old
+                    // release's pristine copy and lacks the site-local theme/plugin
+                    // PSR-4 the installer persisted; re-persist it or extension
+                    // admin/settings pages 500 after rollback (same as the update
+                    // path). Non-fatal.
+                    $this->line('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
+                    if (! ComposerLocalHelper::syncAutoload()) {
+                        $this->warn('Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                    }
+
+                    // Same as the update path: the re-fetched vendor/ can lack a
+                    // package the stale bootstrap/cache/packages.php still lists.
+                    // See ComposerLocalHelper::rebuildPackageManifest().
+                    $this->line('Rebuilding the package-discovery manifest after vendor swap...');
+                    if (! ComposerLocalHelper::rebuildPackageManifest()) {
+                        $this->warn('Package manifest rebuild failed; if the site returns 500, delete bootstrap/cache/packages.php and bootstrap/cache/services.php, then run `php artisan package:discover`.');
+                    }
+                } finally {
+                    app(CoreMaintenanceGuard::class)->restoreOperatorBypass($bypass);
                 }
+            }
+
+            // The restored source carries the release's empty placeholder for
+            // the plugin Tailwind sources; rebuild it from the enabled
+            // plugins (see CoreUpdater). Non-fatal.
+            $this->line('Regenerating plugin Tailwind sources...');
+            try {
+                if ($vendorSwapped) {
+                    $artisan->run('dls:tailwind:regenerate-plugin-sources');
+                } else {
+                    Artisan::call('dls:tailwind:regenerate-plugin-sources');
+                }
+            } catch (\Throwable $sourcesError) {
+                $this->warn('Plugin Tailwind sources were not regenerated ('.$sourcesError->getMessage().'); run `php artisan dls:tailwind:regenerate-plugin-sources`.');
             }
 
             $this->line('Clearing caches...');
