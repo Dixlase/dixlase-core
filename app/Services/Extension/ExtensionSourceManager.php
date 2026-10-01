@@ -37,6 +37,7 @@ namespace App\Services\Extension;
 
 use App\Contracts\Extension\ExtensionSourceInterface;
 use App\DTO\Extension\ReleaseInfo;
+use App\Exceptions\ExtensionSourceRateLimitException;
 use App\Models\ExtensionSource;
 use App\Models\Plugin;
 use App\Models\Theme;
@@ -221,6 +222,7 @@ class ExtensionSourceManager
     public function listAvailablePlugins(): array
     {
         $plugins = [];
+        $rateLimited = null;
 
         foreach ($this->getEnabledSources() as $source) {
             try {
@@ -230,9 +232,17 @@ class ExtensionSourceManager
                     $plugin['source_name'] = $source->name;
                     $plugins[] = $plugin;
                 }
+            } catch (ExtensionSourceRateLimitException $e) {
+                $rateLimited = $e;
             } catch (\Throwable) {
                 continue;
             }
+        }
+
+        // An empty list would read as "nothing to install". When the only
+        // reason is a rate limit, say so — with the time it resets.
+        if ($plugins === [] && $rateLimited !== null) {
+            throw $rateLimited;
         }
 
         return $plugins;
@@ -246,6 +256,7 @@ class ExtensionSourceManager
     public function listAvailableThemes(): array
     {
         $themes = [];
+        $rateLimited = null;
 
         foreach ($this->getEnabledSources() as $source) {
             try {
@@ -255,9 +266,17 @@ class ExtensionSourceManager
                     $theme['source_name'] = $source->name;
                     $themes[] = $theme;
                 }
+            } catch (ExtensionSourceRateLimitException $e) {
+                $rateLimited = $e;
             } catch (\Throwable) {
                 continue;
             }
+        }
+
+        // An empty list would read as "nothing to install". When the only
+        // reason is a rate limit, say so — with the time it resets.
+        if ($themes === [] && $rateLimited !== null) {
+            throw $rateLimited;
         }
 
         return $themes;
