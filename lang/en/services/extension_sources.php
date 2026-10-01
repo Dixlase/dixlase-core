@@ -35,6 +35,6 @@
 
 return [
     'rate_limited' => 'The GitHub rate limit has been reached.',
-    'rate_limited_anonymous' => 'The GitHub rate limit has been reached (60 requests per hour without a token). Setting a GitHub token in the extension source settings raises the limit considerably.',
+    'rate_limited_anonymous' => 'The GitHub rate limit has been reached (60 requests per hour without a token).',
     'rate_limit_resets_at' => 'It resets at about :time.',
 ];

@@ -192,7 +192,10 @@ class GitHubAnonymousSourceTest extends TestCase
 
     public function test_an_exhausted_limit_names_the_reset_time_on_download(): void
     {
+        $this->travelTo(\Illuminate\Support\Carbon::create(2026, 10, 1, 7, 0, 0, 'UTC'));
+        // Stored times are UTC; the message must use the display timezone.
         config()->set('app.timezone', 'UTC');
+        config()->set('app.display_timezone', 'Asia/Tokyo');
         Http::fake([
             'api.github.com/*' => Http::response(['message' => 'API rate limit exceeded'], 403, [
                 'X-RateLimit-Remaining' => '0',
@@ -205,9 +208,21 @@ class GitHubAnonymousSourceTest extends TestCase
             $this->fail('A rate-limited download must not fall through to a generic error.');
         } catch (ExtensionSourceRateLimitException $e) {
             $this->assertFalse($e->authenticated);
-            $this->assertStringContainsString('07:45', $e->getMessage());
-            $this->assertSame(__('services/extension_sources.rate_limited_anonymous').' '.__('services/extension_sources.rate_limit_resets_at', ['time' => '07:45']), $e->getMessage());
+            $this->assertStringContainsString('16:45', $e->getMessage());
+            $this->assertSame(__('services/extension_sources.rate_limited_anonymous').' '.__('services/extension_sources.rate_limit_resets_at', ['time' => '16:45']), $e->getMessage());
         }
+    }
+
+    public function test_a_reset_on_another_day_shows_the_date(): void
+    {
+        config()->set('app.timezone', 'UTC');
+        config()->set('app.display_timezone', 'Asia/Tokyo');
+        // 23:50 JST; the limit resets at 00:41 JST the next day.
+        $this->travelTo(\Illuminate\Support\Carbon::create(2026, 10, 1, 14, 50, 0, 'UTC'));
+
+        $e = new ExtensionSourceRateLimitException(\Carbon\CarbonImmutable::create(2026, 10, 1, 15, 41, 0, 'UTC'), false);
+
+        $this->assertStringContainsString('2026-10-02 00:41', $e->getMessage());
     }
 
     public function test_an_exhausted_limit_is_reported_instead_of_an_empty_list(): void
@@ -223,6 +238,23 @@ class GitHubAnonymousSourceTest extends TestCase
         $this->expectException(ExtensionSourceRateLimitException::class);
 
         app(ExtensionSourceManager::class)->listAvailablePlugins();
+    }
+
+    public function test_a_limited_download_keeps_the_limit_message_through_the_manager(): void
+    {
+        $this->source();
+        Http::fake([
+            'api.github.com/*' => Http::response(['message' => 'API rate limit exceeded'], 403, [
+                'X-RateLimit-Remaining' => '0',
+                'X-RateLimit-Reset' => (string) (time() + 600),
+            ]),
+        ]);
+
+        // Not a generic "Failed to download ... from all sources" in English:
+        // the translated limit message, with its type, reaches the screen.
+        $this->expectException(ExtensionSourceRateLimitException::class);
+
+        app(ExtensionSourceManager::class)->downloadWithSource('dixlase-seo', 'plugin', '0.1.0');
     }
 
     public function test_a_plain_forbidden_answer_is_not_mistaken_for_the_limit(): void

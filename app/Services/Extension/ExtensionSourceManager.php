@@ -708,6 +708,8 @@ class ExtensionSourceManager
      */
     public function downloadWithSource(string $slug, string $extensionType = 'plugin', ?string $version = null, ?int $sourceId = null): array
     {
+        $rateLimited = null;
+
         $errors = [];
 
         // Try specific source first
@@ -718,6 +720,9 @@ class ExtensionSourceManager
                     $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
 
                     return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
+                } catch (ExtensionSourceRateLimitException $e) {
+                    $rateLimited = $e;
+                    $errors[] = "[{$source->name}] {$e->getMessage()}";
                 } catch (\Throwable $e) {
                     $errors[] = "[{$source->name}] {$e->getMessage()}";
                 }
@@ -734,9 +739,19 @@ class ExtensionSourceManager
                 $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
 
                 return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
+            } catch (ExtensionSourceRateLimitException $e) {
+                $rateLimited ??= $e;
+                $errors[] = "[{$source->name}] {$e->getMessage()}";
             } catch (\Throwable $e) {
                 $errors[] = "[{$source->name}] {$e->getMessage()}";
             }
+        }
+
+        // A rate limit is the one failure the operator can act on (wait, or
+        // set a token). Hand it over as is — translated, with its reset time
+        // — instead of burying it in an English summary, as the listing does.
+        if ($rateLimited !== null) {
+            throw $rateLimited;
         }
 
         $errorDetail = implode('; ', $errors);
