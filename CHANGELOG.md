@@ -32,6 +32,27 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-10-01
+
+### Security
+- Bump `league/commonmark` from 2.10.1 to 2.10.3 for two advisories that affect Markdown
+  rendering (Pages, Inquiry and the content preview): a quadratic-time denial of service in
+  the GitHub Flavored Markdown table extension
+  ([GHSA-3q6v-r5mr-hxv8](https://github.com/advisories/GHSA-3q6v-r5mr-hxv8), high), and a
+  `DisallowedRawHtml` bypass when a disallowed tag name ends the raw-HTML literal
+  ([GHSA-97jj-33gv-5xf9](https://github.com/advisories/GHSA-97jj-33gv-5xf9), medium) (#433)
+
+### Fixed
+- Sites without a GitHub token no longer run out of the anonymous API limit (60 requests
+  an hour per IP) while adding plugins and themes from the admin panel. Installing the five
+  official plugins used to take 60–70 requests, so the third download failed with a bare
+  "HTTP 403". Without a token, manifests and thumbnails are now read from
+  `raw.githubusercontent.com` and release assets from their download URL on `github.com`,
+  neither of which counts against the limit; the plugin and theme lists are cached for
+  15 minutes (`EXTENSION_GITHUB_LIST_CACHE_TTL`). When the limit is reached, the admin
+  panel says so and shows when it resets, instead of "HTTP 403" or an empty list. Sites
+  with a token keep using the API as before (#432)
+
 ## [0.1.0] — 2026-10-01
 The first public release of the Plugin API. This release defines the boundary that
 plugins and themes can build on under the AGPL Plugin and Theme Exception (see `LICENSE`).

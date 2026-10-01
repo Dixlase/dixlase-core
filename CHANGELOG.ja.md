@@ -32,6 +32,26 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-10-01
+
+### セキュリティ
+- `league/commonmark` を 2.10.1 から 2.10.3 に更新。Markdown の表示(Pages・問い合わせ・
+  コンテンツのプレビュー)に関わる 2 件の勧告に対応: GitHub Flavored Markdown の表の拡張で
+  二乗時間かかるサービス妨害
+  ([GHSA-3q6v-r5mr-hxv8](https://github.com/advisories/GHSA-3q6v-r5mr-hxv8)、high)と、
+  禁止したタグ名が生の HTML の末尾にあるときに `DisallowedRawHtml` をすり抜ける問題
+  ([GHSA-97jj-33gv-5xf9](https://github.com/advisories/GHSA-97jj-33gv-5xf9)、medium)(#433)
+
+### 修正
+- GitHub のトークンを設定していないサイトで、管理画面からプラグインやテーマを追加している
+  途中に匿名 API の上限(IP ごとに 1 時間 60 回)を使い切らないようにした。公式プラグイン
+  5 本を入れるだけで 60〜70 回使い、3 本目のダウンロードが「HTTP 403」とだけ出て失敗して
+  いた。トークンが無いときは、manifest とサムネイルを `raw.githubusercontent.com` から、
+  リリースのアセットを `github.com` のダウンロード URL から取る(どちらも上限に数えられ
+  ない)。プラグイン / テーマの一覧は 15 分キャッシュする(`EXTENSION_GITHUB_LIST_CACHE_TTL`)。
+  上限に達したときは「HTTP 403」や空の一覧ではなく、上限に達したことと戻る時刻を管理画面に
+  表示する。トークンを設定しているサイトは今までどおり API を使う(#432)
+
 ## [0.1.0] — 2026-10-01
 Plugin API を初めて公開するリリースです。AGPL プラグイン・テーマ例外（`LICENSE` を
 参照）の下で、プラグイン・テーマが依拠できる境界を定めます。この境界は公開済みですが、
