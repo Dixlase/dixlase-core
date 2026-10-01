@@ -37,4 +37,5 @@ return [
     'rate_limited' => 'GitHub の利用制限に達しました。',
     'rate_limited_anonymous' => 'GitHub の利用制限（トークン未設定の場合は 1 時間に 60 回）に達しました。',
     'rate_limit_resets_at' => ':time 頃に再び利用できます。',
+    'rate_limit_with_reset' => ':message:reset',
 ];

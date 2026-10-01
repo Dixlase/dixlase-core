@@ -223,13 +223,12 @@ class AdminMemberRolesController extends AdminLoggedInController
         $pluginGroups = [];
 
         $pluginsPath = base_path('plugins');
-        if (! is_dir($pluginsPath)) {
-            return $pluginGroups;
-        }
 
-        $pluginDirs = array_filter(glob($pluginsPath.'/*'), 'is_dir');
-
-        foreach ($pluginDirs as $pluginDir) {
+        // Installed plugins only: the loop below `require`s each plugin's
+        // config files, which must never run for an uploaded-but-not-installed
+        // directory that has not passed the pre-install scan.
+        foreach (PermissionRegistry::installedPluginDirectories($pluginsPath) as $directory) {
+            $pluginDir = $pluginsPath.'/'.$directory;
             $pluginJsonPath = $pluginDir.'/plugin.json';
             $dixlaseJsonPath = $pluginDir.'/dixlase.json';
 

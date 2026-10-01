@@ -30,6 +30,7 @@ use App\Models\Member;
 use App\Models\Plugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
@@ -102,6 +103,10 @@ class PluginQuickEnableModalTest extends TestCase
      */
     public function test_install_redirect_contains_installed_plugin_id_in_session(): void
     {
+        // These tests cover the post-install redirect, not the scan gate.
+        // The plugin has no audit record, so run without the gate.
+        Cache::put('security_settings:extension_security_preset', 'development');
+
         // テスト環境でのミドルウェア誤判定を回避
         $this->withoutMiddleware([
             CheckInstallationReady::class,
@@ -208,6 +213,10 @@ class PluginQuickEnableModalTest extends TestCase
      */
     public function test_install_redirect_without_plugin_record_has_no_modal(): void
     {
+        // These tests cover the post-install redirect, not the scan gate.
+        // The plugin has no audit record, so run without the gate.
+        Cache::put('security_settings:extension_security_preset', 'development');
+
         // テスト環境でのミドルウェア誤判定を回避
         $this->withoutMiddleware([
             CheckInstallationReady::class,

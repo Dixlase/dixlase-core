@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - v0.1.0
       - 'feature/**'
     paths-ignore:
       - '**.md'
@@ -12,7 +11,6 @@ on:
   pull_request:
     branches:
       - main
-      - v0.1.0
     paths-ignore:
       - '**.md'
       - 'docs/**'

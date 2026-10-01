@@ -80,6 +80,7 @@ return [
         'no_valid_directory' => 'ZIP内に有効なプラグインディレクトリが見つかりません。',
         'directory_exists' => "プラグインディレクトリ ':directory' は既に存在します。",
         'composer_not_found' => 'composer.json が見つかりません。',
+        'slug_conflict' => "このプラグインのスラッグ ':slug' は、すでに ':directory' が使っています。追加しませんでした。",
         'download_success' => 'プラグイン「:name」のダウンロードが完了しました。一覧からインストールしてください。',
         'download_failed' => 'プラグインのダウンロードに失敗しました: :error',
     ],

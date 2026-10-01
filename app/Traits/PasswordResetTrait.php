@@ -37,8 +37,10 @@
 
 namespace App\Traits;
 
+use App\Models\Member;
 use App\Services\PasswordService;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -167,10 +169,29 @@ trait PasswordResetTrait
      */
     protected function performPasswordReset(object $user, string $newPassword): void
     {
-        $user->forceFill([
+        $attributes = [
             'password' => Hash::make($newPassword),
             'remember_token' => Str::random(60),
-        ])->save();
+        ];
+
+        // An address change that was never confirmed is dropped: whoever
+        // resets the password proves control of the current address, not of
+        // the pending one.
+        if ($user instanceof Member && $user->getAttribute('pending_email') !== null) {
+            $attributes['pending_email'] = null;
+        }
+
+        $user->forceFill($attributes)->save();
+
+        // A reset is how an account is taken back, so every existing session
+        // ends with it. Rotating remember_token alone left those sessions
+        // signed in.
+        $isMember = $user instanceof Member;
+        $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
+        $idColumn = $isMember ? 'member_id' : 'user_id';
+        if (DB::getSchemaBuilder()->hasTable($sessionTable)) {
+            DB::table($sessionTable)->where($idColumn, $user->getKey())->delete();
+        }
 
         event(new PasswordReset($user));
     }

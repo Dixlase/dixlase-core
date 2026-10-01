@@ -36,14 +36,12 @@ on:
   push:
     branches:
       - main
-      - v0.1.0
       - 'feature/**'
     paths-ignore:
       - 'docs/**'
   pull_request:
     branches:
       - main
-      - v0.1.0
     paths-ignore:
       - 'docs/**'
 

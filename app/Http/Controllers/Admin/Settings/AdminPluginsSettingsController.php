@@ -721,20 +721,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             $pluginDir = $result['directory'];
 
-            // Discard past audit results and return to unscanned state on new placement (using slug from plugin.json)
-            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
-            $slugFromManifest = null;
-            if (File::exists($pluginJsonPath)) {
-                try {
-                    $pluginData = json_decode(File::get($pluginJsonPath), true);
-                    if (is_array($pluginData) && isset($pluginData['slug']) && is_string($pluginData['slug'])) {
-                        $slugFromManifest = $pluginData['slug'];
-                    }
-                } catch (\Exception) {
-                    // ignore
-                }
-            }
-            $this->purgeAuditRecordsForSlug($slugFromManifest ?? Str::slug($pluginDir), $pluginDir);
+            // Discard past audit results and return to unscanned state on new placement
+            $this->purgeAuditRecordsForSlug($this->pluginSlugForDirectory($pluginDir), $pluginDir);
 
             // See downloadFromSource() for the reasoning on redirecting
             // to plugin master and embedding the CTA in the flash body.
@@ -774,46 +762,41 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_directory_not_found'));
         }
 
-        // Server-side protection: pre-check in scan-required mode
+        // Server-side protection: pre-check in scan-required mode.
+        //
+        // The slug is resolved the same way dls:plugin:install will record
+        // it, so a manifest without a `slug` is checked too. Skipping the
+        // check whenever plugin.json had no slug let any such ZIP past the
+        // health-score gate.
         if (self::isScanRequired()) {
-            $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
-            $slug = null;
+            $slug = $this->pluginSlugForDirectory($pluginDir);
 
-            if (File::exists($pluginJsonPath)) {
-                try {
-                    $pluginData = json_decode(File::get($pluginJsonPath), true);
-                    $slug = $pluginData['slug'] ?? null;
-                } catch (\Exception $e) {
-                    // Skip slug retrieval if plugin.json fails to load
-                }
+            $latestAudit = PluginAudit::where('plugin_slug', $slug)
+                ->latest('audited_at')
+                ->first();
+
+            // Reject installation if not scanned
+            if (! $latestAudit) {
+                return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
             }
 
-            if ($slug) {
-                $latestAudit = PluginAudit::where('plugin_slug', $slug)
-                    ->latest('audited_at')
-                    ->first();
+            // Reject installation if blocked even after scanning
+            try {
+                $healthScorer = app(PluginHealthScorer::class);
+                $healthResult = $healthScorer->calculate($slug);
+                $enableAction = $healthScorer->determineEnableAction($healthResult);
 
-                // Reject installation if not scanned
-                if (! $latestAudit) {
+                if ($enableAction === PluginEnableAction::Blocked) {
                     return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
                 }
+            } catch (\Exception $e) {
+                Log::warning('Pre-install health check failed', [
+                    'directory' => $pluginDir,
+                    'slug' => $slug,
+                    'error' => $e->getMessage(),
+                ]);
 
-                // Reject installation if blocked even after scanning
-                try {
-                    $healthScorer = app(PluginHealthScorer::class);
-                    $healthResult = $healthScorer->calculate($slug);
-                    $enableAction = $healthScorer->determineEnableAction($healthResult);
-
-                    if ($enableAction === PluginEnableAction::Blocked) {
-                        return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Pre-install health check failed', [
-                        'directory' => $pluginDir,
-                        'slug' => $slug,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+                return redirect()->back()->with('error', __('admin/settings/plugins/index.two_stage.install_blocked'));
             }
         }
 
@@ -1367,7 +1350,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                         'url' => $pluginData['url'] ?? $pluginData['homepage'] ?? $pluginData['web'] ?? null,
                         'license' => $pluginData['license'] ?? null,
                         'package_name' => $pluginData['package_name'] ?? null,
-                        'slug' => $pluginData['slug'] ?? Str::slug($dirName),
+                        'slug' => $this->pluginSlugForDirectory($dirName),
                     ];
                 }
             } catch (\Exception $e) {
@@ -1406,7 +1389,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'url' => $firstAuthor['homepage'] ?? null,
                 'license' => $composerData['license'] ?? null,
                 'package_name' => $composerData['name'] ?? null,
-                'slug' => $composerData['extra']['slug'] ?? Str::slug($dirName),
+                'slug' => $this->pluginSlugForDirectory($dirName),
             ];
         } catch (\Exception $e) {
             Log::error('Failed to read composer.json', [
@@ -1516,7 +1499,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 $displayName = $result['name'] ?? $slug;
 
                 // On new download, discard past audit results and return to unscanned state
-                $this->purgeAuditRecordsForSlug($slug, $result['directory'] ?? null);
+                $this->purgeAuditRecordsForSlug($this->pluginSlugForDirectory($result['directory']), $result['directory']);
 
                 // Persist source linkage as a sidecar file inside the
                 // extracted plugin directory. install() reads it back
@@ -1727,6 +1710,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.composer_not_found')];
             }
 
+            // Scan records are keyed by slug, and the caller purges them for
+            // the new directory's slug. An archive claiming another plugin's
+            // slug would wipe that plugin's records and could inherit them.
+            $slug = $this->pluginSlugForDirectory($pluginDir);
+            $owner = $this->directoryOwningSlug($slug, $pluginDir);
+            if ($owner !== null) {
+                File::deleteDirectory($destinationPath);
+
+                return ['success' => false, 'error' => __('admin/settings/plugins/add.messages.slug_conflict', [
+                    'slug' => $slug,
+                    'directory' => $owner,
+                ])];
+            }
+
             // A fresh upload/download is not installed yet: keep its
             // autoload.files out of composer.local.json until dls:plugin:install
             // runs, or Composer would require them on the very next request --
@@ -1764,6 +1761,57 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Resolve the slug a plugin directory is installed under.
+     *
+     * Mirrors dls:plugin:install: the manifest's `slug` when it declares one,
+     * otherwise the slug derived from the directory name. The plugin list,
+     * the pre-install scan gate and the upload purge all go through here so
+     * a scan is recorded under the same slug the install check reads.
+     */
+    protected function pluginSlugForDirectory(string $pluginDir): string
+    {
+        $pluginJsonPath = base_path("plugins/{$pluginDir}/plugin.json");
+
+        if (File::exists($pluginJsonPath)) {
+            $data = json_decode(File::get($pluginJsonPath), true);
+            if (is_array($data) && isset($data['slug']) && is_string($data['slug']) && $data['slug'] !== '') {
+                return $data['slug'];
+            }
+        }
+
+        return Str::slug(Str::headline($pluginDir), '-');
+    }
+
+    /**
+     * Find another plugin directory that already uses the given slug.
+     *
+     * Checks installed rows first, then every other directory on disk
+     * (move-aside copies excluded). Returns the owning directory name, or
+     * null when the slug is free.
+     */
+    protected function directoryOwningSlug(string $slug, string $exceptDirectory): ?string
+    {
+        $installed = Plugin::where('slug', $slug)
+            ->where('directory', '!=', $exceptDirectory)
+            ->value('directory');
+        if (is_string($installed) && $installed !== '') {
+            return $installed;
+        }
+
+        foreach (File::directories(base_path('plugins')) as $directory) {
+            $name = basename($directory);
+            if ($name === $exceptDirectory || ! ExtensionDirectories::isInstalledName($name)) {
+                continue;
+            }
+            if ($this->pluginSlugForDirectory($name) === $slug) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 
     /**

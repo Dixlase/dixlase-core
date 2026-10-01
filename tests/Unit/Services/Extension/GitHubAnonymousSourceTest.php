@@ -213,6 +213,44 @@ class GitHubAnonymousSourceTest extends TestCase
         }
     }
 
+    public function test_installing_the_latest_release_does_not_look_it_up_twice(): void
+    {
+        Http::fake([
+            'api.github.com/repos/*/plugin-dixlase-seo/releases/latest' => Http::response([
+                'tag_name' => 'v0.1.2',
+                'name' => 'Dixlase SEO v0.1.2',
+                'assets' => [[
+                    'name' => 'plugin-dixlase-seo-v0.1.2.zip',
+                    'url' => 'https://api.github.com/repos/Dixlase/plugin-dixlase-seo/releases/assets/1',
+                    'browser_download_url' => 'https://github.com/Dixlase/plugin-dixlase-seo/releases/download/v0.1.2/plugin-dixlase-seo-v0.1.2.zip',
+                ]],
+            ]),
+            'github.com/*' => Http::response('zip-bytes'),
+        ]);
+
+        $provider = new GitHubSourceProvider($this->source());
+        $release = $provider->getLatestRelease('dixlase-seo');
+        $provider->downloadRelease('dixlase-seo', $release->version);
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/releases/tags/'));
+        Http::assertSentCount(2);
+    }
+
+    public function test_japanese_sentences_are_joined_without_a_space(): void
+    {
+        app()->setLocale('ja');
+        config()->set('app.timezone', 'UTC');
+        config()->set('app.display_timezone', 'Asia/Tokyo');
+        $this->travelTo(\Illuminate\Support\Carbon::create(2026, 10, 1, 7, 0, 0, 'UTC'));
+
+        $e = new ExtensionSourceRateLimitException(\Carbon\CarbonImmutable::create(2026, 10, 1, 7, 45, 0, 'UTC'), false);
+
+        $this->assertSame(
+            'GitHub の利用制限（トークン未設定の場合は 1 時間に 60 回）に達しました。16:45 頃に再び利用できます。',
+            $e->getMessage(),
+        );
+    }
+
     public function test_a_reset_on_another_day_shows_the_date(): void
     {
         config()->set('app.timezone', 'UTC');

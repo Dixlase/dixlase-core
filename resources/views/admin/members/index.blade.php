@@ -227,7 +227,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     <x-ui-modal
                                         :id="'deleteModal-' . $member->id"
                                         :title="__('admin/members/index.delete_confirm_title')"
-                                        :message="__('admin/members/index.delete_confirm_message', ['name' => $member->display_name ?? $member->account_name])"
+                                        :message="__('admin/members/index.delete_confirm_message', ['name' => e($member->display_name ?? $member->account_name)])"
                                         :confirm_label="__('common.delete')"
                                         :cancel_label="__('common.cancel')"
                                         icon_type="danger"

@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - main
-      - v0.1.0
   schedule:
     # 毎週月曜日 9:00 JST (0:00 UTC)
     - cron: '0 0 * * 1'

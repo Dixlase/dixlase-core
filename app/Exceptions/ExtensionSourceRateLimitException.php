@@ -114,8 +114,13 @@ class ExtensionSourceRateLimitException extends RuntimeException
         $message = __($key);
 
         if ($resetsAt !== null) {
-            $message .= ' '.__('services/extension_sources.rate_limit_resets_at', [
-                'time' => self::formatResetTime($resetsAt),
+            // Joined through a translation: English separates the two
+            // sentences with a space, Japanese does not.
+            $message = __('services/extension_sources.rate_limit_with_reset', [
+                'message' => $message,
+                'reset' => __('services/extension_sources.rate_limit_resets_at', [
+                    'time' => self::formatResetTime($resetsAt),
+                ]),
             ]);
         }
 
