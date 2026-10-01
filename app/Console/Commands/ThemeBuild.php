@@ -87,31 +87,33 @@ class ThemeBuild extends Command
 
         // Themes' tailwind.css @imports
         // resources/src/common/css/dixlase-tailwind-plugin-sources.css —
-        // the aggregator file written by
-        // dls:tailwind:regenerate-plugin-sources whenever plugins change
-        // (and once at install-wizard completion). On a fresh clone, or
-        // when the install wizard's "Download theme" button fires
-        // before the regenerate has had a chance to run, that file does
-        // not exist yet and vite aborts with
-        // `Unable to resolve @import "..."` mid-build. Seed an empty
-        // stub in the exact format the aggregator emits when no plugin
-        // contributes sources, matching the docker-installer's setup.sh
-        // behaviour. If the file already exists (real aggregator output
-        // from a prior regenerate run) leave it alone — overwriting
-        // would clobber real plugin source declarations.
+        // the aggregator file listing every enabled plugin's Tailwind
+        // content sources. Rebuild it before every theme build instead of
+        // trusting what is on disk: a core update or rollback writes the
+        // release's empty placeholder over it, and building against that
+        // placeholder silently drops every class only a plugin's content
+        // uses (Pages body markup, for example). When the aggregator cannot
+        // run — no database yet, as when the install wizard's "Download
+        // theme" button fires — fall back to seeding an empty stub if the
+        // file is missing, so vite does not abort with
+        // `Unable to resolve @import "..."` mid-build.
         $aggregatorPath = base_path(\App\Services\Tailwind\PluginSourceAggregator::OUTPUT_PATH);
-        if (! File::exists($aggregatorPath)) {
-            File::ensureDirectoryExists(dirname($aggregatorPath), 0775);
-            File::put($aggregatorPath, <<<'CSS'
-/*
- * AUTO-GENERATED placeholder seeded by dls:theme:build.
- * The Dixlase install wizard and plugin lifecycle commands overwrite
- * this file via php artisan dls:tailwind:regenerate-plugin-sources.
- */
+        try {
+            app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+        } catch (\Throwable) {
+            if (! File::exists($aggregatorPath)) {
+                File::ensureDirectoryExists(dirname($aggregatorPath), 0775);
+                File::put($aggregatorPath, <<<'CSS'
+    /*
+     * AUTO-GENERATED placeholder seeded by dls:theme:build.
+     * The Dixlase install wizard and plugin lifecycle commands overwrite
+     * this file via php artisan dls:tailwind:regenerate-plugin-sources.
+     */
 
-/* No enabled plugin currently declares Tailwind content sources. */
+    /* No enabled plugin currently declares Tailwind content sources. */
 
-CSS);
+    CSS);
+            }
         }
 
         // npm defaults its cache to $HOME/.npm. In a php-fpm container

@@ -77,6 +77,34 @@ class ExtensionSourceRateLimitException extends RuntimeException
         return new self($resetsAt, $authenticated);
     }
 
+    /**
+     * The reset time in the display timezone: H:i, plus the date when it is
+     * not today there (a limit hit late at night resets after midnight).
+     */
+    private static function formatResetTime(CarbonImmutable $resetsAt): string
+    {
+        $timezone = self::displayTimezone();
+        $local = $resetsAt->setTimezone($timezone);
+
+        return $local->isSameDay(CarbonImmutable::now($timezone))
+            ? $local->format('H:i')
+            : $local->format('Y-m-d H:i');
+    }
+
+    /**
+     * The timezone the admin panel shows times in. config('app.timezone') is
+     * the storage timezone (UTC), so using it printed the reset time in UTC
+     * on a site that displays JST.
+     */
+    private static function displayTimezone(): string
+    {
+        try {
+            return \App\Helpers\DateTimeHelper::displayTimezone();
+        } catch (\Throwable) {
+            return (string) config('app.timezone', 'UTC');
+        }
+    }
+
     private static function buildMessage(?CarbonImmutable $resetsAt, bool $authenticated): string
     {
         $key = $authenticated
@@ -87,7 +115,7 @@ class ExtensionSourceRateLimitException extends RuntimeException
 
         if ($resetsAt !== null) {
             $message .= ' '.__('services/extension_sources.rate_limit_resets_at', [
-                'time' => $resetsAt->setTimezone(config('app.timezone'))->format('H:i'),
+                'time' => self::formatResetTime($resetsAt),
             ]);
         }
 
