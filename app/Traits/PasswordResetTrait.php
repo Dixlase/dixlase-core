@@ -177,7 +177,7 @@ trait PasswordResetTrait
         // An address change that was never confirmed is dropped: whoever
         // resets the password proves control of the current address, not of
         // the pending one.
-        if ($user instanceof Member && $user->pending_email !== null) {
+        if ($user instanceof Member && $user->getAttribute('pending_email') !== null) {
             $attributes['pending_email'] = null;
         }
 
