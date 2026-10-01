@@ -76,6 +76,14 @@ return [
         // Core repo (no prefix). Used by getLatestCoreRelease() to poll for
         // core upgrades.
         'core_repo' => env('EXTENSION_GITHUB_CORE_REPO', 'dixlase-core'),
+        // Without a token, files and release assets are read from these
+        // hosts instead of the API, which allows only 60 anonymous calls an
+        // hour per IP. See GitHubSourceProvider::usesPublicHosts().
+        'raw_base' => 'https://raw.githubusercontent.com',
+        'web_base' => 'https://github.com',
+        // Seconds to cache the repository listing behind the "add plugin /
+        // theme" screens. 0 disables the cache.
+        'list_cache_ttl' => (int) env('EXTENSION_GITHUB_LIST_CACHE_TTL', 900),
     ],
 
     // Key ID used for official source signature verification

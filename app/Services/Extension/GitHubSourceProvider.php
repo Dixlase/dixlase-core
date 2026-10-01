@@ -37,10 +37,13 @@ namespace App\Services\Extension;
 
 use App\Contracts\Extension\ExtensionSourceInterface;
 use App\DTO\Extension\ReleaseInfo;
+use App\Exceptions\ExtensionSourceRateLimitException;
 use App\Models\ExtensionSource;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -76,6 +79,25 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
     protected string $coreRepo;
 
+    /**
+     * Host that serves repository files without counting against the API
+     * rate limit. Used only when no token is configured (see usesPublicHosts()).
+     */
+    protected string $rawBaseUrl;
+
+    /**
+     * Web host that serves release assets (browser_download_url), likewise
+     * outside the API rate limit.
+     */
+    protected string $webBaseUrl;
+
+    /**
+     * Whether the last listRepositories() call read every page. A partial
+     * answer (a page failed for a reason other than the rate limit) is
+     * returned but not cached.
+     */
+    protected bool $lastListingComplete = true;
+
     public function __construct(
         protected ExtensionSource $source,
     ) {
@@ -98,6 +120,78 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         $this->repoPrefix = $source->settings['repo_prefix'] ?? config('extension-sources.github.repo_prefix', 'dixlase-');
         $this->themeRepoPrefix = $source->settings['theme_repo_prefix'] ?? config('extension-sources.github.theme_repo_prefix', 'dixlase-theme-');
         $this->coreRepo = $source->settings['core_repo'] ?? config('extension-sources.github.core_repo', 'dixlase-core');
+        $this->rawBaseUrl = rtrim((string) config('extension-sources.github.raw_base', 'https://raw.githubusercontent.com'), '/');
+        $this->webBaseUrl = rtrim((string) config('extension-sources.github.web_base', 'https://github.com'), '/');
+    }
+
+    /**
+     * Whether to fetch files and release assets from GitHub's public hosts.
+     *
+     * Anonymous API calls are limited to 60 an hour per IP, shared by every
+     * site behind the same address. Installing the five official plugins
+     * used to take 60-70 calls (manifests, thumbnails and assets all went
+     * through the Contents / Releases API), so the third plugin already hit
+     * HTTP 403. raw.githubusercontent.com and the browser_download_url on
+     * github.com do not count against that limit.
+     *
+     * Only without a token: those hosts cannot be authenticated for a
+     * private repository, so a configured token keeps the API path. Only
+     * for github.com itself: a GitHub Enterprise base URL has no such hosts.
+     */
+    protected function usesPublicHosts(): bool
+    {
+        return ! $this->token && parse_url($this->baseUrl, PHP_URL_HOST) === 'api.github.com';
+    }
+
+    /**
+     * Throw when a response is GitHub refusing because the rate limit is used up.
+     */
+    protected function throwIfRateLimited(Response $response): void
+    {
+        if (ExtensionSourceRateLimitException::isRateLimited($response)) {
+            throw ExtensionSourceRateLimitException::fromResponse($response, (bool) $this->token);
+        }
+    }
+
+    /**
+     * Cache a repository listing for a while.
+     *
+     * Opening the "add plugin" screen used to list the organisation's
+     * repositories again on every visit. The key carries the source's
+     * updated_at, so changing the source (its token, owner or prefixes)
+     * starts a fresh listing, and the locale, because names and
+     * descriptions are resolved for the current one.
+     *
+     * @param  callable(): array<int, array<string, mixed>>  $list
+     * @return array<int, array<string, mixed>>
+     */
+    protected function cachedListing(string $extensionType, callable $list): array
+    {
+        $ttl = (int) config('extension-sources.github.list_cache_ttl', 900);
+        $key = sprintf(
+            'extension-source.%d.%s.%s.%s',
+            $this->source->id,
+            $extensionType,
+            app()->getLocale(),
+            $this->source->updated_at->timestamp,
+        );
+
+        if ($ttl <= 0) {
+            return $list();
+        }
+
+        $cached = Cache::get($key);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $items = $list();
+
+        if ($this->lastListingComplete) {
+            Cache::put($key, $items, $ttl);
+        }
+
+        return $items;
     }
 
     public function getType(): string
@@ -115,7 +209,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     public function listPlugins(): array
     {
-        return $this->listRepositories($this->repoPrefix, 'plugin', $this->themeRepoPrefix);
+        return $this->cachedListing('plugin', fn () => $this->listRepositories($this->repoPrefix, 'plugin', $this->themeRepoPrefix));
     }
 
     /**
@@ -123,7 +217,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     public function listThemes(): array
     {
-        return $this->listRepositories($this->themeRepoPrefix, 'theme');
+        return $this->cachedListing('theme', fn () => $this->listRepositories($this->themeRepoPrefix, 'theme'));
     }
 
     /**
@@ -187,6 +281,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             return ReleaseInfo::fromGitHub($response->json(), $slug, $extensionType);
         }
 
+        $this->throwIfRateLimited($response);
+
         // Generate pseudo-release from default branch information if no release exists
         return $this->getDefaultBranchReleaseInfo($slug, $extensionType);
     }
@@ -197,6 +293,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/releases/latest");
 
         if (! $response->successful()) {
+            $this->throwIfRateLimited($response);
+
             // No release published yet — leave detection blank rather than
             // synthesising a pseudo-version from the default branch (the core
             // version-of-record is config('app.version'), not a branch tag).
@@ -288,6 +386,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/releases/tags/{$tag}");
 
             if (! $response->successful()) {
+                $this->throwIfRateLimited($response);
+
                 continue;
             }
 
@@ -296,13 +396,15 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                 fn (array $asset) => str_ends_with($asset['name'] ?? '', '.zip')
             );
 
-            // Use the asset's API url, not browser_download_url: on a
-            // PRIVATE repo the browser URL 404s for a token-authenticated
-            // request — release assets must be fetched from the API
-            // endpoint with Accept: application/octet-stream (handled in
+            // With a token, use the asset's API url, not browser_download_url:
+            // on a PRIVATE repo the browser URL 404s for a token-authenticated
+            // request — release assets must be fetched from the API endpoint
+            // with Accept: application/octet-stream (handled in
             // downloadCoreRelease). zipball_url is already an API url.
+            // Without a token, the browser URL keeps the download outside the
+            // API rate limit (see usesPublicHosts()).
             return [
-                'download_url' => $zipAsset['url'] ?? $payload['zipball_url'] ?? null,
+                'download_url' => $this->assetDownloadUrl($zipAsset) ?? $payload['zipball_url'] ?? null,
                 'tag_name' => $payload['tag_name'] ?? $tag,
             ];
         }
@@ -483,6 +585,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     {
         $repos = [];
         $page = 1;
+        $this->lastListingComplete = true;
 
         do {
             $response = $this->client()->get("{$this->baseUrl}/orgs/{$this->owner}/repos", [
@@ -492,6 +595,9 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             ]);
 
             if ($response->failed()) {
+                $this->throwIfRateLimited($response);
+                $this->lastListingComplete = false;
+
                 break;
             }
 
@@ -562,6 +668,11 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     public function fetchThumbnail(string $slug, string $extensionType = 'plugin'): ?array
     {
         $repoName = $this->buildRepoName($slug, $extensionType);
+
+        if ($this->usesPublicHosts()) {
+            return $this->fetchPublicThumbnail($repoName, $extensionType);
+        }
+
         $manifest = $this->fetchManifest($repoName, $extensionType);
 
         // Names to accept at the repository root, in priority order. This is
@@ -622,6 +733,87 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         }
 
         return ['content' => $bytes, 'mime' => $this->thumbnailMime($path)];
+    }
+
+    /**
+     * fetchThumbnail() without a token: probe raw.githubusercontent.com.
+     *
+     * There is no directory listing on that host, so candidates are asked
+     * for one by one — but a 404 there costs nothing against the API rate
+     * limit, unlike the Contents API calls the token path makes. Same
+     * order as the token path: repository root, then a manifest-declared
+     * path, then the legacy resources/assets location.
+     *
+     * @return array{content: string, mime: string}|null
+     */
+    protected function fetchPublicThumbnail(string $repoName, string $extensionType): ?array
+    {
+        $candidates = [];
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+            $candidates[] = "thumbnail.{$ext}";
+        }
+        if ($extensionType === 'theme') {
+            foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+                $candidates[] = "screenshot.{$ext}";
+            }
+        }
+
+        $manifest = $this->fetchManifest($repoName, $extensionType);
+        if (is_array($manifest) && is_string($manifest['thumbnail'] ?? null)) {
+            $candidates[] = ltrim($manifest['thumbnail'], '/');
+        }
+
+        foreach (['webp', 'png', 'jpg', 'jpeg'] as $ext) {
+            $candidates[] = "resources/assets/thumbnail.{$ext}";
+        }
+
+        foreach (array_unique($candidates) as $path) {
+            $bytes = $this->fetchRawFile($repoName, $path);
+            if ($bytes !== null) {
+                return ['content' => $bytes, 'mime' => $this->thumbnailMime($path)];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A file from the default branch, read from raw.githubusercontent.com.
+     *
+     * `HEAD` resolves to the repository's default branch, which is what the
+     * Contents API reads when no ref is given. Returns null on any failure.
+     */
+    protected function fetchRawFile(string $repoName, string $path): ?string
+    {
+        $url = "{$this->rawBaseUrl}/{$this->owner}/{$repoName}/HEAD/".ltrim($path, '/');
+
+        $response = Http::timeout(self::LOOKUP_TIMEOUT)
+            ->retry(2, 1000, fn (\Throwable $e): bool => $e instanceof ConnectionException, throw: false)
+            ->get($url);
+
+        return $response->successful() ? $response->body() : null;
+    }
+
+    /**
+     * Download URL for a release asset.
+     *
+     * With a token, the asset's API url (needed for private repositories);
+     * without one, its browser_download_url on github.com, which does not
+     * count against the API rate limit.
+     *
+     * @param  array<string, mixed>|null  $asset
+     */
+    protected function assetDownloadUrl(?array $asset): ?string
+    {
+        if ($asset === null) {
+            return null;
+        }
+
+        if ($this->usesPublicHosts() && is_string($asset['browser_download_url'] ?? null)) {
+            return $asset['browser_download_url'];
+        }
+
+        return is_string($asset['url'] ?? null) ? $asset['url'] : null;
     }
 
     /**
@@ -710,6 +902,10 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     protected function fetchRepoFileBytes(string $repoName, string $path): ?string
     {
+        if ($this->usesPublicHosts()) {
+            return $this->fetchRawFile($repoName, $path);
+        }
+
         $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$path}");
@@ -739,6 +935,13 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     protected function fetchManifest(string $repoName, string $extensionType): ?array
     {
         $manifestFile = $extensionType === 'theme' ? 'theme.json' : 'plugin.json';
+
+        if ($this->usesPublicHosts()) {
+            $body = $this->fetchRawFile($repoName, $manifestFile);
+            $manifest = $body === null ? null : json_decode($body, true);
+
+            return is_array($manifest) ? $manifest : null;
+        }
 
         $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
@@ -824,14 +1027,15 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     fn (array $asset) => str_ends_with($asset['name'], '.zip')
                 );
 
-                // Asset API url (not browser_download_url): see
-                // findCoreRelease — the browser URL 404s for a
-                // token-authenticated request on a private repo.
+                // Asset API url with a token, browser_download_url without
+                // one: see findCoreRelease and assetDownloadUrl().
                 return [
-                    'download_url' => $zipAsset['url'] ?? $data['zipball_url'] ?? null,
+                    'download_url' => $this->assetDownloadUrl($zipAsset) ?? $data['zipball_url'] ?? null,
                     'tag_name' => $data['tag_name'],
                 ];
             }
+
+            $this->throwIfRateLimited($response);
         }
 
         return null;
@@ -887,7 +1091,9 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     protected function downloadClient(string $downloadUrl): PendingRequest
     {
-        $accept = str_contains($downloadUrl, '/releases/assets/')
+        // browser_download_url (/releases/download/) serves the file itself;
+        // octet-stream is the honest Accept for it too.
+        $accept = str_contains($downloadUrl, '/releases/assets/') || str_contains($downloadUrl, '/releases/download/')
             ? 'application/octet-stream'
             : 'application/vnd.github+json';
 
