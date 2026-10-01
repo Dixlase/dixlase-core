@@ -98,6 +98,16 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     protected bool $lastListingComplete = true;
 
+    /**
+     * Release payloads already fetched by getLatestRelease(), keyed by
+     * "{repo}@{tag}". Installing the latest version used to ask for
+     * releases/latest and then for releases/tags/{tag} -- the same release
+     * twice -- which matters at 60 anonymous requests an hour.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    protected array $knownReleases = [];
+
     public function __construct(
         protected ExtensionSource $source,
     ) {
@@ -278,7 +288,12 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             ->get("{$this->baseUrl}/repos/{$this->owner}/{$repo}/releases/latest");
 
         if ($response->successful()) {
-            return ReleaseInfo::fromGitHub($response->json(), $slug, $extensionType);
+            $data = $response->json();
+            if (is_array($data) && is_string($data['tag_name'] ?? null)) {
+                $this->knownReleases["{$repo}@{$data['tag_name']}"] = $data;
+            }
+
+            return ReleaseInfo::fromGitHub($data, $slug, $extensionType);
         }
 
         $this->throwIfRateLimited($response);
@@ -1018,24 +1033,31 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
         // Try with and without 'v' prefix
         foreach (["v{$version}", $version] as $tag) {
-            $response = $this->client()
-                ->get("{$this->baseUrl}/repos/{$this->owner}/{$repo}/releases/tags/{$tag}");
+            $data = $this->knownReleases["{$repo}@{$tag}"] ?? null;
 
-            if ($response->successful()) {
+            if ($data === null) {
+                $response = $this->client()
+                    ->get("{$this->baseUrl}/repos/{$this->owner}/{$repo}/releases/tags/{$tag}");
+
+                if (! $response->successful()) {
+                    $this->throwIfRateLimited($response);
+
+                    continue;
+                }
+
                 $data = $response->json();
-                $zipAsset = collect($data['assets'] ?? [])->first(
-                    fn (array $asset) => str_ends_with($asset['name'], '.zip')
-                );
-
-                // Asset API url with a token, browser_download_url without
-                // one: see findCoreRelease and assetDownloadUrl().
-                return [
-                    'download_url' => $this->assetDownloadUrl($zipAsset) ?? $data['zipball_url'] ?? null,
-                    'tag_name' => $data['tag_name'],
-                ];
             }
 
-            $this->throwIfRateLimited($response);
+            $zipAsset = collect($data['assets'] ?? [])->first(
+                fn (array $asset) => str_ends_with($asset['name'], '.zip')
+            );
+
+            // Asset API url with a token, browser_download_url without
+            // one: see findCoreRelease and assetDownloadUrl().
+            return [
+                'download_url' => $this->assetDownloadUrl($zipAsset) ?? $data['zipball_url'] ?? null,
+                'tag_name' => $data['tag_name'],
+            ];
         }
 
         return null;
