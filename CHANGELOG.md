@@ -32,6 +32,28 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-10-01
+
+### Fixed
+- A core update or rollback no longer shows the administrator running it a one-off error
+  page while dependencies are swapped. The maintenance bypass is suspended for that window,
+  so they see the same maintenance page as every visitor (#435)
+- Sites with an enabled plugin no longer report a file integrity warning after every core
+  update. `resources/src/common/css/dixlase-tailwind-plugin-sources.css`, which core rewrites
+  on every plugin change, is excluded from the integrity check — including for baselines
+  created before this release — so the post-update baseline refresh (#426) now runs on
+  those sites too (#435)
+- A core update or rollback no longer leaves the plugin Tailwind sources list reset to the
+  release placeholder. Both now regenerate it, and `dls:theme:build` regenerates it before
+  every build, so a theme build no longer drops classes used only by plugin content (#435)
+- The GitHub rate-limit message shows when the limit resets in the site's display timezone
+  (with the date when it is another day), no longer recommends a token, and is no longer
+  wrapped in an English "Failed to download … from all sources" line on the download path
+  (#435)
+
+Fixes 1 and 2 run in the update code of the installed core, so they apply from the update
+after v0.1.2; the update to v0.1.2 itself still runs the previous version's code.
+
 ## [0.1.1] — 2026-10-01
 
 ### Security
