@@ -800,7 +800,9 @@ Route::prefix($adminUrl)->name('admin.')
             // Not loaded here to allow plugins full control over route names
             // \App\Helpers\PluginHelper::loadEnabledAdminRoutes();
 
-            // Auto-load admin panel routes for activated themes
-            \App\Helpers\ThemeHelper::loadEnabledThemeAdminRoutes();
+            // Theme admin routes are loaded in ThemeServiceProvider::loadThemeRoutes(),
+            // gated on `check.menu.access:settings.themes.settings`. Including them
+            // here as well registered the same names a second time with only the
+            // authentication middleware, and the later, ungated copy won.
         });
     });

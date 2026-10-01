@@ -40,8 +40,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\MemberRole;
+use App\Models\Plugin;
 use App\Models\RolePermissionOverride;
 use App\Support\Cache\CacheKey;
+use App\Support\ComposerLocalManifest;
+use App\Support\ExtensionDirectories;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -487,20 +490,53 @@ class PermissionRegistry
             $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
         }
 
-        $pluginsPath = base_path('plugins');
-        if (is_dir($pluginsPath)) {
-            foreach (glob($pluginsPath.'/*', GLOB_ONLYDIR) ?: [] as $pluginDir) {
-                $pluginSlug = basename($pluginDir);
-                if (isset($result[$pluginSlug])) {
-                    continue;
-                }
-                if (self::resolvePluginRolesPath($pluginSlug) !== null) {
-                    $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
-                }
+        foreach (self::installedPluginDirectories() as $pluginSlug) {
+            if (isset($result[$pluginSlug])) {
+                continue;
+            }
+            if (self::resolvePluginRolesPath($pluginSlug) !== null) {
+                $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Directory names of the installed plugins whose config may be loaded.
+     *
+     * Reading a plugin's roles.php or navigation.php means `require`-ing its
+     * PHP, so only directories with a row in `plugins` qualify. A directory
+     * that was uploaded but not installed yet (pending-install marker), one
+     * that has no row at all, and a move-aside copy (Foo.stale.*, Foo.bak)
+     * are skipped: none of them has passed the pre-install scan.
+     *
+     * @return list<string>
+     */
+    public static function installedPluginDirectories(?string $pluginsPath = null): array
+    {
+        $pluginsPath ??= base_path('plugins');
+        if (! is_dir($pluginsPath)) {
+            return [];
+        }
+
+        $directories = [];
+        foreach (Plugin::query()->pluck('directory') as $directory) {
+            if (! is_string($directory) || $directory === '' || ! ExtensionDirectories::isInstalledName($directory)) {
+                continue;
+            }
+
+            $path = $pluginsPath.'/'.$directory;
+            if (! is_dir($path) || ComposerLocalManifest::isPendingInstall($path)) {
+                continue;
+            }
+
+            $directories[] = $directory;
+        }
+
+        sort($directories);
+
+        return array_values(array_unique($directories));
     }
 
     /**

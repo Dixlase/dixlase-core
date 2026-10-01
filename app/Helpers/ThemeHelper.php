@@ -116,33 +116,6 @@ class ThemeHelper
     }
 
     /**
-     * Load the admin panel routes for the active theme
-     *
-     * This method is expected to be called within the authenticated route group in routes/admin.php.
-     */
-    public static function loadEnabledThemeAdminRoutes(): void
-    {
-        try {
-            $activeTheme = self::getActiveTheme();
-
-            if (! $activeTheme) {
-                return;
-            }
-
-            $adminRoutePath = base_path("themes/{$activeTheme->directory}/routes/admin.php");
-
-            if (File::exists($adminRoutePath)) {
-                include $adminRoutePath;
-            }
-        } catch (\Exception $e) {
-            Log::error('ThemeHelper: Failed to load theme admin routes', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-        }
-    }
-
-    /**
      * Load the web routes for the active theme
      */
     public static function loadEnabledThemeWebRoutes(): void

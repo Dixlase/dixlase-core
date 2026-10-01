@@ -80,6 +80,7 @@ return [
         'no_valid_directory' => 'No valid plugin directory found in the ZIP file.',
         'directory_exists' => "Plugin directory ':directory' already exists.",
         'composer_not_found' => 'composer.json not found.',
+        'slug_conflict' => "This plugin declares the slug ':slug', which is already used by ':directory'. It was not added.",
         'download_success' => 'Plugin ":name" downloaded successfully. Please install from the list.',
         'download_failed' => 'Plugin download failed: :error',
     ],

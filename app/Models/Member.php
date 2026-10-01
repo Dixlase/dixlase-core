@@ -187,12 +187,21 @@ class Member extends Authenticatable implements MustVerifyEmail, PasskeyUser, Tw
     /**
      * Route notifications for the mail channel.
      *
+     * Only the address-confirmation mail goes to pending_email. Everything
+     * else -- password resets, login alerts -- stays on the confirmed address,
+     * or a typo'd or hostile pending address would receive reset links for
+     * the account before it was ever verified.
+     *
+     * @param  \Illuminate\Notifications\Notification|null  $notification
      * @return string
      */
-    public function routeNotificationForMail()
+    public function routeNotificationForMail($notification = null)
     {
-        // Change email notification destination to pending_email (when changing email address)
-        return $this->pending_email ?? $this->email;
+        if ($notification instanceof \App\Notifications\MemberVerifyEmailNotification) {
+            return $this->pending_email ?? $this->email;
+        }
+
+        return $this->email;
     }
 
     // ========================================

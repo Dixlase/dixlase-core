@@ -67,8 +67,11 @@ class ContentPreviewService
      *
      * @param  string  $content  Raw content
      * @param  ContentEditorType  $editorType  Editor type (must come from a trusted source if BLADE)
+     * @param  bool  $allowRawHtml  Whether raw HTML inside Markdown is passed through. Pass false for
+     *                              content an author below ADMIN may have written: the HTML is then
+     *                              escaped and shown as text.
      */
-    public function render(string $content, ContentEditorType $editorType): string
+    public function render(string $content, ContentEditorType $editorType, bool $allowRawHtml = true): string
     {
         if ($content === '') {
             return '';
@@ -83,6 +86,7 @@ class ContentPreviewService
                 // reasonably assume it works on the published page.
                 ContentEditorType::MARKDOWN => Str::markdown($this->normalizeMarkdown($content), [
                     'allow_unsafe_links' => false,
+                    'html_input' => $allowRawHtml ? 'allow' : 'escape',
                 ]),
                 ContentEditorType::BLADE => Blade::render($content),
                 ContentEditorType::HTML => $content,
@@ -130,8 +134,9 @@ class ContentPreviewService
      * @param  string  $content  Raw content
      * @param  string  $editorTypeSlug  Editor type slug (e.g., 'html', 'markdown', 'blade')
      * @param  bool  $allowExecutableTemplates  Opt-in to BLADE rendering. Caller must enforce its own permission check first.
+     * @param  bool  $allowRawHtml  See {@see render()}.
      */
-    public function renderFromSlug(string $content, string $editorTypeSlug, bool $allowExecutableTemplates = false): string
+    public function renderFromSlug(string $content, string $editorTypeSlug, bool $allowExecutableTemplates = false, bool $allowRawHtml = true): string
     {
         $editorType = ContentEditorType::tryFromSlug($editorTypeSlug);
 
@@ -144,6 +149,6 @@ class ContentPreviewService
             $editorType = ContentEditorType::HTML;
         }
 
-        return $this->render($content, $editorType);
+        return $this->render($content, $editorType, $allowRawHtml);
     }
 }
