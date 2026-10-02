@@ -55,16 +55,32 @@ The area prefix matches the `area:` label (see below).
 
 Bug reports and feature suggestions use the issue forms in `.github/ISSUE_TEMPLATE/`.
 
-Issues that maintainers file for their own findings use the **Known issue** form. It has these sections:
+Issues that maintainers file for their own findings use the **Known issue** form. Its body is one block of English followed by one block of Japanese, separated by a `---` line. Write every section in English first, then every section in Japanese. Do not alternate the two languages section by section: each language should read as one continuous text.
 
-| Section | Content |
+The sections, in the same order in both languages:
+
+| Section (EN / JA) | Content |
 | --- | --- |
-| What happens | The observed behaviour, in one or two sentences |
-| Impact | Who is affected, from which version, and how badly |
-| Reproduction | Steps, and the version the steps were run on |
-| Cause | The cause, if known. Mark a guess as a guess |
-| Proposed fix | A possible fix (optional) |
-| Done when | What has to be true before the issue can be closed |
+| What happens / 何が起きるか | The observed behaviour, in one or two sentences |
+| Impact / 影響 | Who is affected, from which version, and how badly |
+| Reproduction / 再現手順 | Steps, and the version the steps were run on |
+| Cause / 原因 | The cause, if known. Mark a guess as a guess |
+| Proposed fix / 直し方の案 | A possible fix (optional) |
+| Done when / 完了の条件 | What has to be true before the issue can be closed |
+
+```markdown
+### What happens
+…
+### Done when
+…
+
+---
+
+### 何が起きるか
+…
+### 完了の条件
+…
+```
 
 Write what was observed, not what was assumed. When a reproduction depends on a site's state (installed plugins, preset, HTTPS mode), say so.
 
