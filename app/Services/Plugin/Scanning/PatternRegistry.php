@@ -101,6 +101,7 @@ class PatternRegistry
         // Dangerous API
         $registry->register(new DangerousApiPattern('exec'));
         $registry->register(new DangerousApiPattern('env_access'));
+        $registry->register(new PackageScriptsDetectionPattern());
 
         // External resources (common to plugins/themes)
         $registry->register(new ExternalResourceDetectionPattern());
