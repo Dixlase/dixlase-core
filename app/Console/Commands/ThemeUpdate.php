@@ -42,6 +42,7 @@ use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\ThemeMigrationRepository;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
@@ -62,7 +63,8 @@ class ThemeUpdate extends Command
         {--force : Skip confirmation}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
         {--skip-build : Skip the npm install / build step entirely}
-        {--skip-backup : Skip the automatic pre-update backup that dls:theme:rollback restores from}';
+        {--skip-backup : Skip the automatic pre-update backup that dls:theme:rollback restores from}
+        {--applied-by= : Member id to record as the one who ran the update (the admin screen passes it; CLI runs record none)}';
 
     protected $description = 'Update a theme to the latest version from its source';
 
@@ -89,6 +91,10 @@ class ThemeUpdate extends Command
         // Persistent pre-update backup (kept for dls:theme:rollback); null
         // when --skip-backup, in which case $snapshotPath guards this run.
         $backupPath = null;
+        // For the audit entry and version-history row (dixlase-core#454).
+        $before = ExtensionUpdateRecorder::snapshot($theme);
+        $targetVersion = null;
+        $downloadedSha256 = null;
         // Whether we got far enough into the try block to invoke
         // ThemeMigrator::migrate(). Used by the catch handler to decide
         // whether to attempt ThemeMigrator::rollback() — without this
@@ -129,6 +135,7 @@ class ThemeUpdate extends Command
             }
 
             $this->info("Update available: v{$theme->version} → v{$release->version}");
+            $targetVersion = $release->version;
 
             if (! $this->option('force') && ! $this->confirm('Proceed with update?', true)) {
                 $this->info('Update cancelled.');
@@ -316,6 +323,11 @@ class ThemeUpdate extends Command
             // extension_auto_scan_after_update security setting.
             $this->autoScanAfterUpdate('theme', $slug);
 
+            ExtensionUpdateRecorder::succeeded('update', $theme->refresh(), $before, $this->appliedById(), [
+                'downloaded_sha256' => $downloadedSha256,
+                'backup' => $backupPath !== null ? basename($backupPath) : null,
+            ]);
+
             return self::SUCCESS;
         } catch (\Throwable $e) {
             // Roll back the theme tree from the pre-update backup (or the
@@ -366,6 +378,10 @@ class ThemeUpdate extends Command
             $theme->update([
                 'update_failed_at' => now(),
                 'update_failure_reason' => $this->truncateReason($e->getMessage()),
+            ]);
+
+            ExtensionUpdateRecorder::failed('update', $theme, $before['version'], $targetVersion, $this->appliedById(), $e->getMessage(), [
+                'downloaded_sha256' => $downloadedSha256,
             ]);
 
             $this->error("Update failed: {$e->getMessage()}");
@@ -494,5 +510,15 @@ class ThemeUpdate extends Command
                 File::deleteDirectory($staging);
             }
         }
+    }
+
+    /**
+     * Member id from --applied-by, or null for a CLI run.
+     */
+    private function appliedById(): ?int
+    {
+        $id = $this->option('applied-by');
+
+        return is_numeric($id) ? (int) $id : null;
     }
 }

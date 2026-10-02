@@ -53,7 +53,8 @@ class ExtensionsUpdate extends Command
 {
     protected $signature = 'dls:extensions:update
         {--plugin=* : Plugin slug(s) to update}
-        {--theme=* : Theme slug(s) to update}';
+        {--theme=* : Theme slug(s) to update}
+        {--applied-by= : Member id passed on to each update, for the audit log and the version history}';
 
     protected $description = 'Update the given plugins and themes sequentially (used by the admin updates page).';
 
@@ -73,6 +74,11 @@ class ExtensionsUpdate extends Command
     {
         $pluginSlugs = array_values(array_filter((array) $this->option('plugin')));
         $themeSlugs = array_values(array_filter((array) $this->option('theme')));
+        $appliedBy = is_numeric($this->option('applied-by')) ? (string) $this->option('applied-by') : null;
+
+        // The admin screen appends every run to one log; mark where this one starts.
+        $this->line('=== dls:extensions:update '.now()->toIso8601String()
+            .' plugins=['.implode(',', $pluginSlugs).'] themes=['.implode(',', $themeSlugs).'] ===');
 
         $failed = 0;
         // Display names (not slugs) of what actually updated, kept split by
@@ -87,7 +93,7 @@ class ExtensionsUpdate extends Command
         try {
             foreach ($pluginSlugs as $slug) {
                 $this->line("[extensions-update] updating plugin {$slug}...");
-                $code = $this->call('dls:plugin:update', ['slug' => $slug, '--force' => true]);
+                $code = $this->call('dls:plugin:update', array_filter(['slug' => $slug, '--force' => true, '--applied-by' => $appliedBy], fn ($v) => $v !== null));
                 if ($code === 0) {
                     $this->line("[extensions-update] plugin {$slug} done");
                     $updatedPlugins[] = ExtensionDisplayName::for('plugin', $slug);
@@ -99,7 +105,7 @@ class ExtensionsUpdate extends Command
 
             foreach ($themeSlugs as $slug) {
                 $this->line("[extensions-update] updating theme {$slug}...");
-                $code = $this->call('dls:theme:update', ['slug' => $slug, '--force' => true]);
+                $code = $this->call('dls:theme:update', array_filter(['slug' => $slug, '--force' => true, '--applied-by' => $appliedBy], fn ($v) => $v !== null));
                 if ($code === 0) {
                     $this->line("[extensions-update] theme {$slug} done");
                     $updatedThemes[] = ExtensionDisplayName::for('theme', $slug);

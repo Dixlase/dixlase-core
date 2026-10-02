@@ -251,6 +251,12 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_UPDATED = 'plugin_updated';
 
+    public const ACTION_PLUGIN_UPDATE_FAILED = 'plugin_update_failed';
+
+    public const ACTION_PLUGIN_ROLLED_BACK = 'plugin_rolled_back';
+
+    public const ACTION_PLUGIN_ROLLBACK_FAILED = 'plugin_rollback_failed';
+
     // Actions for supply chain attack defense
     public const ACTION_PLUGIN_SIGNING_KEY_CHANGED = 'plugin_signing_key_changed';
 
@@ -276,6 +282,12 @@ class AuditLog extends Model
     public const ACTION_THEME_UNINSTALLED = 'theme_uninstalled';
 
     public const ACTION_THEME_UPDATED = 'theme_updated';
+
+    public const ACTION_THEME_UPDATE_FAILED = 'theme_update_failed';
+
+    public const ACTION_THEME_ROLLED_BACK = 'theme_rolled_back';
+
+    public const ACTION_THEME_ROLLBACK_FAILED = 'theme_rollback_failed';
 
     // Theme supply-chain attack defense actions (mirror plugin equivalents)
     public const ACTION_THEME_SIGNING_KEY_CHANGED = 'theme_signing_key_changed';
@@ -709,6 +721,9 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
+            self::ACTION_PLUGIN_UPDATE_FAILED, self::ACTION_PLUGIN_ROLLED_BACK,
+            self::ACTION_PLUGIN_ROLLBACK_FAILED, self::ACTION_THEME_UPDATE_FAILED,
+            self::ACTION_THEME_ROLLED_BACK, self::ACTION_THEME_ROLLBACK_FAILED,
         ];
 
         if (in_array($action, $authActions)) {
@@ -865,6 +880,8 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UPDATED,        // Plugin update
             self::ACTION_THEME_ENABLED,         // Theme activation
             self::ACTION_THEME_UPDATED,         // Theme update
+            self::ACTION_PLUGIN_ROLLED_BACK,    // Plugin rollback
+            self::ACTION_THEME_ROLLED_BACK,     // Theme rollback
         ];
 
         if (in_array($action, $criticalActions)) {
