@@ -1,0 +1,39 @@
+# Canonical label set for Dixlase repositories.
+# See docs/development/issues.md. Apply with:
+#   yq -o=json '.[]' .github/labels.yml | jq -c . | while read -r l; do
+#     gh label create "$(jq -r .name <<<"$l")" --color "$(jq -r .color <<<"$l")" \
+#       --description "$(jq -r .description <<<"$l")" --force -R Dixlase/<repo>; done
+
+# Type
+- { name: bug,         color: d73a4a, description: "Something does not work as documented / 説明どおりに動かない" }
+- { name: enhancement, color: a2eeef, description: "New feature or improvement / 新機能・改善" }
+- { name: docs,        color: 0075ca, description: "Documentation or translation / ドキュメント・翻訳" }
+- { name: hardening,   color: 5319e7, description: "Defence in depth, not a vulnerability / 脆弱性ではない守りの強化" }
+- { name: chore,       color: cfd3d7, description: "Tooling, CI, dependencies / ツール・CI・依存関係" }
+- { name: question,    color: d876e3, description: "Question / 質問" }
+
+# Area
+- { name: "area:core-update", color: fbca04, description: "Core update, rollback, release / コアの更新・ロールバック・リリース" }
+- { name: "area:extensions",  color: fbca04, description: "Plugins, themes, sources, signing / プラグイン・テーマ・ソース・署名" }
+- { name: "area:install",     color: fbca04, description: "Installers and the setup wizard / インストーラとセットアップ" }
+- { name: "area:admin",       color: fbca04, description: "Admin panel / 管理画面" }
+- { name: "area:front",       color: fbca04, description: "Front-end site / フロント" }
+- { name: "area:security",    color: fbca04, description: "Security features (not vulnerability reports) / セキュリティ機能" }
+- { name: "area:i18n",        color: fbca04, description: "Translations and locales / 翻訳・ロケール" }
+- { name: "area:api",         color: fbca04, description: "Plugin API and contracts / Plugin API・Contract" }
+- { name: "area:ci",          color: fbca04, description: "CI and workflows / CI・ワークフロー" }
+
+# Priority
+- { name: P0, color: b60205, description: "Blocks a release or loses data / リリースを止める・データを失う" }
+- { name: P1, color: e99695, description: "Fix in the next release / 次のリリースで直す" }
+- { name: P2, color: f9d0c4, description: "When convenient / 都合のよいときに" }
+
+# Status
+- { name: needs-repro, color: ededed, description: "Waiting for reproduction details / 再現情報待ち" }
+- { name: confirmed,   color: 0e8a16, description: "Reproduced by a maintainer / メンテナーが再現済み" }
+- { name: blocked,     color: 000000, description: "Waiting on other work / ほかの作業待ち" }
+
+# Resolution
+- { name: duplicate, color: cfd3d7, description: "Already reported / 重複" }
+- { name: wontfix,   color: ffffff, description: "Will not be fixed / 対応しない" }
+- { name: invalid,   color: e4e669, description: "Not a problem in Dixlase / Dixlase の問題ではない" }

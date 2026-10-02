@@ -19,6 +19,12 @@ UI component usage guides and styling conventions.
 
 - [Components](components/)
 
+## Issues
+
+How to write, label and close GitHub issues, and how they link to releases.
+
+- [Issue Guidelines](issues.md)
+
 ## Revisions
 
 Shared revision API: Revisionable contract, HasRevisions trait,

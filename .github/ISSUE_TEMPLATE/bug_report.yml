@@ -1,0 +1,77 @@
+name: Bug report / バグ報告
+description: Report something that does not work as documented / 説明どおりに動かないものを報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > ⚠️ **Do NOT report security vulnerabilities here.** Use [private vulnerability reporting](https://github.com/Dixlase/dixlase-core/security/advisories/new) or email `security@dixlase.org` (see [SECURITY.md](https://github.com/Dixlase/dixlase-core/blob/main/SECURITY.md)).
+        > ⚠️ **セキュリティ脆弱性はここで報告しないでください。** [プライベート脆弱性報告](https://github.com/Dixlase/dixlase-core/security/advisories/new)または `security@dixlase.org` へ([SECURITY.ja.md](https://github.com/Dixlase/dixlase-core/blob/main/SECURITY.ja.md))。
+
+        You may write in English or Japanese. See the [issue guidelines](https://github.com/Dixlase/dixlase-core/blob/main/docs/development/issues.md).
+        英語・日本語のどちらでも書けます。[Issue の書き方](https://github.com/Dixlase/dixlase-core/blob/main/docs/ja/development/issues.md)もご覧ください。
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens / 何が起きるか
+      description: The behaviour you saw. / 見えた現象。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 再現手順
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour / 期待される動作
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dixlase version / Dixlase の版
+      description: Shown under Settings → System → Updates. / 全体設定 → システム → アップデート管理に表示されます。
+      placeholder: "0.1.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installed with / インストール方法
+      options:
+        - Docker installer / Docker インストーラ
+        - One-liner installer / ワンライナー
+        - Release ZIP / リリース ZIP
+        - Git clone
+        - Other / その他
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 環境
+      description: PHP version, database, OS, browser, and the plugins and theme in use. / PHP の版、データベース、OS、ブラウザ、使っているプラグインとテーマ。
+      placeholder: |
+        - PHP:
+        - Database:
+        - OS:
+        - Browser:
+        - Plugins / theme:
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots / ログやスクリーンショット
+      description: Remove passwords, tokens, personal data and host names first. / パスワード・トークン・個人情報・ホスト名は消してから貼ってください。
+      render: text
+  - type: markdown
+    attributes:
+      value: |
+        Code snippets are treated as **reference information only**; a maintainer re-implements any fix. External pull requests are not accepted yet ([CONTRIBUTING.md](https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.md)).
+        コードスニペットは**参考情報**として扱い、修正はメンテナーが書き直します。外部からの Pull Request はまだ受け付けていません([CONTRIBUTING.ja.md](https://github.com/Dixlase/dixlase-core/blob/main/CONTRIBUTING.ja.md))。
