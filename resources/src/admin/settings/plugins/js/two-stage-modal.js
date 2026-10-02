@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * 2段階フローを開始
      */
-    function startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData) {
-        currentAction = { actionType, pluginName, pluginSlug, needsScan, formId };
+    function startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData, staleNotice) {
+        currentAction = { actionType, pluginName, pluginSlug, needsScan, formId, staleNotice: staleNotice || '' };
 
         // スキャン不要（既にスキャン済みでファイル変更なし）の場合、保存済みデータで Stage 2
         if (!needsScan) {
@@ -275,6 +275,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         stage2Content.innerHTML = contentHtml;
 
+        // The download is older than the source's latest release (#456).
+        // textContent, not innerHTML: the sentence carries version strings.
+        if (currentAction.staleNotice) {
+            const notice = document.createElement('div');
+            notice.className = 'text-left p-3 mb-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200';
+            notice.textContent = currentAction.staleNotice;
+            stage2Content.prepend(notice);
+        }
+
         // 確認メッセージ表示
         if (stage2ConfirmMessage) {
             if (isBlocked) {
@@ -378,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData);
+            startPluginAction(actionType, pluginName, pluginSlug, needsScan, formId, storedHealthData, this.dataset.staleNotice || '');
         });
     });
 

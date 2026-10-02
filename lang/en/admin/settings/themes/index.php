@@ -38,6 +38,7 @@ return [
     'description' => 'Manage installed themes, add new themes, and switch themes.',
     'installed_heading' => 'Installed Themes',
     'update_available' => 'v:version available',
+    'stale_download' => 'v:latest has been released; this download is v:version. Delete it and add the extension again before installing.',
     'update_failed_at' => 'Update failed at :date',
     'updates' => [
         'check' => 'Check Updates',

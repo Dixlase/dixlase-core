@@ -64,6 +64,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :icon_type="$card['installWarnings']['hasWarnings'] ? 'warning' : 'info'"
         :confirm_color="$card['installWarnings']['hasWarnings'] ? 'yellow' : 'green'"
     >
+        @if($card['staleLatestVersion'] ?? null)
+            {{-- The download is older than the source's latest release (#456) --}}
+            <div class="text-left p-3 mb-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200">
+                <i class="fas fa-triangle-exclamation mr-1"></i>
+                {{ __('admin/settings/themes/index.stale_download', ['latest' => $card['staleLatestVersion'], 'version' => $card['version']]) }}
+            </div>
+        @endif
         @if($card['installWarnings']['hasWarnings'])
             <div class="text-left">
                 <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">

@@ -52,6 +52,7 @@ use App\Models\ThemeVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
+use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceSidecar;
@@ -93,6 +94,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
         // Detect uninstalled themes first (to collect slugs for batch query)
         $uninstalledThemes = $this->getUninstalledThemes();
+
+        // A download older than its source's latest release is marked on its
+        // card and in the install confirmation (dixlase-core#456).
+        $freshness = app(ExtensionDownloadFreshness::class);
+        foreach ($uninstalledThemes as $i => $entry) {
+            $uninstalledThemes[$i]['stale_latest_version'] = $freshness->newerRelease('theme', (string) ($entry['directory'] ?? ''), $entry['slug'] ?? null, $entry['version'] ?? null);
+        }
 
         // Get audit results for all themes in 1 query (avoid N+1)
         $allSlugs = array_filter(array_merge(
