@@ -63,6 +63,7 @@
 - After schema changes, the developer's local Dixlase Core dev checkout (typically `dixlase-dev-app`) may be rebuilt with `php artisan migrate:fresh` by the operator. **This is a DEV-ONLY convenience** — it applies to the AI author's own working checkout, not to any other container.
 - **Downstream sites** (site-local dev containers such as `dixlase-brand-app` / `dixlase-demo-*-app` / `dixlase-docs-app` / `dixlase-authority-app`, staging, or production) **must NEVER be given `migrate:fresh` / `db:wipe` / `migrate:reset` — neither in commands run against them, nor in task instructions sent to their operators / sessions**. For those sites, use `php artisan dls:migration:resync --prune` (dry-run default; `--confirm` to apply; only touches migration ledger rows, never data tables).
 - Beta releases do **not** guarantee in-place data upgrades between beta versions **for the developer's local dev checkout**; the operator may `migrate:fresh` there. Downstream sites take the ledger-cleanup path instead.
+- **A renumbered file is handled for you; an edited body is not.** Since core 0.3.47 every core `migrate` realigns the ledger with the filenames on disk (`CoreMigrator` → `MigrationLedgerReconciler`), so renaming or renumbering a migration no longer breaks an existing site. Changing what an already-released migration *does* is a different thing: `migrate` will never run that file again, so on every existing site the change silently does not happen — while a fresh install gets it. When you edit the body of a migration that a released version already ran, ship the change as a **new migration as well** (or name a repair step in the release notes). `0001_01_01_999999_add_foreign_key_constraints.php` is the usual place this bites, because new foreign keys are added to it. `dls:migration:lint` cannot catch it during the beta series: it compares against `database/migration-lock.json`, which does not exist yet.
 
 **Phase transition gate**
 - Immediately before tagging the **GA** release, run `php artisan dls:migration:lint --lock` and commit the resulting `database/migration-lock.json`
@@ -96,6 +97,20 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 ### Admin Layout Protected Regions
 - Do not modify CSS classes of: flex container (no top padding), page header (`pt-6 pb-6 px-8`), article (`mt-5`), sidebar (`md:top-12`) in `resources/views/layouts/admin.blade.php`
 - These offsets align with the admin bar (`h-12`) — changes affect every admin page
+
+### Issue First — Open an Issue Before Editing Source
+- **Before editing the source of core or of an official plugin / theme, there must be a GitHub issue for the change.** Find the existing one, or ask the user whether to open one; do not start editing without it
+- The branch and the pull request point at the issue: write `Fixes #N` (or `owner/repo#N` across repositories) in the PR description
+- **Exceptions** — no issue needed; the PR description says so on its own line, e.g. `No issue: release`:
+  - `security` — an unfixed vulnerability (fixed privately, published as a Security Advisory afterwards; never file it as a public issue)
+  - `release` — version bumps and changelog entries for a release
+  - `signing` — re-signing a plugin or theme
+  - `dependencies` — dependency updates, including Dependabot PRs
+  - `generated` — regenerating generated files with no hand edits
+  - `typo` — a typo fix that changes no meaning
+- **Something else turns up while working:** do not fix it in the same change — open (or propose) a separate issue. One PR answers one issue
+- Write the issue per `docs/development/issues.md` in core (title `<area>: <English> / <日本語>`; known-issue body: all English sections, `---`, then all Japanese sections)
+- CI (`pr-issue-link.yml`, reusable from `Dixlase/.github`) fails a PR whose description has neither an issue reference nor a `No issue: <reason>` line; HTML comments are ignored
 
 ### Branch Creation / Switching Requires Confirmation
 - **Always confirm with the user before creating a new branch** — do not run `git checkout -b`, `git switch -c`, `git branch <new>`, etc. on your own
