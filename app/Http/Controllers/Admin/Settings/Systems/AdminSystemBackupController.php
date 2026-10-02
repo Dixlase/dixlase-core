@@ -292,7 +292,21 @@ class AdminSystemBackupController extends AdminLoggedInController
         // break concurrent traffic — so it is dispatched to a detached
         // process, exactly like a core update.
         if ($coreRestore->crossesDependencyBoundary($backup)) {
-            return $this->startDependencyRollback($backup);
+            return $this->startDetachedRestore(
+                [(string) $backup->id, '--force', '--refetch-vendor'],
+                'admin/settings/systems/backup/index.flash.restore_dependency_started',
+            );
+        }
+
+        // Restoring core source, plugins or themes replaces the code this
+        // request is running, file by file. Done inline, the request could
+        // die half-way and every concurrent request ran a half-written tree.
+        // Run it detached under maintenance mode instead (security review X5).
+        if ($coreRestore->restoresCode($backup)) {
+            return $this->startDetachedRestore(
+                [(string) $backup->id, '--force'],
+                'admin/settings/systems/backup/index.flash.restore_code_started',
+            );
         }
 
         $result = $this->restoreService->restore($backup);
@@ -311,16 +325,18 @@ class AdminSystemBackupController extends AdminLoggedInController
     }
 
     /**
-     * Dispatch a dependency-crossing restore to a detached process that
-     * runs it under maintenance mode (restore source + DB, then re-fetch
-     * and swap the matching vendor/). The site serves the maintenance page
-     * — which auto-refreshes — until the rollback finishes.
+     * Dispatch a restore to a detached `dls:backup:restore` process, which
+     * runs it under maintenance mode -- for a dependency-crossing restore it
+     * also re-fetches and swaps the matching vendor/. The site serves the
+     * maintenance page, which auto-refreshes, until the restore finishes.
+     *
+     * @param  list<string>  $arguments  Arguments for dls:backup:restore
      */
-    private function startDependencyRollback(BackupRecord $backup): RedirectResponse
+    private function startDetachedRestore(array $arguments, string $flashKey, string $route = 'admin.settings.systems.backup.index'): RedirectResponse
     {
         if (! function_exists('exec')) {
             return redirect()
-                ->route('admin.settings.systems.backup.index')
+                ->route($route)
                 ->with('error', __('admin/settings/systems/backup/index.flash.restore_exec_disabled'));
         }
 
@@ -329,33 +345,43 @@ class AdminSystemBackupController extends AdminLoggedInController
         $phpBinary = (new PhpExecutableFinder())->find(false);
         if (! $phpBinary) {
             return redirect()
-                ->route('admin.settings.systems.backup.index')
+                ->route($route)
                 ->with('error', __('admin/settings/systems/backup/index.flash.restore_php_cli_not_found'));
         }
 
         $command = sprintf(
-            'nohup %s %s dls:backup:restore %s --force --refetch-vendor > %s 2>&1 &',
+            'nohup %s %s dls:backup:restore %s > %s 2>&1 &',
             escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
-            escapeshellarg((string) $backup->id),
+            implode(' ', array_map('escapeshellarg', $arguments)),
             escapeshellarg(storage_path('logs/backup-restore.log'))
         );
         exec($command);
 
         return redirect()
             ->route('admin.settings.systems.backup.restores')
-            ->with('success', __('admin/settings/systems/backup/index.flash.restore_dependency_started'));
+            ->with('success', __($flashKey));
     }
 
     /**
      * Rollback restore
      */
-    public function rollback(RestoreRecord $restore): RedirectResponse
+    public function rollback(RestoreRecord $restore, CoreRestoreService $coreRestore): RedirectResponse
     {
         if (! $restore->canRollback()) {
             return redirect()
                 ->route('admin.settings.systems.backup.restores')
                 ->with('error', __('admin/settings/systems/backup/restores.flash.rollback_unavailable'));
+        }
+
+        // Undoing a restore puts the pre-restore snapshot back, which holds
+        // code whenever the restore did: same detached path as restore().
+        if ($restore->preRestoreBackup && $coreRestore->restoresCode($restore->preRestoreBackup)) {
+            return $this->startDetachedRestore(
+                ['--rollback-of='.$restore->id, '--force'],
+                'admin/settings/systems/backup/restores.flash.rollback_code_started',
+                'admin.settings.systems.backup.restores',
+            );
         }
 
         $result = $this->restoreService->rollback($restore);

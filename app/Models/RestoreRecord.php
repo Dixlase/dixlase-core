@@ -92,6 +92,8 @@ class RestoreRecord extends Model
 
     /**
      * Source backup record
+     *
+     * @return BelongsTo<BackupRecord, $this>
      */
     public function backupRecord(): BelongsTo
     {
@@ -100,6 +102,8 @@ class RestoreRecord extends Model
 
     /**
      * Safety snapshot before restore
+     *
+     * @return BelongsTo<BackupRecord, $this>
      */
     public function preRestoreBackup(): BelongsTo
     {

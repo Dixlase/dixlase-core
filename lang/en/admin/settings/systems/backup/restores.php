@@ -62,6 +62,7 @@ return [
     'flash' => [
         'rollback_success' => 'Rollback completed successfully (:duration s).',
         'rollback_failed' => 'Rollback failed: :error',
+        'rollback_code_started' => 'Undoing this restore replaces the site\'s code, so it runs in the background and the site is in maintenance until it finishes. The page will return automatically.',
         'rollback_unavailable' => 'This restore cannot be rolled back.',
     ],
 
