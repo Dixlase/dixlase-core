@@ -7,37 +7,64 @@ body:
         Title: `<area>: <English summary> / <日本語の要約>`. Add one type label and at least one `area:` label. See the [issue guidelines](https://github.com/Dixlase/dixlase-core/blob/main/docs/development/issues.md).
         タイトルは `<領域>: <英語の要約> / <日本語の要約>`。種類のラベルを 1 つ、`area:` ラベルを 1 つ以上付けます。[Issue の書き方](https://github.com/Dixlase/dixlase-core/blob/main/docs/ja/development/issues.md)を参照。
 
+        Write the whole body in English first, then the whole body in Japanese below the `---` line. Do not interleave the two languages section by section.
+        本文は、まず英語をひととおり書き、`---` の下に日本語をひととおり書きます。項目ごとに英日を交互に書かないでください。
+
         **Never file an unfixed vulnerability here.** / **修正前の脆弱性はここに書かないでください。**
   - type: textarea
-    id: what-happens
+    id: body
     attributes:
-      label: What happens / 何が起きるか
-    validations:
-      required: true
-  - type: textarea
-    id: impact
-    attributes:
-      label: Impact / 影響
-      description: Who is affected, from which version, how badly. / 誰が、どの版から、どの程度困るか。
-    validations:
-      required: true
-  - type: textarea
-    id: reproduction
-    attributes:
-      label: Reproduction / 再現手順
-      description: Steps, and the version they were run on. / 手順と、試した版。
-  - type: textarea
-    id: cause
-    attributes:
-      label: Cause / 原因
-      description: Mark a guess as a guess. / 推測なら推測と書く。
-  - type: textarea
-    id: fix
-    attributes:
-      label: Proposed fix / 直し方の案
-  - type: textarea
-    id: done-when
-    attributes:
-      label: Done when / 完了の条件
+      label: Body / 本文
+      description: Fill in every section in both languages. "Proposed fix" may be left empty. / 両方の言語で各項目を埋めてください。「直し方の案」は空でもかまいません。
+      value: |
+        ### What happens
+
+
+
+        ### Impact
+
+
+
+        ### Reproduction
+
+
+
+        ### Cause
+
+
+
+        ### Proposed fix
+
+
+
+        ### Done when
+
+
+
+        ---
+
+        ### 何が起きるか
+
+
+
+        ### 影響
+
+
+
+        ### 再現手順
+
+
+
+        ### 原因
+
+
+
+        ### 直し方の案
+
+
+
+        ### 完了の条件
+
+
     validations:
       required: true
