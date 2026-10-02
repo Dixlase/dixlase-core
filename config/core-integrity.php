@@ -63,6 +63,13 @@ return [
     | Format: 'key_id' => 'base64:...' (or plain base64).
     */
     'pinned_public_keys' => [
+        // The Authority key that signs the official plugins and themes
+        // (rotated 2026-09-26). A pinned key_id is verified with this value
+        // only, never with what the Authority returns, and only pinned keys
+        // count as "official" -- see App\Support\PinnedPublicKeys. A new
+        // official key has to be added here in a core release before
+        // extensions signed with it are shown as official.
+        'dixlase-authority-2026' => 'base64:Xn22kURy4V7xrHup/C4VmwMbr6PDeMNWe15iRZkXQ1Q=',
         // 'dixlase-core-2026' => 'base64:REPLACE_WITH_CORE_PUBLIC_KEY',
     ],
 

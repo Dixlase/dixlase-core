@@ -128,16 +128,18 @@ class CoreSignatureVerifierTest extends TestCase
         $result = $this->verifyWithPluginDir($pluginDir, $slug);
 
         $this->assertEquals(SignatureVerificationResult::STATUS_PENDING, $result->status);
-        $this->assertEquals('official', $result->type);
+        // Not pinned in core, so the official-looking name earns no badge (X7)
+        $this->assertNull($result->type);
         $this->assertEquals('exc-D inc.', $result->signedBy);
         $this->assertEquals('2025-06-01T00:00:00Z', $result->signedAt);
         $this->assertEquals('dixlase-official-001', $result->keyId);
     }
 
     /**
-     * 署名タイプ判定: official
+     * Signature type: an official-looking key_id that is not pinned in core
+     * gets no "official" badge (security review X7)
      */
-    public function test_determines_official_type(): void
+    public function test_unpinned_official_prefix_is_not_official(): void
     {
         $pluginDir = $this->createTempPlugin(
             ['name' => 'TestPlugin', 'signing' => ['key_id' => 'dixlase-official-001']],
@@ -145,7 +147,22 @@ class CoreSignatureVerifierTest extends TestCase
         );
 
         $result = $this->verifyWithPluginDir($pluginDir, 'test-plugin');
-        $this->assertEquals('official', $result->type);
+        $this->assertNull($result->type);
+    }
+
+    /**
+     * Signature type: a key pinned in core is official
+     */
+    public function test_pinned_key_is_official(): void
+    {
+        config(['core-integrity.pinned_public_keys' => [
+            'dixlase-official-001' => 'base64:'.base64_encode(sodium_crypto_sign_publickey(sodium_crypto_sign_keypair())),
+        ]]);
+
+        $method = new \ReflectionMethod($this->verifier, 'determineSignatureType');
+
+        $this->assertSame('official', $method->invoke($this->verifier, 'dixlase-official-001'));
+        $this->assertNull($method->invoke($this->verifier, 'dixlase-official-002'));
     }
 
     /**

@@ -37,6 +37,7 @@ namespace App\Services\Plugin;
 
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\DTO\Plugin\SignatureVerificationResult;
+use App\Support\PinnedPublicKeys;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -205,8 +206,11 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             ]);
         }
 
-        // Retrieve public key
-        $publicKey = $this->publicKeyResolver->resolve($signatureKeyId);
+        // Retrieve public key: a pinned key_id is verified with the pinned
+        // key only (see PinnedPublicKeys); anything else is fetched from the
+        // Authority.
+        $publicKey = PinnedPublicKeys::get($signatureKeyId)
+            ?? $this->publicKeyResolver->resolve($signatureKeyId)?->public_key;
         if ($publicKey === null) {
             // Network unavailable and no cache → treat as verification pending
             // (require policy side determines pending = reject)
@@ -239,7 +243,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             $cryptoValid = $this->verifyEd25519Signature(
                 $pluginData,
                 $sigData['signature'],
-                $publicKey->public_key,
+                $publicKey,
             );
         } catch (\Throwable $e) {
             Log::warning('CoreSignatureVerifier: ed25519 verification error', [
@@ -498,6 +502,10 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
 
     /**
      * Determine signature type from key_id (for badge display)
+     *
+     * "official" requires a key pinned in core. The prefix is only a name:
+     * an unpinned `dixlase-official-*` / `dixlase-authority-*` key gets no
+     * official badge (security review X7).
      */
     protected function determineSignatureType(?string $keyId): ?string
     {
@@ -505,7 +513,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             return null;
         }
         if (str_starts_with($keyId, 'dixlase-official') || str_starts_with($keyId, 'dixlase-authority')) {
-            return 'official';
+            return PinnedPublicKeys::isPinned($keyId) ? 'official' : null;
         }
         if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
             return 'verified';

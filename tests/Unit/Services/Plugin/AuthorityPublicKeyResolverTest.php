@@ -22,6 +22,7 @@
 
 namespace Tests\Unit\Services\Plugin;
 
+use App\Models\AuthorityPublicKey;
 use App\Services\Plugin\AuthorityPublicKeyResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -86,5 +87,46 @@ class AuthorityPublicKeyResolverTest extends TestCase
         $resolver->resolve('any-key-id');
 
         $this->expectNotToPerformAssertions();
+    }
+
+    /**
+     * Security review X7: a cached key_id is not re-keyed by a later fetch.
+     */
+    public function test_a_cached_key_is_not_replaced_by_a_different_one(): void
+    {
+        AuthorityPublicKey::create([
+            'key_id' => 'k1',
+            'public_key' => 'base64:ORIGINAL',
+            'algorithm' => 'ed25519',
+            'is_active' => true,
+            'fetched_at' => now()->subDays(10),
+        ]);
+        Http::fake([
+            '*' => Http::response(['key_id' => 'k1', 'public_key' => 'base64:SWAPPED']),
+        ]);
+
+        $key = (new AuthorityPublicKeyResolver())->resolve('k1');
+
+        $this->assertSame('base64:ORIGINAL', $key?->public_key);
+        $this->assertSame('base64:ORIGINAL', AuthorityPublicKey::where('key_id', 'k1')->value('public_key'));
+    }
+
+    public function test_a_response_for_another_key_id_is_ignored(): void
+    {
+        Http::fake([
+            '*' => Http::response(['key_id' => 'other', 'public_key' => 'base64:X']),
+        ]);
+
+        $this->assertNull((new AuthorityPublicKeyResolver())->resolve('k1'));
+        $this->assertSame(0, AuthorityPublicKey::count());
+    }
+
+    public function test_a_first_fetch_is_cached(): void
+    {
+        Http::fake([
+            '*' => Http::response(['key_id' => 'k1', 'public_key' => 'base64:FIRST']),
+        ]);
+
+        $this->assertSame('base64:FIRST', (new AuthorityPublicKeyResolver())->resolve('k1')?->public_key);
     }
 }
