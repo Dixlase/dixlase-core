@@ -147,6 +147,35 @@ class AuthorityPublicKeyResolver
                 return null;
             }
 
+            // The answer must be about the key that was asked for: storing it
+            // under the returned key_id would let a response fill the cache
+            // for a different key.
+            if ($data['key_id'] !== $keyId) {
+                Log::warning('AuthorityPublicKeyResolver: response is for a different key_id; ignored', [
+                    'requested' => $keyId,
+                    'returned' => $data['key_id'],
+                ]);
+
+                return null;
+            }
+
+            // Trust on first use: once a key_id is cached, a different public
+            // key under the same id is not accepted silently. Rotating the
+            // key behind an unchanged id would otherwise re-key every site on
+            // the next refresh, which is exactly what a compromised Authority
+            // would do (security review X7). Keep the cached key, record the
+            // refusal, and only refresh the timestamp so the site does not
+            // ask again on every request. A genuine rotation uses a new key_id.
+            $cached = $this->readCache($keyId);
+            if ($cached !== null && $cached->public_key !== $data['public_key']) {
+                Log::warning('AuthorityPublicKeyResolver: the Authority returned a different public key for a cached key_id; keeping the cached key', [
+                    'key_id' => $keyId,
+                ]);
+                $cached->forceFill(['fetched_at' => now()])->save();
+
+                return $cached;
+            }
+
             return AuthorityPublicKey::updateOrCreate(
                 ['key_id' => $data['key_id']],
                 [

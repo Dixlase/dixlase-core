@@ -42,6 +42,7 @@ use App\DTO\Core\CoreIntegrityResult;
 use App\Models\SignatureWaiver;
 use App\Services\Plugin\AuthorityPublicKeyResolver;
 use App\Services\Signature\SignatureWaiverService;
+use App\Support\PinnedPublicKeys;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -188,12 +189,8 @@ class CoreIntegrityVerifier
      */
     protected function resolvePublicKey(string $keyId): ?string
     {
-        $pinned = (array) config('core-integrity.pinned_public_keys', []);
-        if (isset($pinned[$keyId]) && is_string($pinned[$keyId]) && $pinned[$keyId] !== '') {
-            return $pinned[$keyId];
-        }
-
-        return $this->publicKeyResolver->resolve($keyId)?->public_key;
+        return PinnedPublicKeys::get($keyId)
+            ?? $this->publicKeyResolver->resolve($keyId)?->public_key;
     }
 
     /**
@@ -259,12 +256,13 @@ class CoreIntegrityVerifier
     }
 
     /**
-     * Signature type for badge display. Core keys count as official.
+     * Signature type for badge display. Core keys count as official, but
+     * only when pinned -- the prefix alone is just a name (security review X7).
      */
     protected function determineType(string $keyId): ?string
     {
         if (str_starts_with($keyId, 'dixlase-core') || str_starts_with($keyId, 'dixlase-official') || str_starts_with($keyId, 'dixlase-authority')) {
-            return 'official';
+            return PinnedPublicKeys::isPinned($keyId) ? 'official' : null;
         }
         if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
             return 'verified';
