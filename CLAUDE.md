@@ -10,7 +10,7 @@
   - Test fixtures and inline test data containing Japanese strings (intentional — they exercise i18n)
   - `lang/ja/` translation arrays (Laravel translation mechanism)
   - `*.ja.md` documentation files (mirrored bilingual references)
-  - Commit-message Japanese bullets when using the optional bilingual format
+  - The Japanese half of commit messages, pull request descriptions and issues (see "Commit Messages and Pull Request Descriptions")
   - Entries inside `comment-translations/` (those are the source-of-truth Japanese keys)
 
 ### Comment Translation Data Maintenance
@@ -111,6 +111,30 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - **Something else turns up while working:** do not fix it in the same change — open (or propose) a separate issue. One PR answers one issue
 - Write the issue per `docs/development/issues.md` in core (title `<area>: <English> / <日本語>`; known-issue body: all English sections, `---`, then all Japanese sections)
 - CI (`pr-issue-link.yml`, reusable from `Dixlase/.github`) fails a PR whose description has neither an issue reference nor a `No issue: <reason>` line; HTML comments are ignored
+
+### Commit Messages and Pull Request Descriptions
+- **Subject:** Conventional Commits prefix, then English and Japanese separated by ` / `: `<type>(scope): <English> / <日本語>`
+- **Body: all English first, then all Japanese.** Write the English paragraphs and bullets, a blank line, then the same content in Japanese (paragraphs and bullets). Do not alternate the languages line by line or bullet by bullet
+- No `---` line between the two halves: `git format-patch` / `git am` read it as the end of the message. A blank line is enough
+- Pull request descriptions use the same order (English block, then Japanese block). Put the issue reference (`Fixes #N`) or `No issue: <reason>` on its own line at the top
+- No `Co-Authored-By:` line
+- Template:
+  ```
+  feat(banner): compact mobile layout / モバイルで小さく開く
+
+  The banner covered half of a phone screen. It now opens compact on
+  every screen.
+
+  - Collapse the category toggles into an accordion
+  - Shorten the button labels
+
+  バナーがスマホの画面の半分を覆っていた。どの画面でも小さく開くように
+  した。
+
+  - カテゴリのトグルをアコーディオンに入れる
+  - ボタンの文言を短くする
+  ```
+- External contributors may write English only
 
 ### Branch Creation / Switching Requires Confirmation
 - **Always confirm with the user before creating a new branch** — do not run `git checkout -b`, `git switch -c`, `git branch <new>`, etc. on your own

@@ -10,7 +10,7 @@
   - テストフィクスチャやテストデータ内の日本語文字列（意図的、i18n テスト用途）
   - `lang/ja/` 翻訳配列（Laravel 翻訳機構）
   - `*.ja.md` ドキュメント（バイリンガルミラー）
-  - バイリンガル形式を選んだ場合のコミットメッセージの日本語 bullet 行
+  - コミットメッセージ・Pull Request の説明・Issue の日本語の部分(「コミットメッセージと Pull Request の説明」を参照)
   - `comment-translations/` 内のエントリ（こちらが歴史的日本語キーの正本）
 
 ### コメント翻訳データの管理
@@ -111,6 +111,30 @@
 - **作業中に別の問題を見つけたとき:** 同じ変更の中では直さず、別の Issue を立てる(か提案する)。1 つの PR は 1 つの Issue に答える
 - Issue はコアの `docs/ja/development/issues.md` に従って書く(タイトルは `<領域>: <英語> / <日本語>`。既知の問題の本文は英語の全項目 → `---` → 日本語の全項目)
 - CI(`Dixlase/.github` の再利用ワークフロー `pr-issue-link.yml`)は、説明に Issue の参照も `No issue: <理由>` の行も無い PR を失敗にする。HTML コメントの中は数えない
+
+### コミットメッセージと Pull Request の説明
+- **件名:** Conventional Commits の接頭辞のあと、英語と日本語を ` / ` で区切る: `<type>(scope): <English> / <日本語>`
+- **本文は英語をひととおり書いてから、日本語をひととおり書く。** 英語の段落と箇条書きを書き、空行を挟んで、同じ内容を日本語の段落と箇条書きで書く。行ごと・箇条書きごとに英日を交互に書かない
+- 英語と日本語の間に `---` の行は入れない(`git format-patch` / `git am` がメッセージの終わりと読む)。空行だけで区切る
+- Pull Request の説明も同じ並び(英語のまとまり → 日本語のまとまり)。Issue の参照(`Fixes #N`)か `No issue: <理由>` は、先頭に 1 行で書く
+- `Co-Authored-By:` の行は入れない
+- 雛形:
+  ```
+  feat(banner): compact mobile layout / モバイルで小さく開く
+
+  The banner covered half of a phone screen. It now opens compact on
+  every screen.
+
+  - Collapse the category toggles into an accordion
+  - Shorten the button labels
+
+  バナーがスマホの画面の半分を覆っていた。どの画面でも小さく開くように
+  した。
+
+  - カテゴリのトグルをアコーディオンに入れる
+  - ボタンの文言を短くする
+  ```
+- 外部のコントリビューターは英語だけでよい
 
 ### ブランチ作成・切替の確認
 - **新規ブランチを作成する前に必ずユーザーに確認する** — `git checkout -b`、`git switch -c`、`git branch <new>` 等を勝手に実行しない
