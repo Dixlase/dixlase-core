@@ -196,7 +196,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         // Determine scan requirement based on security mode
         $scanRequired = self::isScanRequired();
 
-        // For "Update All" button: list of plugins with available_version set (updated sequentially from JS)
+        // Plugins with an update available (the count badge on the list; updates run from System → Updates)
         $updatableExtensions = collect($pluginCards)
             ->filter(fn (array $c) => ! empty($c['hasUpdateAvailable']))
             ->map(fn (array $c) => [
@@ -204,7 +204,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'name' => $c['translatedName'] ?? $c['name'] ?? $c['slug'],
                 'currentVersion' => $c['version'] ?? '',
                 'availableVersion' => $c['availableVersion'] ?? '',
-                'updateUrl' => route('admin.settings.plugins.update', $c['id']),
             ])
             ->values()
             ->all();
@@ -1905,39 +1904,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
     }
 
     /**
-     * Sequentially update all updatable plugins (delegated to dls:source:update --all --type=plugin)
-     */
-    public function bulkUpdate(): \Illuminate\Http\RedirectResponse
-    {
-        $updatable = Plugin::query()->whereNotNull('available_version')->pluck('slug')->all();
-        if (empty($updatable)) {
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('info', __('admin/settings/plugins/index.updates.all_up_to_date'));
-        }
-
-        // Call individual update commands sequentially (pipeline/history/metadata updates are handled on individual side)
-        $total = count($updatable);
-        $succeeded = 0;
-        $failed = 0;
-        foreach ($updatable as $slug) {
-            $code = \Illuminate\Support\Facades\Artisan::call('dls:plugin:update', [
-                'slug' => $slug,
-                '--force' => true,
-            ]);
-            $code === 0 ? $succeeded++ : $failed++;
-        }
-
-        $summary = __('admin/settings/plugins/index.updates.update_all_summary', [
-            'total' => $total,
-            'succeeded' => $succeeded,
-            'failed' => $failed,
-        ]);
-
-        return redirect()->route('admin.settings.plugins.index')
-            ->with($failed === 0 ? 'success' : 'error', $summary);
-    }
-
-    /**
      * Update check (AJAX)
      */
     public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
@@ -1958,104 +1924,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 'success' => false,
                 'message' => $e->getMessage(),
             ]);
-        }
-    }
-
-    /**
-     * Update plugin (download new version → replace)
-     */
-    public function updatePlugin(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
-    {
-        $plugin = Plugin::findOrFail($id);
-
-        if (! $plugin->hasUpdateAvailable()) {
-            return back()->with('error', __('admin/settings/plugins/index.updates.no_update'));
-        }
-
-        $slug = $plugin->slug;
-        $newVersion = $plugin->available_version;
-        $directory = $plugin->directory;
-        $pluginPath = base_path("plugins/{$directory}");
-        $backupPath = base_path("plugins/{$directory}.backup");
-
-        try {
-            // Download new version ZIP
-            $zipPath = $manager->download($slug, 'plugin', $newVersion);
-
-            // Save metadata before update (for history recording)
-            $oldVersion = $plugin->version;
-            $oldSigningKeyId = $plugin->signing_key_id;
-            $oldAuthorId = $plugin->author_id;
-
-            // Backup current directory
-            if (File::exists($pluginPath)) {
-                File::move($pluginPath, $backupPath);
-            }
-
-            // Extract and place ZIP
-            // An update replaces an installed plugin, so it is not pending install.
-            $result = $this->extractAndPlacePlugin($zipPath, pendingInstall: false);
-
-            if (! $result['success']) {
-                // Restore from backup on failure
-                $this->restoreFromBackup($backupPath, $pluginPath);
-
-                return back()->with('error', $result['error']);
-            }
-
-            // Update version info in DB
-            $plugin->update([
-                'version' => $newVersion,
-                'available_version' => null,
-                'last_version_check' => now(),
-            ]);
-
-            // Update supply chain defense metadata from new plugin.json
-            $this->persistSupplyChainMetadata($plugin, 'update');
-
-            // Record version history (update)
-            $this->recordVersionHistory(
-                plugin: $plugin,
-                oldVersion: $oldVersion,
-                oldSigningKeyId: $oldSigningKeyId,
-                oldAuthorId: $oldAuthorId,
-                installationMethod: PluginVersionHistory::METHOD_UPDATE,
-            );
-
-            // Delete backup
-            if (File::exists($backupPath)) {
-                File::deleteDirectory($backupPath);
-            }
-
-            // Re-audit
-            $this->runPluginAudit($slug);
-
-            return redirect()->route('admin.settings.plugins.index')
-                ->with('success', __('admin/settings/plugins/index.updates.update_success', ['name' => $plugin->name, 'version' => $newVersion]));
-        } catch (\Throwable $e) {
-            // Restore from backup on failure
-            $this->restoreFromBackup($backupPath, $pluginPath);
-
-            Log::error('Plugin update failed', [
-                'plugin' => $slug,
-                'version' => $newVersion,
-                'error' => $e->getMessage(),
-            ]);
-
-            return back()->with('error', __('admin/settings/plugins/index.updates.update_failed', ['error' => $e->getMessage()]));
-        }
-    }
-
-    /**
-     * Restore directory from backup
-     */
-    protected function restoreFromBackup(string $backupPath, string $originalPath): void
-    {
-        if (File::exists($backupPath)) {
-            if (File::exists($originalPath)) {
-                File::deleteDirectory($originalPath);
-            }
-            File::move($backupPath, $originalPath);
         }
     }
 

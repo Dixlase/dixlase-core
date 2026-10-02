@@ -1291,7 +1291,11 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return ['success' => false, 'error' => __('admin/settings/themes/add.messages.zip_extract_failed')];
         }
 
-        $themeDirectory = resource_path('views/themes/');
+        // Themes live in themes/<Dir>, where the theme list, dls:theme:install
+        // and the theme service provider look for them. This used to extract
+        // into resources/views/themes/, where nothing reads, so an uploaded
+        // or online-added theme never showed up as installable.
+        $themeDirectory = base_path('themes/');
 
         try {
             // The archive must hold exactly one top-level directory (see
@@ -1395,38 +1399,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
-     * Sequentially update all updatable themes
-     */
-    public function bulkUpdate(): \Illuminate\Http\RedirectResponse
-    {
-        $updatable = Theme::query()->whereNotNull('available_version')->pluck('slug')->all();
-        if (empty($updatable)) {
-            return redirect()->route('admin.settings.themes.index')
-                ->with('info', __('admin/settings/themes/index.updates.all_up_to_date'));
-        }
-
-        $total = count($updatable);
-        $succeeded = 0;
-        $failed = 0;
-        foreach ($updatable as $slug) {
-            $code = \Illuminate\Support\Facades\Artisan::call('dls:theme:update', [
-                'slug' => $slug,
-                '--force' => true,
-            ]);
-            $code === 0 ? $succeeded++ : $failed++;
-        }
-
-        $summary = __('admin/settings/themes/index.updates.update_all_summary', [
-            'total' => $total,
-            'succeeded' => $succeeded,
-            'failed' => $failed,
-        ]);
-
-        return redirect()->route('admin.settings.themes.index')
-            ->with($failed === 0 ? 'success' : 'error', $summary);
-    }
-
-    /**
      * Update check (AJAX)
      */
     public function checkUpdates(\App\Services\Extension\ExtensionSourceManager $manager): \Illuminate\Http\JsonResponse
@@ -1447,99 +1419,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'success' => false,
                 'message' => $e->getMessage(),
             ]);
-        }
-    }
-
-    /**
-     * Update theme (download new version → replace)
-     */
-    public function updateTheme(int $id, \App\Services\Extension\ExtensionSourceManager $manager)
-    {
-        $theme = Theme::findOrFail($id);
-
-        if (! $theme->hasUpdateAvailable()) {
-            return back()->with('error', __('admin/settings/themes/index.updates.no_update'));
-        }
-
-        $slug = $theme->slug;
-        $newVersion = $theme->available_version;
-        $directory = $theme->directory;
-        $themePath = resource_path("views/themes/{$directory}");
-        $backupPath = resource_path("views/themes/{$directory}.backup");
-
-        try {
-            // Download new version ZIP
-            $zipPath = $manager->download($slug, 'theme', $newVersion);
-
-            // Save metadata before update (for history recording)
-            $oldVersion = $theme->version;
-            $oldSigningKeyId = $theme->signing_key_id;
-            $oldAuthorId = $theme->author_id;
-
-            // Backup current directory
-            if (File::exists($themePath)) {
-                File::move($themePath, $backupPath);
-            }
-
-            // Extract and place ZIP
-            // An update replaces an installed theme, so it is not pending install.
-            $result = $this->extractAndPlaceTheme($zipPath, pendingInstall: false);
-
-            if (! $result['success']) {
-                $this->restoreFromBackup($backupPath, $themePath);
-
-                return back()->with('error', $result['error']);
-            }
-
-            // Update version info in DB
-            $theme->update([
-                'version' => $newVersion,
-                'available_version' => null,
-                'last_version_check' => now(),
-            ]);
-
-            // Refresh supply-chain metadata from new theme.json
-            $this->persistSupplyChainMetadata($theme, 'update');
-
-            // Record version history (update)
-            $this->recordVersionHistory(
-                theme: $theme,
-                oldVersion: $oldVersion,
-                oldSigningKeyId: $oldSigningKeyId,
-                oldAuthorId: $oldAuthorId,
-                installationMethod: ThemeVersionHistory::METHOD_UPDATE,
-            );
-
-            // Delete backup
-            if (File::exists($backupPath)) {
-                File::deleteDirectory($backupPath);
-            }
-
-            return redirect()->route('admin.settings.themes.index')
-                ->with('success', __('admin/settings/themes/index.updates.update_success', ['name' => $theme->name, 'version' => $newVersion]));
-        } catch (\Throwable $e) {
-            $this->restoreFromBackup($backupPath, $themePath);
-
-            Log::error('Theme update failed', [
-                'theme' => $slug,
-                'version' => $newVersion,
-                'error' => $e->getMessage(),
-            ]);
-
-            return back()->with('error', __('admin/settings/themes/index.updates.update_failed', ['error' => $e->getMessage()]));
-        }
-    }
-
-    /**
-     * Restore directory from backup
-     */
-    protected function restoreFromBackup(string $backupPath, string $originalPath): void
-    {
-        if (File::exists($backupPath)) {
-            if (File::exists($originalPath)) {
-                File::deleteDirectory($originalPath);
-            }
-            File::move($backupPath, $originalPath);
         }
     }
 

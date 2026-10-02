@@ -570,15 +570,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/themes/check-updates', [AdminThemesSettingsController::class, 'checkUpdates'])
                     ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.check-updates');
-                Route::post('/settings/themes/update/{id}', [AdminThemesSettingsController::class, 'updateTheme'])
-                    ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.update');
                 Route::post('/settings/themes/rollback/{id}', [AdminThemesSettingsController::class, 'rollbackTheme'])
                     ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.rollback');
-                Route::post('/settings/themes/update-all', [AdminThemesSettingsController::class, 'bulkUpdate'])
-                    ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.update-all');
             });
 
             // Extension thumbnail (image only) — served directly from
@@ -643,15 +637,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/settings/plugins/check-updates', [AdminPluginsSettingsController::class, 'checkUpdates'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.check-updates');
-                Route::post('/settings/plugins/update/{id}', [AdminPluginsSettingsController::class, 'updatePlugin'])
-                    ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.update');
                 Route::post('/settings/plugins/rollback/{id}', [AdminPluginsSettingsController::class, 'rollbackPlugin'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.rollback');
-                Route::post('/settings/plugins/update-all', [AdminPluginsSettingsController::class, 'bulkUpdate'])
-                    ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.update-all');
             });
 
             // System settings (with permission check)

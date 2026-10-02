@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\TakesExtensionBackup;
+use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
@@ -179,6 +180,12 @@ class PluginUpdate extends Command
 
             $this->extractUpdate($zipPath, $plugin);
 
+            // Scan the new files before anything else runs: a version whose
+            // health check resolves to Blocked (or that cannot be scanned)
+            // throws here and is rolled back by the catch below, before its
+            // migrations, seeders or npm build touch anything.
+            $this->refuseBlockedUpdate('plugin', $slug);
+
             // Apply any new migration files shipped with this release.
             // The plugin's migrations live in
             // plugins/<Directory>/database/migrations and are tracked in
@@ -311,6 +318,12 @@ class PluginUpdate extends Command
                     $this->error("ROLLBACK FAILED: {$restoreError->getMessage()}");
                     $this->error("Manual recovery required. Backup retained at: {$recoverSource}");
                 }
+            }
+
+            // A refused version was scanned while it was on disk; scan the
+            // restored one so the stored audit matches what is running.
+            if ($e instanceof ExtensionUpdateBlockedException && $recoverSource !== null) {
+                $this->rescanAfterRefusedUpdate('plugin', $slug);
             }
 
             // Roll back any plugin migrations that did get applied this
