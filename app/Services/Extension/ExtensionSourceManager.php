@@ -712,29 +712,24 @@ class ExtensionSourceManager
 
         $errors = [];
 
-        // Try specific source first
+        // A given source is binding. Updates pass the extension's linked
+        // source, and falling through to the other enabled sources when it
+        // failed let a different publisher's repository of the same name
+        // serve the update (security review X1). So: that source or nothing.
         if ($sourceId !== null) {
             $source = ExtensionSource::query()->find($sourceId);
-            if ($source && $source->is_enabled) {
-                try {
-                    $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
-
-                    return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
-                } catch (ExtensionSourceRateLimitException $e) {
-                    $rateLimited = $e;
-                    $errors[] = "[{$source->name}] {$e->getMessage()}";
-                } catch (\Throwable $e) {
-                    $errors[] = "[{$source->name}] {$e->getMessage()}";
-                }
+            if (! $source || ! $source->is_enabled) {
+                throw new RuntimeException("Failed to download {$slug}: its source (#{$sourceId}) is missing or disabled.");
             }
+
+            $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
+
+            return ['path' => $path, 'source' => $source, 'slug' => $slug, 'extension_type' => $extensionType];
         }
 
-        // Fallback: try all enabled sources in priority order
+        // No source given (adding an extension): try all enabled sources in
+        // priority order
         foreach ($this->getEnabledSources() as $source) {
-            if ($source->id === $sourceId) {
-                continue;
-            }
-
             try {
                 $path = $this->downloadFromSource($source, $slug, $extensionType, $version);
 
