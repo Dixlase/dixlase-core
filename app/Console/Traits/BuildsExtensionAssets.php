@@ -187,16 +187,25 @@ trait BuildsExtensionAssets
      * `npm ci` when a lock file is shipped, so the signed lock file is
      * read but never rewritten; `npm install` only when there is none.
      *
+     * `--ignore-scripts` stops the install from running the lifecycle
+     * scripts (preinstall / install / postinstall) of the extension and of
+     * every package in its dependency tree. Those run arbitrary code as the
+     * web server user at install time, before the extension has been scanned
+     * or enabled, and the build toolchain (Vite, Tailwind, esbuild, rollup)
+     * does not need them -- its native binaries come from optional
+     * dependencies. The extension's own `build` script still runs below:
+     * that one is the point of the build.
+     *
      * @return list<string>
      */
     private function npmInstallCommand(string $extensionPath): array
     {
         if (file_exists($extensionPath.'/package-lock.json')
             || file_exists($extensionPath.'/npm-shrinkwrap.json')) {
-            return ['npm', 'ci'];
+            return ['npm', 'ci', '--ignore-scripts'];
         }
 
-        return ['npm', 'install'];
+        return ['npm', 'install', '--ignore-scripts'];
     }
 
     /**

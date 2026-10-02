@@ -137,11 +137,13 @@ class ThemeBuild extends Command
         if (! $this->option('no-install')) {
             // npm ci when the theme ships a lock file: npm install rewrites
             // package-lock.json, which is a signed file, and a signed theme
-            // would then fail verification. See BuildsExtensionAssets.
+            // would then fail verification. --ignore-scripts keeps the
+            // dependency tree's lifecycle scripts from running at install
+            // time. See BuildsExtensionAssets::npmInstallCommand().
             $installCommand = File::exists("{$themePath}/package-lock.json")
                 || File::exists("{$themePath}/npm-shrinkwrap.json")
-                ? 'npm ci'
-                : 'npm install';
+                ? 'npm ci --ignore-scripts'
+                : 'npm install --ignore-scripts';
             $this->info("Running {$installCommand} in themes/{$theme}...");
             $install = $this->runNpm($themePath, $npmEnv, $installCommand, $theme);
 
