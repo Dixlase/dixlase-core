@@ -163,9 +163,10 @@ class PluginRollback extends Command
      * restored and the current live state — exactly the schema half of the
      * source rollback that just happened, no more.
      *
-     * Reads `max_batch` from the backup's metadata sidecar, compares it to
-     * the current highest batch in dls_plugin_migrations, and passes the
-     * delta as --step to dls:plugin:migrate:rollback. When the delta is
+     * Reads `max_batch` from the backup's metadata sidecar, counts the
+     * dls_plugin_migrations rows in the batches above it, and passes that
+     * count as --step to dls:plugin:migrate:rollback (--step counts files,
+     * not batches — dixlase-core#455). When the count is
      * zero (the just-undone update was schema-neutral, so no batches were
      * added), the delegated command is skipped entirely — reverting the
      * current batch here would over-rollback into an *earlier* update's
@@ -190,8 +191,11 @@ class PluginRollback extends Command
         }
 
         $backupBatch = (int) ($backupMeta['max_batch'] ?? 0);
-        $currentBatch = $this->currentPluginMigrationBatch($pluginSlug);
-        $stepsBack = max(0, $currentBatch - $backupBatch);
+        // --step counts migration files, not batches: an update that added
+        // two migrations put both in one batch, and passing the batch delta
+        // (1) reversed only the newer one (dixlase-core#455). Count the
+        // ledger rows above the backup's batch instead.
+        $stepsBack = $this->pluginMigrationsSinceBatch($pluginSlug, $backupBatch);
 
         if ($stepsBack === 0) {
             $this->line('No schema rollback needed — backup was taken at the current migration batch.');
@@ -207,24 +211,21 @@ class PluginRollback extends Command
     }
 
     /**
-     * Highest applied migration batch for this plugin, or 0 when the
-     * plugin_migrations table is missing or the plugin has no rows.
-     * Symmetrical with PluginUpdate::currentPluginMigrationBatch().
+     * Ledger rows for this plugin in the batches after $batch, or 0 when the
+     * ledger cannot be read.
      */
-    private function currentPluginMigrationBatch(?string $slug): int
+    private function pluginMigrationsSinceBatch(?string $slug, int $batch): int
     {
         if ($slug === null || $slug === '') {
             return 0;
         }
 
         try {
-            $repository = new PluginMigrationRepository(
+            return (new PluginMigrationRepository(
                 app(ConnectionResolverInterface::class),
                 'plugin_migrations',
                 $slug,
-            );
-
-            return $repository->getLastBatchNumber();
+            ))->countSinceBatch($batch);
         } catch (\Throwable) {
             return 0;
         }
