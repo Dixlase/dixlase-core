@@ -32,6 +32,47 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-10-02
+
+### Security
+Fixes for the residual findings of the pre-release security review on how extensions are
+installed and updated, how backups are restored, and how signatures are trusted
+(#440 – #446).
+- Themes go through the same health gate as plugins. With a scan-required preset a theme is
+  scanned before it is installed and refused if the check resolves to Blocked; switching to
+  a Blocked theme is refused under every preset
+- npm installs an extension's packages with `--ignore-scripts`, so the lifecycle scripts of
+  its dependency tree no longer run at install time. The scanner reports install-time
+  scripts in an extension's `package.json` as a dangerous API
+- An extension update is scanned right after the new files are in place and before its
+  migrations, seeders and build run. A Blocked version, or one that cannot be scanned, is
+  rolled back
+- An update downloads only from the extension's linked source; a failure there no longer
+  falls through to other sources. The per-item and "update all" admin routes, which
+  bypassed the update command, were removed (updates run from System → Updates)
+- Restoring core source, plugins or themes from the admin screen — and undoing such a
+  restore — runs in the background under maintenance mode instead of inside the web
+  request, and re-syncs the extension autoloader afterwards
+- The Authority key that signs the official extensions is pinned in core. A pinned key is
+  never replaced by what the Authority returns, only pinned keys earn the "official" badge,
+  and a cached key is no longer re-keyed by a later fetch
+- A core update no longer falls back to the default-branch archive when the release lookup
+  fails. The downloaded archive is checked against the release's `checksums.sha256` (attached
+  from this release on), and the extracted `VERSION` must match the requested version;
+  extension updates check the extracted manifest version the same way
+
+### Fixed
+- Uploading a theme ZIP or adding a theme from a source extracts it into `themes/`, where the
+  theme list and the installer look. It used to land in `resources/views/themes/` and never
+  showed up as installable
+
+### Changed
+- Repositories without a tagged release are no longer offered as an update from their
+  default branch
+- `dls:backup:restore` takes `--rollback-of=<restore id>` to undo a restore
+- Signing an official extension with a new Authority key requires a core release that pins
+  that key first
+
 ## [0.1.3] — 2026-10-01
 
 ### Security
