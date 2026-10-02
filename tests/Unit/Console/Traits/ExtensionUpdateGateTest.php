@@ -45,6 +45,8 @@ use Tests\TestCase;
  */
 class ExtensionUpdateGateTest extends TestCase
 {
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
+
     public function test_a_blocked_plugin_version_is_refused(): void
     {
         $this->rescanExpected('rescanPlugin', 'demo');
@@ -111,6 +113,76 @@ class ExtensionUpdateGateTest extends TestCase
         }
     }
 
+    /**
+     * Security review D13: the extracted manifest must declare the
+     * requested version.
+     */
+    public function test_a_version_mismatch_is_refused(): void
+    {
+        $dir = storage_path('framework/testing/update-version-'.uniqid());
+        File::ensureDirectoryExists($dir);
+        File::put($dir.'/plugin.json', json_encode(['version' => '0.1.1-dev']));
+
+        try {
+            $this->makeHost()->version($dir.'/plugin.json', '0.1.2');
+            $this->fail('A different version must be refused.');
+        } catch (ExtensionUpdateBlockedException $e) {
+            $this->assertStringContainsString('0.1.1-dev', $e->getMessage());
+        } finally {
+            File::deleteDirectory($dir);
+        }
+    }
+
+    public function test_the_requested_version_passes(): void
+    {
+        $dir = storage_path('framework/testing/update-version-'.uniqid());
+        File::ensureDirectoryExists($dir);
+        File::put($dir.'/theme.json', json_encode(['version' => '0.1.2']));
+
+        try {
+            $this->makeHost()->version($dir.'/theme.json', 'v0.1.2');
+            $this->addToAssertionCount(1);
+        } finally {
+            File::deleteDirectory($dir);
+        }
+    }
+
+    public function test_a_default_branch_pseudo_release_is_not_advertised(): void
+    {
+        $source = \App\Models\ExtensionSource::query()->create([
+            'name' => 'S', 'type' => 'github', 'base_url' => 'https://api.github.com',
+            'owner' => 'O', 'is_enabled' => true, 'priority' => 0,
+        ]);
+        $provider = Mockery::mock(\App\Contracts\Extension\ExtensionSourceInterface::class);
+        $provider->shouldReceive('getLatestRelease')->andReturn(new \App\DTO\Extension\ReleaseInfo(
+            version: '9.9.9', slug: 'demo', extensionType: 'plugin', metadata: ['source' => 'default_branch'],
+        ));
+        $manager = Mockery::mock(\App\Services\Extension\ExtensionSourceManager::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $manager->shouldReceive('makeProvider')->andReturn($provider);
+
+        $method = new \ReflectionMethod($manager, 'getLatestReleaseForExtension');
+
+        $this->assertNull($method->invoke($manager, 'demo', 'plugin', $source->id));
+    }
+
+    public function test_the_core_update_checks_the_staged_version(): void
+    {
+        $dir = storage_path('framework/testing/core-staged-'.uniqid());
+        File::ensureDirectoryExists($dir);
+        File::put($dir.'/VERSION', "0.1.3\n");
+        $updater = $this->app->make(\App\Services\Core\CoreUpdater::class);
+        $method = new \ReflectionMethod($updater, 'assertStagedVersion');
+
+        try {
+            $method->invoke($updater, $dir, '0.1.3');
+
+            $this->expectException(\RuntimeException::class);
+            $method->invoke($updater, $dir, '0.1.4');
+        } finally {
+            File::deleteDirectory($dir);
+        }
+    }
+
     private function rescanExpected(string $method, string $slug): void
     {
         $rescan = Mockery::mock(ExtensionRescanService::class);
@@ -138,6 +210,11 @@ class ExtensionUpdateGateTest extends TestCase
             public function gate(string $kind, string $slug): void
             {
                 $this->refuseBlockedUpdate($kind, $slug);
+            }
+
+            public function version(string $manifest, string $expected): void
+            {
+                $this->refuseVersionMismatch($manifest, $expected);
             }
 
             public function info(string $message): void {}

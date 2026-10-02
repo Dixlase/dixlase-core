@@ -252,6 +252,7 @@ class CoreUpdater
 
             $log('Validating extracted payload...');
             $payloadRoot = $this->validateStagedPayload($stagingPath);
+            $this->assertStagedVersion($payloadRoot, $version);
             $log("Validated payload at {$payloadRoot}");
 
             // Preflight, stage 3: the new release's own PHP requirement is
@@ -998,6 +999,30 @@ class CoreUpdater
             throw new RuntimeException("Failed to extract core ZIP to staging: {$stagingPath}");
         }
         $zip->close();
+    }
+
+    /**
+     * The extracted release must be the version that was requested.
+     *
+     * Checked before maintenance mode and before any live file changes.
+     * Without it, an archive of another version -- the default-branch
+     * zipball the downloader used to fall back to, or a mislabelled asset --
+     * was applied and recorded as the requested version (security review
+     * D13).
+     */
+    protected function assertStagedVersion(string $payloadRoot, string $version): void
+    {
+        $file = $payloadRoot.'/VERSION';
+        $staged = is_file($file) ? ltrim(trim((string) file_get_contents($file)), 'vV') : null;
+        $requested = ltrim($version, 'vV');
+
+        if ($staged !== $requested) {
+            throw new RuntimeException(sprintf(
+                'The downloaded release is version %s, not the requested %s; nothing was applied.',
+                $staged ?? '(no VERSION file)',
+                $requested,
+            ));
+        }
     }
 
     /**

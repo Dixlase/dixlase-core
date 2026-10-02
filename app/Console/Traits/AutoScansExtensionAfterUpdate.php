@@ -137,6 +137,27 @@ trait AutoScansExtensionAfterUpdate
     }
 
     /**
+     * Refuse an update whose extracted manifest declares a different version
+     * than the release that was requested.
+     *
+     * @throws ExtensionUpdateBlockedException
+     */
+    protected function refuseVersionMismatch(string $manifestPath, string $expectedVersion): void
+    {
+        $data = is_file($manifestPath) ? json_decode((string) file_get_contents($manifestPath), true) : null;
+        $actual = is_array($data) && is_string($data['version'] ?? null) ? ltrim($data['version'], 'vV') : null;
+        $expected = ltrim($expectedVersion, 'vV');
+
+        if ($actual !== $expected) {
+            throw new ExtensionUpdateBlockedException(sprintf(
+                'The downloaded archive declares version %s, not the requested %s, so it was not applied.',
+                $actual ?? '(none)',
+                $expected,
+            ));
+        }
+    }
+
+    /**
      * After a refused update has been rolled back, scan again so the stored
      * audit describes the restored version rather than the refused one.
      * Best-effort, like autoScanAfterUpdate().

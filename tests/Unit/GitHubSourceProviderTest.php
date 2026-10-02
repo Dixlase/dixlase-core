@@ -328,22 +328,99 @@ class GitHubSourceProviderTest extends TestCase
         @unlink($path);
     }
 
-    public function test_core_zipball_fallback_keeps_the_github_media_type(): void
+    /**
+     * Security review D13: a missing core release is an error. The
+     * default-branch zipball used to be downloaded instead and recorded
+     * as the requested version.
+     */
+    public function test_a_missing_core_release_is_not_replaced_by_the_default_branch(): void
     {
-        // No release -> default-branch zipball. The zipball endpoint
-        // rejects application/octet-stream with HTTP 415, so it must keep
-        // the github media type.
         Http::fake([
             'api.github.com/repos/TestOrg/dixlase-core/releases/tags/*' => Http::response([], 404),
-            'api.github.com/repos/TestOrg/dixlase-core' => Http::response(['default_branch' => 'main']),
-            'api.github.com/repos/TestOrg/dixlase-core/zipball/main' => Http::response('PK-zip-bytes'),
+            '*' => Http::response(['default_branch' => 'main']),
         ]);
+
+        try {
+            $this->provider->downloadCoreRelease('0.2.4');
+            $this->fail('A missing release must not fall back to the default branch.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('not found', $e->getMessage());
+        }
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/zipball/'));
+    }
+
+    public function test_a_failed_core_release_lookup_is_an_error_not_a_missing_release(): void
+    {
+        Http::fake([
+            'api.github.com/repos/TestOrg/dixlase-core/releases/tags/*' => Http::response([], 502),
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('HTTP 502');
+
+        $this->provider->downloadCoreRelease('0.2.4');
+    }
+
+    public function test_the_core_archive_is_checked_against_checksums_sha256(): void
+    {
+        $zip = 'PK-zip-bytes';
+        $this->fakeCoreRelease($zip, hash('sha256', $zip));
 
         $path = $this->provider->downloadCoreRelease('0.2.4');
 
-        Http::assertSent(fn ($request) => str_contains($request->url(), '/zipball/main')
-            && $request->hasHeader('Accept', 'application/vnd.github+json'));
-
+        $this->assertFileExists($path);
         @unlink($path);
+    }
+
+    public function test_a_core_archive_that_does_not_match_checksums_sha256_is_refused(): void
+    {
+        $this->fakeCoreRelease('PK-zip-bytes', str_repeat('0', 64));
+
+        try {
+            $this->provider->downloadCoreRelease('0.2.4');
+            $this->fail('A mismatching archive must be refused.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('does not match', $e->getMessage());
+        }
+
+        $this->assertFileDoesNotExist(config('extension-sources.download_path').'/core-0.2.4.zip');
+    }
+
+    public function test_a_release_without_checksums_sha256_is_accepted(): void
+    {
+        $this->fakeCoreRelease('PK-zip-bytes', null);
+
+        $path = $this->provider->downloadCoreRelease('0.2.4');
+
+        $this->assertFileExists($path);
+        @unlink($path);
+    }
+
+    private function fakeCoreRelease(string $zipBody, ?string $checksum): void
+    {
+        $assets = [[
+            'name' => 'dixlase-v0.2.4.zip',
+            'url' => 'https://api.github.com/repos/TestOrg/dixlase-core/releases/assets/1',
+            'browser_download_url' => 'https://github.com/TestOrg/dixlase-core/releases/download/v0.2.4/dixlase-v0.2.4.zip',
+        ]];
+        if ($checksum !== null) {
+            $assets[] = [
+                'name' => 'checksums.sha256',
+                'url' => 'https://api.github.com/repos/TestOrg/dixlase-core/releases/assets/2',
+                'browser_download_url' => 'https://github.com/TestOrg/dixlase-core/releases/download/v0.2.4/checksums.sha256',
+            ];
+        }
+
+        Http::fake([
+            'api.github.com/repos/TestOrg/dixlase-core/releases/tags/v0.2.4' => Http::response([
+                'tag_name' => 'v0.2.4',
+                'assets' => $assets,
+            ]),
+            'https://api.github.com/repos/TestOrg/dixlase-core/releases/assets/1' => Http::response($zipBody),
+            'https://api.github.com/repos/TestOrg/dixlase-core/releases/assets/2' => Http::response(
+                ($checksum ?? '')."  dixlase-v0.2.4.zip\n".str_repeat('f', 64)."  dixlase-core.zip\n"
+            ),
+        ]);
     }
 }
