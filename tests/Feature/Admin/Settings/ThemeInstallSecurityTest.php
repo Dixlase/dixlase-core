@@ -57,10 +57,14 @@ class ThemeInstallSecurityTest extends TestCase
 
     private Member $admin;
 
+    /** @var array{0: string|false, 1: ?string, 2: ?string} */
+    private array $savedInstalled;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->savedInstalled = [getenv('INSTALLED'), $_ENV['INSTALLED'] ?? null, $_SERVER['INSTALLED'] ?? null];
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
@@ -90,11 +94,25 @@ class ThemeInstallSecurityTest extends TestCase
         ]);
     }
 
+    /**
+     * Put INSTALLED back the way it was rather than forcing 'false': later
+     * suites (Api\V1) set it through putenv / $_ENV only, and a leftover
+     * $_SERVER value of 'false' takes precedence and sends them to /install.
+     */
     protected function tearDown(): void
     {
-        putenv('INSTALLED=false');
-        $_ENV['INSTALLED'] = 'false';
-        $_SERVER['INSTALLED'] = 'false';
+        [$env, $envArray, $server] = $this->savedInstalled;
+        putenv($env === false ? 'INSTALLED' : 'INSTALLED='.$env);
+        if ($envArray === null) {
+            unset($_ENV['INSTALLED']);
+        } else {
+            $_ENV['INSTALLED'] = $envArray;
+        }
+        if ($server === null) {
+            unset($_SERVER['INSTALLED']);
+        } else {
+            $_SERVER['INSTALLED'] = $server;
+        }
 
         parent::tearDown();
     }
