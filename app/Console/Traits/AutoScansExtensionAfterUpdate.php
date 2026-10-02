@@ -37,8 +37,12 @@
 
 namespace App\Console\Traits;
 
+use App\Enums\PluginEnableAction;
+use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Repositories\SecuritySettingRepository;
 use App\Services\Extension\ExtensionRescanService;
+use App\Services\Plugin\PluginHealthScorer;
+use App\Services\Theme\ThemeHealthScorer;
 
 /**
  * Runs an audit (health / permission / CSP scan) right after a successful
@@ -83,6 +87,72 @@ trait AutoScansExtensionAfterUpdate
             $this->info('Post-update scan complete.');
         } catch (\Throwable $e) {
             $this->warn('Post-update scan failed (non-fatal): '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Scan the new version as soon as it is on disk and refuse it when its
+     * health check resolves to Blocked -- the same rule that refuses to
+     * enable a Blocked extension.
+     *
+     * Called right after the new files replace the old ones and before any
+     * migration, seeder or npm build runs, so a refused version never
+     * touches the database. Throwing hands control to the update command's
+     * failure path, which restores the previous version. Fails closed: a
+     * version that cannot be scanned is refused too.
+     *
+     * Unlike autoScanAfterUpdate() this ignores the
+     * `extension_auto_scan_after_update` setting: that setting decides
+     * whether the audit is refreshed for display, not whether the gate runs.
+     *
+     * @param  'plugin'|'theme'  $kind
+     *
+     * @throws ExtensionUpdateBlockedException
+     */
+    protected function refuseBlockedUpdate(string $kind, string $slug): void
+    {
+        $this->info('Scanning the new version before applying it...');
+
+        try {
+            if ($kind === 'theme') {
+                app(ExtensionRescanService::class)->rescanTheme($slug);
+                $scorer = app(ThemeHealthScorer::class);
+            } else {
+                app(ExtensionRescanService::class)->rescanPlugin($slug);
+                $scorer = app(PluginHealthScorer::class);
+            }
+            $action = $scorer->determineEnableAction($scorer->calculate($slug));
+        } catch (\Throwable $e) {
+            throw new ExtensionUpdateBlockedException(
+                "The new version could not be scanned, so it was not applied: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
+
+        if ($action === PluginEnableAction::Blocked) {
+            throw new ExtensionUpdateBlockedException(
+                'The new version scans as Blocked under the current extension security settings, so it was not applied.'
+            );
+        }
+    }
+
+    /**
+     * After a refused update has been rolled back, scan again so the stored
+     * audit describes the restored version rather than the refused one.
+     * Best-effort, like autoScanAfterUpdate().
+     *
+     * @param  'plugin'|'theme'  $kind
+     */
+    protected function rescanAfterRefusedUpdate(string $kind, string $slug): void
+    {
+        try {
+            if ($kind === 'theme') {
+                app(ExtensionRescanService::class)->rescanTheme($slug);
+            } else {
+                app(ExtensionRescanService::class)->rescanPlugin($slug);
+            }
+        } catch (\Throwable $e) {
+            $this->warn('Rescan of the restored version failed (non-fatal): '.$e->getMessage());
         }
     }
 }

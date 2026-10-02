@@ -90,8 +90,6 @@ class DemoGuard
         'admin.settings.plugins.download-from-source',
         'admin.settings.plugins.install',
         'admin.settings.plugins.delete',
-        'admin.settings.plugins.update',
-        'admin.settings.plugins.update-all',
         'admin.settings.plugins.add',
 
         // Theme lifecycle on shared themes/
@@ -99,8 +97,6 @@ class DemoGuard
         'admin.settings.themes.download-from-source',
         'admin.settings.themes.install',
         'admin.settings.themes.delete',
-        'admin.settings.themes.update',
-        'admin.settings.themes.update-all',
         'admin.settings.themes.add',
 
         // Base settings — admin URL, mail server, maintenance toggle.

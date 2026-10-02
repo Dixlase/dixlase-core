@@ -203,4 +203,61 @@ class ExtensionSourceManagerTest extends TestCase
 
         $this->manager->download('nonexistent');
     }
+
+    /**
+     * Security review X1: an update names the extension's linked source,
+     * and a failure there must not fall through to another source that
+     * happens to publish a repository with the same name.
+     */
+    public function test_download_with_a_source_never_falls_back_to_other_sources(): void
+    {
+        Http::fake([
+            '*' => Http::response([], 404),
+        ]);
+
+        $linked = ExtensionSource::query()->create([
+            'name' => 'Linked Source',
+            'type' => 'github',
+            'base_url' => 'https://api.github.com',
+            'owner' => 'LinkedOrg',
+            'is_enabled' => true,
+            'priority' => 1,
+        ]);
+        ExtensionSource::query()->create([
+            'name' => 'Other Source',
+            'type' => 'github',
+            'base_url' => 'https://api.github.com',
+            'owner' => 'OtherOrg',
+            'is_enabled' => true,
+            'priority' => 0,
+        ]);
+
+        try {
+            $this->manager->download('dixlase-pages', 'plugin', '0.1.1', $linked->id);
+            $this->fail('A failed linked source must not be replaced by another source.');
+        } catch (\RuntimeException) {
+            // expected
+        }
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'OtherOrg'));
+    }
+
+    public function test_download_with_a_disabled_source_is_refused(): void
+    {
+        Http::fake();
+
+        $linked = ExtensionSource::query()->create([
+            'name' => 'Disabled Source',
+            'type' => 'github',
+            'base_url' => 'https://api.github.com',
+            'owner' => 'LinkedOrg',
+            'is_enabled' => false,
+            'priority' => 0,
+        ]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('missing or disabled');
+
+        $this->manager->download('dixlase-pages', 'plugin', '0.1.1', $linked->id);
+    }
 }
