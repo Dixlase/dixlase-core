@@ -39,6 +39,7 @@ use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\PluginMigrationRepository;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -61,7 +62,8 @@ class PluginRollback extends Command
     protected $signature = 'dls:plugin:rollback
         {slug : Plugin slug to roll back}
         {--to= : Restore a specific backup timestamp (default: the newest)}
-        {--force : Skip confirmation}';
+        {--force : Skip confirmation}
+        {--applied-by= : Member id to record as the one who ran the rollback (the admin screen passes it; CLI runs record none)}';
 
     protected $description = 'Roll a plugin back to the state captured before its last update';
 
@@ -105,6 +107,10 @@ class PluginRollback extends Command
             return self::SUCCESS;
         }
 
+        // For the audit entry and version-history row (dixlase-core#454).
+        $before = ExtensionUpdateRecorder::snapshot($plugin);
+        $restoredVersion = $this->readBackupMetadata($backupPath)['version'] ?? null;
+
         try {
             // Reverse the schema BEFORE restoring the source, so the
             // migrations added by the update are still on disk for
@@ -127,7 +133,7 @@ class PluginRollback extends Command
             Artisan::call('dls:plugin:symlink', ['action' => 'create', 'plugin' => $dir]);
 
             // Keep the recorded version in step with the restored plugin.json.
-            $this->syncPluginVersion($plugin, $livePath);
+            $this->syncPluginVersion($plugin, $livePath, $before['version']);
 
             // Discard compiled Blade against the (now-replaced) source and
             // pre-compile the restored version so the next request does not
@@ -144,6 +150,10 @@ class PluginRollback extends Command
             // warning clears. Best-effort; gated by extension_auto_scan_after_update.
             $this->autoScanAfterUpdate('plugin', $slug);
 
+            ExtensionUpdateRecorder::succeeded('rollback', $plugin->refresh(), $before, $this->appliedById(), [
+                'backup' => basename($backupPath),
+            ]);
+
             // Consume the restore point now it has been applied, mirroring
             // dls:core:rollback. Once the newest backup is gone the admin
             // rollback button hides (unless an older backup remains to step
@@ -152,6 +162,10 @@ class PluginRollback extends Command
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
+            ExtensionUpdateRecorder::failed('rollback', $plugin, $before['version'], is_string($restoredVersion) ? $restoredVersion : null, $this->appliedById(), $e->getMessage(), [
+                'backup' => basename($backupPath),
+            ]);
+
             $this->error("Rollback failed: {$e->getMessage()}");
 
             return self::FAILURE;
@@ -233,8 +247,12 @@ class PluginRollback extends Command
     /**
      * Sync the DB version column to the version declared in the restored
      * plugin.json so a subsequent update detects the correct baseline.
+     *
+     * The version just rolled back from still exists upstream, so it stays
+     * on offer: clearing available_version (as this used to) made the
+     * screen say "up to date" until the next check (dixlase-core#454).
      */
-    private function syncPluginVersion(Plugin $plugin, string $livePath): void
+    private function syncPluginVersion(Plugin $plugin, string $livePath, ?string $rolledBackFrom): void
     {
         $jsonPath = $livePath.'/plugin.json';
         if (! is_file($jsonPath)) {
@@ -244,7 +262,20 @@ class PluginRollback extends Command
         $data = json_decode((string) File::get($jsonPath), true);
         $version = is_array($data) ? ($data['version'] ?? null) : null;
         if (is_string($version) && $version !== '') {
-            $plugin->update(['version' => $version, 'available_version' => null]);
+            $offer = is_string($rolledBackFrom) && version_compare($rolledBackFrom, $version, '>')
+                ? $rolledBackFrom
+                : null;
+            $plugin->update(['version' => $version, 'available_version' => $offer]);
         }
+    }
+
+    /**
+     * Member id from --applied-by, or null for a CLI run.
+     */
+    private function appliedById(): ?int
+    {
+        $id = $this->option('applied-by');
+
+        return is_numeric($id) ? (int) $id : null;
     }
 }

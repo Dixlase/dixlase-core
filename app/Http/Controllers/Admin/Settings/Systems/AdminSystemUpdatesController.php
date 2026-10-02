@@ -341,9 +341,16 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         foreach ($themeSlugs as $slug) {
             $args .= ' --theme='.escapeshellarg($slug);
         }
+        // Recorded in the audit log and the version history of each update.
+        $appliedById = \App\Helpers\AdminHelper::getMember()?->id;
+        if ($appliedById !== null) {
+            $args .= ' --applied-by='.escapeshellarg((string) $appliedById);
+        }
 
+        // Append (>>): each run starts with its own header, and a later run
+        // no longer wipes the log of the previous one (dixlase-core#454).
         $command = sprintf(
-            'nohup %s %s dls:extensions:update%s --no-interaction > %s 2>&1 &',
+            'nohup %s %s dls:extensions:update%s --no-interaction >> %s 2>&1 &',
             escapeshellarg($phpBinary),
             escapeshellarg(base_path('artisan')),
             $args,

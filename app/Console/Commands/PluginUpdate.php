@@ -42,6 +42,7 @@ use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\PluginMigrationRepository;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
@@ -61,7 +62,8 @@ class PluginUpdate extends Command
         {--force : Skip confirmation}
         {--build : Force a front-end asset rebuild even when compiled assets already exist}
         {--skip-build : Skip the npm install / build step entirely}
-        {--skip-backup : Skip the automatic pre-update backup that dls:plugin:rollback restores from}';
+        {--skip-backup : Skip the automatic pre-update backup that dls:plugin:rollback restores from}
+        {--applied-by= : Member id to record as the one who ran the update (the admin screen passes it; CLI runs record none)}';
 
     protected $description = 'Update a plugin to the latest version from its source';
 
@@ -88,6 +90,10 @@ class PluginUpdate extends Command
         // Persistent pre-update backup (kept for dls:plugin:rollback); null
         // when --skip-backup, in which case $snapshotPath guards this run.
         $backupPath = null;
+        // For the audit entry and version-history row (dixlase-core#454).
+        $before = ExtensionUpdateRecorder::snapshot($plugin);
+        $targetVersion = null;
+        $downloadedSha256 = null;
         // Whether we got far enough into the try block to invoke
         // PluginMigrator::migrate(). Used by the catch handler to decide
         // whether to attempt PluginMigrator::rollback() — without this
@@ -128,6 +134,7 @@ class PluginUpdate extends Command
             }
 
             $this->info("Update available: v{$plugin->version} → v{$release->version}");
+            $targetVersion = $release->version;
 
             if (! $this->option('force') && ! $this->confirm('Proceed with update?', true)) {
                 $this->info('Update cancelled.');
@@ -311,6 +318,11 @@ class PluginUpdate extends Command
             // extension_auto_scan_after_update security setting.
             $this->autoScanAfterUpdate('plugin', $slug);
 
+            ExtensionUpdateRecorder::succeeded('update', $plugin->refresh(), $before, $this->appliedById(), [
+                'downloaded_sha256' => $downloadedSha256,
+                'backup' => $backupPath !== null ? basename($backupPath) : null,
+            ]);
+
             return self::SUCCESS;
         } catch (\Throwable $e) {
             // Roll back the plugin tree from the pre-update backup (or the
@@ -361,6 +373,10 @@ class PluginUpdate extends Command
             $plugin->update([
                 'update_failed_at' => now(),
                 'update_failure_reason' => $this->truncateReason($e->getMessage()),
+            ]);
+
+            ExtensionUpdateRecorder::failed('update', $plugin, $before['version'], $targetVersion, $this->appliedById(), $e->getMessage(), [
+                'downloaded_sha256' => $downloadedSha256,
             ]);
 
             $this->error("Update failed: {$e->getMessage()}");
@@ -489,5 +505,15 @@ class PluginUpdate extends Command
                 File::deleteDirectory($staging);
             }
         }
+    }
+
+    /**
+     * Member id from --applied-by, or null for a CLI run.
+     */
+    private function appliedById(): ?int
+    {
+        $id = $this->option('applied-by');
+
+        return is_numeric($id) ? (int) $id : null;
     }
 }
