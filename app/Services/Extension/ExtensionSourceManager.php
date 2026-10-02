@@ -544,10 +544,20 @@ class ExtensionSourceManager
         $source = ExtensionSource::query()->find($sourceId);
         if ($source && $source->is_enabled) {
             try {
-                return $this->makeProvider($source)->getLatestRelease($slug, $extensionType);
+                $release = $this->makeProvider($source)->getLatestRelease($slug, $extensionType);
             } catch (\Throwable) {
                 return null;
             }
+
+            // A repository without a tagged release answers with a pseudo
+            // release built from its default branch. That is not something
+            // to update to: the branch moves, and the download would be
+            // whatever it holds at that moment (security review D13).
+            if ($release !== null && ($release->metadata['source'] ?? null) === 'default_branch') {
+                return null;
+            }
+
+            return $release;
         }
 
         return null;

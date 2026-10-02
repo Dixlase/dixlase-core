@@ -112,6 +112,15 @@ class PluginUpdate extends Command
                 return self::SUCCESS;
             }
 
+            // A repository without a tagged release answers with a pseudo
+            // release from its default branch; that is not an update
+            // (security review D13).
+            if (($release->metadata['source'] ?? null) === 'default_branch') {
+                $this->error('The source has no tagged release, only its default branch. Only a tagged release can be applied as an update.');
+
+                return self::FAILURE;
+            }
+
             if (! version_compare($release->version, $plugin->version, '>')) {
                 $this->info("Already at the latest version (v{$plugin->version}).");
 
@@ -184,6 +193,11 @@ class PluginUpdate extends Command
             // health check resolves to Blocked (or that cannot be scanned)
             // throws here and is rolled back by the catch below, before its
             // migrations, seeders or npm build touch anything.
+            // The archive must be the version that was asked for: anything
+            // else (a default-branch zipball, a mislabelled asset) is
+            // refused and rolled back (security review D13).
+            $this->refuseVersionMismatch(base_path("plugins/{$plugin->directory}/plugin.json"), $release->version);
+
             $this->refuseBlockedUpdate('plugin', $slug);
 
             // Apply any new migration files shipped with this release.

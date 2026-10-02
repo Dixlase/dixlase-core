@@ -46,6 +46,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -360,16 +361,14 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         // and bare tag formats since GitHub repos vary on this convention).
         $release = $this->findCoreRelease($version);
 
+        // No fallback to the default-branch zipball: that is whatever the
+        // branch holds right now, and it used to be applied and recorded as
+        // the requested version (security review D13). An update installs
+        // the tagged release or nothing.
         if ($release === null || empty($release['download_url'])) {
-            // Fall back to default-branch zipball so a core repo without
-            // tagged releases can still be exercised in dev.
-            $downloadUrl = $this->getCoreDefaultBranchZipballUrl();
-            if ($downloadUrl === null) {
-                throw new RuntimeException("Core release v{$version} not found and default branch is unavailable.");
-            }
-        } else {
-            $downloadUrl = $release['download_url'];
+            throw new RuntimeException("Core release v{$version} was not found, so nothing was downloaded.");
         }
+        $downloadUrl = $release['download_url'];
 
         $downloadPath = config('extension-sources.download_path');
         File::ensureDirectoryExists($downloadPath);
@@ -384,7 +383,63 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             throw new RuntimeException("Failed to download core v{$version}: HTTP {$response->status()}");
         }
 
+        $this->verifyCoreChecksum($filePath, $version, $release);
+
         return $filePath;
+    }
+
+    /**
+     * Check the downloaded archive against the release's checksums.sha256.
+     *
+     * Releases from v0.1.4 on attach checksums.sha256 (written by
+     * release.yml). When the release carries one, a mismatch or a missing
+     * line for the archive refuses the download. An older release without
+     * it is accepted with a warning, so updating to or rolling back across
+     * those still works. This catches a corrupted or swapped archive; it is
+     * not a signature, since the list comes from the same release.
+     *
+     * @param  array{download_url: ?string, tag_name: string, asset_name?: ?string, checksums_url?: ?string}  $release
+     */
+    protected function verifyCoreChecksum(string $filePath, string $version, array $release): void
+    {
+        $assetName = $release['asset_name'] ?? null;
+        $checksumsUrl = $release['checksums_url'] ?? null;
+
+        if ($assetName === null) {
+            // Source zipball of the tag (no built archive attached): there is
+            // nothing a checksum list could name.
+            return;
+        }
+
+        if ($checksumsUrl === null) {
+            Log::warning('Core release has no checksums.sha256; the download was not checked against it', [
+                'version' => $version,
+            ]);
+
+            return;
+        }
+
+        $response = $this->downloadClient($checksumsUrl)->get($checksumsUrl);
+        if ($response->failed()) {
+            File::delete($filePath);
+            throw new RuntimeException("Could not fetch checksums.sha256 for core v{$version}: HTTP {$response->status()}");
+        }
+
+        $expected = null;
+        foreach (preg_split('/\R/', (string) $response->body()) ?: [] as $line) {
+            if (preg_match('/^([0-9a-f]{64})\s+\*?(.+)$/i', trim($line), $m) === 1 && trim($m[2]) === $assetName) {
+                $expected = strtolower($m[1]);
+                break;
+            }
+        }
+
+        $actual = hash_file('sha256', $filePath) ?: '';
+        if ($expected === null || ! hash_equals($expected, $actual)) {
+            File::delete($filePath);
+            throw new RuntimeException($expected === null
+                ? "checksums.sha256 of core v{$version} does not list {$assetName}; the download was refused."
+                : "The downloaded core v{$version} does not match checksums.sha256; the download was refused.");
+        }
     }
 
     /**
@@ -402,6 +457,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
             if (! $response->successful()) {
                 $this->throwIfRateLimited($response);
+                $this->throwUnlessNotFound($response, "core release {$tag}");
 
                 continue;
             }
@@ -409,6 +465,9 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             $payload = $response->json();
             $zipAsset = collect($payload['assets'] ?? [])->first(
                 fn (array $asset) => str_ends_with($asset['name'] ?? '', '.zip')
+            );
+            $checksumsAsset = collect($payload['assets'] ?? [])->first(
+                fn (array $asset) => ($asset['name'] ?? '') === 'checksums.sha256'
             );
 
             // With a token, use the asset's API url, not browser_download_url:
@@ -421,6 +480,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             return [
                 'download_url' => $this->assetDownloadUrl($zipAsset) ?? $payload['zipball_url'] ?? null,
                 'tag_name' => $payload['tag_name'] ?? $tag,
+                'asset_name' => is_string($zipAsset['name'] ?? null) ? $zipAsset['name'] : null,
+                'checksums_url' => $this->assetDownloadUrl($checksumsAsset),
             ];
         }
 
@@ -428,20 +489,17 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * Fallback: default-branch zipball URL of the core repo.
+     * A failed lookup other than 404 is an error, not "no such release".
+     *
+     * Treating a 5xx, a 401 or a plain 403 as "not found" used to send the
+     * download to the default-branch zipball (security review D13). Only a
+     * 404 means the tag does not exist.
      */
-    protected function getCoreDefaultBranchZipballUrl(): ?string
+    protected function throwUnlessNotFound(Response $response, string $what): void
     {
-        $response = $this->client()
-            ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}");
-
-        if ($response->failed()) {
-            return null;
+        if ($response->status() !== 404) {
+            throw new RuntimeException("GitHub could not be asked for {$what}: HTTP {$response->status()}.");
         }
-
-        $defaultBranch = $response->json('default_branch') ?? 'main';
-
-        return "{$this->baseUrl}/repos/{$this->owner}/{$this->coreRepo}/zipball/{$defaultBranch}";
     }
 
     /**
@@ -1041,6 +1099,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
                 if (! $response->successful()) {
                     $this->throwIfRateLimited($response);
+                    $this->throwUnlessNotFound($response, "{$repo} release {$tag}");
 
                     continue;
                 }

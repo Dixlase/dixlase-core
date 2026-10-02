@@ -347,6 +347,11 @@ jobs:
           # published as "Latest" — no need to update download links on
           # the brand site / docs each time a new tag ships.
           cp "$ZIP_NAME" "$LATEST_ALIAS"
+          # checksums.sha256 lists both archives. The core updater checks
+          # the archive it downloads against it (security review D13), and
+          # the one-line installer can do the same.
+          sha256sum "$ZIP_NAME" "$LATEST_ALIAS" > checksums.sha256
+          cat checksums.sha256
           echo "name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
           echo "latest_alias=$LATEST_ALIAS" >> "$GITHUB_OUTPUT"
           ls -lh "$ZIP_NAME" "$LATEST_ALIAS"
@@ -373,6 +378,7 @@ jobs:
           files: |
             ${{ steps.zip.outputs.name }}
             ${{ steps.zip.outputs.latest_alias }}
+            checksums.sha256
 
       - name: Upload as workflow artifact
         if: github.event_name == 'workflow_dispatch'
