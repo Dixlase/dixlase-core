@@ -465,6 +465,7 @@ return [
         'perm_modify_routes' => 'ルート変更',
         'perm_exec' => 'コマンド実行',
         'perm_env_access' => '環境変数アクセス',
+        'perm_npm_lifecycle_scripts' => 'npm のインストールスクリプト',
         'perm_file_write' => 'ファイル書き込み',
         'perm_network' => '外部通信',
         'perm_external_resources' => '外部リソース',
