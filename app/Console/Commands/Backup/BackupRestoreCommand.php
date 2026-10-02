@@ -25,6 +25,7 @@ namespace App\Console\Commands\Backup;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\BackupRecord;
 use App\Models\CoreVersionHistory;
+use App\Models\RestoreRecord;
 use App\Services\Backup\CoreRestoreService;
 use App\Services\Core\CoreVendorManager;
 use Illuminate\Console\Command;
@@ -42,17 +43,28 @@ use Illuminate\Support\Facades\Artisan;
 class BackupRestoreCommand extends Command
 {
     protected $signature = 'dls:backup:restore
-                            {id : The backup record ID to restore from}
+                            {id? : The backup record ID to restore from}
                             {--targets= : Comma-separated subset of targets to restore. Defaults to all targets in the backup.}
                             {--no-snapshot : Skip the pre-restore safety snapshot.}
                             {--refetch-vendor : If the restore winds dependencies back, re-fetch the matching vendor/ from the old release under maintenance mode.}
+                            {--rollback-of= : Undo a completed restore (RestoreRecord ID) from its pre-restore snapshot instead of restoring a backup.}
                             {--force : Skip confirmation prompt.}';
 
     protected $description = 'Restore from a backup (destructive operation)';
 
     public function handle(CoreRestoreService $restoreService, CoreVendorManager $vendorManager): int
     {
+        if ($this->option('rollback-of') !== null) {
+            return $this->rollbackRestore($restoreService, (int) $this->option('rollback-of'));
+        }
+
         $id = (int) $this->argument('id');
+
+        if ($id === 0) {
+            $this->error('Give a backup record ID, or --rollback-of=<restore id>.');
+
+            return self::FAILURE;
+        }
 
         $backup = BackupRecord::find($id);
         if (! $backup) {
@@ -83,6 +95,12 @@ class BackupRestoreCommand extends Command
         $this->line('Snapshot: '.($this->option('no-snapshot') ? 'DISABLED' : 'enabled (auto)'));
         $this->line('Vendor:  '.($dependencyRollback ? 're-fetch from old release (maintenance mode)' : 'unchanged'));
 
+        // Restoring code (core source, plugins, themes) clears each tree and
+        // writes it back file by file. Requests landing in that window run a
+        // half-written tree, so the site is taken down for it as well, not
+        // only for a dependency rollback.
+        $maintenance = $dependencyRollback || $restoreService->restoresCode($backup, $targets);
+
         if (! $this->option('force') && ! $this->confirm('Continue with restore?', false)) {
             $this->info('Restore cancelled.');
 
@@ -99,8 +117,8 @@ class BackupRestoreCommand extends Command
         // maintenance page (with --refresh) before booting the framework,
         // so the site stays safe while vendor/ is incomplete, and the
         // operator's browser returns automatically when we lift it.
-        if ($dependencyRollback) {
-            $this->warn('Dependency rollback detected — entering maintenance mode.');
+        if ($maintenance) {
+            $this->warn(($dependencyRollback ? 'Dependency rollback detected' : 'Restoring code').' — entering maintenance mode.');
             Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
         }
 
@@ -171,7 +189,52 @@ class BackupRestoreCommand extends Command
 
             return self::SUCCESS;
         } finally {
-            if ($dependencyRollback) {
+            if ($maintenance) {
+                Artisan::call('up');
+            }
+        }
+    }
+
+    /**
+     * Undo a completed restore from its pre-restore snapshot, under
+     * maintenance mode when that snapshot holds code. The admin screen
+     * dispatches this to a detached process for the same reason it does a
+     * code restore.
+     */
+    private function rollbackRestore(CoreRestoreService $restoreService, int $restoreId): int
+    {
+        $restore = RestoreRecord::find($restoreId);
+        if (! $restore || ! $restore->canRollback() || ! $restore->preRestoreBackup) {
+            $this->error("Restore #{$restoreId} cannot be rolled back.");
+
+            return self::FAILURE;
+        }
+
+        if (! $this->option('force') && ! $this->confirm('Undo restore #'.$restoreId.'?', false)) {
+            $this->info('Rollback cancelled.');
+
+            return self::SUCCESS;
+        }
+
+        $maintenance = $restoreService->restoresCode($restore->preRestoreBackup);
+        if ($maintenance) {
+            $this->warn('Restoring code — entering maintenance mode.');
+            Artisan::call('down', ['--retry' => 60, '--refresh' => 15]);
+        }
+
+        try {
+            $result = $restoreService->rollback($restore);
+            if (! $result->success) {
+                $this->error('Rollback failed: '.$result->error);
+
+                return self::FAILURE;
+            }
+
+            $this->info("Restore #{$restoreId} rolled back.");
+
+            return self::SUCCESS;
+        } finally {
+            if ($maintenance) {
                 Artisan::call('up');
             }
         }

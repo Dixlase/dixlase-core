@@ -28,6 +28,7 @@ use App\Contracts\Verification\FileVerificationServiceInterface;
 use App\DTO\Backup\RestoreResultDTO;
 use App\Events\DixlaseEvents;
 use App\Facades\Audit;
+use App\Helpers\ComposerLocalHelper;
 use App\Models\AuditLog;
 use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
@@ -35,6 +36,7 @@ use App\Services\Core\PublicAssetRelinker;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Core restore service
@@ -65,11 +67,39 @@ class CoreRestoreService implements RestoreServiceInterface
      */
     private const FORCED_SOURCE_TREE_PRESERVES = ['.git'];
 
+    /**
+     * Targets that replace running code.
+     *
+     * Restoring any of them inside a web request deletes the code that
+     * request is running and leaves every concurrent request to land in
+     * a half-written tree, so the admin screen dispatches such a restore
+     * to a detached process under maintenance mode (security review X5).
+     */
+    public const CODE_TARGETS = [
+        BackupServiceInterface::TARGET_CORE_SOURCE,
+        BackupServiceInterface::TARGET_PLUGINS_ALL,
+        BackupServiceInterface::TARGET_THEMES_ALL,
+    ];
+
     public function __construct(
         private FileVerificationServiceInterface $verifier,
         private BackupServiceInterface $backupService,
         private \App\Services\Core\CoreVendorManager $vendorManager,
     ) {}
+
+    /**
+     * Whether restoring this backup (all of its targets, or the given
+     * subset) replaces running code.
+     *
+     * @param  string[]  $targets
+     */
+    public function restoresCode(BackupRecord $backup, array $targets = []): bool
+    {
+        $available = is_array($backup->targets) ? $backup->targets : [];
+        $effective = $targets === [] ? $available : array_intersect($targets, $available);
+
+        return array_intersect($effective, self::CODE_TARGETS) !== [];
+    }
 
     /**
      * Decide whether restoring this backup would wind PHP dependencies
@@ -208,6 +238,10 @@ class CoreRestoreService implements RestoreServiceInterface
 
             if (in_array(BackupServiceInterface::TARGET_CORE_SOURCE, $targets, true)) {
                 $this->relinkPublicAssets();
+            }
+
+            if (array_intersect($targets, self::CODE_TARGETS) !== []) {
+                $this->resyncAutoload();
             }
 
             $duration = microtime(true) - $startTime;
@@ -362,6 +396,28 @@ class CoreRestoreService implements RestoreServiceInterface
 
         if ($restoreRows !== []) {
             RestoreRecord::query()->getQuery()->upsert($restoreRows, ['id']);
+        }
+    }
+
+    /**
+     * Regenerate composer.local.json and the package manifest after code
+     * was restored.
+     *
+     * A restored plugin or theme set rarely matches the one the autoloader
+     * was built for: an extension that is back maps to nothing, and one that
+     * is gone leaves an `autoload.files` entry that Composer requires
+     * unconditionally -- a fatal on every request. Same repair the core
+     * update and the vendor re-fetch run. Failures are logged, not thrown:
+     * the files are already restored and the operator can rerun it.
+     */
+    private function resyncAutoload(): void
+    {
+        if (! ComposerLocalHelper::syncAutoload()) {
+            Log::warning('Extension autoload re-sync failed after restore; run `php scripts/sync-local-autoload.php && composer dump-autoload`.');
+        }
+
+        if (! ComposerLocalHelper::rebuildPackageManifest()) {
+            Log::warning('Package manifest rebuild failed after restore; run `php artisan package:discover`.');
         }
     }
 

@@ -62,6 +62,7 @@ return [
     'flash' => [
         'rollback_success' => 'ロールバックが完了しました（:duration 秒）。',
         'rollback_failed' => 'ロールバックに失敗しました: :error',
+        'rollback_code_started' => 'この復元の取り消しはサイトのコードを置き換えるため、バックグラウンドで実行し、完了するまでサイトはメンテナンスモードになります。完了すると自動的にページが戻ります。',
         'rollback_unavailable' => 'この復元はロールバックできません。',
     ],
 
