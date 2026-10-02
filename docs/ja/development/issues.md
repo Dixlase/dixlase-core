@@ -30,6 +30,33 @@ Dixlase での GitHub Issue の使い方です。何を Issue にするか、ど
 
 ---
 
+## 編集の前に Issue
+
+コアと公式のプラグイン・テーマのソースを編集する前に、その変更の Issue を立てるか、すでにある Issue を探します。ブランチと Pull Request はその Issue を指します(説明に `Fixes #N` と書く)。
+
+**例外。** 次の場合は Issue は要りません。
+
+| 理由 | 対象 |
+| --- | --- |
+| `security` | 修正前の脆弱性。非公開で直し、修正を出したあとに Security Advisory で公開します([Issue にするもの](#issue-にするもの)を参照) |
+| `release` | リリースのための版上げと CHANGELOG の記入 |
+| `signing` | プラグイン・テーマの再署名 |
+| `dependencies` | 依存関係の更新。Dependabot の Pull Request を含む |
+| `generated` | 生成ファイルの作り直しだけで、手で編集していないもの |
+| `typo` | 意味の変わらない誤字の修正 |
+
+例外の Pull Request は、説明に 1 行でそう書きます。
+
+```
+No issue: release
+```
+
+**作業中に別の問題を見つけたとき。** 同じ変更の中では直さず、別の Issue を立てます。1 つの Pull Request は 1 つの Issue に答えます。
+
+**チェック。** すべての Pull Request でワークフローが動き、説明が Issue を指していない(`#N`・`owner/repo#N`・Issue の URL のどれも無い)うえに上の理由も書かれていなければ失敗します。HTML コメントの中の文字は数えないので、テンプレートの例だけでは通りません。Dependabot の Pull Request は対象外です。
+
+---
+
 ## タイトル
 
 コミットメッセージと同じ英日併記にし、先頭に領域を付けます。

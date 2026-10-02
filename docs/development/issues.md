@@ -30,6 +30,33 @@ The Japanese mirror of this page lives at [`docs/ja/development/issues.md`](../j
 
 ---
 
+## Issue first
+
+Before editing the source of core or of an official plugin or theme, open an issue for the change, or find the one that already exists. The branch and the pull request point at it (`Fixes #N` in the description).
+
+**Exceptions.** No issue is needed for:
+
+| Reason | Covers |
+| --- | --- |
+| `security` | An unfixed vulnerability. It is fixed privately, and the fix is published as a Security Advisory afterwards (see [What belongs in an issue](#what-belongs-in-an-issue)) |
+| `release` | Version bumps and changelog entries for a release |
+| `signing` | Re-signing a plugin or theme |
+| `dependencies` | Dependency updates, including Dependabot pull requests |
+| `generated` | Regenerating generated files, with no hand edits |
+| `typo` | A typo fix that changes no meaning |
+
+An exempt pull request says so on its own line in the description:
+
+```
+No issue: release
+```
+
+**Something else turns up while you work.** Do not fix it in the same change. Open a separate issue for it. One pull request answers one issue.
+
+**The check.** A workflow on every pull request fails when the description neither links an issue (`#N`, `owner/repo#N` or an issue URL) nor states one of the reasons above. Text inside HTML comments does not count, so the template's own examples never satisfy it. Dependabot pull requests are exempt.
+
+---
+
 ## Title
 
 Use the same bilingual style as commit messages, with an area prefix:

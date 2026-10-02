@@ -19,7 +19,8 @@
 
 ## Related Issue / 関連 Issue
 
-<!-- e.g., Closes #123 -->
+<!-- Required: open an issue before editing source, then e.g. "Fixes #123". Exempt changes write one line instead: "No issue: <reason>" with security, release, signing, dependencies, generated or typo. See docs/development/issues.md (Issue first).
+     必須: ソースの編集の前に Issue を立て、例えば "Fixes #123" と書く。例外は "No issue: <理由>" を 1 行で(security・release・signing・dependencies・generated・typo)。 -->
 
 ## Type of Change / 変更の種類
 
