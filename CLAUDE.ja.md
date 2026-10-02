@@ -63,6 +63,7 @@
 - スキーマ変更後、**開発者のローカル Dixlase Core dev checkout**（通常 `dixlase-dev-app`)は運用者が `php artisan migrate:fresh` で再構築してよい。**これは DEV 限定の便宜**であり、AI が自ら操作している checkout に限る話であって、他のコンテナには適用されない。
 - **下流サイト**(site-local dev コンテナ `dixlase-brand-app` / `dixlase-demo-*-app` / `dixlase-docs-app` / `dixlase-authority-app` 等、ステージング、本番)**に対して `migrate:fresh` / `db:wipe` / `migrate:reset` を絶対に流してはならない — 対象コンテナで直接実行することも、その運用者 / セッション宛のタスク指示に書くことも、いずれも禁止**。これらのサイトでは `php artisan dls:migration:resync --prune`(dry-run が default、`--confirm` で適用。マイグレーション帳簿の行にのみ触れ、データテーブルには一切触れない)を使う。
 - ベータ版はバージョン間でのインプレース・データ移行を **開発者のローカル dev checkout に対しては** 保証しない。当該 checkout に対しては運用者が `migrate:fresh` してよい。下流サイトは帳簿クリーンアップ経路で対処する。
+- **番号の振り直しは自動で処理されるが、中身の編集は処理されない。** コア 0.3.47 以降、コアの `migrate` は毎回ディスク上のファイル名に台帳を合わせる（`CoreMigrator` → `MigrationLedgerReconciler`）ため、マイグレーションの改名・番号変更が既存サイトを壊すことはなくなった。一方、**既にリリース済みのマイグレーションの中身を変える**のは別の話である。`migrate` はそのファイルを二度と実行しないため、既存サイトでは変更が静かに適用されず、新規インストールにだけ入る。リリース済みバージョンが実行済みのマイグレーションの中身を編集したときは、**同じ変更を新しいマイグレーションとしても追加する**（またはリリースノートに修復手順を明記する）こと。新しい外部キーの追加先である `0001_01_01_999999_add_foreign_key_constraints.php` で特に起きやすい。ベータ期間中は `dls:migration:lint` では検出できない（比較対象の `database/migration-lock.json` がまだ存在しないため）。
 
 **フェーズ切替のゲート**
 - **GA** リリースタグを打つ直前に `php artisan dls:migration:lint --lock` を実行し、`database/migration-lock.json` をコミットする
@@ -96,6 +97,20 @@
 ### 管理画面レイアウトの保護領域
 - `resources/views/layouts/admin.blade.php` のCSSクラス（Flexコンテナは上部余白なし、ヘッダー `pt-6 pb-6 px-8`、記事 `mt-5`、サイドバー `md:top-12`）は変更しない
 - 管理バー（`h-12`）のオフセットとして調整済み — 全管理ページに影響する
+
+### 編集の前に Issue — ソースを編集する前に Issue を立てる
+- **コアと公式のプラグイン・テーマのソースを編集する前に、その変更の GitHub Issue が必要。** 既存の Issue を探すか、立てるかをユーザーに尋ねる。Issue が無いまま編集を始めない
+- ブランチと Pull Request はその Issue を指す。PR の説明に `Fixes #N`(リポジトリをまたぐときは `owner/repo#N`)と書く
+- **例外** — Issue は不要。PR の説明に 1 行でそう書く(例: `No issue: release`):
+  - `security` — 修正前の脆弱性(非公開で直し、修正後に Security Advisory で公開する。公開の Issue にはしない)
+  - `release` — リリースのための版上げと CHANGELOG の記入
+  - `signing` — プラグイン・テーマの再署名
+  - `dependencies` — 依存関係の更新(Dependabot の PR を含む)
+  - `generated` — 生成ファイルの作り直しだけで、手で編集していないもの
+  - `typo` — 意味の変わらない誤字の修正
+- **作業中に別の問題を見つけたとき:** 同じ変更の中では直さず、別の Issue を立てる(か提案する)。1 つの PR は 1 つの Issue に答える
+- Issue はコアの `docs/ja/development/issues.md` に従って書く(タイトルは `<領域>: <英語> / <日本語>`。既知の問題の本文は英語の全項目 → `---` → 日本語の全項目)
+- CI(`Dixlase/.github` の再利用ワークフロー `pr-issue-link.yml`)は、説明に Issue の参照も `No issue: <理由>` の行も無い PR を失敗にする。HTML コメントの中は数えない
 
 ### ブランチ作成・切替の確認
 - **新規ブランチを作成する前に必ずユーザーに確認する** — `git checkout -b`、`git switch -c`、`git branch <new>` 等を勝手に実行しない
