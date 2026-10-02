@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Console\Traits\TakesExtensionBackup;
+use App\Enums\PluginEnableAction;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
@@ -52,6 +53,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
+use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
@@ -400,6 +402,30 @@ class AdminThemesSettingsController extends AdminLoggedInController
     }
 
     /**
+     * Scan a theme now and resolve what its health score allows.
+     *
+     * Fails closed: if the scan or the score cannot be computed, the theme
+     * is treated as Blocked rather than let through unchecked.
+     */
+    protected function themeHealthAction(string $themeSlug): PluginEnableAction
+    {
+        try {
+            $this->runThemeAudit($themeSlug);
+
+            $healthScorer = app(ThemeHealthScorer::class);
+
+            return $healthScorer->determineEnableAction($healthScorer->calculate($themeSlug));
+        } catch (\Throwable $e) {
+            Log::warning('Theme health check failed', [
+                'theme' => $themeSlug,
+                'error' => $e->getMessage(),
+            ]);
+
+            return PluginEnableAction::Blocked;
+        }
+    }
+
+    /**
      * Manually audit theme (Ajax)
      */
     public function audit(Request $request)
@@ -586,6 +612,17 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
         $themeDir = $validated['directory'];
 
+        // Server-side gate, the same one plugins have: under a preset that
+        // requires a scan, a theme whose health check resolves to Blocked
+        // is not installed. A theme runs PHP just like a plugin, and until
+        // this check the Strict preset let any theme in unscanned. The scan
+        // is run here rather than read from an earlier one, so a theme
+        // uploaded before the preset was tightened is judged as it is now.
+        if (ExtensionScanPolicy::isScanRequired()
+            && $this->themeHealthAction(Theme::resolveSlug($themeDir)) === PluginEnableAction::Blocked) {
+            return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_install_blocked'));
+        }
+
         try {
             // If the download came from a registered source (online add
             // flow), the sidecar written by downloadFromSource() tells us
@@ -755,8 +792,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
         $theme = Theme::findOrFail($id);
 
         try {
-            // Run audit before activation (verify current state)
-            $this->runThemeAudit($theme->slug);
+            // Audit before activation and refuse a Blocked theme -- the same
+            // rule plugin activation applies. The audit used to run here with
+            // its result thrown away, so a theme failing every check could
+            // still be made the live theme.
+            if ($this->themeHealthAction($theme->slug) === PluginEnableAction::Blocked) {
+                return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_blocked'));
+            }
 
             // Switch theme using Artisan command
             $exitCode = Artisan::call('dls:theme:switch', [

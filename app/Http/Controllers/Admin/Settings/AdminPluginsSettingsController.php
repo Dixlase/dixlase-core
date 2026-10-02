@@ -56,13 +56,13 @@ use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionRescanService;
+use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
-use App\Services\SecuritySettingsRegistry;
 use App\Support\ComposerLocalManifest;
 use App\Support\ExtensionArchive;
 use App\Support\ExtensionDirectories;
@@ -229,19 +229,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
      * Strict/Balanced → true
      * Development → false
      * Custom → true if require_signature or require_permission_definition or permission_mismatch_action=block
+     *
+     * The rule itself lives in ExtensionScanPolicy so the theme install
+     * path applies the same one.
      */
     public static function isScanRequired(): bool
     {
-        $preset = SecuritySettingsRegistry::get('extension_security_preset', 'balanced');
-
-        return match ($preset) {
-            'strict', 'balanced' => true,
-            'development' => false,
-            'custom' => SecuritySettingsRegistry::get('extension_require_signature', false)
-                || SecuritySettingsRegistry::get('extension_require_permission_definition', false)
-                || SecuritySettingsRegistry::get('extension_permission_mismatch_action', 'warn') === 'block',
-            default => true,
-        };
+        return ExtensionScanPolicy::isScanRequired();
     }
 
     /**

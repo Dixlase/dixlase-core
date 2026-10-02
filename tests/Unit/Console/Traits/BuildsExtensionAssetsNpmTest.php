@@ -93,7 +93,7 @@ SH);
 
         $this->assertTrue($this->makeHost()->build($this->extension));
 
-        $this->assertSame(['ci', 'run build'], $this->calls());
+        $this->assertSame(['ci --ignore-scripts', 'run build'], $this->calls());
         $this->assertSame($lock, File::get($this->extension.'/package-lock.json'));
     }
 
@@ -101,7 +101,7 @@ SH);
     {
         $this->assertTrue($this->makeHost()->build($this->extension));
 
-        $this->assertSame(['install', 'run build'], $this->calls());
+        $this->assertSame(['install --ignore-scripts', 'run build'], $this->calls());
     }
 
     public function test_a_failed_build_is_logged_and_recorded(): void
