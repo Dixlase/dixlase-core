@@ -61,6 +61,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         data-health-score="{{ $card['healthScore'] ?? '' }}"
         data-health-status="{{ $card['healthStatus'] ?? '' }}"
         data-health-issues="{{ json_encode($card['healthIssues'] ?? []) }}"
+        data-stale-notice="{{ ($card['staleLatestVersion'] ?? null) ? __('admin/settings/plugins/index.stale_download', ['latest' => $card['staleLatestVersion'], 'version' => $card['version']]) : '' }}"
     />
 
     <x-ui-modal

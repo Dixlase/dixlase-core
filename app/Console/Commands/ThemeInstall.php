@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\ThemeMigrator;
@@ -232,6 +233,14 @@ class ThemeInstall extends Command
             $packageName,
             $composerName,
         );
+
+        // A download older than its source's latest release is still
+        // installed (the operator may want exactly this version), but not
+        // silently (dixlase-core#456).
+        $newer = app(ExtensionDownloadFreshness::class)->newerRelease('theme', $themeDirName, $slug, $version);
+        if ($newer !== null) {
+            $this->warn("v{$newer} of '{$slug}' has been released; this download is v{$version}. To install the latest, delete it and download it again.");
+        }
 
         $theme = Theme::create([
             'name' => $displayName,
