@@ -1,0 +1,36 @@
+name: Feature request / 機能の提案
+description: Suggest a new feature or an improvement / 新しい機能や改善を提案する
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > ⚠️ **Do NOT report security vulnerabilities here.** See [SECURITY.md](https://github.com/Dixlase/dixlase-core/blob/main/SECURITY.md). / **セキュリティ脆弱性はここで報告しないでください。** [SECURITY.ja.md](https://github.com/Dixlase/dixlase-core/blob/main/SECURITY.ja.md) をご覧ください。
+
+        You may write in English or Japanese. / 英語・日本語のどちらでも書けます。
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case / 使いたい場面
+      description: What are you trying to do, and what gets in the way today? / 何をしたくて、今は何が妨げになっているか。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour / 提案する動き
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 検討したほかの方法
+  - type: input
+    id: version
+    attributes:
+      label: Dixlase version / Dixlase の版
+      placeholder: "0.1.3"
+  - type: markdown
+    attributes:
+      value: |
+        Code snippets are treated as **reference information only**. / コードスニペットは**参考情報**として扱います。

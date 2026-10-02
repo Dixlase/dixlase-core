@@ -19,6 +19,12 @@ UIコンポーネントの使い方ガイドとスタイリング規約です。
 
 - [コンポーネント](components/)
 
+## Issue
+
+GitHub Issue の書き方・ラベルの付け方・閉じ方と、リリースとの結び付け方です。
+
+- [Issue の書き方](issues.md)
+
 ## リビジョン
 
 共通リビジョン API: Revisionable コントラクト、HasRevisions トレイト、

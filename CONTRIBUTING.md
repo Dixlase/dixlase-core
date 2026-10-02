@@ -15,6 +15,8 @@ Dixlase is in early development. **External pull requests are not currently acce
 - Documentation / translation error reports
 - Questions and feedback
 
+How to write an issue, and how issues are labelled and closed: [Issue Guidelines](./docs/development/issues.md).
+
 **Not accepted yet:** pull requests of any kind (code, documentation, translations). External PRs opened while this policy is in effect are **closed automatically, without code review** — if your PR addresses a real problem, please re-file it as an Issue, and a maintainer will independently implement a fix.
 
 > Code snippets included in bug reports are treated as **reference information only**; a maintainer will independently re-implement any fix. This is required by Dixlase's dual-license model until code PRs open.
