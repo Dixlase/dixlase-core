@@ -93,4 +93,22 @@ class ThemeMigrationRepository extends DatabaseMigrationRepository
             ->where('theme', $theme)
             ->max('batch') ?? 0);
     }
+
+    /**
+     * Number of ledger rows in the batches after $batch.
+     *
+     * A rollback has to reverse exactly the migrations an update added. They
+     * all share one batch, but Laravel's --step counts migration files, not
+     * batches, so the caller passes this row count as --step
+     * (dixlase-core#455). Same approach as CoreUpdater::rollBackMigrationsSince().
+     */
+    public function countSinceBatch(int $batch, ?string $theme = null): int
+    {
+        $theme = $theme ?? $this->theme;
+
+        return (int) $this->table()
+            ->where('theme', $theme)
+            ->where('batch', '>', $batch)
+            ->count();
+    }
 }
