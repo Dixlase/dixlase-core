@@ -32,6 +32,17 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### ライセンス
+- 利用者向けの文書をクリエイティブ・コモンズ 表示 4.0(文書の中のコードの例は CC0 1.0)でも、
+  AI アシスタント向けの指示ファイル(`CLAUDE.md` など)を CC0 1.0 でも、AGPL に代わる選択肢と
+  して提供する。対象のファイルは `LICENSE-EXCEPTIONS`(版 1.2)に新しく足した第 2 部に記載。
+  法律・方針の文書、ソースコード、設定は今までどおり。`COPYRIGHT-POLICY`・`CLA`・README にも
+  記載した(#460)
+
+### 変更
+- リリースの ZIP に `CLAUDE.md` / `CLAUDE.ja.md` と `resources/src/_csp-build-dryrun/` の内部の
+  作業メモを入れないようにした(#460)
+
 ## [0.1.4] — 2026-10-02
 
 ### セキュリティ

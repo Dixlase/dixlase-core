@@ -166,6 +166,8 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 
 ### プラグイン・テーマについて
 
+文書は CC BY 4.0(文書の中のコードの例は CC0 1.0)でも、AI アシスタント向けの指示ファイル(`CLAUDE.md` など)は CC0 1.0 でも利用できます。詳しくは [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) の第 2 部をご覧ください。
+
 [Plugin API](./PLUGIN-API.ja.md) のみを通じて Dixlase CMS と連携するプラグイン・テーマは派生物とはみなされず、**プロプライエタリライセンスを含む任意のライセンスで配布可能**です。詳細は [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) をご確認ください。
 
 ### ソースコードの提供(AGPL §13)

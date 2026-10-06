@@ -15,5 +15,8 @@ Until then:
 - Bug reports and feature suggestions are welcome via GitHub Issues —
   see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the current contribution policy.
 - For the overall licensing structure, see [`COPYRIGHT-POLICY.md`](./COPYRIGHT-POLICY.md).
+- Documentation and AI assistant instruction files are also offered under CC BY 4.0 and CC0 1.0
+  (Part 2 of [`LICENSE-EXCEPTIONS`](./LICENSE-EXCEPTIONS)). The CLA will cover contributions to
+  those files on the same terms.
 
 Questions: info@dixlase.org
