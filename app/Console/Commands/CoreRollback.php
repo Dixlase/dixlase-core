@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
 use App\Models\AuditLog;
+use App\Models\CoreRelease;
 use App\Models\CoreVersionHistory;
 use App\Services\Core\ArtisanProcess;
 use App\Services\Core\CoreIntegrityBaselineRefresher;
@@ -395,6 +396,19 @@ class CoreRollback extends Command
                 'dependency_update' => $dependencyUpdate,
                 'backup_record_id' => $meta['backup_record_id'] ?? null,
             ]);
+
+            // The version just rolled back from is still published: keep it
+            // on offer. The update cleared available_version, and nothing set
+            // it again, so the screen said "up to date" right after a
+            // rollback until the next check (dixlase-core#454).
+            $rolledBackFrom = $current !== '' ? $current : $to;
+            if ($rolledBackFrom !== '' && version_compare($rolledBackFrom, $from, '>')) {
+                try {
+                    CoreRelease::singleton()->forceFill(['available_version' => $rolledBackFrom])->save();
+                } catch (\Throwable) {
+                    // Cosmetic: the next update check restores it anyway.
+                }
+            }
 
             app(CoreIntegrityBaselineRefresher::class)->refreshAfter(
                 $integrityMatchedBefore,

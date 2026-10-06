@@ -278,10 +278,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 ->with('error', __('admin/settings/themes/show.rollback.no_backup'));
         }
 
-        $exitCode = Artisan::call('dls:theme:rollback', [
+        $exitCode = Artisan::call('dls:theme:rollback', array_filter([
             'slug' => $theme->slug,
             '--force' => true,
-        ]);
+            // Recorded in the audit log and the version history.
+            '--applied-by' => AdminHelper::getMember()?->id,
+        ], fn ($v) => $v !== null));
 
         if ($exitCode !== 0) {
             Log::error('Admin theme rollback failed', [

@@ -622,10 +622,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ->with('error', __('admin/settings/plugins/show.rollback.no_backup'));
         }
 
-        $exitCode = Artisan::call('dls:plugin:rollback', [
+        $exitCode = Artisan::call('dls:plugin:rollback', array_filter([
             'slug' => $plugin->slug,
             '--force' => true,
-        ]);
+            // Recorded in the audit log and the version history.
+            '--applied-by' => AdminHelper::getMember()?->id,
+        ], fn ($v) => $v !== null));
 
         if ($exitCode !== 0) {
             Log::error('Admin plugin rollback failed', [

@@ -39,6 +39,7 @@ use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceSnapshot;
+use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\ThemeMigrationRepository;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -62,7 +63,8 @@ class ThemeRollback extends Command
     protected $signature = 'dls:theme:rollback
         {slug : Theme slug to roll back}
         {--to= : Restore a specific backup timestamp (default: the newest)}
-        {--force : Skip confirmation}';
+        {--force : Skip confirmation}
+        {--applied-by= : Member id to record as the one who ran the rollback (the admin screen passes it; CLI runs record none)}';
 
     protected $description = 'Roll a theme back to the state captured before its last update';
 
@@ -106,6 +108,10 @@ class ThemeRollback extends Command
             return self::SUCCESS;
         }
 
+        // For the audit entry and version-history row (dixlase-core#454).
+        $before = ExtensionUpdateRecorder::snapshot($theme);
+        $restoredVersion = $this->readBackupMetadata($backupPath)['version'] ?? null;
+
         try {
             // Reverse the schema BEFORE restoring the source, so the
             // migrations added by the update are still on disk for
@@ -128,7 +134,7 @@ class ThemeRollback extends Command
             Artisan::call('dls:theme:symlink', ['action' => 'create', 'theme' => $dir]);
 
             // Keep the recorded version in step with the restored theme.json.
-            $this->syncThemeVersion($theme, $livePath);
+            $this->syncThemeVersion($theme, $livePath, $before['version']);
 
             // Discard compiled Blade against the (now-replaced) source and
             // pre-compile the restored version so the next request does not
@@ -145,6 +151,10 @@ class ThemeRollback extends Command
             // warning clears. Best-effort; gated by extension_auto_scan_after_update.
             $this->autoScanAfterUpdate('theme', $slug);
 
+            ExtensionUpdateRecorder::succeeded('rollback', $theme->refresh(), $before, $this->appliedById(), [
+                'backup' => basename($backupPath),
+            ]);
+
             // Consume the restore point now it has been applied, mirroring
             // dls:core:rollback. Once the newest backup is gone the admin
             // rollback button hides (unless an older backup remains to step
@@ -153,6 +163,10 @@ class ThemeRollback extends Command
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
+            ExtensionUpdateRecorder::failed('rollback', $theme, $before['version'], is_string($restoredVersion) ? $restoredVersion : null, $this->appliedById(), $e->getMessage(), [
+                'backup' => basename($backupPath),
+            ]);
+
             $this->error("Rollback failed: {$e->getMessage()}");
 
             return self::FAILURE;
@@ -222,8 +236,12 @@ class ThemeRollback extends Command
     /**
      * Sync the DB version column to the version declared in the restored
      * theme.json so a subsequent update detects the correct baseline.
+     *
+     * The version just rolled back from still exists upstream, so it stays
+     * on offer: clearing available_version (as this used to) made the
+     * screen say "up to date" until the next check (dixlase-core#454).
      */
-    private function syncThemeVersion(Theme $theme, string $livePath): void
+    private function syncThemeVersion(Theme $theme, string $livePath, ?string $rolledBackFrom): void
     {
         $jsonPath = $livePath.'/theme.json';
         if (! is_file($jsonPath)) {
@@ -233,7 +251,20 @@ class ThemeRollback extends Command
         $data = json_decode((string) File::get($jsonPath), true);
         $version = is_array($data) ? ($data['version'] ?? null) : null;
         if (is_string($version) && $version !== '') {
-            $theme->update(['version' => $version, 'available_version' => null]);
+            $offer = is_string($rolledBackFrom) && version_compare($rolledBackFrom, $version, '>')
+                ? $rolledBackFrom
+                : null;
+            $theme->update(['version' => $version, 'available_version' => $offer]);
         }
+    }
+
+    /**
+     * Member id from --applied-by, or null for a CLI run.
+     */
+    private function appliedById(): ?int
+    {
+        $id = $this->option('applied-by');
+
+        return is_numeric($id) ? (int) $id : null;
     }
 }
