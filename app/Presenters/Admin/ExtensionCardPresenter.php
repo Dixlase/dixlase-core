@@ -220,6 +220,8 @@ class ExtensionCardPresenter
             // Update availability
             'hasUpdateAvailable' => $isModel && $theme->hasUpdateAvailable(),
             'availableVersion' => $isModel ? $theme->available_version : null,
+            // Downloaded but not installed, and older than the source's latest release (#456)
+            'staleLatestVersion' => $isModel ? null : ($theme['stale_latest_version'] ?? null),
             // Owned database tables (auto-detected from migrations or declared in theme.json)
             'ownedTablesData' => self::buildOwnedTablesData('theme', $directory, $auditResult),
             // Scan freshness (badge state + thresholds)
@@ -411,6 +413,8 @@ class ExtensionCardPresenter
             // Update availability
             'hasUpdateAvailable' => $isModel && $plugin->hasUpdateAvailable(),
             'availableVersion' => $isModel ? $plugin->available_version : null,
+            // Downloaded but not installed, and older than the source's latest release (#456)
+            'staleLatestVersion' => $isModel ? null : ($plugin['stale_latest_version'] ?? null),
             // Owned database tables (auto-detected from migrations or declared in plugin.json)
             'ownedTablesData' => self::buildOwnedTablesData('plugin', $directory, $auditResult),
             // Scan freshness (badge state + thresholds)
