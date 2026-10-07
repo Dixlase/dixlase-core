@@ -30,6 +30,8 @@ The Dixlase core is distributed under two parallel licenses, and recipients choo
 
 Both licenses cover the same software; they differ only in obligations.
 
+**Documentation and AI assistant instruction files.** In addition, exc-D makes the user documentation available under Creative Commons Attribution 4.0 (with code examples in it also under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md` and similar) under CC0 1.0, as alternatives to the AGPL. The files covered are listed in Part 2 of [`LICENSE-EXCEPTIONS`](./LICENSE-EXCEPTIONS). Legal and policy documents, source code and configuration are not covered.
+
 > **Note on commercial-license availability.** The commercial-license framework documented in [`LICENSE-COMMERCIAL`](./LICENSE-COMMERCIAL) is in place, but commercial terms (pricing and contract format) are still being finalized. Inquiries can be directed to info@dixlase.org.
 
 ## 3. Plugin and Theme Exception

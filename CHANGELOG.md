@@ -32,6 +32,18 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### License
+- The user documentation is also available under Creative Commons Attribution 4.0 (code
+  examples in it also under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md`
+  and similar) under CC0 1.0, as alternatives to the AGPL. The covered files are listed in
+  the new Part 2 of `LICENSE-EXCEPTIONS` (version 1.2). Legal and policy documents, source
+  code and configuration stay under their current terms. `COPYRIGHT-POLICY`, `CLA` and the
+  README say so as well (#460)
+
+### Changed
+- The release ZIP no longer contains `CLAUDE.md` / `CLAUDE.ja.md` or the internal notes under
+  `resources/src/_csp-build-dryrun/` (#460)
+
 ## [0.1.5] — 2026-10-06
 
 ### Fixed

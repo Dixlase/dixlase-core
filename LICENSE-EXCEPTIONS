@@ -2,7 +2,7 @@
 
     DIXLASE PLUGIN AND THEME EXCEPTION
 
-    Version 1.1, 2026
+    Version 1.2, 2026
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
@@ -127,3 +127,58 @@ avoidance-of-doubt clause above.
 If you modify Dixlase core and redistribute it, you may choose to
 remove this exception. If you do not remove the exception, the exception
 also applies to your modified version.
+
+=======================================================================
+
+    PART 2 — ALTERNATIVE LICENSES FOR DOCUMENTATION AND
+             AI ASSISTANT INSTRUCTION FILES
+
+=======================================================================
+
+The copyright holders of Dixlase additionally make the files listed
+below, as distributed with Dixlase, available under the license named
+for each group. This is offered as an alternative to the GNU Affero
+General Public License: you may use, modify and distribute each such
+file under either license, at your option. This part is separate from
+the additional permission in Part 1 and does not change it.
+
+  1. AI assistant instruction files
+
+     CLAUDE.md and CLAUDE.ja.md in any directory, and
+     .github/copilot-instructions.md.
+
+     Alternative license: Creative Commons CC0 1.0 Universal
+     <https://creativecommons.org/publicdomain/zero/1.0/legalcode>.
+
+  2. User documentation
+
+     All files under docs/, and README.md, README.ja.md,
+     CONTRIBUTING.md, CONTRIBUTING.ja.md, SECURITY.md, SECURITY.ja.md,
+     PILLARS.md, PILLARS.ja.md, custom/README.md and
+     custom/README.ja.md.
+
+     Alternative license: Creative Commons Attribution 4.0
+     International <https://creativecommons.org/licenses/by/4.0/legalcode>.
+     Attribute as "Dixlase documentation, (C) exc-D inc. and Dixlase
+     contributors", with a link to the original where practical.
+
+     Code examples shown inside these documentation files may, in
+     addition, be used under CC0 1.0, so that they can be copied into
+     plugins, themes and other projects without attribution.
+
+This part does not apply to:
+
+  - LICENSE, LICENSE-COMMERCIAL, LICENSE-EXCEPTIONS, CLA,
+    COPYRIGHT-POLICY, TRADEMARK-POLICY and PLUGIN-API, including their
+    Japanese versions;
+  - source code, configuration, translation files or any other file
+    not listed above, even where such a file is quoted in, or
+    generated together with, a file listed above.
+
+Neither alternative license grants any right to the trade names,
+trademarks, service marks or product names of exc-D inc. or Dixlase.
+Their use remains governed by TRADEMARK-POLICY.
+
+To the extent that a right cannot be waived under applicable law
+(such as moral rights of authors), the copyright holders will not
+exercise that right against uses permitted by this part.

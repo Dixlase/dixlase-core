@@ -2,7 +2,7 @@
 
     DIXLASE プラグイン・テーマ例外条項
 
-    バージョン 1.1, 2026
+    バージョン 1.2, 2026
 
     Copyright (C) 2026 exc-D inc. <https://exc-d.com>
 
@@ -112,3 +112,56 @@ AGPL 第 13 条に関する本例外の適用範囲の画定および著作権�
 
 Dixlase コアを変更して再配布する場合、この例外を削除することを選択
 できます。例外を削除しない場合、この例外は変更されたバージョンにも適用されます。
+
+=======================================================================
+
+    第 2 部 — 文書および AI アシスタント向け指示ファイルの代替ライセンス
+
+=======================================================================
+
+Dixlase の著作権者は、Dixlase とともに配布される以下のファイルを、
+それぞれの区分に記載するライセンスでも提供します。これは GNU Affero
+General Public License に代わる選択肢として提供するものであり、利用者は
+それぞれのファイルを、いずれかのライセンスを選んで使用、改変および配布
+できます。本部は第 1 部の追加的許可とは別のものであり、第 1 部を変更
+しません。
+
+  1. AI アシスタント向けの指示ファイル
+
+     すべてのディレクトリの CLAUDE.md および CLAUDE.ja.md、ならびに
+     .github/copilot-instructions.md。
+
+     代替ライセンス: クリエイティブ・コモンズ CC0 1.0 全世界
+     <https://creativecommons.org/publicdomain/zero/1.0/legalcode>
+
+  2. 利用者向けの文書
+
+     docs/ 以下のすべてのファイル、ならびに README.md、README.ja.md、
+     CONTRIBUTING.md、CONTRIBUTING.ja.md、SECURITY.md、SECURITY.ja.md、
+     PILLARS.md、PILLARS.ja.md、custom/README.md および
+     custom/README.ja.md。
+
+     代替ライセンス: クリエイティブ・コモンズ 表示 4.0 国際
+     <https://creativecommons.org/licenses/by/4.0/legalcode>
+     表示は「Dixlase documentation, (C) exc-D inc. and Dixlase
+     contributors」とし、可能な場合は元の文書へのリンクを添えてください。
+
+     これらの文書の中に示すコードの例は、プラグイン、テーマその他の
+     プロジェクトに表示なしで取り入れられるよう、CC0 1.0 でも使用
+     できます。
+
+本部は、次のものには適用されません。
+
+  - LICENSE、LICENSE-COMMERCIAL、LICENSE-EXCEPTIONS、CLA、
+    COPYRIGHT-POLICY、TRADEMARK-POLICY および PLUGIN-API(それぞれの
+    日本語版を含みます)
+  - 上記に掲げていないソースコード、設定、翻訳ファイルその他のファイル。
+    上記のファイルの中で引用されている場合や、上記のファイルと一緒に
+    生成される場合も同様です。
+
+いずれの代替ライセンスも、exc-D inc. または Dixlase の商号、商標、
+サービスマークまたは製品名についての権利を与えるものではありません。
+これらの使用は、引き続き TRADEMARK-POLICY に従います。
+
+適用される法の下で放棄できない権利(著作者人格権など)がある場合、
+著作権者は、本部で認められる利用に対してその権利を行使しません。

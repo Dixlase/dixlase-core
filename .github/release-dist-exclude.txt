@@ -18,6 +18,15 @@
 .windsurf/
 .vscode.example/
 
+# AI assistant instruction files. Operators do not need them, and
+# dls:claude:setup regenerates them in a development checkout. They are
+# also offered under CC0 1.0 (LICENSE-EXCEPTIONS, Part 2).
+CLAUDE.md
+CLAUDE.ja.md
+
+# ----- Internal working notes -----
+resources/src/_csp-build-dryrun/
+
 # ----- Tests + dev tooling -----
 tests/
 phpunit.xml

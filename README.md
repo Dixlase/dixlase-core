@@ -165,6 +165,8 @@ A short overview of how these files fit together is in [NOTICE](./NOTICE) ([日�
 
 ### Plugins and Themes
 
+The documentation is also available under CC BY 4.0 (code examples under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md` and similar) under CC0 1.0 — see Part 2 of [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS).
+
 Plugins and themes that interact with Dixlase CMS exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS) for the full terms.
 
 ### Source Code Availability (AGPL §13)
