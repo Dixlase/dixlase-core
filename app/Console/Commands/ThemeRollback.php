@@ -194,8 +194,11 @@ class ThemeRollback extends Command
         }
 
         $backupBatch = (int) ($backupMeta['max_batch'] ?? 0);
-        $currentBatch = $this->currentThemeMigrationBatch($themeSlug);
-        $stepsBack = max(0, $currentBatch - $backupBatch);
+        // --step counts migration files, not batches: an update that added
+        // two migrations put both in one batch, and passing the batch delta
+        // (1) reversed only the newer one (dixlase-core#455). Count the
+        // ledger rows above the backup's batch instead.
+        $stepsBack = $this->themeMigrationsSinceBatch($themeSlug, $backupBatch);
 
         if ($stepsBack === 0) {
             $this->line('No schema rollback needed — backup was taken at the current migration batch.');
@@ -211,23 +214,21 @@ class ThemeRollback extends Command
     }
 
     /**
-     * Highest applied migration batch for this theme, or 0 when the
-     * theme_migrations table is missing or the theme has no rows.
+     * Ledger rows for this theme in the batches after $batch, or 0 when the
+     * ledger cannot be read.
      */
-    private function currentThemeMigrationBatch(?string $slug): int
+    private function themeMigrationsSinceBatch(?string $slug, int $batch): int
     {
         if ($slug === null || $slug === '') {
             return 0;
         }
 
         try {
-            $repository = new ThemeMigrationRepository(
+            return (new ThemeMigrationRepository(
                 app(ConnectionResolverInterface::class),
                 'theme_migrations',
                 $slug,
-            );
-
-            return $repository->getLastBatchNumber();
+            ))->countSinceBatch($batch);
         } catch (\Throwable) {
             return 0;
         }

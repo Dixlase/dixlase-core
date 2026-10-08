@@ -55,6 +55,7 @@ use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
+use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
@@ -97,6 +98,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
         // Detect uninstalled plugins first (to gather slugs for batch query)
         $uninstalledPlugins = $this->getUninstalledPlugins();
+
+        // A download older than its source's latest release is marked on its
+        // card and in the install confirmation (dixlase-core#456).
+        $freshness = app(ExtensionDownloadFreshness::class);
+        foreach ($uninstalledPlugins as $i => $entry) {
+            $uninstalledPlugins[$i]['stale_latest_version'] = $freshness->newerRelease('plugin', (string) ($entry['directory'] ?? ''), $entry['slug'] ?? null, $entry['version'] ?? null);
+        }
 
         // Demo mode: restrict the plugin manager to a curated allowlist so that
         // internal / infrastructure plugins (deploy, dev tooling, the demo

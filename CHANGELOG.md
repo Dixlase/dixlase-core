@@ -32,6 +32,53 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-10-08
+
+### License
+- The user documentation is also available under Creative Commons Attribution 4.0 (code
+  examples in it also under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md`
+  and similar) under CC0 1.0, as alternatives to the AGPL. The covered files are listed in
+  the new Part 2 of `LICENSE-EXCEPTIONS` (version 1.2). Legal and policy documents, source
+  code and configuration stay under their current terms. `COPYRIGHT-POLICY`, `CLA` and the
+  README say so as well (#460)
+
+### Changed
+- The release ZIP no longer contains `CLAUDE.md` / `CLAUDE.ja.md` or the internal notes under
+  `resources/src/_csp-build-dryrun/` (#460)
+
+### Fixed
+- A theme's own admin screens are reachable again. Their routes were registered outside
+  Laravel's `web` group, so `auth:member` saw no session, treated a signed-in operator as a
+  guest and bounced them to the login screen, which sent them on to the dashboard. A theme's
+  front routes had the same gap, latent only because no bundled theme ships a `routes/web.php`
+  (#465)
+
+## [0.1.5] — 2026-10-06
+
+### Fixed
+Closes the gaps in how plugin and theme updates and rollbacks are recorded and undone
+(#457 – #459).
+- Every extension update and rollback writes a version-history row and an audit entry,
+  whichever path ran it: System → Updates, the rollback button on the Plugins and Themes
+  screens, or the CLI. A failed update or rollback is audited as well, and runs started from
+  the admin screens record who started them
+- After an extension or core rollback, the version that was rolled back from is offered as
+  an update again. It used to disappear until the next update check
+- The extension update log (`storage/logs/extension-update.log`) keeps earlier runs instead
+  of being overwritten by the next one
+- An extension rollback undoes every migration the update added. It passed the batch number
+  where a step count was expected, so an update that added several migrations was only
+  partly undone
+
+### Added
+- A plugin or theme that was downloaded but not installed, and is older than the latest
+  release on its source, is flagged in the list, in the install confirmation and by
+  `dls:plugin:install` / `dls:theme:install`. The lookup is cached for 15 minutes
+
+### Documentation
+- `docs/development/plugins/updates-and-rollback.md`: what an extension update and a
+  rollback do, and why update seeders are not undone
+
 ## [0.1.4] — 2026-10-02
 
 ### Security

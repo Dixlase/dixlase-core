@@ -42,6 +42,7 @@ use App\Models\ExtensionSource;
 use App\Models\Plugin;
 use App\Models\Theme;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 
 /**
@@ -527,6 +528,27 @@ class ExtensionSourceManager
         }
 
         return $updates;
+    }
+
+    /**
+     * Version of the latest tagged release of an extension on its linked
+     * source, or null when there is none or it cannot be looked up.
+     *
+     * Cached for the listing TTL (15 minutes by default), including the
+     * "none" answer, so a list that shows several downloaded extensions does
+     * not spend the anonymous GitHub budget on every page view
+     * (dixlase-core#456).
+     */
+    public function latestReleaseVersionFor(string $slug, string $extensionType, int $sourceId): ?string
+    {
+        $key = "extension-source.{$sourceId}.{$extensionType}.{$slug}.latest-release";
+        $ttl = (int) config('extension-sources.github.list_cache_ttl', 900);
+
+        $version = Cache::remember($key, $ttl, function () use ($slug, $extensionType, $sourceId) {
+            return $this->getLatestReleaseForExtension($slug, $extensionType, $sourceId)->version ?? '';
+        });
+
+        return is_string($version) && $version !== '' ? $version : null;
     }
 
     /**

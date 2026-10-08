@@ -40,6 +40,7 @@ use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
+use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Licensing\LicenseCompatibilityChecker;
@@ -198,6 +199,14 @@ class PluginInstall extends Command
             $packageName,
             $composerName,
         );
+
+        // A download older than its source's latest release is still
+        // installed (the operator may want exactly this version), but not
+        // silently (dixlase-core#456).
+        $newer = app(ExtensionDownloadFreshness::class)->newerRelease('plugin', $pluginName, $slug, $version);
+        if ($newer !== null) {
+            $this->warn("v{$newer} of '{$slug}' has been released; this download is v{$version}. To install the latest, delete it and download it again.");
+        }
 
         // Register in database. The query builder's updateOrInsert() writes
         // no timestamps, which left created_at NULL on every installed

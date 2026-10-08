@@ -91,6 +91,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </span>
                 <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
+        @elseif(! $card['isInstalled'] && ($card['staleLatestVersion'] ?? null))
+            {{-- Downloaded copy is older than the source's latest release (#456) --}}
+            <div class="mb-2 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-800 dark:text-amber-200">
+                <span class="flex items-start gap-1.5">
+                    <i class="fas fa-triangle-exclamation mt-0.5 shrink-0"></i>
+                    {{ __('admin/settings/plugins/index.stale_download', ['latest' => $card['staleLatestVersion'], 'version' => $card['version']]) }}
+                </span>
+            </div>
         @endif
 
         {{-- Most recent update failure (details in tooltip) --}}
