@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-10-08
+
 ### License
 - The user documentation is also available under Creative Commons Attribution 4.0 (code
   examples in it also under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md`
