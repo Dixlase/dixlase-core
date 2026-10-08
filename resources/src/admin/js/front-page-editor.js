@@ -218,25 +218,72 @@ function createFrontPageCreate(config) {
             }
         },
 
-        // --- textarea自動リサイズ ---
+        // --- textarea auto-resize with manual override ---
+        //
+        // Two heights are in play on these textareas:
+        //   1. Auto-grow on input — fits the field to its content
+        //      between MIN_HEIGHT and MAX_HEIGHT_VH * viewport.
+        //   2. Manual drag — the operator can override the auto
+        //      height by dragging the vertical resize handle. Once
+        //      they do, we stop touching the height so their size
+        //      sticks for the rest of the session.
+        //
+        // A ResizeObserver watches the textarea and flips a one-way
+        // manuallyResized flag whenever the observed height drifts
+        // from the most recent auto-set height beyond a small
+        // tolerance (sub-pixel rounding noise). After that flip, the
+        // input handler skips its height write.
         initAutoResizeTextareas() {
             const MIN_HEIGHT = 150;
             const MAX_HEIGHT_VH = 0.6;
+            const TOLERANCE_PX = 2;
             ['content', 'custom_css', 'custom_js'].forEach((id) => {
                 const textarea = document.getElementById(id);
                 if (!textarea) return;
                 textarea.style.overflow = 'hidden';
-                textarea.style.resize = 'none';
+                textarea.style.resize = 'vertical';
                 textarea.style.minHeight = MIN_HEIGHT + 'px';
-                const resize = () => {
+
+                let manuallyResized = false;
+                let lastAutoHeight = 0;
+
+                const autoResize = () => {
+                    if (manuallyResized) return;
                     textarea.style.height = 'auto';
                     const maxH = Math.max(MIN_HEIGHT, window.innerHeight * MAX_HEIGHT_VH);
                     const h = Math.min(Math.max(textarea.scrollHeight, MIN_HEIGHT), maxH);
                     textarea.style.height = h + 'px';
                     textarea.style.overflow = h >= maxH ? 'auto' : 'hidden';
+                    lastAutoHeight = h;
                 };
-                textarea.addEventListener('input', resize);
-                resize();
+
+                // Compare border-box heights: style.height (what autoResize
+                // writes) is border-box, while contentRect excludes padding
+                // and border and would always differ by ~18px. A height of
+                // 0 means the field sits in a hidden tab; refit it once it
+                // becomes visible instead of reading that as a drag.
+                let hidden = false;
+                const observer = new ResizeObserver((entries) => {
+                    if (manuallyResized) return;
+                    const entry = entries[0];
+                    const currentHeight = entry.borderBoxSize?.[0]?.blockSize ?? textarea.offsetHeight;
+                    if (currentHeight === 0) {
+                        hidden = true;
+                        return;
+                    }
+                    if (hidden) {
+                        hidden = false;
+                        autoResize();
+                        return;
+                    }
+                    if (Math.abs(currentHeight - lastAutoHeight) < TOLERANCE_PX) return;
+                    manuallyResized = true;
+                    textarea.style.overflow = 'auto';
+                });
+                observer.observe(textarea);
+
+                textarea.addEventListener('input', autoResize);
+                autoResize();
             });
         },
     });

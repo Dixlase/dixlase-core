@@ -143,7 +143,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="old('custom_css', '')"
                             rows="6"
                             :placeholder="__('admin/front.create.custom_css_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                             data-auto-resize
                         />
                         <x-form-error name="custom_css" />
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :value="old('custom_js', '')"
                             rows="6"
                             :placeholder="__('admin/front.create.custom_js_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500 !overflow-hidden !resize-none"
+                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
                             data-auto-resize
                         />
                         <x-form-error name="custom_js" />
