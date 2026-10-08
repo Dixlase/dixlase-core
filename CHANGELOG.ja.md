@@ -43,6 +43,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 - リリースの ZIP に `CLAUDE.md` / `CLAUDE.ja.md` と `resources/src/_csp-build-dryrun/` の内部の
   作業メモを入れないようにした(#460)
 
+### 修正
+- テーマが持つ管理画面にまた入れるようになった。ルートが Laravel の `web` グループの外で登録
+  されていたため `auth:member` がセッションを見られず、ログイン済みの運用者を来訪者として扱って
+  ログイン画面へ送り、そこからダッシュボードへ飛ばしていた。テーマのフロント側のルートにも同じ
+  抜けがあったが、同梱のテーマが `routes/web.php` を持たないため表に出ていなかった(#465)
+
 ## [0.1.5] — 2026-10-06
 
 ### 修正
