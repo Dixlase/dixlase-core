@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.7] — 2026-10-08
+
 ### Fixed
 - In the front-page editor, a textarea resized by hand keeps its size, and the CSS and JS
   fields show the resize handle. Auto-grow still fits a field to its content until the
