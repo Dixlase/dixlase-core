@@ -71,12 +71,13 @@ use Illuminate\Support\Facades\DB;
  *
  * ## Audit responsibility
  *
- * Actions are the canonical audit producer for the operations they own.
- * If a model touched inside {@see handle()} also uses {@see \App\Traits\AuditableTrait},
- * the trait will fire its own log entry on save, producing a duplicate. Wrap such
- * saves with `$model->withoutAudit(fn () => $model->save())` so the action's
- * richer business-level entry is the single source of truth. See
- * `docs/development/action-layer.md` for the full convention.
+ * Actions are the only audit producer in Dixlase. Anything that should leave an
+ * `audit_logs` row goes through an action, or through a shared service an action
+ * calls — there is no model-level mechanism. {@see \App\Traits\AuditableTrait} used
+ * to offer one; it is deprecated, unused, and will be removed in v0.2.0. Until it is
+ * gone, a model that still uses it and is touched inside {@see handle()} writes a
+ * second row, so wrap such saves with `$model->withoutAudit(fn () => $model->save())`.
+ * See `docs/development/action-layer.md`.
  */
 abstract class AbstractAction implements ActionInterface
 {

@@ -87,58 +87,47 @@ core introduces new reserved keys.
 Callers should treat all metadata keys as optional and absence as "no
 information available" rather than "no change".
 
-## AuditableTrait vs Action audit responsibility
+## Where auditing happens
 
-Both layers can produce `audit_logs` rows. To avoid duplicates, follow a
-single rule:
+> **Actions are the only audit producer.** Anything that should leave an
+> `audit_logs` row goes through an action, or through a shared service an
+> action calls.
 
-> **Actions own the audit log for the operations they wrap.**
-> When a model touched inside `handle()` also uses
-> `App\Traits\AuditableTrait`, suppress the trait's automatic logging.
+The operation — not the table write — is the unit that gets audited, and an
+action is where an operation lives. `AbstractAction::execute()` calls
+`audit()` after `handle()` succeeds, so an action that returns a successful
+`ActionResult` has already written its row; the metadata in that result
+(`before` / `after` / `diff`) is what the entry carries.
 
-The trait fires `audit_logs` entries on model lifecycle events
-(`created` / `updated` / `deleted`) via `bootAuditableTrait()`. The action's
-`audit()` method writes a richer business-level entry afterwards. Without
-suppression you get two rows for one operation, with overlapping context.
+### Why there is only one way
 
-### Pattern
+`App\Traits\AuditableTrait` offered a second, model-level mechanism: it wrote
+a row from `created` / `updated` / `deleted`. **It is deprecated and will be
+removed in v0.2.0.** Nothing in core, the official plugins or the themes ever
+used it, so it read as a promise the codebase did not keep — a reader who
+found it reasonably concluded that model writes are audited automatically.
+
+Adopting it instead would not have been cheaper: a model touched both inside
+and outside an action produces two rows for one operation, which is why the
+old convention needed a `withoutAudit()` call and a responsibility table. One
+answer is cheaper to follow than two.
+
+### What to do instead
+
+| If you want to audit … | Do … |
+|---|---|
+| an operation a user or an operator performs | put it in an `AbstractAction` subclass; `audit()` writes the row |
+| something a job or a command does | give it an action too, or call the `Audit` facade from the service the command invokes |
+| a write deep inside a service | have the action that owns the operation describe it, not the service |
+
+If a model in your plugin still uses the deprecated trait and is also touched
+inside `handle()`, wrap the save so only the action's entry survives:
 
 ```php
-protected function handle(Actor $actor, array $data): ActionResult
-{
-    $page = DixlasePagesPage::query()->findOrFail($data['page_id']);
-
-    // Suppress AuditableTrait's automatic entry; AbstractAction::audit()
-    // will write the canonical business-level entry afterwards.
-    $page->withoutAudit(function () use ($page, $data) {
-        $page->update(['status' => PageStatus::Published->value]);
-    });
-
-    return ActionResult::success($page, 'Page published', $page->title, [
-        'before' => ['status' => PageStatus::Draft->value],
-        'after'  => ['status' => PageStatus::Published->value],
-        'diff'   => ['status' => ['from' => 'draft', 'to' => 'published']],
-    ]);
-}
+$page->withoutAudit(fn () => $page->update([
+    'status' => PageStatus::Published->value,
+]));
 ```
-
-`withoutAudit()` is part of the trait's public API. It is safe to call from
-plugins.
-
-### When AuditableTrait alone is correct
-
-If a model is mutated outside any Action (legacy controller code, queued
-jobs that write directly, plugin-internal background tasks), AuditableTrait
-remains the right tool — it captures changes that would otherwise go
-unrecorded.
-
-### Choosing between the two strategies for a new model
-
-| If the model is touched … | Use … |
-|---|---|
-| only inside Actions | AbstractAction's `audit()`; **do not** add AuditableTrait. |
-| both inside and outside Actions | AuditableTrait + `withoutAudit()` inside `handle()`. |
-| only outside Actions | AuditableTrait alone. |
 
 ## Plugin API surface
 
@@ -148,7 +137,7 @@ The following Action-layer symbols are `@api` (Plugin API):
 - `App\DTO\Action\ActionResult`
 - `App\Contracts\Action\ActionInterface`
 - `App\Contracts\Action\Actor`
-- `App\Traits\AuditableTrait`
+- `App\Traits\AuditableTrait` — **deprecated**, removed in v0.2.0
 
 Implementation classes (`App\Services\Audit\*`, `App\Models\AuditLog`,
 `App\Facades\Audit`, etc.) are not part of the Plugin API; use the contracts

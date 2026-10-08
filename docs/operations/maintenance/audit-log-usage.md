@@ -119,74 +119,36 @@ class MyPluginServiceProvider extends ServiceProvider
 }
 ```
 
-## Using AuditableTrait
+## Model-level auditing is deprecated
 
-Automatically record model creation, updates, and deletions in the audit log.
+`App\Traits\AuditableTrait` wrote an audit entry from a model's `created` /
+`updated` / `deleted` events. **It is deprecated and will be removed in v0.2.0.**
+Nothing in core, the official plugins or the themes uses it.
 
-### Basic Usage
+Audit the **operation** instead of the table write: put it in an
+`App\Actions\AbstractAction` subclass and let `audit()` write the row, or call the
+`Audit` facade from the service an action invokes.
 
 ```php
-use App\Traits\AuditableTrait;
-
-class Post extends Model
+final class PublishPostAction extends AbstractAction
 {
-    use AuditableTrait;
+    protected function handle(Actor $actor, array $data): ActionResult
+    {
+        $post = Post::query()->findOrFail($data['post_id']);
+        $post->update(['status' => 'published']);
+
+        // AbstractAction::audit() writes the entry from this result.
+        return ActionResult::success($post, 'Post published', $post->title, [
+            'diff' => ['status' => ['from' => 'draft', 'to' => 'published']],
+        ]);
+    }
 }
 ```
 
-### Customization
-
-```php
-class Post extends Model
-{
-    use AuditableTrait;
-
-    // Columns excluded from auditing
-    protected array $auditExclude = ['updated_at', 'view_count'];
-
-    // Columns to audit (when specified, only these are recorded)
-    protected array $auditInclude = ['title', 'status', 'content'];
-
-    // Specify the category
-    protected string $auditCategory = 'content';
-
-    // Specify the plugin name
-    protected ?string $auditPluginName = 'dixlase-blog';
-
-    // Custom action names
-    protected array $auditActions = [
-        'created' => 'post_created',
-        'updated' => 'post_updated',
-        'deleted' => 'post_deleted',
-    ];
-
-    // Custom messages
-    protected array $auditMessages = [
-        'created' => 'Post was created',
-        'updated' => 'Post was updated',
-        'deleted' => 'Post was deleted',
-    ];
-
-    // Attribute to use as the label
-    protected string $auditLabelAttribute = 'title';
-
-    // Severity per event
-    protected array $auditSeverities = [
-        'created' => 'info',
-        'updated' => 'info',
-        'deleted' => 'warning',
-    ];
-}
-```
-
-### Temporarily Disabling Auditing
-
-```php
-$post->withoutAudit(function ($post) {
-    $post->view_count++;
-    $post->save();
-});
-```
+See [Action Layer](../../development/action-layer.md) for the full lifecycle. If a
+model in your plugin still uses the trait and is also touched inside an action, wrap
+the save with `$model->withoutAudit(...)` so only the action's entry survives; the
+trait's remaining options are documented in its own source file.
 
 ## Logging Settings Changes
 

@@ -85,55 +85,46 @@ final class PublishPageAction extends AbstractAction
 呼び出し側は、すべてのメタデータキーをオプショナルとして扱い、不在は「情報なし」
 であって「変更なし」ではないと解釈すること。
 
-## AuditableTrait と Action 監査責務の使い分け
+## 監査はどこで書くか
 
-両方のレイヤーが `audit_logs` 行を生成し得る。重複を避けるためのルールは 1 つ:
+> **監査ログを書くのは Action だけ。**`audit_logs` に行を残すべきものは、
+> Action を通すか、Action が呼ぶ共有サービスを通す。
 
-> **Action は、それがラップする操作の監査ログを所有する。**
-> `handle()` 内で触る Eloquent モデルが
-> `App\Traits\AuditableTrait` を使う場合、トレイトの自動ログ出力は抑制する。
+監査の単位はテーブルへの書き込みではなく**操作**であり、操作が置かれる場所が
+Action である。`AbstractAction::execute()` は `handle()` の成功後に `audit()` を
+呼ぶので、成功した `ActionResult` を返した Action は既に行を書いている。その
+`ActionResult` のメタデータ（`before` / `after` / `diff`）が、そのままエントリの
+内容になる。
 
-トレイトは `bootAuditableTrait()` でモデルのライフサイクルイベント
-（`created` / `updated` / `deleted`）から `audit_logs` 行を発火する。
-Action の `audit()` メソッドはその後でより業務情報を載せたエントリを書き込む。
-抑制しないと、1 つの操作に対し文脈が重複する 2 行が生成される。
+### やり方が 1 つだけである理由
 
-### 推奨パターン
+`App\Traits\AuditableTrait` は、モデル層にもう 1 つの仕組みを提供していた
+（`created` / `updated` / `deleted` から行を書く）。**これは非推奨で、v0.2.0 で
+削除する。**コア・公式プラグイン・テーマのどこからも一度も使われておらず、
+コードベースが守っていない約束として読めてしまっていた — このトレイトを見つけた
+読み手は「モデルへの書き込みは自動で監査される」と考えるのが自然だが、そうは
+なっていない。
+
+かわりに全面採用しても安くはならない。Action の内と外の両方で触られるモデルは、
+1 つの操作に対して 2 行を書いてしまう。だからこそ旧来の規約には `withoutAudit()`
+の手当てと責務の表が必要だった。守る側にとって、答えは 2 つより 1 つのほうが安い。
+
+### ではどう書くか
+
+| 監査したいもの | やること |
+|---|---|
+| 利用者や運営者が行う操作 | `AbstractAction` のサブクラスに置く。`audit()` が行を書く |
+| ジョブやコマンドが行うこと | そこにも Action を用意する。または、コマンドが呼ぶサービスから `Audit` ファサードを呼ぶ |
+| サービスの奥にある書き込み | サービスではなく、その操作を所有する Action に説明させる |
+
+プラグインのモデルが非推奨のトレイトを使ったままで、かつ `handle()` の中でも
+触られる場合は、Action のエントリだけが残るように保存を包む:
 
 ```php
-protected function handle(Actor $actor, array $data): ActionResult
-{
-    $page = DixlasePagesPage::query()->findOrFail($data['page_id']);
-
-    // AuditableTrait の自動エントリを抑制。後段で AbstractAction::audit()
-    // が業務レベルの正本エントリを書き込む。
-    $page->withoutAudit(function () use ($page, $data) {
-        $page->update(['status' => PageStatus::Published->value]);
-    });
-
-    return ActionResult::success($page, 'Page published', $page->title, [
-        'before' => ['status' => PageStatus::Draft->value],
-        'after'  => ['status' => PageStatus::Published->value],
-        'diff'   => ['status' => ['from' => 'draft', 'to' => 'published']],
-    ]);
-}
+$page->withoutAudit(fn () => $page->update([
+    'status' => PageStatus::Published->value,
+]));
 ```
-
-`withoutAudit()` はトレイトの公開 API なので、プラグインから呼んで安全。
-
-### AuditableTrait 単独で正しいケース
-
-モデルが Action の外側で変更される場合（レガシーなコントローラ、直接書き込む
-キュージョブ、プラグイン内部のバックグラウンドタスクなど）は、AuditableTrait
-がそのまま正しい選択。記録漏れを防ぐ。
-
-### 新規モデルでの選び方
-
-| モデルが触られる場所 | 採用する戦略 |
-|---|---|
-| Action の中だけ | AbstractAction の `audit()`。AuditableTrait は付けない。 |
-| Action の中と外の両方 | AuditableTrait + `handle()` 内で `withoutAudit()`。 |
-| Action の外だけ | AuditableTrait 単独。 |
 
 ## Plugin API サーフェス
 
@@ -143,7 +134,7 @@ protected function handle(Actor $actor, array $data): ActionResult
 - `App\DTO\Action\ActionResult`
 - `App\Contracts\Action\ActionInterface`
 - `App\Contracts\Action\Actor`
-- `App\Traits\AuditableTrait`
+- `App\Traits\AuditableTrait` — **非推奨**、v0.2.0 で削除
 
 実装クラス（`App\Services\Audit\*`、`App\Models\AuditLog`、`App\Facades\Audit`
 など）は Plugin API ではない。上記のコントラクトを使うこと。
