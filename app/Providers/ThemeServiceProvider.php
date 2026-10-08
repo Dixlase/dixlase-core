@@ -275,10 +275,13 @@ class ThemeServiceProvider extends ServiceProvider
 
         $themePath = base_path("themes/{$activeTheme->directory}");
 
-        // Load web routes
+        // Load web routes. The `web` group is what makes a session, a CSRF
+        // token and `$errors` available, so a theme's front routes need it for
+        // the same reason core's own do (bootstrap/app.php wraps every file in
+        // `withRouting(web: [...])`). Matches PluginServiceProvider.
         $webRoutePath = "{$themePath}/routes/web.php";
         if (File::exists($webRoutePath)) {
-            include $webRoutePath;
+            \Route::middleware('web')->group($webRoutePath);
         }
 
         // Load admin routes within the admin route group
@@ -287,9 +290,18 @@ class ThemeServiceProvider extends ServiceProvider
             // Get admin URL from helper
             $adminUrl = \App\Helpers\AdminHelper::getAdminUrl();
 
-            // Load admin routes within the secure admin group
+            // Load admin routes within the secure admin group.
+            //
+            // `web` has to lead the stack: without StartSession and
+            // EncryptCookies the `auth:member` below sees no session, treats
+            // every request as a guest and redirects, which made a theme's
+            // settings screen unreachable. It also brings
+            // ShareErrorsFromSession (the FormRequest redirect's `$errors`)
+            // and PreventRequestForgery. This is the same stack core's own
+            // admin routes get and the one PluginServiceProvider applies to a
+            // plugin's admin routes.
             \Route::prefix($adminUrl)->name('admin.')
-                ->middleware(['admin.ip', 'admin.no-cache'])
+                ->middleware(['web', 'admin.ip', 'admin.no-cache'])
                 ->group(function () use ($adminRoutePath) {
                     // A theme's admin screens are its settings, so the whole
                     // group is gated on the core `settings.themes.settings`

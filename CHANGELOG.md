@@ -44,6 +44,13 @@ repository to be notified of changes.
 - The release ZIP no longer contains `CLAUDE.md` / `CLAUDE.ja.md` or the internal notes under
   `resources/src/_csp-build-dryrun/` (#460)
 
+### Fixed
+- A theme's own admin screens are reachable again. Their routes were registered outside
+  Laravel's `web` group, so `auth:member` saw no session, treated a signed-in operator as a
+  guest and bounced them to the login screen, which sent them on to the dashboard. A theme's
+  front routes had the same gap, latent only because no bundled theme ships a `routes/web.php`
+  (#465)
+
 ## [0.1.5] — 2026-10-06
 
 ### Fixed
