@@ -225,9 +225,25 @@ function createSplitPaneEditor(config) {
                     lastAutoHeight = h;
                 };
 
+                // Compare border-box heights: style.height (what autoResize
+                // writes) is border-box, while contentRect excludes padding
+                // and border and would always differ by ~18px. A height of
+                // 0 means the field sits in a hidden tab; refit it once it
+                // becomes visible instead of reading that as a drag.
+                let hidden = false;
                 const observer = new ResizeObserver((entries) => {
                     if (manuallyResized) return;
-                    const currentHeight = entries[0].contentRect.height;
+                    const entry = entries[0];
+                    const currentHeight = entry.borderBoxSize?.[0]?.blockSize ?? textarea.offsetHeight;
+                    if (currentHeight === 0) {
+                        hidden = true;
+                        return;
+                    }
+                    if (hidden) {
+                        hidden = false;
+                        autoResize();
+                        return;
+                    }
                     if (Math.abs(currentHeight - lastAutoHeight) < TOLERANCE_PX) return;
                     manuallyResized = true;
                     textarea.style.overflow = 'auto';
