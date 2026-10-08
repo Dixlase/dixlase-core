@@ -32,6 +32,8 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-10-08
+
 ### ライセンス
 - 利用者向けの文書をクリエイティブ・コモンズ 表示 4.0(文書の中のコードの例は CC0 1.0)でも、
   AI アシスタント向けの指示ファイル(`CLAUDE.md` など)を CC0 1.0 でも、AGPL に代わる選択肢と
