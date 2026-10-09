@@ -35,6 +35,7 @@
 
 return [
     'description' => 'テーマをデータベースにインストールします',
+    'stale_download' => '\':slug\' の v:latest が公開されています(ダウンロード済みのものは v:version)。最新を入れるには、削除してからダウンロードし直してください。',
     'theme_name_prompt' => 'インストールするテーマ名',
     'theme_not_found' => 'テーマ \':themeName\' はテーマディレクトリに存在しません。',
     'already_registered' => 'テーマ \':themeName\' は既にデータベースに登録されています。',

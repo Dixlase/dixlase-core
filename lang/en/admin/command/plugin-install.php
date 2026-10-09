@@ -35,6 +35,7 @@
 
 return [
     'description' => 'Install the plugin, register it in the database, run migrations, and update autoload.',
+    'stale_download' => 'v:latest of \':slug\' has been released; this download is v:version. To install the latest, delete it and download it again.',
     'installed' => 'Plugin :pluginName has been installed.',
     'migrating' => 'Running migrations...',
     'seeding' => 'Running database seeders...',

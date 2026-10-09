@@ -32,6 +32,12 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- `dls:plugin:install` and `dls:theme:install` print the stale-download warning in the
+  active locale. It was a literal English sentence, so in a Japanese run it was the one
+  English line — and the one line that asks the operator to decide whether to install the
+  older copy. The admin panel had the message translated all along (#487)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in

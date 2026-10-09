@@ -35,6 +35,7 @@
 
 return [
     'description' => 'Install a theme into the database',
+    'stale_download' => 'v:latest of \':slug\' has been released; this download is v:version. To install the latest, delete it and download it again.',
     'theme_name_prompt' => 'The name of the theme to install',
     'theme_not_found' => 'Theme \':themeName\' does not exist in the themes directory.',
     'already_registered' => 'Theme \':themeName\' is already registered in the database.',
