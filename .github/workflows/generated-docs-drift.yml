@@ -50,10 +50,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# GitHub OAuth token for composer to clone private dependencies.
-env:
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
-
 jobs:
   drift-check:
     name: Regenerate and compare
