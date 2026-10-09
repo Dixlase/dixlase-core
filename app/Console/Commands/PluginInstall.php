@@ -205,7 +205,11 @@ class PluginInstall extends Command
         // silently (dixlase-core#456).
         $newer = app(ExtensionDownloadFreshness::class)->newerRelease('plugin', $pluginName, $slug, $version);
         if ($newer !== null) {
-            $this->warn("v{$newer} of '{$slug}' has been released; this download is v{$version}. To install the latest, delete it and download it again.");
+            $this->warn(__('admin/command/plugin-install.stale_download', [
+                'latest' => $newer,
+                'slug' => $slug,
+                'version' => $version,
+            ]));
         }
 
         // Register in database. The query builder's updateOrInsert() writes

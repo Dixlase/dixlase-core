@@ -32,6 +32,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 修正
+- `dls:plugin:install` と `dls:theme:install` が、「ダウンロードが古い」警告を現在の
+  ロケールで出すようにした。英語のリテラルだったため、日本語の実行ログの中で唯一の英語の行に
+  なっていた — しかもそれは、古いものをそのまま入れるかどうかを操作する人に判断させる行
+  だった。管理画面では以前から翻訳されていた(#487)
+
 ### Plugin API — 非推奨
 - `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの
   `created` / `updated` / `deleted` から監査ログを書くものだったが、コア・公式プラグイン・
