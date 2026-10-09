@@ -32,6 +32,16 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Plugin API — Deprecated
+- `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
+  audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
+  core, the official plugins or the themes ever used it — so two mechanisms appeared to
+  audit a change while only one was wired up. Auditing goes through the Action layer:
+  put the operation in an `App\Actions\AbstractAction` subclass and let `audit()` write
+  the row, or call the `Audit` facade from a service an action invokes. A model that uses
+  the trait and is also touched inside an action should wrap the save with
+  `$model->withoutAudit(...)` until the trait is gone (#477)
+
 ## [0.1.7] — 2026-10-08
 
 ### Fixed

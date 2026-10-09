@@ -119,74 +119,37 @@ class MyPluginServiceProvider extends ServiceProvider
 }
 ```
 
-## AuditableTrait の使用
+## モデル層の自動監査は非推奨
 
-モデルの作成・更新・削除を自動的に監査ログに記録できます。
+`App\Traits\AuditableTrait` は、モデルの `created` / `updated` / `deleted` から
+監査ログを書く仕組みでした。**これは非推奨で、v0.2.0 で削除します。**コア・
+公式プラグイン・テーマのどこからも使われていません。
 
-### 基本的な使い方
+テーブルへの書き込みではなく**操作**を監査してください。`App\Actions\AbstractAction`
+のサブクラスに置いて `audit()` に行を書かせるか、Action が呼ぶサービスから `Audit`
+ファサードを呼びます。
 
 ```php
-use App\Traits\AuditableTrait;
-
-class Post extends Model
+final class PublishPostAction extends AbstractAction
 {
-    use AuditableTrait;
+    protected function handle(Actor $actor, array $data): ActionResult
+    {
+        $post = Post::query()->findOrFail($data['post_id']);
+        $post->update(['status' => 'published']);
+
+        // この ActionResult から AbstractAction::audit() がエントリを書く。
+        return ActionResult::success($post, 'Post published', $post->title, [
+            'diff' => ['status' => ['from' => 'draft', 'to' => 'published']],
+        ]);
+    }
 }
 ```
 
-### カスタマイズ
-
-```php
-class Post extends Model
-{
-    use AuditableTrait;
-    
-    // 監査対象外のカラム
-    protected array $auditExclude = ['updated_at', 'view_count'];
-    
-    // 監査対象のカラム（指定した場合、これらのみ記録）
-    protected array $auditInclude = ['title', 'status', 'content'];
-    
-    // カテゴリを指定
-    protected string $auditCategory = 'content';
-    
-    // プラグイン名を指定
-    protected ?string $auditPluginName = 'dixlase-blog';
-    
-    // カスタムアクション名
-    protected array $auditActions = [
-        'created' => 'post_created',
-        'updated' => 'post_updated',
-        'deleted' => 'post_deleted',
-    ];
-    
-    // カスタムメッセージ
-    protected array $auditMessages = [
-        'created' => '記事が作成されました',
-        'updated' => '記事が更新されました',
-        'deleted' => '記事が削除されました',
-    ];
-    
-    // ラベルに使用する属性
-    protected string $auditLabelAttribute = 'title';
-    
-    // イベントごとの重要度
-    protected array $auditSeverities = [
-        'created' => 'info',
-        'updated' => 'info',
-        'deleted' => 'warning',
-    ];
-}
-```
-
-### 一時的に監査を無効化
-
-```php
-$post->withoutAudit(function ($post) {
-    $post->view_count++;
-    $post->save();
-});
-```
+ライフサイクルの全体は [Action レイヤー](../../development/action-layer.md) を
+参照してください。プラグインのモデルがまだトレイトを使っており、かつ Action の
+中でも触られる場合は、`$model->withoutAudit(...)` で保存を包み、Action の
+エントリだけを残します。トレイトに残っている設定項目は、トレイト自身の
+ソースファイルに書いてあります。
 
 ## 設定変更のログ
 

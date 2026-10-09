@@ -32,6 +32,15 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### Plugin API — 非推奨
+- `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの
+  `created` / `updated` / `deleted` から監査ログを書くものだったが、コア・公式プラグイン・
+  テーマのどこからも一度も使われていなかった — 変更を監査する仕組みが 2 つあるように見えて、
+  実在するのは片方だけだった。監査は Action 層を通す — 操作を `App\Actions\AbstractAction` の
+  サブクラスに置いて `audit()` に行を書かせるか、Action が呼ぶサービスから `Audit`
+  ファサードを呼ぶ。トレイトを使っていて、かつ Action の中でも触られるモデルは、削除までの間
+  `$model->withoutAudit(...)` で保存を包むこと(#477)
+
 ## [0.1.7] — 2026-10-08
 
 ### 修正

@@ -43,6 +43,13 @@ use App\Models\AuditLog;
 /**
  * Trait for automatic audit logging of models
  *
+ * @deprecated Auditing goes through the Action layer. This trait is unused in core, in
+ *             the official plugins and in the themes, and will be removed in v0.2.0 (see
+ *             CHANGELOG.md, "Plugin API"). Put the operation in an
+ *             {@see \App\Actions\AbstractAction} subclass and let its `audit()` write the
+ *             row, or call the {@see \App\Facades\Audit} facade from a service an action
+ *             invokes. See docs/development/action-layer.md.
+ *
  * Automatically records audit logs when models are created, updated, or deleted
  *
  * Usage example:
@@ -65,13 +72,18 @@ use App\Models\AuditLog;
  * }
  * ```
  *
- * ## Coexistence with the Action layer
+ * ## Why this is deprecated
  *
- * If a model that uses this trait is also touched inside an `App\Actions\AbstractAction`
- * subclass, the trait and the action both write `audit_logs` rows, producing a
- * duplicate. The convention is that the action owns the audit log; suppress the
- * trait inside the action by wrapping the save with `$model->withoutAudit(...)`.
- * See `docs/development/action-layer.md` for the full responsibility table.
+ * Two mechanisms appeared to audit a change, and only one of them was ever wired up.
+ * A reader who found this trait reasonably concluded that model writes are audited
+ * automatically; they are not, because no model uses it. Rather than adopt it
+ * everywhere and have to reconcile duplicate rows with each action's own entry, the
+ * project consolidated on one answer: the operation is the unit that gets audited,
+ * and an Action is where an operation lives.
+ *
+ * While the trait is still present, a model that uses it and is also touched inside
+ * an action produces two rows for one operation. Wrap the save with
+ * `$model->withoutAudit(...)` so the action's richer entry is the only one.
  */
 trait AuditableTrait
 {
