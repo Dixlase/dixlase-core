@@ -42,6 +42,7 @@ return [
     'api_version_incompatible' => 'Plugin declares Extension API :declared but core supports :supported.',
     'api_constraint_malformed' => 'requires.dixlase_api is not a valid semver constraint.',
     'csp_violation_detected' => 'CSP violation detected (:cspMode mode)',
+    'dangerous_api_declared' => 'Declared dangerous API in use: :permission',
     'dangerous_api_detected' => 'Dangerous API detected: :permission',
     'direct_upload_to_public_dir' => 'Uploads directly to public directory.',
     'inline_css_required_strict_mode' => 'Inline CSS is required. May not work in strict mode.',

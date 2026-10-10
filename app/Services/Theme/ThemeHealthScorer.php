@@ -42,6 +42,7 @@ use App\Enums\ExtensionSecurityLevel;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Models\ThemeAudit;
+use App\Services\Extension\DeclaredDangerousApiUsage;
 use App\Services\Extension\ExtensionCompatibilityChecker;
 use App\Services\Extension\ExtensionEnableActionResolver;
 use Illuminate\Support\Facades\File;
@@ -301,7 +302,28 @@ class ThemeHealthScorer
         $issues = [];
         $audit = ThemeAudit::getBySlug($themeSlug);
 
-        if ($audit === null || empty($audit->mismatches)) {
+        if ($audit === null) {
+            return $issues;
+        }
+
+        // Dangerous APIs that are declared and in use. The declaration keeps
+        // them out of the critical path, but every call still counts.
+        $declaredInUse = DeclaredDangerousApiUsage::resolve(
+            $this->permissionService->getPermissions($themeSlug),
+            $audit->mismatches,
+            'theme',
+        );
+
+        foreach ($declaredInUse as $permission) {
+            $issues[] = new HealthIssue(
+                type: 'dangerous_api_declared',
+                severity: 'warning',
+                description: __('services/theme/theme_health_scorer.dangerous_api_declared', ['permission' => $permission]),
+                deduction: $deductionRules['dangerous_api_declared'] ?? -12,
+            );
+        }
+
+        if (empty($audit->mismatches)) {
             return $issues;
         }
 

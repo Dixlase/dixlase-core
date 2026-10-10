@@ -37,6 +37,7 @@ return [
     'audit_scan_not_executed' => '監査スキャンが未実行です。',
     'audit_scan_not_run' => '監査スキャンが実行されていません。',
     'csp_violation_detected' => 'CSP違反が検出されました（:cspModeモード）。',
+    'dangerous_api_declared' => '宣言済みの危険なAPIを使用しています: :permission',
     'dangerous_api_detected' => '危険なAPIが検出されました: :permission',
     'inline_css_strict_mode_warning' => 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',
     'inline_js_strict_mode_error' => 'インラインJavaScriptが必要です。厳格モードでは動作しません。',
