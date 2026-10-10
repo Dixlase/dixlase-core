@@ -48,6 +48,19 @@ use Symfony\Component\Process\Process;
 class ComposerLocalHelper
 {
     /**
+     * The recovery one-liner to print when syncAutoload() fails.
+     *
+     * Its composer half must stay identical to what regenerateAutoload()
+     * runs. `--optimize` is not a performance flag here: an extension whose
+     * directory name differs in case from the namespace its files declare
+     * resolves only through the optimized classmap, so advising a dump
+     * without it breaks the very extension the advice was meant to rescue
+     * (#488). The flag is load-bearing until the directory name is derived
+     * from the manifest everywhere.
+     */
+    public const RECOVERY_COMMAND = 'php scripts/sync-local-autoload.php && composer dump-autoload --optimize --no-scripts';
+
+    /**
      * Path to composer.local.json file
      */
     protected static function getComposerLocalPath(): string

@@ -402,7 +402,7 @@ class CoreUpdater
                     // logs if Composer is unavailable).
                     $log('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
                     if (! ComposerLocalHelper::syncAutoload()) {
-                        $log('WARNING: extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                        $log('WARNING: extension autoload re-sync failed; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if theme/plugin pages error.');
                     }
 
                     // The swap also leaves bootstrap/cache/packages.php describing
