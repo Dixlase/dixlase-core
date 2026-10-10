@@ -118,10 +118,10 @@ The following layers are combined to reduce plugin risk:
 1. **Capability declarations** — every plugin must declare its required permissions in `plugin.json` (`database`, `storage`, `settings`, `members`, `mail`, `content`, `system`).
 2. **Static analysis** — at install / scan time, Dixlase compares declared permissions against actual code patterns (e.g. `DangerousApiPattern`, `DatabaseDetectionPattern`) and detects undeclared usage and dangerous-API calls (`exec`, `eval`, etc.).
 3. **Signature verification** — Ed25519-based verification of plugin authenticity through `SignatureVerifierInterface`.
-4. **Health scoring** — every plugin receives a 0–100 score derived from signature, declared-permission consistency, CSP compliance, and dangerous-API detection. Activation policy is gated by score and critical-issue flags (`Allowed` / `Warning` / `Acknowledge` / `Blocked`).
+4. **Health scoring** — every plugin receives a 0–100 score derived from signature, declared-permission consistency, CSP compliance, and dangerous-API detection. Enabling is **Blocked** only when the extension security preset requires a signature and the plugin has no verified signature, or when its health status is above the preset's maximum; otherwise the score decides between `Allowed`, `Warning` and `Acknowledge`. Themes are scored and gated the same way.
 5. **Distribution-source provenance** — official sources are declared and may be cryptographically signed; plugin downloads pass through `ExtensionSourceManager`.
 6. **Convention-based separation** — namespaces (`Plugins\<Name>\*`) and table prefixes (`dls_plg_{slug}_*`) keep plugin code and data identifiable; core tables are read-only by convention.
-7. **Operational kill switches** — `BlockPluginRoutes` middleware and the per-site activation table allow operators to disable plugins at the edge without uninstalling them.
+7. **Operational controls** — the per-site activation table lets operators disable a plugin without uninstalling it. Plugin safe mode (`?safe=plugins`, `BlockPluginRoutes`) is a recovery aid, not a kill switch: for the operator's session it blocks routes served by plugin controllers, while plugin service providers still load.
 
 ### What Dixlase does NOT provide
 
@@ -133,7 +133,7 @@ We want to be unambiguous about the gaps so that operators do not over-trust the
 - **No CPU / memory quotas** on plugin code execution.
 - **Capability checks run at a handful of core call sites**, not at a global interceptor. Today that is the plugin-capability resolver and the privacy export / erase paths; `PluginPermissionService::enforce()` itself is not yet called anywhere.
 - **Declared permissions are inputs to scanning and scoring, not runtime switches.** A plugin that does not declare `system.register_commands` still gets its Artisan commands registered; the mismatch lowers the health score instead of blocking the registration.
-- **The health score gates install and enable, not execution.** Once a plugin is enabled, nothing re-evaluates it per request.
+- **The health score gates install, enable, theme switch and update, not execution.** Once a plugin is enabled, nothing re-evaluates it per request.
 
 These limitations are inherent to single-process PHP CMSs and apply equally to WordPress, Drupal, and other Laravel-based CMSs. They are not unique gaps in Dixlase.
 

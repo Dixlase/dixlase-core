@@ -55,6 +55,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\ComposerLocalHelper;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -335,13 +336,19 @@ class AppUninstall extends Command
 
             $this->info(__('console/commands/app_uninstall.basic_cache_cleared'));
 
-            // Regenerate Composer autoload
+            // Regenerate Composer autoload. Through ComposerLocalHelper, not
+            // a bare shell_exec: that form dropped --optimize (an extension
+            // whose directory name differs in case from its declared
+            // namespace resolves only through the optimized classmap, #488)
+            // and bypassed the composer/PHP binary resolution every other
+            // call site goes through -- see ComposerLocalHelper::composerCommand().
             $this->info(__('console/commands/app_uninstall.regenerating_composer_autoload'));
-            $composerResult = shell_exec('composer dump-autoload 2>&1');
-            if ($composerResult !== null) {
+            if (ComposerLocalHelper::syncAutoload()) {
                 $this->info(__('console/commands/app_uninstall.composer_autoload_regenerated'));
             } else {
-                $this->warn(__('console/commands/app_uninstall.composer_autoload_skipped_not_found'));
+                $this->warn(__('console/commands/app_uninstall.composer_autoload_regenerate_failed', [
+                    'command' => ComposerLocalHelper::RECOVERY_COMMAND,
+                ]));
             }
 
             // ⚠️ Do not run config:cache during uninstall

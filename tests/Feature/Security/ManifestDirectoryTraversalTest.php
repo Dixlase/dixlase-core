@@ -37,6 +37,7 @@ namespace Tests\Feature\Security;
 
 use App\Http\Controllers\Admin\Settings\AdminPluginsSettingsController;
 use App\Http\Controllers\Admin\Settings\AdminThemesSettingsController;
+use App\Support\ExtensionDirectoryName;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionMethod;
@@ -62,28 +63,45 @@ use Tests\TestCase;
  */
 class ManifestDirectoryTraversalTest extends TestCase
 {
+    /**
+     * The guard used to be duplicated on each admin controller. It now lives
+     * in one place, reached by the admin upload and "add from source" pages
+     * and by dls:plugin:download, so asserting it here covers the CLI too
+     * (#488).
+     */
     private function resolvePluginDir(array $manifest): ?string
     {
-        // Built without the constructor: directory-name resolution is pure
-        // string handling and touches none of the controller's dependencies.
-        $controller = (new ReflectionClass(AdminPluginsSettingsController::class))
-            ->newInstanceWithoutConstructor();
-
-        $method = new ReflectionMethod($controller, 'resolvePluginDirectoryName');
-        $method->setAccessible(true);
-
-        return $method->invoke($controller, $manifest);
+        return ExtensionDirectoryName::fromManifest($manifest, ExtensionDirectoryName::KIND_PLUGIN);
     }
 
     private function resolveThemeDir(array $manifest): ?string
     {
-        $controller = (new ReflectionClass(AdminThemesSettingsController::class))
-            ->newInstanceWithoutConstructor();
+        return ExtensionDirectoryName::fromManifest($manifest, ExtensionDirectoryName::KIND_THEME);
+    }
 
-        $method = new ReflectionMethod($controller, 'resolveThemeDirectoryName');
-        $method->setAccessible(true);
+    /**
+     * The controllers must keep reaching the shared guard rather than growing
+     * their own copy back: that is how the two implementations drifted into
+     * existence in the first place.
+     */
+    public function test_both_admin_controllers_route_through_the_shared_guard(): void
+    {
+        foreach ([AdminPluginsSettingsController::class, AdminThemesSettingsController::class] as $controller) {
+            $source = (string) file_get_contents(
+                (new ReflectionClass($controller))->getFileName() ?: ''
+            );
 
-        return $method->invoke($controller, $manifest);
+            $this->assertStringContainsString(
+                'ExtensionDirectoryName::fromManifest(',
+                $source,
+                $controller.' must take the install destination from the shared resolver.'
+            );
+            $this->assertStringNotContainsString(
+                'protected function sanitise',
+                $source,
+                $controller.' must not carry its own copy of the path-segment guard.'
+            );
+        }
     }
 
     /**

@@ -156,7 +156,7 @@ class BackupRestoreCommand extends Command
                     // admin/settings pages 500 after a --refetch-vendor restore.
                     // Non-fatal.
                     if (! ComposerLocalHelper::syncAutoload()) {
-                        $this->warn('[vendor] Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                        $this->warn('[vendor] Extension autoload re-sync failed; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if theme/plugin pages error.');
                     }
 
                     // Same as core update / rollback: rebuild the discovery

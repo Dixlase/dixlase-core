@@ -106,67 +106,110 @@ Source: `PluginHealthScorer` using `PluginHealthStatus::getDeductionRules()`
 | 70 – 89     | `Advisory`       | Warning        |
 | 0 – 69      | `NeedsAttention` | Needs Attention|
 
+An extension that has never been scanned is not scored: its status is `NotVerified`.
+
 ### Enable Action Determination
 
-| Score Range   | Action Required          |
-|---------------|--------------------------|
-| 90+           | Allowed (no warning)     |
-| 70 – 89       | Warning dialog required  |
-| Below 70      | Acknowledgement required |
-| Critical issue| Acknowledgement required |
+Source: `ExtensionEnableActionResolver`. The checks run in this order:
+
+1. **Blocked** when the active preset requires a signature and the extension does not carry a verified signature (unsigned, invalid, expired, unknown key, verification error or pending verification all fail).
+2. **Blocked** when the health status is above the maximum status the preset allows for that extension type (see the table below). Statuses rank `Healthy` < `Advisory` < `NeedsAttention` < `NotVerified`.
+3. Otherwise the score decides:
+
+| Result                       | Action                   |
+|------------------------------|--------------------------|
+| 90+                          | Allowed (no warning)     |
+| 70 – 89                      | Warning dialog required  |
+| Below 70, or a critical issue| Acknowledgement required |
+
+| Preset              | Signature required | Max status (plugins) | Max status (themes) |
+|---------------------|--------------------|----------------------|---------------------|
+| Strict              | Yes                | `Healthy`            | `Healthy`           |
+| Balanced (default)  | No                 | `Advisory`           | `NeedsAttention`    |
+| Development         | Never              | No limit             | No limit            |
+| Custom              | As configured      | As configured (default `Advisory`) | As configured (default `Advisory`) |
+
+Under the default Balanced preset, a plugin whose status is `NeedsAttention` (score below 70 or a critical issue) or `NotVerified` is therefore Blocked, while a theme in `NeedsAttention` needs acknowledgement.
+
+The gate runs when an extension is installed or enabled in the admin panel, when a theme is switched in the admin panel, and in the update commands (`dls:plugin:update` / `dls:theme:update`), which put the previous version back if the new one scans as Blocked.
 
 ### Deduction Rules
 
+Rule keys are the issue types `PluginHealthScorer` emits. Themes are scored by `ThemeHealthScorer` with the same table and a subset of the checks.
+
 #### Signature
 
-| Rule Key               | Deduction | Description                                  |
-|------------------------|-----------|----------------------------------------------|
-| `signature.unsigned`   | -5        | Plugin is not signed                         |
-| `signature.unsigned_production` | -15 | Unsigned in production environment         |
-| `signature.invalid`    | **-50**   | Signature is invalid (possible tampering)    |
-| `signature.mismatch`   | **-50**   | Signature doesn't match files                |
+| Rule Key                         | Deduction | Description                                  |
+|----------------------------------|-----------|----------------------------------------------|
+| `signature_unsigned`             | -10       | Not signed                                   |
+| `signature_invalid`              | **-50**   | Signature does not verify (files changed or wrong key) — critical |
+| `signature_pending_verification` | -5        | Signature present but could not be verified yet |
+| `signature_unknown_key`          | -15       | Signed with a key core does not know         |
+| `signature_expired`              | -20       | Signature has expired                        |
+| `signature_error`                | -10       | Verification failed with an error            |
 
 #### Permissions
 
 | Rule Key                        | Deduction | Description                                    |
 |---------------------------------|-----------|------------------------------------------------|
-| `permissions.undeclared_minor`  | -5        | Minor undeclared permission usage              |
-| `permissions.undeclared_major`  | **-15**   | Major undeclared permission usage              |
-| `permissions.unused`            | -2        | Permission declared but not used in code       |
-| `permissions.undefined`         | -10       | No permission definition in JSON               |
+| `permission_undeclared_minor`   | -5        | Code uses a permission that is not declared    |
+| `permission_undeclared_major`   | **-15**   | Same, for a high-risk permission (`database.core_tables_write`, `members.write`, `members.delete`, `system.modify_routes`) — critical |
+| `permission_unused`             | -2        | Permission declared but not found in code (not applied to `_optional` permissions) |
+| `permission_undefined`          | -10       | No `permissions` section in the manifest       |
+
+#### Declared high-risk permissions (plugins)
+
+| Rule Key                          | Deduction | Description                                   |
+|-----------------------------------|-----------|-----------------------------------------------|
+| `risk_public_uploads_own_dir`     | -2        | `storage.public_uploads` with `storage.own_directory` |
+| `risk_public_uploads_no_own_dir`  | -4        | `storage.public_uploads` without `storage.own_directory` |
+| `risk_members_delete`             | -4        | `members.delete` declared                     |
+| `risk_mail_bulk_send`             | -3        | `mail.bulk_send` declared                     |
 
 #### CSP (Content Security Policy)
 
 | Rule Key                       | Deduction | Description                                    |
 |--------------------------------|-----------|------------------------------------------------|
-| `csp.violation_dev`            | 0         | CSP violation (development only)               |
-| `csp.violation_standard`       | -5        | CSP violation in standard mode                 |
-| `csp.violation_strict`         | -15       | CSP violation in strict mode                   |
-| `csp.inline_js_required`       | -10       | Requires inline JavaScript                     |
-| `csp.inline_css_required`      | -5        | Requires inline CSS                            |
-| `csp.external_resources`       | -3        | Uses external resources                        |
+| `csp_inline_js_required`       | -10       | Requires inline JavaScript                     |
+| `csp_inline_css_required`      | -5        | Requires inline CSS                            |
+| `csp_violation_standard`       | -5        | Needs inline code while the CSP mode is standard |
+| `csp_violation_strict`         | -15       | Needs inline code while the CSP mode is strict |
+
+In development CSP mode no violation deduction is applied.
 
 #### Scan Freshness
 
 | Rule Key               | Deduction | Description                                    |
 |------------------------|-----------|------------------------------------------------|
-| `scan.outdated`        | -5        | Scan is older than 30 days                     |
-| `scan.not_performed`   | -10       | No scan has been performed                     |
+| `scan_outdated`        | -5        | Last scan is more than 30 days old             |
+| `scan_not_performed`   | -10       | No scan has been performed                     |
 
 #### Dangerous APIs
 
-| Rule Key                    | Deduction | Description                                |
-|-----------------------------|-----------|---------------------------------------------|
-| `dangerous_api.exec`        | **-30**   | Uses process execution functions (exec, shell_exec, etc.) |
-| `dangerous_api.env_access`  | -20       | Direct environment variable access          |
+| Rule Key               | Deduction | Description                                    |
+|------------------------|-----------|------------------------------------------------|
+| `dangerous_api_exec`   | **-30**   | A dangerous API was detected, such as process execution (`exec`, `shell_exec`, ...) or direct `env()` access — critical |
 
-#### File Scope
+#### Extension API Version (`requires.dixlase_api`)
 
-| Rule Key                | Deduction | Description                                    |
-|-------------------------|-----------|------------------------------------------------|
-| `file.outside_scope`    | -20       | File operations outside plugin directory       |
+| Rule Key                   | Deduction | Description                                  |
+|----------------------------|-----------|----------------------------------------------|
+| `missing_api_version`      | -5        | No API version constraint declared           |
+| `incompatible_api_version` | -15       | Constraint does not match this core          |
+| `malformed_api_constraint` | -10       | Constraint cannot be parsed                  |
 
-#### Supply-Chain Metadata
+#### License (plugins)
+
+| Rule Key               | Deduction | Description                                    |
+|------------------------|-----------|------------------------------------------------|
+| `missing_license`      | -10       | No `license` field                             |
+| `invalid_license_spdx` | -5        | Not a valid SPDX identifier                    |
+| `unknown_license`      | -3        | Not in the accepted-licenses table             |
+| `license_refused`      | **-25**   | On the refused list — critical                 |
+
+These values can be overridden per deployment in `config/licensing.php` (`health_deductions`).
+
+#### Supply-Chain Metadata (plugins)
 
 | Rule Key                       | Deduction | Description                                                          |
 |--------------------------------|-----------|----------------------------------------------------------------------|
@@ -181,14 +224,14 @@ there is no canonical prior owner to compare against.
 
 ### Critical Issues
 
-The following issues immediately set the health status to `NeedsAttention` regardless of score:
+The following issues set the health status to `NeedsAttention` regardless of score:
 
 | Critical Issue Key              | Description                        |
 |---------------------------------|------------------------------------|
 | `signature_invalid`             | Signature verification failed      |
-| `signature_mismatch`            | Signature doesn't match files      |
-| `dangerous_api_exec`            | Uses process execution functions   |
-| `permission_undeclared_major`   | Major undeclared permission usage  |
+| `dangerous_api_exec`            | A dangerous API was detected       |
+| `permission_undeclared_major`   | Undeclared high-risk permission    |
+| `license_refused`               | License is on the refused list     |
 
 ---
 
@@ -196,6 +239,8 @@ The following issues immediately set the health status to `NeedsAttention` regar
 
 ```
 ┌─────────────────────────────┐
+│  Not scanned → NotVerified  │
+├─────────────────────────────┤
 │  Base Score: 100            │
 ├─────────────────────────────┤
 │  1. Signature Verification  │  → Deductions applied
@@ -203,6 +248,10 @@ The following issues immediately set the health status to `NeedsAttention` regar
 │  3. CSP Compliance          │  → Deductions applied
 │  4. Dangerous API Detection │  → Deductions applied
 │  5. Scan Freshness          │  → Deductions applied
+│  6. Declared Risk Perms     │  → Deductions applied
+│  7. Supply-Chain Metadata   │  → Deductions applied
+│  8. License                 │  → Deductions applied
+│  9. API Version             │  → Deductions applied
 ├─────────────────────────────┤
 │  Final Score = max(0, total)│
 │  + Critical Issue Check     │
@@ -215,6 +264,8 @@ The following issues immediately set the health status to `NeedsAttention` regar
 |------|-------------|
 | `app/Services/Plugin/PluginHealthScorer.php` | Health score calculation |
 | `app/Enums/PluginHealthStatus.php` | Status thresholds and deduction rules |
+| `app/Services/Extension/ExtensionEnableActionResolver.php` | Enable action (Allowed / Warning / Acknowledge / Blocked) |
+| `app/Enums/ExtensionSecurityPreset.php` | Preset defaults (signature requirement, max status) |
 | `app/Services/Plugin/PluginPermissionService.php` | Plugin risk scoring |
 | `app/Services/Theme/ThemePermissionService.php` | Theme risk scoring |
 | `app/Contracts/Plugin/PluginPermissionServiceInterface.php` | Service contract |
