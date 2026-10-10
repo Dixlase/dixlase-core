@@ -51,7 +51,18 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   サイトでだけ応答するようにした。web ルートは `web` だけ、古い API のファイルはミドル
   ウェア無しで読み込んでいたため、マルチサイトで 1 つのサイトだけで有効にしたプラグインが
   すべてのサイトで応答していた。有効でないプラグインの web ルートはサイトの HTML の 404 を、
-  古い API のルートは 404 JSON を返す(#494)
+  古い API のルートは 404 JSON を返す。新しいマイグレーションが、プライマリサイトの行を
+  持たない有効なプラグインに有効な行を足し(既存の行は変えない)、有効な状態で作られた
+  プラグインにも行が書かれるようにしたので、既存のサイトのプラグインのルートはそのまま
+  使える(#494)
+
+### Plugin API — 変更
+- `CspPolicyRegistry::addDirective()` と `addDirectives()`、および `CspPolicyProvider` が
+  返すディレクティブは、サイトのポリシーを弱める値(`'unsafe-inline'`、`'unsafe-eval'`、
+  `*` だけ、script-src の `data:`、`frame-ancestors` などのディレクティブ…)を足さずに
+  捨てるようになった。捨てた値はログに書き、新しい `CspPolicyRegistry::getRejected()` で
+  返す。これらに頼っていた拡張機能は、具体的なホストから読み込むか、運営者に CSP の設定で
+  許可してもらう必要がある(#494)
 
 ### Plugin API — 非推奨
 - `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの

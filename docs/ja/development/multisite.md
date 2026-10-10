@@ -37,7 +37,7 @@ public function connection(): \Illuminate\Database\ConnectionInterface;
 
 シングルトンとしてバインド済み。`App\Http\Middleware\ResolveSiteContext` がリクエスト開始時に解決する。プラグインからは `App\Facades\SiteContext` ファサード経由か、interface を DI で注入して使う。
 
-コアは、プラグインが足すすべてのルートを `App\Http\Middleware\EnsurePluginActiveOnSite` で、解決したサイトの `isPluginActive()` によって確かめる。`routes/api/v1.php` と非推奨の `routes/api.php` は 404 JSON を、`routes/web.php` はサイトの HTML の 404 ページを返す。全体では有効でも現在のサイトで有効でないプラグインは、そのサイトでフロントのルートを一切出さない(#494)。プライマリサイトの有効化の行は、`plugin:enable` か管理画面でプラグインを有効にしたときに書かれる(`Plugin` モデルの `saved()` フック)。
+コアは、プラグインが足すすべてのルートを `App\Http\Middleware\EnsurePluginActiveOnSite` で、解決したサイトの `isPluginActive()` によって確かめる。`routes/api/v1.php` と非推奨の `routes/api.php` は 404 JSON を、`routes/web.php` はサイトの HTML の 404 ページを返す。全体では有効でも現在のサイトで有効でないプラグインは、そのサイトでフロントのルートを一切出さない(#494)。プライマリサイトの有効化の行は、`plugin:enable` か管理画面でプラグインを有効にしたときに書かれる(`Plugin` モデルの `saved()` フック。有効な状態で作られたときも)。既存のサイトで行を持たない有効なプラグインには、マイグレーション `0001_01_01_000053_backfill_primary_site_plugin_activations` が行を足す(既存の行は変えない)。
 
 ```php
 use App\Facades\SiteContext;

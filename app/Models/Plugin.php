@@ -51,7 +51,8 @@ class Plugin extends Model
 
     /**
      * Boot hook: keep site_plugin_activations in sync with the legacy
-     * enabled_at flag for v0.1.0. When the activation table is missing
+     * enabled_at flag for v0.1.0, on enable/disable and when a plugin is
+     * created already enabled. When the activation table is missing
      * (during installation) or the primary site has not been seeded yet,
      * the sync is silently skipped. v2 admin UIs will manage activation
      * rows directly per-site.
@@ -59,7 +60,11 @@ class Plugin extends Model
     protected static function booted(): void
     {
         static::saved(function (Plugin $plugin): void {
-            if (! $plugin->wasChanged('enabled_at')) {
+            // wasChanged() is false on insert, so a plugin created already
+            // enabled would otherwise get no activation row (#494).
+            $createdEnabled = $plugin->wasRecentlyCreated && $plugin->enabled_at !== null;
+
+            if (! $createdEnabled && ! $plugin->wasChanged('enabled_at')) {
                 return;
             }
             self::syncPrimarySiteActivation($plugin);
