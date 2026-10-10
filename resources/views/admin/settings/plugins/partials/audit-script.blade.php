@@ -86,6 +86,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'csp_violation_strict' => __('admin/settings/plugins/index.permissions.health_issue_csp_violation_strict'),
             'csp_violation_standard' => __('admin/settings/plugins/index.permissions.health_issue_csp_violation_standard'),
             'dangerous_api_exec' => __('admin/settings/plugins/index.permissions.health_issue_dangerous_api_exec'),
+            'dangerous_api_declared' => __('admin/settings/plugins/index.permissions.health_issue_dangerous_api_declared'),
             'scan_not_performed' => __('admin/settings/plugins/index.permissions.health_issue_scan_not_performed'),
             'scan_outdated' => __('admin/settings/plugins/index.permissions.health_issue_scan_outdated'),
         ],

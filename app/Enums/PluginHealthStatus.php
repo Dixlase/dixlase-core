@@ -243,6 +243,12 @@ enum PluginHealthStatus: string
             // Dangerous API
             'dangerous_api_exec' => -30,
             'dangerous_api_env_access' => -20,
+
+            // Declared in the manifest and detected in the code. Not critical,
+            // but large enough that an otherwise perfect extension (100) drops
+            // below the Healthy threshold (90): it lands in Advisory, which the
+            // Balanced preset still allows and the Strict preset does not.
+            'dangerous_api_declared' => -12,
         ];
     }
 
