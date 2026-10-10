@@ -32,6 +32,16 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Security
+- `dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
+  health and signature check as the admin panel, so a security preset means the same thing
+  on the command line. They scan an extension that has no current scan result, refuse one
+  that resolves to Blocked, and ask for `--force` before enabling one the admin panel would
+  ask the operator to confirm. `dls:plugin:install` without `--enable` refuses a Blocked
+  plugin under a scan-required preset, like the admin panel's install button. The
+  Development preset stays unrestricted. Until now the CLI enabled whatever was on disk —
+  under Strict, an unsigned plugin the admin panel refused (#492)
+
 ### Fixed
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an

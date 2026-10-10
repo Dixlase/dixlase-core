@@ -260,7 +260,7 @@ class PluginLifecycleTest extends TestCase
             ->andReturn(0);
         Artisan::shouldReceive('output')->andReturn('{}');
         Artisan::shouldReceive('call')
-            ->with('dls:plugin:enable', ['pluginName' => $meta['name']])
+            ->with('dls:plugin:enable', ['pluginName' => $meta['name'], '--force' => true])
             ->once()
             ->andReturnUsing(function ($cmd, $opts) use ($meta) {
                 Plugin::where('name', $meta['name'])->update(['enabled_at' => now()]);

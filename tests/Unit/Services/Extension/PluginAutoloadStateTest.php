@@ -37,7 +37,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Extension;
 
+use App\Enums\ExtensionSecurityPreset;
 use App\Models\Plugin;
+use App\Repositories\SecuritySettingRepository;
 use App\Services\Extension\PluginAutoloadState;
 use App\Services\Tailwind\PluginSourceAggregator;
 use App\Support\ComposerLocalManifest;
@@ -68,6 +70,13 @@ class PluginAutoloadStateTest extends TestCase
 
         $this->root = storage_path('framework/testing/plugin-autoload-'.uniqid('', true));
         mkdir($this->root.'/plugins', 0777, true);
+
+        // These tests are about the autoload map, not the activation gate
+        // dls:plugin:enable gained in #492. The Development preset is the one
+        // the gate leaves alone, so the exit codes below reflect the autoload
+        // outcome rather than a health or signature refusal.
+        app(SecuritySettingRepository::class)
+            ->set('extension_security_preset', ExtensionSecurityPreset::Development->value);
 
         // Keep the commands' side effects off the real tree.
         $aggregator = Mockery::mock(PluginSourceAggregator::class);
