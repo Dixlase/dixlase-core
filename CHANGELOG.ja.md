@@ -52,6 +52,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   なっていた — しかもそれは、古いものをそのまま入れるかどうかを操作する人に判断させる行
   だった。管理画面では以前から翻訳されていた(#487)
 
+- `dls:theme:list` が、インストール済みのテーマをふたたび一覧するようにした。`themes` では
+  なく、有効なテーマの id を持つキーと値の表 `theme_settings` を読んでいたため、テーマが
+  有効になっているサイトでは `Undefined property: stdClass::$name` で止まり、無いサイトでは
+  「テーマなし」と表示していた。各テーマのディレクトリ、バージョン、有効かどうかを表示する
+  (#508)
+
 ### Plugin API — 非推奨
 - `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの
   `created` / `updated` / `deleted` から監査ログを書くものだったが、コア・公式プラグイン・
