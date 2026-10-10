@@ -33,6 +33,20 @@ repository to be notified of changes.
 ## [Unreleased]
 
 ### Fixed
+- `dls:plugin:download --extract` installs into the directory the plugin's own manifest
+  declares, instead of the studly form of its slug. For a plugin whose name carries an
+  acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
+  declares `Plugins\DixlaseSEO` — and the directory name is what `composer.local.json`
+  builds the PSR-4 prefix from. Composer matches a prefix case-sensitively, so the
+  plugin's own classes resolved only through an optimized classmap, and the same release
+  installed from the admin panel produced a different tree. On top of the download path:
+  `dls:plugin:install` records the namespace the manifest declares rather than composing
+  one from the argument; `dls:plugin:lint` reports a directory whose name is not the one
+  its manifest asks for; the recovery command core prints when an autoload sync fails now
+  carries `--optimize`, as does the regeneration `dls:app:uninstall` runs, because
+  without it the advice broke the extension it was meant to rescue. Existing installs
+  still carry the wrong directory name; correcting them needs its own change (#488)
+
 - `dls:plugin:install` and `dls:theme:install` print the stale-download warning in the
   active locale. It was a literal English sentence, so in a Japanese run it was the one
   English line — and the one line that asks the operator to decide whether to install the

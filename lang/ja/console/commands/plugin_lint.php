@@ -42,6 +42,8 @@ return [
     'auto_fix_sync_permissions_declares' => '  <fg=green>✓ auto-fix:</> permissions / declares を同期します（:plugin）',
     'auto_insert_config_defaults' => 'dls:plugin:lint --fix で config の default を自動挿入します',
     'auto_update_permissions' => 'dls:plugin:sync --write で permissions を自動更新できます',
+    'directory_namespace_mismatch' => '  <fg=red>✗ plugins/:directory が plugin.json の宣言する名前空間と一致していません。plugins/:expected であるべきです</>',
+    'directory_namespace_mismatch_hint' => '    composer.local.json の PSR-4 前置きはディレクトリ名から作られ、Composer は前置きを大小文字を区別して照合するため、このプラグイン自身のクラスは最適化済みクラスマップ経由でしか解決しません。ディレクトリを :expected に改名し、plugins の行を更新してから `:command` を実行してください。',
     'health_score_display' => '  <fg=:color>ヘルススコア: :score / 100</>',
     'move_inline_styles_to_css' => 'インラインスタイルを CSS ファイルに移動してください',
     'no_issues_detected' => '  <fg=green>✓ 検出された問題はありません</>',

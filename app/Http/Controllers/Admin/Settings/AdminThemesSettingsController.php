@@ -63,6 +63,7 @@ use App\Services\Theme\ThemePermissionService;
 use App\Support\ComposerLocalManifest;
 use App\Support\ExtensionArchive;
 use App\Support\ExtensionDirectories;
+use App\Support\ExtensionDirectoryName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -1320,7 +1321,15 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return ['success' => false, 'error' => __('admin/settings/themes/add.messages.no_valid_directory')];
             }
 
-            $directoryName = Str::slug($extractedRootDir);
+            // Not Str::slug(): that lowercases the archive's folder name
+            // ('DixlaseOnePage' became 'dixlaseonepage'), so the collision
+            // check below tested a path the extract never writes to, and a
+            // theme.json without package/namespace/package_name landed in a
+            // directory whose name could not be a namespace segment (#488).
+            // extractSingleRoot() writes themes/<archive root>, so that is
+            // the name to carry until theme.json says otherwise.
+            $directoryName = ExtensionDirectoryName::sanitise($extractedRootDir, ExtensionDirectoryName::KIND_THEME)
+                ?? Str::slug($extractedRootDir);
             $destinationPath = $themeDirectory.$directoryName;
 
             if (File::exists($destinationPath)) {
@@ -1347,7 +1356,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             if (File::exists($themeJsonPath)) {
                 try {
                     $themeData = json_decode(File::get($themeJsonPath), true);
-                    $correctDir = $this->resolveThemeDirectoryName($themeData);
+                    $correctDir = ExtensionDirectoryName::fromManifest($themeData, ExtensionDirectoryName::KIND_THEME);
 
                     if ($correctDir) {
                         $directoryName = $correctDir;
@@ -1566,86 +1575,5 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 'error' => $e->getMessage(),
             ]);
         }
-    }
-
-    /**
-     * Determine correct directory name from theme.json contents
-     *
-     * Priority:
-     * 1. Explicit package field (unique mapping between manifest and installation destination)
-     * 2. Final segment of namespace (e.g. Themes\MyTheme → MyTheme)
-     * 3. Last part of package_name
-     * 4. null (keep existing directory name)
-     */
-    protected function resolveThemeDirectoryName(?array $themeData): ?string
-    {
-        if (! is_array($themeData)) {
-            return null;
-        }
-
-        // Prioritize explicit package field first
-        $package = $themeData['package'] ?? null;
-        if (is_string($package) && $package !== '') {
-            return $this->sanitiseThemeDirectoryName($package);
-        }
-
-        // Prioritize final segment of namespace
-        $namespace = $themeData['namespace'] ?? null;
-        if (is_string($namespace) && $namespace !== '') {
-            $parts = explode('\\', trim($namespace, '\\'));
-            $lastSegment = end($parts);
-            if ($lastSegment !== false && $lastSegment !== '') {
-                return $this->sanitiseThemeDirectoryName($lastSegment);
-            }
-        }
-
-        // Fallback: last part of package_name
-        $packageName = $themeData['package_name'] ?? null;
-        if (is_string($packageName) && $packageName !== '') {
-            $parts = explode('/', $packageName);
-            $lastSegment = end($parts);
-            if ($lastSegment !== false && $lastSegment !== '') {
-                return $this->sanitiseThemeDirectoryName($lastSegment);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Constrain a manifest-supplied directory name to a single path segment.
-     *
-     * Same defect and same reasoning as
-     * AdminPluginsSettingsController::sanitisePluginDirectoryName(): the value
-     * comes from the uploaded theme.json and the caller interpolates it into a
-     * base_path()/File::move() destination, so `"package": "../public/shell"`
-     * relocated the extracted tree into the document root -- and it happens at
-     * upload time, before any scan runs.
-     *
-     * Returning null means "keep the directory the archive already used",
-     * which is the safe outcome; rewriting the name would install the theme
-     * somewhere its manifest never asked for.
-     */
-    protected function sanitiseThemeDirectoryName(string $candidate): ?string
-    {
-        $candidate = trim($candidate);
-
-        if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $candidate) !== 1) {
-            Log::warning('Refused a theme directory name that is not a single path segment', [
-                'candidate' => $candidate,
-            ]);
-
-            return null;
-        }
-
-        if (str_contains($candidate, '..')) {
-            Log::warning('Refused a theme directory name containing traversal', [
-                'candidate' => $candidate,
-            ]);
-
-            return null;
-        }
-
-        return $candidate;
     }
 }

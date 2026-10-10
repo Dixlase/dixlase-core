@@ -38,7 +38,7 @@ return [
     'bundled_theme_security_audit_completed' => 'バンドルテーマのセキュリティ監査完了',
     'bundled_theme_security_audit_started' => 'バンドルテーマのセキュリティ監査開始',
     'composer_autoload_sync_completed' => 'Composer オートロード同期完了（vendor/composer/autoload_psr4.php を再生成）',
-    'composer_autoload_sync_failed' => 'Composer オートロード同期に失敗。`composer dump-autoload` を手動実行するまで、バンドル同梱のテーマ／プラグインのヘルパー関数が解決できない可能性があります',
+    'composer_autoload_sync_failed' => 'Composer オートロード同期に失敗。`:command` を手動実行するまで、バンドル同梱のテーマ／プラグインのヘルパー関数が解決できない可能性があります',
     'composer_autoload_sync_started' => 'Composer オートロード同期を開始（テーマ／プラグインの PSR-4 を vendor に永続化）',
     'config_cache_clear_completed' => '設定キャッシュクリア完了',
     'config_cache_clear_started' => '設定キャッシュクリア開始',
