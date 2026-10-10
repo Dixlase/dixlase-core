@@ -36,4 +36,5 @@
 return [
     'description' => 'Enable a plugin by setting its status to 1 and creating necessary symlinks',
     'enabled' => 'Plugin :pluginName has been enabled.',
+    'autoload_failed' => 'Plugin :pluginName was not enabled: the autoloader could not be regenerated to include its files. Run `composer dump-autoload` to check that Composer works, then enable it again.',
 ];
