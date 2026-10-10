@@ -86,7 +86,7 @@ jobs:
             # months, so nothing here may fail quietly.
             DEPLOY_FAILURES=0
 
-            for SITE in brand docs demo authority; do
+            for SITE in brand docs demo; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
 
               # 0. サイトが未セットアップなら skip
@@ -139,35 +139,11 @@ jobs:
               # 3. ストレージディレクトリの復元（git reset で消える場合がある）
               mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
 
-              # 3-b. サイト固有プラグインの clone / 更新
-              # DixlasePublicKeys は authority.dixlase.net 専用 (署名鍵管理プラグイン)。
-              # サイト名は keys から authority に改称済み。旧名のままだとループ側の
-              # skip ガードに吸収されて赤くならず、authority だけが静かに
-              # デプロイされない状態になる (2026-09-24 に発覚)。
-              # リポジトリも plugin-dixlase-authority から plugin-dixlase-public-keys に
-              # 改称済みで、サイトが読み込むディレクトリは plugins/DixlasePublicKeys
-              # (namespace も Plugins\DixlasePublicKeys)。旧名の plugins/DixlaseAuthority に
-              # clone すると同じプラグインが 2 か所に並び、クラスの二重宣言になる。
-              # core の submodule からは外し、各サイトで standalone clone として運用する。
-              # 旧 submodule の残骸が残っているサイトでは git reset --hard が submodule pointer に
-              # 詰まるため、不要なサイトでは丸ごと撤去する。
+              # 3-b. Remove leftovers of the old DixlaseAuthority plugin.
+              # It was renamed to DixlasePublicKeys and dropped from core's
+              # submodules; a copy left under the old name would declare the
+              # same classes twice. authority is not deployed by this workflow.
               case "$SITE" in
-                authority)
-                  PK_DIR=plugins/DixlasePublicKeys
-                  if [ -d "$PK_DIR/.git" ]; then
-                    (cd "$PK_DIR" && git fetch --quiet origin && git reset --hard origin/main)
-                  else
-                    # .git の無い既存コピー (手動配置の名残) は消さずに .plugin-backups/ へ退避する。
-                    # plugins/ の外なので sync-local-autoload.php の走査対象にならない。
-                    if [ -e "$PK_DIR" ]; then
-                      mkdir -p .plugin-backups
-                      mv "$PK_DIR" ".plugin-backups/DixlasePublicKeys.stale.$(date +%Y%m%d-%H%M%S)"
-                    fi
-                    git clone --depth=1 git@github.com:Dixlase/plugin-dixlase-public-keys.git "$PK_DIR"
-                  fi
-                  # 旧名で置かれたコピーが残っていれば撤去する (二重読み込み防止)
-                  rm -rf plugins/DixlaseAuthority
-                  ;;
                 brand|docs|demo)
                   if [ -e plugins/DixlaseAuthority ]; then
                     rm -rf plugins/DixlaseAuthority
