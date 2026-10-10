@@ -70,7 +70,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $description = 'command.plugin_install.description';
+    protected $description = 'Install a plugin: register it in the database, run its migrations and update autoload';
 
     /**
      * Execute the console command.
