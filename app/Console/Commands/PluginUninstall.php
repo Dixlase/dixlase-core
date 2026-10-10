@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\PluginAutoloadState;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -90,7 +91,7 @@ class PluginUninstall extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(PluginAutoloadState $autoloadState)
     {
         $pluginName = $this->argument('pluginName');
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
@@ -163,6 +164,12 @@ class PluginUninstall extends Command
 
         // Clear enabled plugins cache
         PluginServiceProvider::clearEnabledPluginsCache();
+
+        // The files stay on disk, so keep their autoload.files out of the
+        // autoloader until the plugin is installed and enabled again.
+        if (! $autoloadState->withhold($plugin->directory)) {
+            $this->warn(__('admin/command/plugin-uninstall.autoload_pending', ['pluginName' => $pluginName]));
+        }
 
         // Rebuild the Tailwind plugin-source aggregator so the
         // uninstalled plugin's content directories drop out of the

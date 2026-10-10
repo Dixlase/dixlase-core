@@ -55,5 +55,11 @@ $psr4Count = count($manifest['autoload']['psr-4'] ?? []);
 $filesCount = count($manifest['autoload']['files'] ?? []);
 $pluginCount = count(\App\Support\ComposerLocalManifest::detect($baseDir.'/plugins'));
 $themeCount = count(\App\Support\ComposerLocalManifest::detect($baseDir.'/themes'));
+// Plugins that are not enabled, as last recorded by core from the database
+// (this script cannot read it). Their autoload.files are left out.
+$withheldCount = count(array_intersect(
+    \App\Support\ComposerLocalManifest::disabledPlugins($baseDir),
+    \App\Support\ComposerLocalManifest::detect($baseDir.'/plugins')
+));
 
-echo "composer.local.json synced ({$pluginCount} plugins, {$themeCount} themes, {$filesCount} autoload files, {$psr4Count} psr-4 roots)\n";
+echo "composer.local.json synced ({$pluginCount} plugins, {$themeCount} themes, {$filesCount} autoload files, {$psr4Count} psr-4 roots, {$withheldCount} disabled plugins' files withheld)\n";

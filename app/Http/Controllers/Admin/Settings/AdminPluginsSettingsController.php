@@ -982,10 +982,15 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
             }
 
-            // Activate using command
-            Artisan::call('dls:plugin:enable', [
+            // Activate using command. It refuses when the autoloader cannot
+            // be regenerated to include the plugin's files, and says why.
+            $exitCode = Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
             ]);
+
+            if ($exitCode !== 0) {
+                return back()->with('error', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.failed')).': '.trim(Artisan::output()));
+            }
 
             // Notification and logging of extension operations
             $permissionService = app(PluginPermissionService::class);

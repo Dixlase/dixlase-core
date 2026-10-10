@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\PluginAutoloadState;
 use Illuminate\Console\Command;
 
 class PluginEnable extends Command
@@ -60,7 +61,7 @@ class PluginEnable extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(PluginAutoloadState $autoloadState)
     {
         $pluginName = $this->argument('pluginName');
 
@@ -69,6 +70,15 @@ class PluginEnable extends Command
 
         if (! $plugin) {
             $this->error(__('admin/command/plugin-disable.not_found', ['pluginName' => $pluginName]));
+
+            return 1;
+        }
+
+        // Put the plugin's autoload.files back into the autoloader before
+        // the plugin is marked enabled: from the next request on its
+        // ServiceProvider boots, and the helpers it calls must exist by then.
+        if (! $autoloadState->allow($plugin->directory)) {
+            $this->error(__('admin/command/plugin-enable.autoload_failed', ['pluginName' => $pluginName]));
 
             return 1;
         }
