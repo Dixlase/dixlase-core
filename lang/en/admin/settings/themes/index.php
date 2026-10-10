@@ -40,6 +40,7 @@ return [
     'update_available' => 'v:version available',
     'stale_download' => 'v:latest has been released; this download is v:version. Delete it and add the extension again before installing.',
     'update_failed_at' => 'Update failed at :date',
+    'csp_rejected_sources' => 'CSP sources this theme declares were not applied because they are malformed or would weaken the site\'s policy:',
     'updates' => [
         'check' => 'Check Updates',
         'checking' => 'Checking...',

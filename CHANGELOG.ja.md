@@ -38,6 +38,16 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   なっていた — しかもそれは、古いものをそのまま入れるかどうかを操作する人に判断させる行
   だった。管理画面では以前から翻訳されていた(#487)
 
+### セキュリティ
+- 拡張機能の CSP の値を、ポリシーに入れる前に確かめるようにした。サイト全体のポリシーを
+  ゆるめる値 — `'unsafe-inline'`、`'unsafe-eval'`、`'unsafe-hashes'`、`'wasm-unsafe-eval'`、
+  `'strict-dynamic'`、`*` だけや `https://*`、script-src の `data:` / `blob:`、別の
+  ディレクティブを紛れ込ませる値、`frame-ancestors` や `base-uri` などのディレクティブ —
+  は捨て、ログに書き、拡張機能のカードに出す。ホスト、`'self'`、nonce のプレースホルダー、
+  ハッシュはそのまま通し、管理者自身の CSP の設定は絞らない。マニフェストの `*` は読み込み
+  のときに `https://*` に変わり、すべての HTTPS のオリジンを許していた。いまは書かれた
+  とおりの値で判断する(#494)
+
 ### Plugin API — 非推奨
 - `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの
   `created` / `updated` / `deleted` から監査ログを書くものだったが、コア・公式プラグイン・

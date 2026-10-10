@@ -38,6 +38,16 @@ repository to be notified of changes.
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
+### Security
+- CSP sources from an extension are checked before they reach the policy. Values that relax
+  it for the whole site — `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`,
+  `'wasm-unsafe-eval'`, `'strict-dynamic'`, a bare `*` or `https://*`, `data:` / `blob:` in
+  script-src, values that smuggle in another directive, and directives such as
+  `frame-ancestors` or `base-uri` — are dropped, logged, and listed on the extension's
+  card. Host sources, `'self'`, the nonce placeholder and hashes are kept, and the admin's
+  own CSP settings are not filtered. A bare `*` in a manifest was turned into `https://*`
+  on load, which allowed every HTTPS origin; it is now judged as written (#494)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in

@@ -495,6 +495,34 @@ The following fields are planned for implementation when the marketplace launche
 | `external_scripts` | External script URLs |
 | `external_styles` | External stylesheet URLs |
 
+#### Accepted CSP source values
+
+Every CSP source an extension contributes — from the manifest's `csp` section, a
+`CspPolicyProvider`, `csp_add_directive()` or `RegistersCspPolicy` — is checked by core
+before it reaches the policy (`App\Services\Csp\CspSourceValidator`, #494). Values that
+would relax the policy for the whole site are dropped, written to the log as a warning,
+and, for manifest values, listed on the extension's card in the admin panel. The admin's
+own CSP settings are not affected.
+
+| Accepted | Example |
+|----------|---------|
+| Host source (http, https, ws, wss; scheme optional) | `https://cdn.example.com`, `cdn.example.com`, `wss://ws.example.com:8443` |
+| Wildcard subdomain of a registrable domain | `https://*.example.com` |
+| `'self'` | |
+| `'nonce'` placeholder and `'sha256-…'` / `'sha384-…'` / `'sha512-…'` hashes | script-src, script-src-elem, style-src, style-src-elem only |
+| `data:` | img-src, font-src, media-src only |
+| `blob:` | img-src, media-src, worker-src only |
+
+Rejected: `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`, `'wasm-unsafe-eval'`,
+`'strict-dynamic'` (governed by the CSP mode), `'none'`, a literal `'nonce-…'`, a bare `*`,
+`https://*`, `*.com`, scheme-only sources such as `https:` or `data:` in script-src, and any
+value containing whitespace, `;` or `,`.
+
+Extensions may add sources to script-src, script-src-elem, style-src, style-src-elem,
+img-src, font-src, connect-src, media-src, frame-src, child-src, worker-src, manifest-src
+and form-action. Other directives (`frame-ancestors`, `base-uri`, `object-src`,
+`default-src`, `script-src-attr`, `report-uri`, …) are rejected.
+
 ---
 
 ## Permission Categories
