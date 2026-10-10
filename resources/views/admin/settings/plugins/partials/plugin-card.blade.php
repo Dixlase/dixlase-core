@@ -110,6 +110,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
 
+        {{-- CSP sources from the manifest that core refuses to apply (#494) --}}
+        @if(! empty($card['cspRejectedSources']))
+            <div class="mb-2 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-[11px] text-amber-800 dark:text-amber-200">
+                <span class="flex items-start gap-1.5">
+                    <i class="fas fa-shield-halved text-[10px] mt-0.5 shrink-0"></i>
+                    <span>
+                        {{ __('admin/settings/plugins/index.csp_rejected_sources') }}
+                        @foreach($card['cspRejectedSources'] as $rejected)
+                            <code class="break-all">{{ $rejected['directive'] }} {{ $rejected['value'] }}</code>@if(! $loop->last), @endif
+                        @endforeach
+                    </span>
+                </span>
+            </div>
+        @endif
+
         {{-- Description --}}
         @if($card['description'])
             <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">{{ $card['description'] }}</p>

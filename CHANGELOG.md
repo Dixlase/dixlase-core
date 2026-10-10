@@ -76,6 +76,30 @@ repository to be notified of changes.
   clears when a later run passes; an expected plugin or theme change can be accepted on the
   integrity screen. Security → Integrity now also shows the latest core signature check
   (#493)
+- CSP sources from an extension are checked before they reach the policy. Values that relax
+  it for the whole site — `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`,
+  `'wasm-unsafe-eval'`, `'strict-dynamic'`, a bare `*` or `https://*`, `data:` / `blob:` in
+  script-src, values that smuggle in another directive, and directives such as
+  `frame-ancestors` or `base-uri` — are dropped, logged, and listed on the extension's
+  card. Host sources, `'self'`, the nonce placeholder and hashes are kept, and the admin's
+  own CSP settings are not filtered. A bare `*` in a manifest was turned into `https://*`
+  on load, which allowed every HTTPS origin; it is now judged as written (#494)
+- A plugin's `routes/web.php` and the deprecated `routes/api.php` answer only on sites where
+  the plugin is active. Web routes were mounted with `web` alone and the legacy API file with
+  no middleware at all, so a plugin enabled on one site of a multisite install answered on
+  every site. An inactive plugin's web routes now return the site's HTML 404, its legacy API
+  routes the JSON 404 envelope. A new migration gives every enabled plugin that lacks one an
+  active row for the primary site (existing rows are left alone), and a plugin created
+  already enabled now gets its row too, so existing sites keep their plugin routes (#494)
+
+### Plugin API — Changed
+- `CspPolicyRegistry::addDirective()` and `addDirectives()` — and the directives a
+  `CspPolicyProvider` returns — now drop sources that would weaken the site's policy
+  (`'unsafe-inline'`, `'unsafe-eval'`, a bare `*`, `data:` in script-src, directives such as
+  `frame-ancestors`, …) instead of adding them. Dropped values are logged and returned by
+  the new `CspPolicyRegistry::getRejected()`. An extension that relied on one of them must
+  load the resource from a concrete host or ask the operator to allow it in the CSP
+  settings (#494)
 
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an

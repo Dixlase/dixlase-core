@@ -42,6 +42,7 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Enums\PluginTrustLevel;
+use App\Services\Csp\CspExtensionLoader;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\SecuritySettingsRegistry;
 use App\Services\Theme\ThemeHealthScorer;
@@ -185,6 +186,7 @@ class ExtensionCardPresenter
             'permissionModalId' => $permissionModalId,
             'cspCompatibility' => $cspCompatibility,
             'cspDiagnostic' => $cspDiagnostic,
+            'cspRejectedSources' => self::rejectedCspSources('theme', $directory),
             'auditedAt' => $auditedAt,
             'auditedAtFormatted' => $auditedAtFormatted,
             'categories' => $permissionSummary['categories'] ?? [],
@@ -368,6 +370,7 @@ class ExtensionCardPresenter
             'permissionModalId' => $permissionModalId,
             'cspCompatibility' => $cspCompatibility,
             'cspDiagnostic' => $cspDiagnostic,
+            'cspRejectedSources' => self::rejectedCspSources('plugin', $directory),
             'auditedAt' => $auditedAt,
             'auditedAtFormatted' => $auditedAtFormatted,
             'categories' => $permissionSummary['categories'] ?? [],
@@ -702,6 +705,34 @@ class ExtensionCardPresenter
             'riskLevel' => $riskLevel,
             'hasWarnings' => $hasWarnings,
         ];
+    }
+
+    /**
+     * CSP sources the extension's manifest declares that core drops (#494)
+     *
+     * CspPolicyRegistry refuses values that would relax the policy for the
+     * whole site; this lists them on the card so the admin can see why a
+     * declared source is not in the header.
+     *
+     * @return array<int, array{directive: string, value: string, reason: string}>
+     */
+    private static function rejectedCspSources(string $type, string $directory): array
+    {
+        if ($directory === '') {
+            return [];
+        }
+
+        try {
+            return app(CspExtensionLoader::class)->getRejectedSources($type, $directory);
+        } catch (\Throwable $e) {
+            Log::warning('ExtensionCardPresenter: CSP source check failed', [
+                'type' => $type,
+                'directory' => $directory,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
     }
 
     /**
