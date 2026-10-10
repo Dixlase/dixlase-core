@@ -52,6 +52,15 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   なっていた — しかもそれは、古いものをそのまま入れるかどうかを操作する人に判断させる行
   だった。管理画面では以前から翻訳されていた(#487)
 
+- 入手元の拡張機能ソースを削除したあとでも、テーマをソースに紐付け直せるようにした。
+  ソースを削除するとその拡張機能は紐付けが外れ、`dls:theme:update` は存在しない
+  `dls:theme:download` を実行するよう案内していた。登録済みのテーマをソースに戻す方法も
+  無かった。`dls:theme:install <directory> --force --source=<id>` で紐付け直せるようにし、
+  更新時のメッセージもこのコマンドを案内する。また `source_id` が消えたソースの行を指して
+  いるとき（`extension_sources` を外部キーの外で作り直した場合に起きうる）、
+  `dls:theme:update` と `dls:plugin:update` は `TypeError` で止まらず、同じ案内を出して
+  中止する(#510)
+
 ### Plugin API — 非推奨
 - `App\Traits\AuditableTrait` を非推奨にし、v0.2.0 で削除する。このトレイトはモデルの
   `created` / `updated` / `deleted` から監査ログを書くものだったが、コア・公式プラグイン・

@@ -52,6 +52,15 @@ repository to be notified of changes.
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
+- A theme can be linked to an extension source again after the one it came from was
+  removed. Removing a source leaves its extensions unlinked, and `dls:theme:update` then
+  told the operator to run `dls:theme:download`, which does not exist; a registered theme
+  had no way back to a source. `dls:theme:install <directory> --force --source=<id>` now
+  re-links it, and the update message names that command. `dls:theme:update` and
+  `dls:plugin:update` also refuse with that advice, instead of stopping with a
+  `TypeError`, when `source_id` names a source row that is gone, as it can after
+  `extension_sources` was rebuilt outside its foreign key (#510)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
