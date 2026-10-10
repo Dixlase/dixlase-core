@@ -52,7 +52,7 @@ class PluginList extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'List installed plugins';
 
     /**
      * Execute the console command.

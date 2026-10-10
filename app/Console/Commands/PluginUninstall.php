@@ -59,15 +59,11 @@ class PluginUninstall extends Command
                             {--force : Force uninstall even if plugin is enabled}';
 
     /**
-     * Create a new command instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->description = __('admin/command/plugin-uninstall.description');
-    }
+    protected $description = 'Uninstall a plugin and remove it from the database (its files are preserved)';
 
     /**
      * Initialize before command execution

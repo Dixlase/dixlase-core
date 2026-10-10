@@ -49,7 +49,7 @@ class ThemeUninstall extends Command
      * @var string
      */
     protected $signature = 'dls:theme:uninstall 
-                            {themeName : '.'command.theme_uninstall.theme_name_prompt'.'}
+                            {themeName : The name of the theme to uninstall}
                             {--rollback : Rollback database migrations}
                             {--force : Force uninstall even if theme is enabled}';
 
@@ -58,7 +58,7 @@ class ThemeUninstall extends Command
      *
      * @var string
      */
-    protected $description = 'command.theme_uninstall.description';
+    protected $description = 'Uninstall a theme (its files are preserved)';
 
     /**
      * Execute the console command.

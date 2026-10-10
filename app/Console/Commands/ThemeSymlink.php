@@ -52,15 +52,11 @@ class ThemeSymlink extends Command
                             {--all : Apply the action to every theme directory on disk}';
 
     /**
-     * Create a new command instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->description = __('admin/command/theme-symlink.description');
-    }
+    protected $description = 'Manage theme asset symlinks';
 
     /**
      * Execute the console command.

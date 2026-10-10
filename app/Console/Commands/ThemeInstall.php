@@ -57,14 +57,14 @@ class ThemeInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:install {themeName : '.'command.theme_install.theme_name_prompt'.'} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the theme to, for a theme placed on disk by hand (git clone) rather than downloaded from a source}';
+    protected $signature = 'dls:theme:install {themeName : The directory name of the theme to install} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the theme to, for a theme placed on disk by hand (git clone) rather than downloaded from a source}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'command.theme_install.description';
+    protected $description = 'Install a theme into the database';
 
     /**
      * Execute the console command.
