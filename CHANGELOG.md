@@ -47,6 +47,11 @@ repository to be notified of changes.
   card. Host sources, `'self'`, the nonce placeholder and hashes are kept, and the admin's
   own CSP settings are not filtered. A bare `*` in a manifest was turned into `https://*`
   on load, which allowed every HTTPS origin; it is now judged as written (#494)
+- A plugin's `routes/web.php` and the deprecated `routes/api.php` answer only on sites where
+  the plugin is active. Web routes were mounted with `web` alone and the legacy API file with
+  no middleware at all, so a plugin enabled on one site of a multisite install answered on
+  every site. An inactive plugin's web routes now return the site's HTML 404, its legacy API
+  routes the JSON 404 envelope (#494)
 
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an

@@ -53,10 +53,21 @@ use Symfony\Component\HttpFoundation\Response;
  * instead of leaking endpoints. Per-site plugin activation is recorded
  * in dls_site_plugin_activations and exposed by SiteContext.
  *
+ * Core also attaches it to every plugin's routes/web.php and to the
+ * deprecated routes/api.php (#494), so web and legacy API routes answer
+ * only on sites where the plugin is active.
+ *
+ * The optional second parameter picks the response for an inactive
+ * plugin: `json` (default) returns the unified API error envelope, `web`
+ * aborts with an ordinary 404 so the site's HTML error page is rendered.
+ *
  * Usage (registered automatically by core; plugin authors do not need
  * to wire it explicitly):
  *
  *   Route::middleware(EnsurePluginActiveOnSite::class.':my-plugin-slug')
+ *       ->group(...);
+ *
+ *   Route::middleware(EnsurePluginActiveOnSite::class.':my-plugin-slug,web')
  *       ->group(...);
  */
 class EnsurePluginActiveOnSite
@@ -65,9 +76,13 @@ class EnsurePluginActiveOnSite
         private readonly SiteContextInterface $siteContext,
     ) {}
 
-    public function handle(Request $request, Closure $next, string $pluginSlug): Response
+    public function handle(Request $request, Closure $next, string $pluginSlug, string $format = 'json'): Response
     {
         if (! $this->siteContext->isPluginActive($pluginSlug)) {
+            if ($format === 'web') {
+                abort(404);
+            }
+
             return ApiErrorResponse::make(
                 code: 'not_found',
                 status: 404,

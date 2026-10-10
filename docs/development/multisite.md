@@ -37,6 +37,8 @@ public function connection(): \Illuminate\Database\ConnectionInterface;
 
 Bound as a singleton. Resolved at request start by `App\Http\Middleware\ResolveSiteContext`. Plugins can use the `App\Facades\SiteContext` facade or inject the interface.
 
+Core gates every route a plugin contributes on `isPluginActive()` for the resolved site, through `App\Http\Middleware\EnsurePluginActiveOnSite`: `routes/api/v1.php` and the deprecated `routes/api.php` answer with the 404 JSON envelope, `routes/web.php` with the site's HTML 404 page. A plugin enabled globally but not active on the current site therefore exposes none of its front routes there (#494). The activation row for the primary site is written when the plugin is enabled through `plugin:enable` or the admin panel (the `Plugin` model's `saved()` hook).
+
 ```php
 use App\Facades\SiteContext;
 
