@@ -115,6 +115,28 @@ Source: `PluginHealthScorer` using `PluginHealthStatus::getDeductionRules()`
 | Below 70      | Acknowledgement required |
 | Critical issue| Acknowledgement required |
 
+A preset can also block an extension outright: one whose health status is above the
+preset's maximum level, or one without a verified signature under a preset that requires
+signatures (Strict), resolves to **Blocked** and cannot be enabled.
+
+#### On the command line
+
+`dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
+determination as the admin panel:
+
+- The extension is scanned first when it has no current scan result (never scanned, or its
+  files changed since the last scan). A scan that fails counts as Blocked.
+- **Blocked** is refused. `--force` does not override it.
+- A warning or an acknowledgement, which the admin panel asks the operator to confirm, is
+  refused unless `--force` is passed; with `--force` the command prints a warning and
+  proceeds.
+- `dls:plugin:install` without `--enable` still refuses a Blocked plugin under a preset that
+  requires a scan, the same as the admin panel's install button.
+- The Development preset is unrestricted: nothing is scanned or refused.
+
+Run `php artisan dls:plugin:audit <slug>` or `dls:theme:audit <slug>` to see the findings
+behind a refusal.
+
 ### Deduction Rules
 
 #### Signature

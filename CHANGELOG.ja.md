@@ -32,6 +32,16 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### セキュリティ
+- `dls:plugin:install --enable`、`dls:plugin:enable`、`dls:theme:switch` が、管理画面と同じ
+  健全性と署名の確認を行うようにした。セキュリティのプリセットが、コマンドラインでも同じ意味に
+  なる。現在のスキャン結果が無い拡張機能はスキャンし、「ブロック」になるものは拒否し、管理画面
+  なら確認を求めるものは `--force` が無ければ有効にしない。`--enable` を付けない
+  `dls:plugin:install` も、スキャン必須のプリセットでは管理画面のインストールボタンと同じく
+  「ブロック」のプラグインを拒否する。Development のプリセットは制限しないまま。これまで CLI は
+  ディスク上にあるものを何でも有効にしていた — Strict でも、管理画面が拒否する署名の無い
+  プラグインを(#492)
+
 ### 修正
 - `dls:plugin:install` と `dls:theme:install` が、「ダウンロードが古い」警告を現在の
   ロケールで出すようにした。英語のリテラルだったため、日本語の実行ログの中で唯一の英語の行に

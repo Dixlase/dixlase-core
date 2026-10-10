@@ -981,9 +981,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
             }
 
-            // Activate using command
+            // Activate using command. --force: the warning / acknowledgement
+            // outcomes were already confirmed in the activation modal, and the
+            // command still refuses a Blocked plugin on its own.
             Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
+                '--force' => true,
             ]);
 
             // Notification and logging of extension operations
