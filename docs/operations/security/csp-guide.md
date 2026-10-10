@@ -186,7 +186,7 @@ Eliminates the need for inline execution including in the admin panel, maximizin
 - 🔮 `require-trusted-types-for 'script'` is being considered for the future
 
 **Plugin & Theme Compatibility Rules**
-- ❌ `requires_inline_js: true` → **cannot be activated**
+- ❌ Scan finds inline JS required → shown as incompatible with Strict and loses health points (−15 in strict mode, −10 for inline JS). Enabling is refused only if the health status then falls outside the security preset's limit
 - ❌ No external dependency declarations in plugin.json (or dynamic insertion) → **warning or blocked**
 - ⚠️ Blocklist match hit → warning/block per settings
 
@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
 These files are included as build targets in `vite.config.js` and work in CSP Strict Mode.
 
 ### Q5. What is Safe Mode?
-**A:** It is a recovery feature for when you cannot access the admin panel or frontend due to CSP, plugin, or theme issues. CSP Safe Mode (`?safe=csp`) temporarily disables CSP, Plugin Safe Mode (`?safe=plugins`) disables plugin routes and assets, and Theme Safe Mode (`?safe=theme`) renders the frontend with a minimal layout. See the **[Safe Mode Guide](../emergency/safe-mode-guide.md)** for details.
+**A:** It is a recovery feature for when you cannot access the admin panel or frontend due to CSP, plugin, or theme issues. CSP Safe Mode (`?safe=csp`) temporarily disables CSP, Plugin Safe Mode (`?safe=plugins`) blocks routes served by plugin controllers for that session (plugins still load), and Theme Safe Mode (`?safe=theme`) renders the frontend with a minimal layout. See the **[Safe Mode Guide](../emergency/safe-mode-guide.md)** for details.
 
 ### Q6. What happens if I don't confirm within 10 seconds after saving CSP settings?
 **A:** The settings are automatically rolled back to the previous configuration and CSP Safe Mode is enabled. This prevents being locked out of the admin panel due to incorrect settings.

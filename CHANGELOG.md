@@ -48,6 +48,17 @@ repository to be notified of changes.
   the trait and is also touched inside an action should wrap the save with
   `$model->withoutAudit(...)` until the trait is gone (#477)
 
+### Documentation
+- The plugin security pages now describe what the code does. `security.sandbox`,
+  `verification.permission_policy` and the other reserved manifest fields are marked as not
+  read by core; `permissions` are documented as declarations for scanning, the health score
+  and the admin panel, checked at runtime only for mail capabilities and privacy
+  export / erase. Enabling is Blocked only by the preset's signature requirement or its
+  status limit — not by a score below 50. The deduction table lists the rules the scorers
+  actually emit, and the unused `signature_mismatch` and `file_outside_scope` rules are
+  removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
+  controller routes for one session, not as disabling plugins (#495)
+
 ## [0.1.7] — 2026-10-08
 
 ### Fixed
