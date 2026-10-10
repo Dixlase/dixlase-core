@@ -40,14 +40,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
