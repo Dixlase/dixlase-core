@@ -41,11 +41,6 @@ env:
   # is fine as long as the platform pin moves with it.
   PHP_VERSION: '8.3'
   NODE_VERSION: '24'
-  # GitHub OAuth token used by Composer to clone private dependencies
-  # (currently dixlase/dixlase-onepage, which composer/installers routes
-  # to themes/DixlaseOnePage/). Identical secret name + format used by
-  # the existing test / deploy / security workflows.
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -280,7 +275,7 @@ jobs:
           THEME_JSON="$WRAPPER/themes/DixlaseOnePage/theme.json"
 
           if [ ! -f "$THEME_JSON" ]; then
-            echo "::error::Bundle mode is on but $THEME_JSON does not exist. The theme must be installed during composer install; check that COMPOSER_AUTH grants access to the private theme repo."
+            echo "::error::Bundle mode is on but $THEME_JSON does not exist. The theme is installed during composer install; check that the dixlase/dixlase-onepage dependency resolved."
             exit 1
           fi
 

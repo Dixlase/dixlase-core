@@ -468,11 +468,6 @@ parameters:
 			count: 4
 			path: app/Console/Commands/TwoFaRecoveryCommand.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/TwoFaRecoveryCommand.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -726,11 +721,6 @@ parameters:
 			count: 1
 			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/Members/AdminMemberFormController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -900,11 +890,6 @@ parameters:
 			count: 1
 			path: app/Http/Controllers/Admin/Profile/AdminProfileBasicController.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Admin/Profile/AdminProfileController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$login_notification_mode\.$#'
@@ -930,11 +915,6 @@ parameters:
 			count: 2
 			path: app/Http/Controllers/Admin/Profile/AdminProfileSidebarController.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Admin/Profile/AdminProfileTwoFaController.php
 
 		-
 			message: '#^Call to method fresh\(\) on an unknown class App\\Models\\User\.$#'
@@ -1590,11 +1570,6 @@ parameters:
 			count: 1
 			path: app/Models/Member.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Member.php
 
 		-
 			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\Member\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
@@ -2328,11 +2303,6 @@ parameters:
 			count: 1
 			path: app/Services/TwoFa/TwoFaRecoveryCodeService.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\Member\:\:\$two_fa_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TwoFa/TwoFaStatusService.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:markDeadLetterNotified\(\)\.$#'

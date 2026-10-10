@@ -21,13 +21,6 @@ on:
 permissions:
   contents: write  # GitHub Release 作成・添付に必要
 
-# GitHub OAuth token for composer to clone private dependencies
-# (currently: dixlase/dixlase-onepage). Fine-grained PAT with
-# Contents:Read on Dixlase/theme-dixlase-onepage only — see secret
-# COMPOSER_AUTH in repo or organization settings.
-env:
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
-
 jobs:
   build-and-release:
     name: Build & Release ZIP

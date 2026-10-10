@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\PluginAutoloadState;
 use Illuminate\Console\Command;
 
 class PluginDisable extends Command
@@ -60,7 +61,7 @@ class PluginDisable extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(PluginAutoloadState $autoloadState)
     {
         $pluginName = $this->argument('pluginName');
 
@@ -81,6 +82,13 @@ class PluginDisable extends Command
 
         // Clear enabled plugins cache
         PluginServiceProvider::clearEnabledPluginsCache();
+
+        // A disabled plugin's autoload.files stop loading too. This runs
+        // after the plugin is marked disabled; if the autoloader cannot be
+        // regenerated, the files keep loading as before.
+        if (! $autoloadState->withhold($plugin->directory)) {
+            $this->warn(__('admin/command/plugin-disable.autoload_pending', ['pluginName' => $pluginName]));
+        }
 
         // Rebuild the Tailwind plugin-source aggregator so the disabled
         // plugin's content directories drop out of the next CSS build.

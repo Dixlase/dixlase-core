@@ -23,11 +23,6 @@ env:
   DB_PORT: 3306
   DB_USERNAME: root
   DB_PASSWORD: password
-  # GitHub OAuth token for composer to clone private dependencies
-  # (currently: dixlase/dixlase-onepage). Fine-grained PAT with
-  # Contents:Read on Dixlase/theme-dixlase-onepage only — see secret
-  # COMPOSER_AUTH in repo or organization settings.
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 # Cancel older runs on the same ref when a new one starts.
 # Saves Actions minutes on rebases / quick consecutive pushes.
@@ -65,14 +60,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
@@ -167,6 +168,10 @@ jobs:
     name: Plugin Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     needs: core-tests
+    # 7 of the 11 integration plugins are private, and a Dependabot run gets
+    # no PAT to clone them with. The --testsuite= arguments below name those
+    # plugins, so the job cannot run on such a pull request.
+    if: github.actor != 'dependabot[bot]'
 
     strategy:
       fail-fast: false
@@ -190,14 +195,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
@@ -380,14 +391,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
@@ -458,14 +475,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP
@@ -515,14 +538,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP

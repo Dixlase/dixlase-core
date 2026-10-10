@@ -315,6 +315,7 @@ return [
         'health_issue_csp_violation_strict' => 'CSP: 違反（厳格モード）',
         'health_issue_csp_violation_standard' => 'CSP: 違反（標準モード）',
         'health_issue_dangerous_api_exec' => '危険なAPI検出',
+        'health_issue_dangerous_api_declared' => '危険なAPIを使用（宣言済み）',
         'health_issue_scan_not_performed' => 'スキャン: 未実行',
         'health_issue_scan_outdated' => 'スキャン: 期限切れ',
         'csp_status' => 'CSP対応',

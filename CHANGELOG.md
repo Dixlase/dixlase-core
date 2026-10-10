@@ -43,6 +43,20 @@ repository to be notified of changes.
   under Strict, an unsigned plugin the admin panel refused (#492)
 
 ### Fixed
+- `dls:plugin:download --extract` installs into the directory the plugin's own manifest
+  declares, instead of the studly form of its slug. For a plugin whose name carries an
+  acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
+  declares `Plugins\DixlaseSEO` — and the directory name is what `composer.local.json`
+  builds the PSR-4 prefix from. Composer matches a prefix case-sensitively, so the
+  plugin's own classes resolved only through an optimized classmap, and the same release
+  installed from the admin panel produced a different tree. On top of the download path:
+  `dls:plugin:install` records the namespace the manifest declares rather than composing
+  one from the argument; `dls:plugin:lint` reports a directory whose name is not the one
+  its manifest asks for; the recovery command core prints when an autoload sync fails now
+  carries `--optimize`, as does the regeneration `dls:app:uninstall` runs, because
+  without it the advice broke the extension it was meant to rescue. Existing installs
+  still carry the wrong directory name; correcting them needs its own change (#488)
+
 - `dls:plugin:install` and `dls:theme:install` print the stale-download warning in the
   active locale. It was a literal English sentence, so in a Japanese run it was the one
   English line — and the one line that asks the operator to decide whether to install the
@@ -57,6 +71,17 @@ repository to be notified of changes.
   the row, or call the `Audit` facade from a service an action invokes. A model that uses
   the trait and is also touched inside an action should wrap the save with
   `$model->withoutAudit(...)` until the trait is gone (#477)
+
+### Documentation
+- The plugin security pages now describe what the code does. `security.sandbox`,
+  `verification.permission_policy` and the other reserved manifest fields are marked as not
+  read by core; `permissions` are documented as declarations for scanning, the health score
+  and the admin panel, checked at runtime only for mail capabilities and privacy
+  export / erase. Enabling is Blocked only by the preset's signature requirement or its
+  status limit — not by a score below 50. The deduction table lists the rules the scorers
+  actually emit, and the unused `signature_mismatch` and `file_outside_scope` rules are
+  removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
+  controller routes for one session, not as disabling plugins (#495)
 
 ## [0.1.7] — 2026-10-08
 

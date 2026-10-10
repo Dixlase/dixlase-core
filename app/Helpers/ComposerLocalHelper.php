@@ -37,6 +37,7 @@
 
 namespace App\Helpers;
 
+use App\Services\Extension\PluginAutoloadState;
 use App\Support\ComposerLocalManifest;
 use App\Support\Process\PhpBinary;
 use App\Support\Process\SubprocessEnvironment;
@@ -48,6 +49,19 @@ use Symfony\Component\Process\Process;
 class ComposerLocalHelper
 {
     /**
+     * The recovery one-liner to print when syncAutoload() fails.
+     *
+     * Its composer half must stay identical to what regenerateAutoload()
+     * runs. `--optimize` is not a performance flag here: an extension whose
+     * directory name differs in case from the namespace its files declare
+     * resolves only through the optimized classmap, so advising a dump
+     * without it breaks the very extension the advice was meant to rescue
+     * (#488). The flag is load-bearing until the directory name is derived
+     * from the manifest everywhere.
+     */
+    public const RECOVERY_COMMAND = 'php scripts/sync-local-autoload.php && composer dump-autoload --optimize --no-scripts';
+
+    /**
      * Path to composer.local.json file
      */
     protected static function getComposerLocalPath(): string
@@ -58,11 +72,35 @@ class ComposerLocalHelper
     /**
      * Automatically generate composer.local.json from plugins/ and themes/ directories
      *
+     * Before generating, the list of plugins whose `autoload.files` are
+     * withheld is brought in line with the database (see
+     * {@see PluginAutoloadState::reconcile()}), so every install, delete,
+     * core update and restore leaves a disabled plugin's eager files out of
+     * the map. Skipped quietly when the database cannot be read.
+     *
+     * @param  bool  $reconcile  Re-derive the disabled-plugin list from the database first.
+     *                           Plugin enable passes false: it changes the list itself,
+     *                           before the database says the plugin is enabled.
+     * @param  bool  $requireDump  Report failure when `composer dump-autoload` fails.
+     *                             By default a failed dump is only logged, because
+     *                             the extension's files are already in place.
      * @return bool Whether it succeeded
      */
-    public static function syncAutoload(): bool
+    public static function syncAutoload(bool $reconcile = true, bool $requireDump = false): bool
     {
         try {
+            if ($reconcile) {
+                // Best effort: without the database the list on disk is
+                // used as it is, which is what the standalone script does.
+                try {
+                    app(PluginAutoloadState::class)->reconcile();
+                } catch (\Throwable $e) {
+                    Log::warning('Could not bring the plugin autoload state in line with the database', [
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
             $composerLocalPath = self::getComposerLocalPath();
 
             // Generation lives in ComposerLocalManifest, shared with
@@ -75,9 +113,9 @@ class ComposerLocalHelper
 
             // Regenerate autoload to reflect composer.local.json
             // Continue with only a warning even if it fails, since plugin placement itself is already complete
-            self::regenerateAutoload();
+            $dumped = self::regenerateAutoload();
 
-            return true;
+            return $dumped || ! $requireDump;
         } catch (\Exception $e) {
             Log::error('Failed to sync composer.local.json: '.$e->getMessage());
 
@@ -137,8 +175,10 @@ class ComposerLocalHelper
      * Call immediately after adding/removing plugins/themes to reflect new PSR-4 mappings
      * to the Laravel runtime. In environments where the composer binary is not available,
      * continue with a warning log (do not treat as a fatal error)
+     *
+     * @return bool Whether composer finished successfully
      */
-    protected static function regenerateAutoload(): void
+    protected static function regenerateAutoload(): bool
     {
         try {
             $command = self::composerCommand(['dump-autoload', '--optimize', '--no-scripts']);
@@ -163,11 +203,39 @@ class ComposerLocalHelper
                     'stdout' => mb_substr(trim($process->getOutput()), 0, 2000),
                     'stderr' => mb_substr(trim($process->getErrorOutput()), 0, 2000),
                 ]);
+
+                return false;
             }
+
+            self::forgetCompiledAutoloader();
+
+            return true;
         } catch (\Throwable $e) {
             Log::warning('Failed to regenerate autoload', [
                 'error' => $e->getMessage(),
             ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Drop OPcache's copies of the autoloader composer just rewrote.
+     *
+     * Composer ran in a child process, so this process's OPcache still holds
+     * the previous map; until it revalidates, a request could boot a plugin
+     * that was just enabled against a map without its `autoload.files`. The
+     * cache is shared by every worker of the pool, so invalidating here is
+     * enough. A no-op where OPcache is off (the CLI, usually).
+     */
+    protected static function forgetCompiledAutoloader(): void
+    {
+        if (! function_exists('opcache_invalidate')) {
+            return;
+        }
+
+        foreach (glob(base_path('vendor/composer/autoload_*.php')) ?: [] as $file) {
+            @opcache_invalidate($file, true);
         }
     }
 

@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\GuardsExtensionActivation;
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\PluginAutoloadState;
 use Illuminate\Console\Command;
 
 class PluginEnable extends Command
@@ -63,7 +64,7 @@ class PluginEnable extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(PluginAutoloadState $autoloadState)
     {
         $pluginName = $this->argument('pluginName');
 
@@ -78,8 +79,18 @@ class PluginEnable extends Command
 
         // Same health / signature check the admin panel runs before it
         // enables a plugin, so the security preset means the same thing on
-        // the command line (dixlase-core#492).
+        // the command line (dixlase-core#492). Refuse before touching the
+        // autoloader, so a blocked plugin changes nothing.
         if (! $this->passesActivationGate('plugin', (string) $plugin->slug, $pluginName, 'enabled', (bool) $this->option('force'))) {
+            return 1;
+        }
+
+        // Put the plugin's autoload.files back into the autoloader before
+        // the plugin is marked enabled: from the next request on its
+        // ServiceProvider boots, and the helpers it calls must exist by then.
+        if (! $autoloadState->allow($plugin->directory)) {
+            $this->error(__('admin/command/plugin-enable.autoload_failed', ['pluginName' => $pluginName]));
+
             return 1;
         }
 

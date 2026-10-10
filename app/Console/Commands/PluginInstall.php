@@ -101,6 +101,7 @@ class PluginInstall extends Command
         $web = null;
         $packageName = null;
         $composerName = null;
+        $namespace = null;
         $slug = Str::slug(Str::headline($pluginName), '-');
 
         // 1. Read from plugin.json (highest priority)
@@ -118,6 +119,10 @@ class PluginInstall extends Command
                 $web = $pluginData['url'] ?? $pluginData['homepage'] ?? $pluginData['web'] ?? null;
                 $version = $pluginData['version'] ?? '1.0.0';
                 $slug = $pluginData['slug'] ?? $slug;
+                $declaredNamespace = $pluginData['namespace'] ?? null;
+                if (is_string($declaredNamespace) && trim($declaredNamespace, '\\') !== '') {
+                    $namespace = trim($declaredNamespace, '\\');
+                }
             }
         }
 
@@ -234,7 +239,12 @@ class PluginInstall extends Command
             ['name' => $pluginName],
             fn (bool $exists) => ($exists ? [] : ['created_at' => now()]) + [
                 'package_name' => $packageName,
-                'namespace' => "Plugins\\$pluginName",
+                // What plugin.json declares, not what the directory name
+                // suggests. Composing it from the directory recorded
+                // Plugins\DixlaseSeo for a plugin whose files declare
+                // Plugins\DixlaseSEO, and PluginServiceProvider builds
+                // command class names from this column (#488).
+                'namespace' => $namespace ?? "Plugins\\$pluginName",
                 'directory' => $pluginName,
                 'slug' => $slug,
                 'description' => $description,
@@ -279,7 +289,7 @@ class PluginInstall extends Command
         if (ComposerLocalHelper::syncAutoload()) {
             $this->info('Updated composer.local.json');
         } else {
-            $this->warn('Failed to sync composer.local.json; run `php scripts/sync-local-autoload.php && composer dump-autoload --no-scripts` if plugin pages error.');
+            $this->warn('Failed to sync composer.local.json; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if plugin pages error.');
         }
 
         // Run migrations

@@ -36,4 +36,5 @@
 return [
     'description' => 'プラグインを有効にし、必要なシンボリックリンクを作成します',
     'enabled' => 'プラグイン :pluginName を有効化しました。',
+    'autoload_failed' => 'プラグイン :pluginName を有効化しませんでした。そのファイルを含めるためのオートローダーの再生成に失敗しました。`composer dump-autoload` で Composer が動くことを確かめてから、もう一度有効化してください。',
 ];

@@ -37,6 +37,7 @@ return [
     'audit_scan_not_executed' => 'Audit scan has not been executed',
     'audit_scan_not_run' => 'Audit scan has not been run',
     'csp_violation_detected' => 'CSP violation detected (:cspMode mode)',
+    'dangerous_api_declared' => 'Declared dangerous API in use: :permission',
     'dangerous_api_detected' => 'Dangerous API detected: :permission',
     'inline_css_strict_mode_warning' => 'Inline CSS is required. May not work in strict mode',
     'inline_js_strict_mode_error' => 'Inline JavaScript is required. Will not work in strict mode',

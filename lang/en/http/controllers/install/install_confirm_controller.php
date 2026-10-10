@@ -38,7 +38,7 @@ return [
     'bundled_theme_security_audit_completed' => 'Bundled theme security audit completed',
     'bundled_theme_security_audit_started' => 'Bundled theme security audit started',
     'composer_autoload_sync_completed' => 'Composer autoload sync completed (vendor/composer/autoload_psr4.php regenerated)',
-    'composer_autoload_sync_failed' => 'Composer autoload sync failed - bundled theme/plugin helpers may be unavailable until "composer dump-autoload" is run manually',
+    'composer_autoload_sync_failed' => 'Composer autoload sync failed - bundled theme/plugin helpers may be unavailable until ":command" is run manually',
     'composer_autoload_sync_started' => 'Composer autoload sync started (persisting theme/plugin PSR-4 to vendor)',
     'config_cache_clear_completed' => 'Configuration cache clear completed',
     'config_cache_clear_started' => 'Configuration cache clear started',

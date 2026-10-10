@@ -6,14 +6,14 @@
 
 Dixlase provides a **multi-level safe mode system** for crash recovery. When misconfigured CSP settings, buggy plugins, or broken themes prevent normal access, safe mode allows administrators to regain control without needing SSH or CLI access.
 
-All safe modes are **session-based** (no database writes) and require **admin authentication** to activate.
+All safe modes are **session-based** (no database writes). Only a **super admin** can activate them; the `?safe=` parameter is ignored for anyone else.
 
 ## Safe Mode Levels
 
 | Mode | URL Parameter | Effect | Scope |
 |------|--------------|--------|-------|
 | **CSP** | `?safe=csp` | Disables CSP headers | All pages (session) |
-| **Plugins** | `?safe=plugins` | Disables plugin routes and assets | Admin only (session) |
+| **Plugins** | `?safe=plugins` | Blocks routes served by plugin controllers and skips plugin admin assets. Plugins stay loaded | That session |
 | **Theme** | `?safe=theme` | Disables theme, renders minimal fallback layout | Front-end only (session) |
 
 ### Backward Compatibility
@@ -102,15 +102,16 @@ php artisan csp:disable-safe-mode
 **When to use:** A buggy plugin causes fatal errors, broken admin pages, or other issues that prevent normal admin access.
 
 **What it does:**
-- Plugin routes (controllers under `Plugins\` namespace) redirect to the admin dashboard
-- Plugin assets are not loaded (`load_active_assets()` skips plugin assets)
-- Core admin pages remain fully functional
+- For that session, requests to routes served by a plugin controller (a class in the `Plugins\` namespace) redirect to the admin dashboard
+- Plugin assets are not loaded in the admin panel (`load_active_assets()` skips plugin assets)
+- Core admin pages remain usable
 
 **What it does NOT do:**
-- Plugin ServiceProviders have already booted (configs, languages, views are already registered). This is harmless because:
-  - Registered configs/languages/views don't execute code on their own
-  - Routes are blocked at the middleware level
-  - Assets are blocked at Blade render time
+- It does not disable plugins. Enabled plugins are still loaded on every request, and their service providers still register and boot, so their code still runs (event listeners, middleware, view composers, scheduled tasks, and so on)
+- It does not block routes that are not served by a plugin controller (for example, closure routes a plugin registers)
+- It does not affect other sessions or other administrators
+
+An error raised while a plugin's provider loads is not avoided by safe mode.
 
 **Related settings:** Admin > Settings > Plugins
 
@@ -174,7 +175,7 @@ All safe mode activations and deactivations are logged to the `admin_activity` c
 
 - **Safe modes are temporary recovery measures.** Deactivate them as soon as the underlying issue is resolved.
 - **CSP safe mode** disables XSS protection. Do not leave it active in production.
-- **Plugin safe mode** only blocks routes and assets. Plugin ServiceProviders still boot (configs, translations, views are registered but harmless).
+- **Plugin safe mode** only blocks routes served by plugin controllers and skips plugin admin assets. Plugin service providers still load and boot, so plugin code still runs.
 - **Theme safe mode** provides a minimal layout with no theme styling. Content is still rendered.
 - Safe modes are per-session. Other logged-in administrators are not affected.
 - Logging out ends the session and deactivates all safe modes.

@@ -50,20 +50,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# GitHub OAuth token for composer to clone private dependencies.
-env:
-  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
-
 jobs:
   drift-check:
     name: Regenerate and compare
     runs-on: ubuntu-latest
+    # The generators (dls:license:generate, dls:readme:generate,
+    # dls:plugin-api:generate) live in DixlaseCoreDevKit, which is private.
+    # A Dependabot run cannot clone it, so there is nothing to regenerate.
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.SUBMODULE_PAT }}
 
       # DixlaseCoreDevKit provides dls:license:generate, dls:readme:generate
       # and dls:plugin-api:generate, so the generators have to be on disk
@@ -72,7 +70,15 @@ jobs:
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
         run: |
-          git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          # A Dependabot run receives no repository secrets, so the PAT is
+          # empty there. Configuring the rewrite with an empty credential
+          # would send every GitHub clone through it, the public ones
+          # included, so only set it when the token is actually present.
+          if [ -n "$SUBMODULE_PAT" ]; then
+            git config --global url."https://x-access-token:${SUBMODULE_PAT}@github.com/".insteadOf "https://github.com/"
+          else
+            echo "::notice::SUBMODULE_PAT is unavailable; cloning only the public integration plugins"
+          fi
           .github/scripts/fetch-integration-plugins.sh
 
       - name: Setup PHP

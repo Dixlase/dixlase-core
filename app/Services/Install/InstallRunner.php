@@ -443,7 +443,9 @@ class InstallRunner
         if (ComposerLocalHelper::syncAutoload()) {
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_completed'));
         } else {
-            Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_failed'));
+            Log::channel('install')->warning(__('http/controllers/install/install_confirm_controller.composer_autoload_sync_failed', [
+                'command' => ComposerLocalHelper::RECOVERY_COMMAND,
+            ]));
         }
     }
 

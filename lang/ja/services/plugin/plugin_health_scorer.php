@@ -42,6 +42,7 @@ return [
     'api_version_incompatible' => 'プラグインは Extension API :declared を要求していますが、コアは :supported に対応しています。',
     'api_constraint_malformed' => 'requires.dixlase_api が有効な semver 制約ではありません。',
     'csp_violation_detected' => 'CSP違反が検出されました（:cspModeモード）。',
+    'dangerous_api_declared' => '宣言済みの危険なAPIを使用しています: :permission',
     'dangerous_api_detected' => '危険なAPIが検出されました: :permission',
     'direct_upload_to_public_dir' => '公開ディレクトリへ直接アップロードします。',
     'inline_css_required_strict_mode' => 'インラインCSSが必要です。厳格モードでは動作しない可能性があります。',

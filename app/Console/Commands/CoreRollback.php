@@ -307,7 +307,7 @@ class CoreRollback extends Command
                     // path). Non-fatal.
                     $this->line('Re-syncing extension autoload (theme/plugin PSR-4) after vendor swap...');
                     if (! ComposerLocalHelper::syncAutoload()) {
-                        $this->warn('Extension autoload re-sync failed; run `composer dump-autoload` if theme/plugin pages error.');
+                        $this->warn('Extension autoload re-sync failed; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if theme/plugin pages error.');
                     }
 
                     // Same as the update path: the re-fetched vendor/ can lack a

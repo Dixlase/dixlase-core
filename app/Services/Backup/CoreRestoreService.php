@@ -413,7 +413,7 @@ class CoreRestoreService implements RestoreServiceInterface
     private function resyncAutoload(): void
     {
         if (! ComposerLocalHelper::syncAutoload()) {
-            Log::warning('Extension autoload re-sync failed after restore; run `php scripts/sync-local-autoload.php && composer dump-autoload`.');
+            Log::warning('Extension autoload re-sync failed after restore; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'`.');
         }
 
         if (! ComposerLocalHelper::rebuildPackageManifest()) {
