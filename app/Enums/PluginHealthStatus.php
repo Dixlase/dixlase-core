@@ -64,7 +64,7 @@ enum PluginHealthStatus: string
     case Advisory = 'advisory';
 
     /**
-     * NeedsAttention - significant issues present (signature mismatch, major permission discrepancies)
+     * NeedsAttention - significant issues present (invalid signature, major permission discrepancies)
      */
     case NeedsAttention = 'needs_attention';
 
@@ -201,7 +201,6 @@ enum PluginHealthStatus: string
             // Signature related
             'signature_unsigned' => -10,
             'signature_invalid' => -50,
-            'signature_mismatch' => -50,
             'signature_pending_verification' => -5,
             'signature_unknown_key' => -15,
             'signature_expired' => -20,
@@ -245,8 +244,11 @@ enum PluginHealthStatus: string
             'dangerous_api_exec' => -30,
             'dangerous_api_env_access' => -20,
 
-            // File placement
-            'file_outside_scope' => -20,
+            // Declared in the manifest and detected in the code. Not critical,
+            // but large enough that an otherwise perfect extension (100) drops
+            // below the Healthy threshold (90): it lands in Advisory, which the
+            // Balanced preset still allows and the Strict preset does not.
+            'dangerous_api_declared' => -12,
         ];
     }
 
@@ -257,7 +259,6 @@ enum PluginHealthStatus: string
     {
         $criticalIssues = [
             'signature_invalid',
-            'signature_mismatch',
             'dangerous_api_exec',
             'permission_undeclared_major',
             'license_refused',

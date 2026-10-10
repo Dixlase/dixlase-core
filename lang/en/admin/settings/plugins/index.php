@@ -487,6 +487,7 @@ return [
         'health_issue_csp_violation_strict' => 'CSP: Violation (Strict Mode)',
         'health_issue_csp_violation_standard' => 'CSP: Violation (Standard Mode)',
         'health_issue_dangerous_api_exec' => 'Dangerous API Detected',
+        'health_issue_dangerous_api_declared' => 'Dangerous API in Use (Declared)',
         'health_issue_risk_public_uploads_own_dir' => 'Storage: Public uploads in own directory',
         'health_issue_risk_public_uploads_no_own_dir' => 'Storage: Direct public directory upload',
         'health_issue_risk_members_delete' => 'Permission: Member deletion',

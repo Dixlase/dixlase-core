@@ -35,18 +35,22 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\GuardsExtensionActivation;
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\PluginAutoloadState;
 use Illuminate\Console\Command;
 
 class PluginEnable extends Command
 {
+    use GuardsExtensionActivation;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable}';
+    protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable} {--force : Enable even when the health check asks for confirmation (warning or acknowledgement); a blocked plugin is still refused}';
 
     /**
      * The console command description.
@@ -60,7 +64,7 @@ class PluginEnable extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(PluginAutoloadState $autoloadState)
     {
         $pluginName = $this->argument('pluginName');
 
@@ -69,6 +73,23 @@ class PluginEnable extends Command
 
         if (! $plugin) {
             $this->error(__('admin/command/plugin-disable.not_found', ['pluginName' => $pluginName]));
+
+            return 1;
+        }
+
+        // Same health / signature check the admin panel runs before it
+        // enables a plugin, so the security preset means the same thing on
+        // the command line (dixlase-core#492). Refuse before touching the
+        // autoloader, so a blocked plugin changes nothing.
+        if (! $this->passesActivationGate('plugin', (string) $plugin->slug, $pluginName, 'enabled', (bool) $this->option('force'))) {
+            return 1;
+        }
+
+        // Put the plugin's autoload.files back into the autoloader before
+        // the plugin is marked enabled: from the next request on its
+        // ServiceProvider boots, and the helpers it calls must exist by then.
+        if (! $autoloadState->allow($plugin->directory)) {
+            $this->error(__('admin/command/plugin-enable.autoload_failed', ['pluginName' => $pluginName]));
 
             return 1;
         }

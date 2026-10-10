@@ -42,6 +42,8 @@ return [
     'auto_fix_sync_permissions_declares' => '  <fg=green>✓ auto-fix:</> Syncing permissions / declares (:plugin)',
     'auto_insert_config_defaults' => 'Auto-insert config defaults with dls:plugin:lint --fix',
     'auto_update_permissions' => 'Auto-update permissions with dls:plugin:sync --write',
+    'directory_namespace_mismatch' => '  <fg=red>✗ plugins/:directory does not match the namespace plugin.json declares; it should be plugins/:expected</>',
+    'directory_namespace_mismatch_hint' => '    The PSR-4 prefix in composer.local.json comes from the directory name, and Composer matches a prefix case-sensitively, so the plugin\'s own classes resolve only through an optimized classmap. Rename the directory to :expected, update the plugins row, then re-run `:command`.',
     'health_score_display' => '  <fg=:color>Health Score: :score / 100</>',
     'move_inline_styles_to_css' => 'Move inline styles to CSS file',
     'no_issues_detected' => '  <fg=green>✓ No issues detected</>',

@@ -37,6 +37,7 @@ namespace App\Console\Commands\Core;
 
 use App\DTO\Core\CoreIntegrityResult;
 use App\Services\Core\CoreIntegrityVerifier;
+use App\Services\Security\ScheduledSecurityCheckMonitor;
 use Illuminate\Console\Command;
 
 /**
@@ -54,9 +55,17 @@ class VerifyCoreCommand extends Command
 
     protected $description = 'Verify Core integrity (genuine / modified / unsigned) against its signed manifest';
 
-    public function handle(CoreIntegrityVerifier $verifier): int
+    public function handle(CoreIntegrityVerifier $verifier, ScheduledSecurityCheckMonitor $monitor): int
     {
-        $result = $verifier->verify($this->option('base-path') ?: null);
+        $basePath = $this->option('base-path') ?: null;
+        $result = $verifier->verify($basePath);
+
+        // Record the check of the running core (shown on Security → Integrity,
+        // and raising or clearing the admin alert). A --base-path run checks
+        // some other tree, so it is not recorded.
+        if ($basePath === null) {
+            $monitor->recordCoreManifest($result);
+        }
 
         if ($this->option('json')) {
             $this->line(json_encode($result->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));

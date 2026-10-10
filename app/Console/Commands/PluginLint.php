@@ -35,9 +35,11 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\ComposerLocalHelper;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginManifestSyncService;
 use App\Support\ExtensionDirectories;
+use App\Support\ExtensionDirectoryName;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -114,9 +116,53 @@ class PluginLint extends Command
 
         // 3. Display results
         $this->renderIssues($result->issues, $autoFixApplied);
+        $mismatched = $this->reportDirectoryNamespaceMismatch($pluginDir, $plugin);
         $this->renderScore($result->score);
 
+        if ($mismatched) {
+            return 1;
+        }
+
         return $result->score >= 70 ? self::SUCCESS : 1;
+    }
+
+    /**
+     * Report a directory whose name is not the one its manifest declares.
+     *
+     * The directory name is the middle segment of the namespace the plugin's
+     * classes are autoloaded under: ComposerLocalManifest emits
+     * `Plugins\{Name}\App\` from the directory basename alone, and Composer
+     * matches a PSR-4 prefix case-sensitively. So `plugins/DixlaseSeo/`
+     * holding `namespace Plugins\DixlaseSEO\App;` produces a mapping no class
+     * is found through, and the plugin runs only while an optimized classmap
+     * happens to be in place (#488). Nothing used to report this: it surfaced
+     * as a white screen after an autoloader dump without --optimize.
+     *
+     * Case matters here, which is the whole point, so the comparison is
+     * deliberately case-sensitive.
+     */
+    protected function reportDirectoryNamespaceMismatch(string $pluginDir, string $plugin): bool
+    {
+        $manifest = json_decode((string) File::get("{$pluginDir}/plugin.json"), true);
+        $expected = ExtensionDirectoryName::fromManifest(
+            is_array($manifest) ? $manifest : null,
+            ExtensionDirectoryName::KIND_PLUGIN,
+        );
+
+        if ($expected === null || $expected === $plugin) {
+            return false;
+        }
+
+        $this->line(__('console/commands/plugin_lint.directory_namespace_mismatch', [
+            'directory' => $plugin,
+            'expected' => $expected,
+        ]));
+        $this->line(__('console/commands/plugin_lint.directory_namespace_mismatch_hint', [
+            'expected' => $expected,
+            'command' => ComposerLocalHelper::RECOVERY_COMMAND,
+        ]));
+
+        return true;
     }
 
     /**

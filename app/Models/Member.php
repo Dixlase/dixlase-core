@@ -57,6 +57,13 @@ use Laravel\Passkeys\PasskeyAuthenticatable;
 
 /**
  * Member model
+ *
+ * The `two_fa_mode` attribute is cast to AuthenticationMode, is an int while
+ * it is being assigned, and is null on an instance that was never given it --
+ * the column itself defaults to 0. Declaring it keeps the reads out of the
+ * PHPStan baseline.
+ *
+ * @property AuthenticationMode|int|null $two_fa_mode
  */
 class Member extends Authenticatable implements MustVerifyEmail, PasskeyUser, TwoFaInterface
 {

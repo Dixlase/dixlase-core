@@ -487,6 +487,7 @@ return [
         'health_issue_csp_violation_strict' => 'CSP: 違反（厳格モード）',
         'health_issue_csp_violation_standard' => 'CSP: 違反（標準モード）',
         'health_issue_dangerous_api_exec' => '危険なAPI検出',
+        'health_issue_dangerous_api_declared' => '危険なAPIを使用（宣言済み）',
         'health_issue_risk_public_uploads_own_dir' => 'ストレージ: 専用ディレクトリ内で公開アップロード',
         'health_issue_risk_public_uploads_no_own_dir' => 'ストレージ: 公開ディレクトリへ直接アップロード',
         'health_issue_risk_members_delete' => '権限: メンバー削除',

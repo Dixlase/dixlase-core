@@ -188,6 +188,43 @@ php artisan dls:integrity:scan --scheduled
 php artisan dls:integrity:regenerate-baseline
 ```
 
+## Other Scheduled Security Checks
+
+Two more daily checks run alongside the file-integrity scan and report to the
+same screen:
+
+| Task | Schedule | What it checks |
+|------|----------|----------------|
+| `dls:core:verify` | daily at 04:15 | Core files against the signed release manifest |
+| `dls:extensions:rescan` | daily at 04:30 | Every enabled plugin and the enabled theme: the same full audit as the "Rescan" button |
+
+They are kept off the 03:00 scan and the 03:30 / 03:45 audit-log jobs because the
+core check also hashes every core file.
+
+**Security → Integrity** shows the latest core signature check (status, time,
+version and the number of changed files). A locally modified core is shown but is not
+an alert — local customization is supported. An invalid signature, or a check that
+could not run, is.
+
+When a check fails, every administrator who can open **Security → Integrity** sees a
+banner across the admin panel:
+
+- the core signature check reports an invalid signature or fails
+- the audit log verification fails (see the audit-log integrity guide)
+- a plugin or theme is worse than at the previous daily rescan — its health status
+  dropped, or its signature stopped verifying
+
+The banner clears by itself once a later run passes or the plugin/theme recovers. A
+plugin or theme change you expected (for example after an update) can be accepted with
+**Accept current status** on the integrity screen; the next rescan then compares
+against that status. The admin notification mail is sent once, when an alert is first
+raised, if notifications and a mail server are configured.
+
+The alert state is kept in `storage/app/private/security/scheduled-checks.json`
+(`config('security.scheduled_checks.state_file')`), not in the cache, so clearing the
+cache does not hide an alert. Run the scheduler as the same user as PHP-FPM so that
+the admin panel can update this file.
+
 ## Understanding Scan Results
 
 ### Status
@@ -269,6 +306,7 @@ chown -R www-data:www-data storage/app/dixlase/security
 - **View**: `resources/views/admin/settings/security/integrity.blade.php`
 - **Commands**: `app/Console/Commands/FileIntegrity/`
 - **Baseline**: `storage/app/dixlase/security/core_hashes.json`
+- **Scheduled checks and admin banners**: `app/Services/Security/ScheduledSecurityCheckMonitor.php`, `app/Console/Commands/ExtensionsRescan.php`
 
 ## Changelog
 

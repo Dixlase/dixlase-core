@@ -40,14 +40,14 @@ namespace App\Enums;
  *
  * Plugin activation policy
  *
- * Based on health score and presence of critical issues,
- * determines the action to take when activating a plugin
+ * The action to take when activating a plugin or theme, resolved by
+ * ExtensionEnableActionResolver:
  *
- * Criteria:
- * - score >= 90 & no critical issues: Allowed
- * - score >= 70 & no critical issues: WarningRequired
- * - score >= 50 & no critical issues: AcknowledgementRequired
- * - score < 50 or critical issues present: Blocked
+ * - Blocked: the security preset requires a signature and the extension
+ *   has no verified signature, or its health status is above the
+ *   preset's maximum
+ * - Otherwise, by score: >= 90 Allowed, >= 70 WarningRequired, below 70
+ *   or a critical issue AcknowledgementRequired
  */
 enum PluginEnableAction: string
 {
@@ -67,7 +67,7 @@ enum PluginEnableAction: string
     case AcknowledgementRequired = 'ack';
 
     /**
-     * Critical issues → activation blocked
+     * Not allowed under the current security settings → activation blocked
      */
     case Blocked = 'blocked';
 

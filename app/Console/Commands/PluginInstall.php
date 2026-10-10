@@ -36,11 +36,13 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
 use App\Helpers\GitExcludeHelper;
 use App\Helpers\GitIgnoreHelper;
 use App\Services\Extension\ExtensionDownloadFreshness;
+use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Licensing\LicenseCompatibilityChecker;
@@ -56,6 +58,7 @@ use Illuminate\Support\Str;
 class PluginInstall extends Command
 {
     use BuildsExtensionAssets;
+    use GuardsExtensionActivation;
     use PluginManagementTrait;
 
     /**
@@ -63,7 +66,7 @@ class PluginInstall extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the plugin to, for a plugin placed on disk by hand (git clone) rather than by dls:plugin:download --extract}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing; with --enable, also proceed when the health check asks for confirmation (a blocked plugin is still refused)} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the plugin to, for a plugin placed on disk by hand (git clone) rather than by dls:plugin:download --extract}';
 
     /**
      * The console command description.
@@ -98,6 +101,7 @@ class PluginInstall extends Command
         $web = null;
         $packageName = null;
         $composerName = null;
+        $namespace = null;
         $slug = Str::slug(Str::headline($pluginName), '-');
 
         // 1. Read from plugin.json (highest priority)
@@ -115,6 +119,10 @@ class PluginInstall extends Command
                 $web = $pluginData['url'] ?? $pluginData['homepage'] ?? $pluginData['web'] ?? null;
                 $version = $pluginData['version'] ?? '1.0.0';
                 $slug = $pluginData['slug'] ?? $slug;
+                $declaredNamespace = $pluginData['namespace'] ?? null;
+                if (is_string($declaredNamespace) && trim($declaredNamespace, '\\') !== '') {
+                    $namespace = trim($declaredNamespace, '\\');
+                }
             }
         }
 
@@ -182,6 +190,18 @@ class PluginInstall extends Command
             ));
         }
 
+        // Health / signature gate (dixlase-core#492), checked before anything
+        // is written or any of the plugin's code (migrations, seeders, npm)
+        // runs. The admin panel refuses to install a Blocked plugin under a
+        // preset that requires a scan, and refuses to enable one under any
+        // preset but Development; --enable additionally needs --force for
+        // the outcomes the admin panel asks the operator to confirm.
+        $enable = (bool) $this->option('enable');
+        if (($enable || ExtensionScanPolicy::isScanRequired())
+            && ! $this->passesActivationGate('plugin', $slug, $pluginName, 'installed', $force, requireConfirmation: $enable)) {
+            return 1;
+        }
+
         // Link the plugin to the source it can be updated from. In
         // order: an explicit --source, the sidecar dls:plugin:download
         // --extract (or the admin add page) left next to plugin.json,
@@ -219,7 +239,12 @@ class PluginInstall extends Command
             ['name' => $pluginName],
             fn (bool $exists) => ($exists ? [] : ['created_at' => now()]) + [
                 'package_name' => $packageName,
-                'namespace' => "Plugins\\$pluginName",
+                // What plugin.json declares, not what the directory name
+                // suggests. Composing it from the directory recorded
+                // Plugins\DixlaseSeo for a plugin whose files declare
+                // Plugins\DixlaseSEO, and PluginServiceProvider builds
+                // command class names from this column (#488).
+                'namespace' => $namespace ?? "Plugins\\$pluginName",
                 'directory' => $pluginName,
                 'slug' => $slug,
                 'description' => $description,
@@ -264,7 +289,7 @@ class PluginInstall extends Command
         if (ComposerLocalHelper::syncAutoload()) {
             $this->info('Updated composer.local.json');
         } else {
-            $this->warn('Failed to sync composer.local.json; run `php scripts/sync-local-autoload.php && composer dump-autoload --no-scripts` if plugin pages error.');
+            $this->warn('Failed to sync composer.local.json; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if plugin pages error.');
         }
 
         // Run migrations
@@ -315,17 +340,19 @@ class PluginInstall extends Command
 
         // Confirm plugin activation (only if --enable option is not specified)
         // When running via web, interactive input is not possible, so judge only by presence of --enable option
-        if ($this->option('enable')) {
-            $this->call('dls:plugin:enable', [
+        if ($enable) {
+            return $this->call('dls:plugin:enable', [
                 'pluginName' => $pluginName,
+                '--force' => $force,
             ]);
         } elseif (app()->runningInConsole() && ! app()->runningUnitTests()) {
             // Show confirmation prompt only when running from CLI
             if ($this->confirm(__('admin/command/plugin-install.enable_confirm', [
                 'pluginName' => $pluginName,
             ]), false)) {
-                $this->call('dls:plugin:enable', [
+                return $this->call('dls:plugin:enable', [
                     'pluginName' => $pluginName,
+                    '--force' => $force,
                 ]);
             } else {
                 $this->info(__('admin/command/plugin-install.enable_skipped', [

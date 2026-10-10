@@ -316,6 +316,7 @@ return [
         'health_issue_csp_violation_strict' => 'CSP: Violation (strict mode)',
         'health_issue_csp_violation_standard' => 'CSP: Violation (standard mode)',
         'health_issue_dangerous_api_exec' => 'Dangerous API detected',
+        'health_issue_dangerous_api_declared' => 'Dangerous API in use (declared)',
         'health_issue_scan_not_performed' => 'Scan: Not performed',
         'health_issue_scan_outdated' => 'Scan: Outdated',
         'csp_status' => 'CSP Compliance',

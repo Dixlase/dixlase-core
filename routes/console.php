@@ -102,6 +102,42 @@ Schedule::command('audit:integrity seal')
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/audit-integrity.log'));
 
+// Audit log verification (runs daily at 3:45 AM)
+//
+// Checks every daily seal and the hash chain from the last verified record
+// onward, after the 3:30 seal has signed the previous day. A failure raises an
+// admin banner (and the admin notification mail, when configured); the next
+// passing run clears it. See App\Services\Security\ScheduledSecurityCheckMonitor.
+Schedule::command('audit:integrity verify')
+    ->dailyAt('03:45')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/audit-integrity.log'));
+
+// Core signed-manifest check (runs daily at 4:15 AM)
+//
+// Verifies core against its signed manifest and records the result for the
+// Security > Integrity screen. An invalid signature or a failed check raises an
+// admin banner; a local modification does not. Kept apart from the 3:00 file
+// integrity scan because both hash every core file.
+Schedule::command('dls:core:verify')
+    ->dailyAt('04:15')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/core-verify.log'));
+
+// Plugin and theme rescan (runs daily at 4:30 AM)
+//
+// The same full audit as the admin "Rescan" button, for every enabled plugin
+// and the enabled theme. A worse health status or a signature that stopped
+// verifying raises an admin banner until it recovers or an administrator
+// acknowledges it.
+Schedule::command('dls:extensions:rescan')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/extension-rescan.log'));
+
 // Maintenance mode auto-release check (runs every minute)
 Schedule::command('maintenance:check-auto-release')
     ->everyMinute()

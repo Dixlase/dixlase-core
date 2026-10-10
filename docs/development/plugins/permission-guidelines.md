@@ -27,7 +27,6 @@ The Dixlase plugin/theme permission framework is a system that evaluates **Healt
 - Declarations (plugin.json) match reality (scan results)
 - Signature is valid (or unsigned is acceptable in development mode)
 - No unauthorized operations or suspicious APIs detected
-- File placement follows conventions
 - CSP compliant (or in development mode)
 
 **Score:** 90-100 points
@@ -170,29 +169,30 @@ Recommended Actions:
 
 ### Deduction Rules
 
+Main deductions (the full table, with rule keys, is in [Health Scoring Rules](health-scoring-rules.md)):
+
 | Item | Deduction |
 |------|-----------|
 | **Signature** | |
-| Unsigned | -5 |
-| Signature mismatch | -50 (critical) |
+| Unsigned | -10 |
+| Invalid signature (files changed or wrong key) | -50 (critical) |
 | **Permissions** | |
 | Minor undeclared permission | -5 |
 | Major undeclared permission | -15 (critical) |
 | Unused permission declaration | -2 |
 | Permissions not defined | -10 |
 | **CSP** | |
-| CSP violation (development mode) | 0 |
-| CSP violation (standard mode) | -5 |
-| CSP violation (strict mode) | -15 |
+| Inline code needed (standard CSP mode) | -5 |
+| Inline code needed (strict CSP mode) | -15 |
 | Inline JS required | -10 |
+| Inline CSS required | -5 |
 | **Scanning** | |
-| Scan expired | -5 |
+| Scan older than 30 days | -5 |
 | Scan not performed | -10 |
 | **Dangerous APIs** | |
-| exec/shell_exec, etc. | -30 (critical) |
-| .env reference | -20 |
-| **File Placement** | |
-| Reference outside plugin directory | -20 |
+| Dangerous API detected (`exec`/`shell_exec`, direct `env()` access, etc.) | -30 (critical) |
+| **License** | |
+| License on the refused list | -25 (critical) |
 
 ### Score to Health Conversion
 
@@ -363,6 +363,24 @@ Category-based structure with all items explicitly stated as `true`/`false`.
 | - | `_optional` | array | Scanner hint: no penalty if not detected |
 | - | `_notes` | object | Explanation of permission usage (bilingual `ja`/`en`) |
 
+### What Permissions Do at Runtime
+
+The `permissions` section is a **declaration**. Core uses it for:
+
+- Static analysis: the scanner compares the declarations with what the code does
+- The health score: undeclared or unused permissions are deducted
+- Admin display: the permission and risk summary shown for each extension
+
+Core does **not** restrict what plugin code can do based on these declarations. A plugin runs in the same PHP process as core and can call anything PHP allows. Core checks a declaration at runtime only where core itself resolves a capability from the plugin:
+
+| Where | Permission checked | What happens without it |
+|-------|--------------------|-------------------------|
+| `PluginServiceResolver` resolving a `MailCapableInterface` implementation | `mail.send` | The capability is not resolved |
+| Privacy export (`UserPrivacyExporter`) | `privacy.export` | The plugin's exporter is skipped |
+| Privacy erase (`UserPrivacyEraser`) | `privacy.delete` | The plugin's eraser is skipped |
+
+See [Privacy](privacy.md) for the privacy permissions.
+
 ### declares Section (Required)
 
 Declares the config files and structural elements the plugin provides.
@@ -399,9 +417,11 @@ Declares the config files and structural elements the plugin provides.
 - Declaration present + file missing -> health deduction (-5)
 - File present + declaration missing -> health deduction (-2)
 
-### Future Extension Fields (Reference)
+### Reserved Fields (Not Read by Core)
 
-The following fields are planned for implementation when the marketplace launches:
+The fields below are **reserved**. Nothing in core reads them today, so declaring them has no effect: they do not restrict storage, database, config, file, network or process access, and `permission_policy` does not change how undeclared permissions are treated. They are listed only so that the names are not used for something else.
+
+The real `csp` manifest block uses a different shape (see the [CSP Guide](../../operations/security/csp-guide.md)); the `csp` keys shown here are not read either.
 
 ```json
 {
@@ -450,7 +470,7 @@ The following fields are planned for implementation when the marketplace launche
 }
 ```
 
-#### security.sandbox
+#### security.sandbox (reserved, not enforced)
 
 | Field | Description |
 |-------|-------------|
@@ -459,7 +479,7 @@ The following fields are planned for implementation when the marketplace launche
 | `db_scope` | Database scope (plugin_tables_only/core_read/core_write) |
 | `config_scope` | Config scope (plugin_settings_only/core_read/core_write) |
 
-#### security.capabilities
+#### security.capabilities (reserved, not enforced)
 
 | Field | Description |
 |-------|-------------|
@@ -468,7 +488,7 @@ The following fields are planned for implementation when the marketplace launche
 | `network_access` | External communication targets |
 | `exec_process` | Whether process execution is allowed |
 
-#### verification
+#### verification (reserved, not enforced)
 
 | Field | Description |
 |-------|-------------|
@@ -478,7 +498,7 @@ The following fields are planned for implementation when the marketplace launche
 | `permission_policy.mode` | Permission policy mode (strict/balanced/permissive) |
 | `permission_policy.allow_undeclared` | Whether undeclared permissions are allowed |
 
-#### publisher
+#### publisher (reserved, not read)
 
 | Field | Description |
 |-------|-------------|
@@ -486,7 +506,7 @@ The following fields are planned for implementation when the marketplace launche
 | `publisher_id` | Publisher ID |
 | `website` | Publisher website |
 
-#### csp
+#### csp (keys shown above, not read)
 
 | Field | Description |
 |-------|-------------|
@@ -553,19 +573,26 @@ Scan targets corresponding to the category-based permissions structure:
 
 ### Preset Modes
 
-| Mode | Signature | Permission Definition | Max Health Level | CSP |
-|------|-----------|----------------------|------------------|-----|
-| **Strict** | Required | Required | Healthy only | Strict mode |
-| **Balanced** | Recommended | Recommended | Up to Advisory | Standard mode |
-| **Development** | Not required | Not required | Up to NotVerified | Development mode |
+| Mode | Signature | Max Health Status (plugins / themes) |
+|------|-----------|--------------------------------------|
+| **Strict** | Required (a verified signature) | Healthy / Healthy |
+| **Balanced** (default) | Not required | Advisory / NeedsAttention |
+| **Development** | Never required | No limit |
+| **Custom** | As configured | As configured |
+
+An extension is Blocked only when the preset requires a signature and it has no verified signature, or when its health status is above the preset's maximum. Otherwise enabling it is Allowed, or needs a warning or an acknowledgement, depending on the score. A missing `permissions` section is not blocked by itself; it costs 10 points. See [Health Scoring Rules](health-scoring-rules.md#enable-action-determination).
+
+These checks run when an extension is installed or enabled in the admin panel, when a theme is switched in the admin panel, and in the update commands.
 
 ### CSP Mode Integration
 
-| CSP Mode | Behavior | Plugin Restrictions |
+| CSP Mode | Behavior | Effect on extensions that need inline code |
 |----------|----------|-------------------|
-| **Development Mode** | Log violations, do not block | None |
-| **Standard Mode** | Allow only nonce-based inline | Warning shown for `requires_inline_js: true` |
-| **Strict Mode** | Completely block inline | `requires_inline_js: true` cannot be activated |
+| **Development Mode** | Log violations, do not block | No deduction |
+| **Standard Mode** | Allow only nonce-based inline | -5 health points |
+| **Strict Mode** | Completely block inline | -15 health points |
+
+The CSP mode affects activation only through the health score.
 
 ---
 

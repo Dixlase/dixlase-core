@@ -32,13 +32,50 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Security
+- `dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
+  health and signature check as the admin panel, so a security preset means the same thing
+  on the command line. They scan an extension that has no current scan result, refuse one
+  that resolves to Blocked, and ask for `--force` before enabling one the admin panel would
+  ask the operator to confirm. `dls:plugin:install` without `--enable` refuses a Blocked
+  plugin under a scan-required preset, like the admin panel's install button. The
+  Development preset stays unrestricted. Until now the CLI enabled whatever was on disk —
+  under Strict, an unsigned plugin the admin panel refused (#492)
+
 ### Fixed
+- `dls:plugin:download --extract` installs into the directory the plugin's own manifest
+  declares, instead of the studly form of its slug. For a plugin whose name carries an
+  acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
+  declares `Plugins\DixlaseSEO` — and the directory name is what `composer.local.json`
+  builds the PSR-4 prefix from. Composer matches a prefix case-sensitively, so the
+  plugin's own classes resolved only through an optimized classmap, and the same release
+  installed from the admin panel produced a different tree. On top of the download path:
+  `dls:plugin:install` records the namespace the manifest declares rather than composing
+  one from the argument; `dls:plugin:lint` reports a directory whose name is not the one
+  its manifest asks for; the recovery command core prints when an autoload sync fails now
+  carries `--optimize`, as does the regeneration `dls:app:uninstall` runs, because
+  without it the advice broke the extension it was meant to rescue. Existing installs
+  still carry the wrong directory name; correcting them needs its own change (#488)
+
 - `dls:plugin:install` and `dls:theme:install` print the stale-download warning in the
   active locale. It was a literal English sentence, so in a Japanese run it was the one
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
 ### Security
+- Plugins, themes, the audit log and core are now checked on a schedule, and a failure
+  reaches the admin panel. Until now these checks ran only when someone triggered them, so
+  a change to an enabled plugin's files went unnoticed until someone looked. Every day,
+  `audit:integrity verify` runs at 03:45 (after the seal), `dls:core:verify` at 04:15 and
+  the new `dls:extensions:rescan` — the same full audit as the "Rescan" button, for every
+  enabled plugin and the enabled theme — at 04:30. When the audit log fails verification,
+  the core signature is invalid or cannot be checked, or a plugin or theme is worse than at
+  the previous rescan (its health status dropped or its signature stopped verifying),
+  administrators who can open Security → Integrity see a banner across the admin panel,
+  and the admin notification mail is sent once if notifications are configured. The banner
+  clears when a later run passes; an expected plugin or theme change can be accepted on the
+  integrity screen. Security → Integrity now also shows the latest core signature check
+  (#493)
 - CSP sources from an extension are checked before they reach the policy. Values that relax
   it for the whole site — `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`,
   `'wasm-unsafe-eval'`, `'strict-dynamic'`, a bare `*` or `https://*`, `data:` / `blob:` in
@@ -73,6 +110,17 @@ repository to be notified of changes.
   the row, or call the `Audit` facade from a service an action invokes. A model that uses
   the trait and is also touched inside an action should wrap the save with
   `$model->withoutAudit(...)` until the trait is gone (#477)
+
+### Documentation
+- The plugin security pages now describe what the code does. `security.sandbox`,
+  `verification.permission_policy` and the other reserved manifest fields are marked as not
+  read by core; `permissions` are documented as declarations for scanning, the health score
+  and the admin panel, checked at runtime only for mail capabilities and privacy
+  export / erase. Enabling is Blocked only by the preset's signature requirement or its
+  status limit — not by a score below 50. The deduction table lists the rules the scorers
+  actually emit, and the unused `signature_mismatch` and `file_outside_scope` rules are
+  removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
+  controller routes for one session, not as disabling plugins (#495)
 
 ## [0.1.7] — 2026-10-08
 

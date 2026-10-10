@@ -67,6 +67,7 @@ use App\Services\Plugin\PluginPermissionService;
 use App\Support\ComposerLocalManifest;
 use App\Support\ExtensionArchive;
 use App\Support\ExtensionDirectories;
+use App\Support\ExtensionDirectoryName;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -981,10 +982,19 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
             }
 
-            // Activate using command
-            Artisan::call('dls:plugin:enable', [
+            // Activate using command. --force: the warning / acknowledgement
+            // outcomes were already confirmed in the activation modal, and the
+            // command still refuses a Blocked plugin on its own. It also
+            // refuses when the autoloader cannot be regenerated to include the
+            // plugin's files, which is why the exit code is checked below.
+            $exitCode = Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
+                '--force' => true,
             ]);
+
+            if ($exitCode !== 0) {
+                return back()->with('error', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.failed')).': '.trim(Artisan::output()));
+            }
 
             // Notification and logging of extension operations
             $permissionService = app(PluginPermissionService::class);
@@ -1683,7 +1693,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             if (File::exists($pluginJsonPath)) {
                 try {
                     $pluginData = json_decode(File::get($pluginJsonPath), true);
-                    $correctDir = $this->resolvePluginDirectoryName($pluginData);
+                    $correctDir = ExtensionDirectoryName::fromManifest($pluginData, ExtensionDirectoryName::KIND_PLUGIN);
 
                     if ($correctDir && $correctDir !== $pluginDir) {
                         $correctPath = base_path("plugins/{$correctDir}");
@@ -1815,102 +1825,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
         }
 
         return null;
-    }
-
-    /**
-     * Determine correct directory name from plugin.json contents
-     *
-     * Priority:
-     * 1. Explicit package field (unique mapping between manifest and install destination)
-     * 2. Last segment of namespace (e.g. Plugins\MyPlugin → MyPlugin)
-     * 3. Last part of package_name (e.g. plugins/my-plugin → my-plugin)
-     * 4. null (maintain existing directory name)
-     *
-     * Every candidate is run through sanitisePluginDirectoryName() before it
-     * is returned. The values come from the uploaded plugin.json, so they are
-     * attacker-controlled, and the caller interpolates the result straight
-     * into base_path("plugins/{$dir}") and File::move()s the extracted tree
-     * there.
-     */
-    protected function resolvePluginDirectoryName(?array $pluginData): ?string
-    {
-        if (! is_array($pluginData)) {
-            return null;
-        }
-
-        // Prioritize explicitly declared package field
-        $package = $pluginData['package'] ?? null;
-        if (is_string($package) && $package !== '') {
-            return $this->sanitisePluginDirectoryName($package);
-        }
-
-        // Prefer the final segment of namespace
-        $namespace = $pluginData['namespace'] ?? null;
-        if (is_string($namespace) && $namespace !== '') {
-            $parts = explode('\\', trim($namespace, '\\'));
-            $lastSegment = end($parts);
-            if ($lastSegment !== false && $lastSegment !== '') {
-                return $this->sanitisePluginDirectoryName($lastSegment);
-            }
-        }
-
-        // Fallback: last part of package_name
-        $packageName = $pluginData['package_name'] ?? null;
-        if (is_string($packageName) && $packageName !== '') {
-            $parts = explode('/', $packageName);
-            $lastSegment = end($parts);
-            if ($lastSegment !== false && $lastSegment !== '') {
-                return $this->sanitisePluginDirectoryName($lastSegment);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Constrain a manifest-supplied directory name to a single path segment.
-     *
-     * The values feeding resolvePluginDirectoryName() come out of the uploaded
-     * plugin.json, and the caller does:
-     *
-     *     $correctPath = base_path("plugins/{$correctDir}");
-     *     File::move($destinationPath, $correctPath);
-     *
-     * so `"package": "../public/shell"` resolved to the document root -- the
-     * extracted tree of attacker PHP would land somewhere the web server
-     * executes it. That move happens at UPLOAD time, before the health and
-     * security scan runs at install time, so the plugin safety model never got
-     * a chance to look at it.
-     *
-     * Returning null rather than a corrected name is deliberate: the caller
-     * treats null as "keep the directory the archive already used", which is
-     * the safe outcome. Silently rewriting `../public/shell` into
-     * `publicshell` would install the plugin under a name the manifest never
-     * asked for.
-     */
-    protected function sanitisePluginDirectoryName(string $candidate): ?string
-    {
-        $candidate = trim($candidate);
-
-        // A directory name, not a path: no separators, no traversal, no
-        // absolute paths, no NUL. `.` and `..` are rejected by the pattern.
-        if (preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $candidate) !== 1) {
-            Log::warning('Refused a plugin directory name that is not a single path segment', [
-                'candidate' => $candidate,
-            ]);
-
-            return null;
-        }
-
-        if (str_contains($candidate, '..')) {
-            Log::warning('Refused a plugin directory name containing traversal', [
-                'candidate' => $candidate,
-            ]);
-
-            return null;
-        }
-
-        return $candidate;
     }
 
     /**
