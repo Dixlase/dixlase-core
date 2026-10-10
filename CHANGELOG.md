@@ -52,6 +52,12 @@ repository to be notified of changes.
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
+- `dls:theme:list` lists the installed themes again. It read `theme_settings`, the
+  key/value store that holds the active theme id, instead of `themes`, so it stopped with
+  `Undefined property: stdClass::$name` on any site with an active theme, and reported
+  "no themes" on a site without one. It now shows each theme's directory, version and
+  whether it is the active one (#508)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
