@@ -248,28 +248,36 @@ maintains them.
 
 ### Scheduled Tasks (Scheduler)
 
-Core schedules chain building and sealing in `routes/console.php` — nothing to
-configure beyond running the Laravel scheduler (`php artisan schedule:run` from cron):
+Core schedules chain building, sealing and verification in `routes/console.php` —
+nothing to configure beyond running the Laravel scheduler (`php artisan schedule:run`
+from cron):
 
 | Task | Schedule |
 |------|----------|
 | `audit:integrity build` | hourly |
 | `audit:integrity seal` | daily at 03:30 (after the 03:00 file-integrity scan) |
+| `audit:integrity verify` | daily at 03:45 (after the seal) |
 
 The chain is also built once when the web installer completes, so install-time
 events are protected before the first hourly run.
 
 Generation is always on and has no switch: a record cannot be protected
 retroactively, so protection must not depend on someone remembering to run it.
-Verification is manual (`audit:integrity verify`), surfaced through Site Health,
-and may be run on whatever cadence your policy requires (NIST AU-9 sets none;
-PCI DSS 10.4.1 expects daily review).
+Verification runs daily (an incremental `audit:integrity verify`, which meets the
+daily review PCI DSS 10.4.1 expects; NIST AU-9 sets no cadence). When it fails, every
+administrator who can open **Security → Integrity** sees a banner across the admin
+panel, and the admin notification mail is sent when notifications and a mail server are
+configured. The mail goes out once, when the failure is first found; the banner stays
+until a later verification passes. A manual `verify` or `verify --all` (but not a
+`--date` or `--from`/`--to` run, which covers only a slice) raises or clears the banner
+the same way. The scheduled run is incremental, so still run `verify --all`
+periodically (see "Verifying Integrity").
 
 ### Security Considerations
 
 1. **Protect the signing key**: Seals are signed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals signed with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
 2. **Regular verification**: Run `audit:integrity verify` on a documented cadence and `verify --all` periodically (see "Verifying Integrity")
-3. **Alert configuration**: Set up immediate notifications when tampering is detected
+3. **Alert configuration**: Configure the notification e-mail and the mail server so that a failed daily verification is mailed as well as shown as a banner
 4. **Backups**: Include the daily seal table in your backups
 5. **Access control**: Restrict direct access to the audit log table
 
@@ -297,7 +305,7 @@ PCI DSS 10.4.1 expects daily review).
 
 ## Planned for Post-Beta
 
-- Scheduled verification with ON/OFF and frequency settings (verification only — generation stays always-on)
+- ON/OFF and frequency settings for the scheduled verification (verification only — generation stays always-on)
 - "Verify now" button in the admin panel (queued; a synchronous chain pass grows with the row count)
 - Chaining inline on write, removing the up-to-one-hour blind spot of the hourly batch
 - Real-time tampering detection

@@ -62,6 +62,21 @@ repository to be notified of changes.
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
+### Security
+- Plugins, themes, the audit log and core are now checked on a schedule, and a failure
+  reaches the admin panel. Until now these checks ran only when someone triggered them, so
+  a change to an enabled plugin's files went unnoticed until someone looked. Every day,
+  `audit:integrity verify` runs at 03:45 (after the seal), `dls:core:verify` at 04:15 and
+  the new `dls:extensions:rescan` — the same full audit as the "Rescan" button, for every
+  enabled plugin and the enabled theme — at 04:30. When the audit log fails verification,
+  the core signature is invalid or cannot be checked, or a plugin or theme is worse than at
+  the previous rescan (its health status dropped or its signature stopped verifying),
+  administrators who can open Security → Integrity see a banner across the admin panel,
+  and the admin notification mail is sent once if notifications are configured. The banner
+  clears when a later run passes; an expected plugin or theme change can be accepted on the
+  integrity screen. Security → Integrity now also shows the latest core signature check
+  (#493)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
