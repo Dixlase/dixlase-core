@@ -71,26 +71,82 @@ jobs:
             # months, so nothing here may fail quietly.
             DEPLOY_FAILURES=0
 
+            # The sites this workflow updates. A production site that is
+            # deliberately left out is left out of this list -- the signing-key
+            # site stays operator-triggered (dixlase-core#472), so it is absent
+            # here rather than skipped at run time.
             for SITE in brand docs demo; do
               echo "=== Deploying $SITE (${{ steps.target.outputs.env }}) ==="
 
-              # 0. サイトが未セットアップなら skip
-              # 本番サーバー側に $BASE/$SITE が存在しない (host) か、
-              # compose-php-1 の /var/www/apps/$SITE が存在しない (container)
-              # 状態ならそのサイトは未セットアップ扱いで通過させる。
-              # これがないと bind mount が未追加のサイトで
-              # `cd: ... No such file or directory` or `chown: cannot access`
-              # で loop 全体が exit 1 して以降のサイトに deploy できなくなる。
-              if [ ! -d "$BASE/$SITE" ]; then
-                echo "  Skipping: host path $BASE/$SITE does not exist"
-                continue
-              fi
-              if ! docker exec compose-php-1 test -d "/var/www/apps/$SITE"; then
-                echo "  Skipping: container path /var/www/apps/$SITE does not exist"
+              # 0. Resolve the site's container and paths.
+              #
+              # Two layouts are in use. In the shared stack several sites live
+              # in one container, each under /var/www/apps/<site>. In the Docker
+              # installer layout the site is its own compose stack: core sits in
+              # html/ and is mounted at /var/www/html. The container name comes
+              # from the site's own .env (CONTAINER_PREFIX), so the layout is
+              # read off the server rather than written down here.
+              #
+              # A site that resolves to neither layout is an error, not a skip.
+              # The guard this replaced treated a missing path as "not set up
+              # yet" and continued, which is how production sites went
+              # undeployed for weeks while every run reported success (#470).
+              # Recording the failure instead of exiting keeps the sites after
+              # this one deployable; the flag turns the run red after the loop.
+              SITE_DIR="$BASE/$SITE"
+
+              if [ ! -d "$SITE_DIR" ]; then
+                echo "::error::$SITE: $SITE_DIR does not exist on the server"
+                DEPLOY_FAILURES=1
                 continue
               fi
 
-              cd "$BASE/$SITE"
+              if [ -f "$SITE_DIR/html/artisan" ]; then
+                # Docker installer layout. `tr -d` strips quotes (\042, \047) and
+                # a CR, so a value written as CONTAINER_PREFIX="x" still resolves.
+                PREFIX=$(sed -n 's/^CONTAINER_PREFIX=//p' "$SITE_DIR/.env" 2>/dev/null | head -n 1 | tr -d '\042\047\r')
+                CONTAINER="${PREFIX:-dixlase}-app"
+                APP_DIR="$SITE_DIR/html"
+                APP_PATH="/var/www/html"
+                # The host tree is owned by the deploy user with the www-data
+                # group and the setgid bit; keep that group so www-data can
+                # still write what it has to write.
+                OWNER="1001:33"
+                # The installer keeps the dev packages in vendor/, and their
+                # service providers are in the discovered-provider cache, so
+                # --no-dev here would take every request down (see step 4).
+                NO_DEV=""
+                # Its vendor/ is owned by the deploy user with the www-data
+                # group, which is also what the product's own updater writes
+                # as, so Composer runs as www-data rather than root. HOME has
+                # to be writable, and Composer asks git for the version of the
+                # tree it is in -- which refuses a checkout owned by another
+                # user, so safe.directory is passed through the environment
+                # rather than written into a config file.
+                RUN_AS="-u www-data -e HOME=/tmp -e COMPOSER_HOME=/tmp/composer -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$APP_PATH"
+              elif [ -f "$SITE_DIR/artisan" ]; then
+                # Shared stack.
+                CONTAINER="compose-php-1"
+                APP_DIR="$SITE_DIR"
+                APP_PATH="/var/www/apps/$SITE"
+                OWNER="1001:1001"
+                NO_DEV="--no-dev"
+                RUN_AS=""
+              else
+                echo "::error::$SITE: no artisan at $SITE_DIR/artisan or $SITE_DIR/html/artisan, so the layout is unknown"
+                DEPLOY_FAILURES=1
+                continue
+              fi
+
+              if ! docker exec "$CONTAINER" test -d "$APP_PATH"; then
+                echo "::error::$SITE: container $CONTAINER has no $APP_PATH"
+                DEPLOY_FAILURES=1
+                continue
+              fi
+
+              echo "  layout: host=$APP_DIR container=$CONTAINER path=$APP_PATH"
+
+              cd "$APP_DIR"
 
               # 1. deploy ユーザーが git 操作できるよう所有権を戻す
               # `-h` (lchown) を付けて symlink 自身に chown する。symlink を
@@ -98,7 +154,7 @@ jobs:
               # "No such file or directory" で exit 1 する事故が起きるため。
               # 過去のプラグイン install/uninstall の名残として database/
               # migrations/ などに broken symlink が残っていてもこれで通る。
-              docker exec compose-php-1 chown -hR 1001:1001 /var/www/apps/$SITE
+              docker exec "$CONTAINER" chown -hR "$OWNER" "$APP_PATH"
 
               # 1-b. 半壊 submodule pointer のクリーンアップ
               # plugins/*/.git や themes/*/.git の gitfile が残っているのに
@@ -118,6 +174,9 @@ jobs:
               done
 
               # 2. コードを最新に更新
+              # Composer は、この deploy で composer.lock が実際に動いたときだけ
+              # 走らせたい (手順 4)。reset の前の中身を控えておく。
+              LOCK_BEFORE=$(sha256sum composer.lock 2>/dev/null | cut -d" " -f1)
               git fetch origin
               git reset --hard origin/main
 
@@ -138,9 +197,27 @@ jobs:
               esac
 
               # 4. Composer 依存関係とオートロード更新
-              if [ -f composer.json ]; then
-                docker exec compose-php-1 bash -c \
-                  "cd /var/www/apps/$SITE && composer install --no-dev --no-interaction --optimize-autoloader"
+              #
+              # 本番ツリーで Composer を走らせるのは避けたい。同梱テーマの dist を
+              # 配置済みの checkout に再展開して入れ子の .git を壊す手順そのもの
+              # であり (後始末が手順 4-b)、恒久対応は #483 である。そこで、この
+              # deploy で composer.lock が実際に動いたとき、または vendor がまだ
+              # 無いときだけ走らせる。lock が動いていなければ vendor は既に
+              # その lock どおりなので、走らせる理由が無い。
+              #
+              # --no-dev は共有の構成にだけ付ける。Docker インストーラの構成は
+              # dev パッケージを vendor に入れたまま運用しており、discover 済み
+              # プロバイダのキャッシュにもそれらが載っているため、--no-dev で
+              # vendor から外すと毎リクエストが package discovery で落ちる。
+              LOCK_AFTER=$(sha256sum composer.lock 2>/dev/null | cut -d" " -f1)
+              if [ ! -f composer.json ]; then
+                echo "  composer: no composer.json"
+              elif [ "$LOCK_BEFORE" = "$LOCK_AFTER" ] && [ -f vendor/autoload.php ]; then
+                echo "  composer: composer.lock unchanged and vendor present, so not running Composer"
+              else
+                echo "  composer: running install$NO_DEV"
+                docker exec $RUN_AS "$CONTAINER" bash -c \
+                  "cd $APP_PATH && composer install $NO_DEV --no-interaction --optimize-autoloader"
               fi
 
               # 4-b. Composer がテーマの作業ツリーを置き換えていたら git 管理下に戻す
@@ -166,8 +243,8 @@ jobs:
                 # git 操作はホスト側の deploy ユーザーで走るので、所有権を戻して
                 # おかないと .git を作れず "Permission denied" で落ちる。手順 1 が
                 # サイト全体に対して行っているのと同じ chown をここでも行う。
-                docker exec compose-php-1 chown -R 1001:1001 \
-                  "/var/www/apps/$SITE/themes/DixlaseOnePage"
+                docker exec "$CONTAINER" chown -R 1001:1001 \
+                  "$APP_PATH/themes/DixlaseOnePage"
 
                 # `&&` で連結して失敗を伝播させる。`set -e` は if の条件部では
                 # 無効になるため、ここでは頼れない。
@@ -176,8 +253,8 @@ jobs:
                        git@github.com:Dixlase/theme-dixlase-onepage.git \
                   && git -C themes/DixlaseOnePage fetch --depth=1 -q origin main \
                   && git -C themes/DixlaseOnePage reset --hard -q FETCH_HEAD; then
-                  docker exec compose-php-1 bash -c \
-                    "cd /var/www/apps/$SITE && php scripts/sync-local-autoload.php" || true
+                  docker exec "$CONTAINER" bash -c \
+                    "cd $APP_PATH && php scripts/sync-local-autoload.php" || true
                 else
                   # ここで exit すると後続サイトが丸ごとデプロイされなくなる。
                   # テーマの中身は lock の参照どおりに展開済みで、欠けているのは
@@ -192,24 +269,24 @@ jobs:
               rsync -a "$BASE/_shared/build/" public/assets/build/
 
               # 6. パーミッション修正（www-data が .env とルートに書き込めるように）
-              docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE
-              [ -f .env ] && docker exec compose-php-1 chown www-data:www-data /var/www/apps/$SITE/.env
+              docker exec "$CONTAINER" chown www-data:www-data "$APP_PATH"
+              [ -f .env ] && docker exec "$CONTAINER" chown www-data:www-data "$APP_PATH/.env"
               # 所有権も戻す。手順 4 の composer install は docker exec 経由の root で
               # 走り、その post-autoload-dump が artisan package:discover を呼ぶため、
               # bootstrap/cache/packages.php と services.php が root 所有で作られる
               # (2026-09-24 に 4 サイト全てで確認)。chmod 777 だけだと所有権は root の
               # ままで、パーミッションのビットだけが「PHP-FPM が書き換えられない
               # キャッシュ」との間に立っている状態になる。
-              docker exec compose-php-1 chown -R www-data:www-data /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
-              docker exec compose-php-1 chmod -R 777 /var/www/apps/$SITE/storage /var/www/apps/$SITE/bootstrap/cache
+              docker exec "$CONTAINER" chown -R www-data:www-data "$APP_PATH/storage" "$APP_PATH/bootstrap/cache"
+              docker exec "$CONTAINER" chmod -R 777 "$APP_PATH/storage" "$APP_PATH/bootstrap/cache"
 
               # 6-b. public/ ディレクトリのグループを www-data に戻す
               # 手順1の chown -hR 1001:1001 で www-data グループ設定が消えるため、毎回再適用
               # deploy ユーザーは www-data グループのメンバーなので両者が書き込み可能
               # chgrp も `-h` 付きで symlink を辿らないようにする (broken symlink 対策)
-              docker exec compose-php-1 chgrp -hR www-data /var/www/apps/$SITE/public
-              docker exec compose-php-1 chmod -R g+w /var/www/apps/$SITE/public
-              docker exec compose-php-1 find /var/www/apps/$SITE/public -type d -exec chmod g+s {} +
+              docker exec "$CONTAINER" chgrp -hR www-data "$APP_PATH/public"
+              docker exec "$CONTAINER" chmod -R g+w "$APP_PATH/public"
+              docker exec "$CONTAINER" find "$APP_PATH/public" -type d -exec chmod g+s {} +
 
               # 7. キャッシュクリア（コンテナ内で実行してパス不一致を防ぐ）
               # `-u www-data` は必須。付けないと docker exec は root で走り、
@@ -220,9 +297,9 @@ jobs:
               # である。そちらは手順 6 に chown を足して手当てした。
               # 手順 1・6 の chown / chmod は root が必要なのでそのままにする。
               if [ -f artisan ]; then
-                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan config:clear
-                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan view:clear
-                docker exec -u www-data compose-php-1 php /var/www/apps/$SITE/artisan route:clear
+                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" config:clear
+                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" view:clear
+                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" route:clear
               fi
             done
 
