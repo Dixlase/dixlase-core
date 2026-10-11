@@ -108,11 +108,30 @@ jobs:
                 CONTAINER="${PREFIX:-dixlase}-app"
                 APP_DIR="$SITE_DIR/html"
                 APP_PATH="/var/www/html"
+                # The host tree is owned by the deploy user with the www-data
+                # group and the setgid bit; keep that group so www-data can
+                # still write what it has to write.
+                OWNER="1001:33"
+                # The installer keeps the dev packages in vendor/, and their
+                # service providers are in the discovered-provider cache, so
+                # --no-dev here would take every request down (see step 4).
+                NO_DEV=""
+                # Its vendor/ is owned by the deploy user with the www-data
+                # group, which is also what the product's own updater writes
+                # as, so Composer runs as www-data rather than root. HOME has
+                # to be writable, and Composer asks git for the version of the
+                # tree it is in -- which refuses a checkout owned by another
+                # user, so safe.directory is passed through the environment
+                # rather than written into a config file.
+                RUN_AS="-u www-data -e HOME=/tmp -e COMPOSER_HOME=/tmp/composer -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$APP_PATH"
               elif [ -f "$SITE_DIR/artisan" ]; then
                 # Shared stack.
                 CONTAINER="compose-php-1"
                 APP_DIR="$SITE_DIR"
                 APP_PATH="/var/www/apps/$SITE"
+                OWNER="1001:1001"
+                NO_DEV="--no-dev"
+                RUN_AS=""
               else
                 echo "::error::$SITE: no artisan at $SITE_DIR/artisan or $SITE_DIR/html/artisan, so the layout is unknown"
                 DEPLOY_FAILURES=1
@@ -135,7 +154,7 @@ jobs:
               # "No such file or directory" で exit 1 する事故が起きるため。
               # 過去のプラグイン install/uninstall の名残として database/
               # migrations/ などに broken symlink が残っていてもこれで通る。
-              docker exec "$CONTAINER" chown -hR 1001:1001 "$APP_PATH"
+              docker exec "$CONTAINER" chown -hR "$OWNER" "$APP_PATH"
 
               # 1-b. 半壊 submodule pointer のクリーンアップ
               # plugins/*/.git や themes/*/.git の gitfile が残っているのに
@@ -155,6 +174,9 @@ jobs:
               done
 
               # 2. コードを最新に更新
+              # Composer は、この deploy で composer.lock が実際に動いたときだけ
+              # 走らせたい (手順 4)。reset の前の中身を控えておく。
+              LOCK_BEFORE=$(sha256sum composer.lock 2>/dev/null | cut -d" " -f1)
               git fetch origin
               git reset --hard origin/main
 
@@ -175,9 +197,27 @@ jobs:
               esac
 
               # 4. Composer 依存関係とオートロード更新
-              if [ -f composer.json ]; then
-                docker exec "$CONTAINER" bash -c \
-                  "cd $APP_PATH && composer install --no-dev --no-interaction --optimize-autoloader"
+              #
+              # 本番ツリーで Composer を走らせるのは避けたい。同梱テーマの dist を
+              # 配置済みの checkout に再展開して入れ子の .git を壊す手順そのもの
+              # であり (後始末が手順 4-b)、恒久対応は #483 である。そこで、この
+              # deploy で composer.lock が実際に動いたとき、または vendor がまだ
+              # 無いときだけ走らせる。lock が動いていなければ vendor は既に
+              # その lock どおりなので、走らせる理由が無い。
+              #
+              # --no-dev は共有の構成にだけ付ける。Docker インストーラの構成は
+              # dev パッケージを vendor に入れたまま運用しており、discover 済み
+              # プロバイダのキャッシュにもそれらが載っているため、--no-dev で
+              # vendor から外すと毎リクエストが package discovery で落ちる。
+              LOCK_AFTER=$(sha256sum composer.lock 2>/dev/null | cut -d" " -f1)
+              if [ ! -f composer.json ]; then
+                echo "  composer: no composer.json"
+              elif [ "$LOCK_BEFORE" = "$LOCK_AFTER" ] && [ -f vendor/autoload.php ]; then
+                echo "  composer: composer.lock unchanged and vendor present, so not running Composer"
+              else
+                echo "  composer: running install$NO_DEV"
+                docker exec $RUN_AS "$CONTAINER" bash -c \
+                  "cd $APP_PATH && composer install $NO_DEV --no-interaction --optimize-autoloader"
               fi
 
               # 4-b. Composer がテーマの作業ツリーを置き換えていたら git 管理下に戻す
