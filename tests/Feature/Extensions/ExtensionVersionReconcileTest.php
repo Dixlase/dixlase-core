@@ -170,6 +170,26 @@ class ExtensionVersionReconcileTest extends TestCase
         $this->artisan('dls:extensions:reconcile-versions', ['--dry-run' => true])->assertExitCode(0);
     }
 
+    public function test_the_command_says_so_when_nothing_is_installed(): void
+    {
+        // A site that was deployed but never installed has no rows at all.
+        // "Every installed extension already matches its manifest" would read
+        // in the deploy log as a check that passed.
+        $this->artisan('dls:extensions:reconcile-versions')
+            ->expectsOutputToContain('No installed extensions.')
+            ->assertExitCode(0);
+    }
+
+    public function test_the_command_distinguishes_nothing_installed_from_all_matching(): void
+    {
+        $this->plugin('0.1.4');
+        $this->manifest('plugins', 'ReconcileMe', 'plugin.json', '0.1.4');
+
+        $this->artisan('dls:extensions:reconcile-versions')
+            ->expectsOutputToContain('Every installed extension already matches its manifest.')
+            ->assertExitCode(0);
+    }
+
     public function test_a_stale_row_no_longer_offers_an_installed_version_as_an_update(): void
     {
         // The state found on a production site on 2026-10-11: recorded 0.1.2,

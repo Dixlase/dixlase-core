@@ -37,6 +37,8 @@ namespace App\Console\Commands;
 
 namespace App\Console\Commands;
 
+use App\Models\Plugin;
+use App\Models\Theme;
 use App\Services\Extension\ExtensionVersionReconciler;
 use Illuminate\Console\Command;
 use Throwable;
@@ -84,7 +86,9 @@ class ExtensionsReconcileVersions extends Command
         }
 
         if ($changes === []) {
-            $this->info('Every installed extension already matches its manifest.');
+            $this->info($this->nothingInstalled()
+                ? 'No installed extensions.'
+                : 'Every installed extension already matches its manifest.');
 
             return self::SUCCESS;
         }
@@ -96,5 +100,24 @@ class ExtensionsReconcileVersions extends Command
         ));
 
         return $dryRun ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * True when there are no installed extension rows at all, so there was
+     * nothing to compare.
+     *
+     * Worth its own message: "every installed extension already matches its
+     * manifest" reads in a deploy log as a check that passed, when on a site
+     * with no rows nothing was checked. A site that was deployed but never
+     * installed is exactly that case.
+     *
+     * Not wrapped: reconcileAll() has already read both tables by the time
+     * this runs, so a failure here is a real fault and should be loud rather
+     * than resolved into one message or the other.
+     */
+    protected function nothingInstalled(): bool
+    {
+        return Plugin::query()->installed()->count() === 0
+            && Theme::query()->installed()->count() === 0;
     }
 }
