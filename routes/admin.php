@@ -526,6 +526,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/integrity/bulk-delete', [Security\AdminSecurityIntegrityController::class, 'bulkDelete'])
                     ->middleware('check.menu.edit:settings.security.integrity')
                     ->name('integrity.bulk-delete');
+                Route::post('/integrity/scheduled-checks/acknowledge-extensions', [Security\AdminSecurityIntegrityController::class, 'acknowledgeExtensionAlerts'])
+                    ->middleware('check.menu.edit:settings.security.integrity')
+                    ->name('integrity.acknowledge-extensions');
                 Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])
                     ->middleware('check.menu.access:settings.security.integrity')
                     ->name('integrity.show');

@@ -215,17 +215,69 @@ class CspExtensionLoader
 
     /**
      * Normalize domain array
+     *
+     * A bare host (`cdn.example.com`) gets `https://` prepended. Anything
+     * else — a keyword such as `'self'`, a scheme source such as `data:`, a
+     * non-string — is passed through untouched so CspSourceValidator judges
+     * the value the author actually wrote. (Prefixing it would turn `*` into
+     * `https://*`, a valid source that matches every HTTPS origin.)
      */
     protected function normalizeDomains(array $domains): array
     {
-        return array_map(function ($domain) {
-            // Add https if protocol is missing
-            if (! preg_match('/^https?:\/\//', $domain)) {
+        return array_values(array_map(function ($domain) {
+            if (is_string($domain)
+                && ! str_contains($domain, '://')
+                && preg_match('~^(\*\.)?[a-z0-9-]+(\.[a-z0-9-]+)+(:([0-9]+|\*))?(/.*)?$~i', $domain)) {
                 return 'https://'.$domain;
             }
 
             return $domain;
-        }, $domains);
+        }, $domains));
+    }
+
+    /**
+     * Get the CSP sources an extension manifest declares that the registry would reject
+     *
+     * Used by the extension card so the admin can see what was dropped. The
+     * same values are logged when the registry receives them at runtime;
+     * sources added from code (CspPolicyProvider, csp_add_directive()) are
+     * only visible in that log.
+     *
+     * @param  string  $type  'plugin' or 'theme'
+     * @param  string  $directory  Extension directory name
+     * @return array<int, array{directive: string, value: string, reason: string}>
+     */
+    public function getRejectedSources(string $type, string $directory): array
+    {
+        $path = $type === 'plugin'
+            ? base_path("plugins/{$directory}/plugin.json")
+            : base_path("themes/{$directory}/theme.json");
+
+        return $this->getRejectedSourcesFromManifest($path);
+    }
+
+    /**
+     * Get the rejected CSP sources declared in a manifest file
+     *
+     * @return array<int, array{directive: string, value: string, reason: string}>
+     */
+    public function getRejectedSourcesFromManifest(string $manifestPath): array
+    {
+        if ($manifestPath === '' || ! File::exists($manifestPath)) {
+            return [];
+        }
+
+        try {
+            $json = json_decode(File::get($manifestPath), true);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        if (! is_array($json) || ! isset($json['csp']) || ! is_array($json['csp'])) {
+            return [];
+        }
+
+        return (new CspSourceValidator())->filter($this->parseCspConfig($json['csp']))['rejected'];
     }
 
     /**

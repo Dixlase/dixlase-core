@@ -48,4 +48,5 @@ return [
     'database_removed' => 'Plugin \':pluginName\' has been removed from the database.',
     'completed' => 'Plugin \':pluginName\' has been uninstalled successfully.',
     'delete_hint' => 'To delete files, run `php artisan plugin:delete <directory>` command.',
+    'autoload_pending' => 'Plugin :pluginName is uninstalled, but the autoloader could not be regenerated, so its autoload files still load. Run `php artisan dls:plugin:sync-autoload` to finish.',
 ];

@@ -982,10 +982,19 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 return back()->with('error', __('admin/settings/plugins/index.enable_action.blocked_message'));
             }
 
-            // Activate using command
-            Artisan::call('dls:plugin:enable', [
+            // Activate using command. --force: the warning / acknowledgement
+            // outcomes were already confirmed in the activation modal, and the
+            // command still refuses a Blocked plugin on its own. It also
+            // refuses when the autoloader cannot be regenerated to include the
+            // plugin's files, which is why the exit code is checked below.
+            $exitCode = Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
+                '--force' => true,
             ]);
+
+            if ($exitCode !== 0) {
+                return back()->with('error', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.failed')).': '.trim(Artisan::output()));
+            }
 
             // Notification and logging of extension operations
             $permissionService = app(PluginPermissionService::class);

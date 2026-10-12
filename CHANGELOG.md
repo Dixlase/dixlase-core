@@ -32,6 +32,16 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Security
+- `dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
+  health and signature check as the admin panel, so a security preset means the same thing
+  on the command line. They scan an extension that has no current scan result, refuse one
+  that resolves to Blocked, and ask for `--force` before enabling one the admin panel would
+  ask the operator to confirm. `dls:plugin:install` without `--enable` refuses a Blocked
+  plugin under a scan-required preset, like the admin panel's install button. The
+  Development preset stays unrestricted. Until now the CLI enabled whatever was on disk —
+  under Strict, an unsigned plugin the admin panel refused (#492)
+
 ### Fixed
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an
@@ -59,6 +69,45 @@ repository to be notified of changes.
   because they set the description after Symfony had already read it. A feature test now
   fails on any `dls:` command whose description is empty, a placeholder or a key (#509)
 
+### Security
+- Plugins, themes, the audit log and core are now checked on a schedule, and a failure
+  reaches the admin panel. Until now these checks ran only when someone triggered them, so
+  a change to an enabled plugin's files went unnoticed until someone looked. Every day,
+  `audit:integrity verify` runs at 03:45 (after the seal), `dls:core:verify` at 04:15 and
+  the new `dls:extensions:rescan` — the same full audit as the "Rescan" button, for every
+  enabled plugin and the enabled theme — at 04:30. When the audit log fails verification,
+  the core signature is invalid or cannot be checked, or a plugin or theme is worse than at
+  the previous rescan (its health status dropped or its signature stopped verifying),
+  administrators who can open Security → Integrity see a banner across the admin panel,
+  and the admin notification mail is sent once if notifications are configured. The banner
+  clears when a later run passes; an expected plugin or theme change can be accepted on the
+  integrity screen. Security → Integrity now also shows the latest core signature check
+  (#493)
+- CSP sources from an extension are checked before they reach the policy. Values that relax
+  it for the whole site — `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`,
+  `'wasm-unsafe-eval'`, `'strict-dynamic'`, a bare `*` or `https://*`, `data:` / `blob:` in
+  script-src, values that smuggle in another directive, and directives such as
+  `frame-ancestors` or `base-uri` — are dropped, logged, and listed on the extension's
+  card. Host sources, `'self'`, the nonce placeholder and hashes are kept, and the admin's
+  own CSP settings are not filtered. A bare `*` in a manifest was turned into `https://*`
+  on load, which allowed every HTTPS origin; it is now judged as written (#494)
+- A plugin's `routes/web.php` and the deprecated `routes/api.php` answer only on sites where
+  the plugin is active. Web routes were mounted with `web` alone and the legacy API file with
+  no middleware at all, so a plugin enabled on one site of a multisite install answered on
+  every site. An inactive plugin's web routes now return the site's HTML 404, its legacy API
+  routes the JSON 404 envelope. A new migration gives every enabled plugin that lacks one an
+  active row for the primary site (existing rows are left alone), and a plugin created
+  already enabled now gets its row too, so existing sites keep their plugin routes (#494)
+
+### Plugin API — Changed
+- `CspPolicyRegistry::addDirective()` and `addDirectives()` — and the directives a
+  `CspPolicyProvider` returns — now drop sources that would weaken the site's policy
+  (`'unsafe-inline'`, `'unsafe-eval'`, a bare `*`, `data:` in script-src, directives such as
+  `frame-ancestors`, …) instead of adding them. Dropped values are logged and returned by
+  the new `CspPolicyRegistry::getRejected()`. An extension that relied on one of them must
+  load the resource from a concrete host or ask the operator to allow it in the CSP
+  settings (#494)
+
 ### Plugin API — Deprecated
 - `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
   audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
@@ -79,6 +128,88 @@ repository to be notified of changes.
   actually emit, and the unused `signature_mismatch` and `file_outside_scope` rules are
   removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
   controller routes for one session, not as disabling plugins (#495)
+
+## [0.1.9] — 2026-10-12
+
+### Security
+- Extension verification compares the manifest's `files` hashes before it resolves the
+  signer's public key. The two halves answer different questions and only the signature
+  needs a key, so a result reached without one now still reflects the files on disk, and
+  `pending` narrows to its proper meaning: the files are intact but the signer could not
+  be confirmed
+
+### Fixed
+- A new installation gets the theme's current release. Every delivery path — the one-line
+  installer, the ZIP download, `composer create-project` — installs the version
+  `composer.lock` records, and that lock had never moved since the theme's first release,
+  so 0.1.7 and 0.1.8 shipped a theme from 2026-09-26. The lock now points at the theme's
+  latest release, and a release build stops rather than ship an outdated one (#517)
+
+### Internal
+- `scripts/check-bundled-theme.php` compares the locked theme version against the theme's
+  newest stable tag; `release.yml` runs it, with an opt-out for deliberately rebuilding an
+  older tag. `docs/development/releasing.md` and its Japanese mirror describe the
+  pre-release step (#517)
+
+## [0.1.8] — 2026-10-12
+
+### Added
+- The extension rescan and the audit-log integrity check run on a schedule, and a status
+  that gets worse — a health score dropping, a signature that stopped verifying, an audit
+  chain that no longer validates — raises a banner in the admin that clears once it is
+  resolved (#500)
+- `dls:extensions:reconcile-versions` brings the version recorded for each installed
+  plugin and theme back in line with its manifest on disk, and reports which ones moved.
+  `--dry-run` reports the drift and exits non-zero, so it can be used as a check (#522)
+
+### Changed
+- **A production site is deployed from a published release, not from `main`.** The deploy
+  workflow triggers on `release: published` and moves each site to that release's tag; it
+  also accepts a manual run with a tag, which is how a specific version is placed
+  deliberately. A merge to `main` no longer deploys anything (#529)
+- Core carries one release workflow again. The second one triggered on every `v*` tag,
+  failed on every tag it ran for, and would have created the GitHub release itself with
+  `GITHUB_TOKEN` — which raises no `release: published` for anything else — so it had to go
+  before the deploy could key on a release (#528)
+- An extension installs into the directory its manifest names, instead of a name rebuilt
+  from the slug. `dixlase-seo` reaching for `DixlaseSeo` on a case-sensitive filesystem is
+  what this fixes (#503)
+- `AuditableTrait` is deprecated. Audit entries are produced in the action layer only, so
+  one operation can no longer be recorded twice or, worse, once from each of two places
+  that disagree (#484)
+
+### Fixed
+- The version an extension records in the database is reconciled with its manifest. A deploy
+  places files but installs nothing, so the recorded version stayed at whatever the install
+  wrote — and that value decides whether the admin panel offers an update. A stale row
+  therefore offered an update to a version that was already installed, and accepting it
+  deletes the extension directory along with the nested `.git` a deploy owns. The
+  reconciliation happens during a rescan, so the admin *Rescan* button, the daily schedule
+  and a deploy all repair it, and a version that moves without an install is recorded in the
+  audit log as a warning (#521, #522, #525)
+- The deploy visits every production site and fails instead of skipping one it cannot
+  resolve. Each site's layout — Docker installer or shared stack — is now resolved per site,
+  which is what let a site go undeployed without the run going red (#516)
+- A CSP source declared by an extension is validated before it reaches the policy, and a
+  plugin's web routes are registered only on the sites where that plugin is enabled (#501)
+- The health and signature gate that guards the admin screens applies to the CLI as well, so
+  `dls:plugin:*` cannot enable or update an extension the admin panel would refuse (#498)
+- A plugin's `autoload.files` entries are loaded only while the plugin is enabled. A disabled
+  plugin's helper file was still required on every request, which turned a removed file into
+  a fatal rather than a missing helper (#499)
+- Every dangerous API call counts toward the health score, not only the first one found in a
+  file (#497)
+- The CLI's stale-download warning is translated instead of being emitted in English (#489)
+
+### Documentation
+- The plugin security documentation describes the checks the code actually performs (#496)
+
+### Internal
+- Core's test suite can build a usable `Member` on its own, without a plugin providing one
+  (#512)
+- CI no longer passes a secret as the checkout token (#506), the dead `COMPOSER_AUTH`
+  plumbing is gone (#491), and the deploy no longer targets the signing-key site (#502)
+- `source-map-js` 1.2.1 → 1.2.2 (#504)
 
 ## [0.1.7] — 2026-10-08
 

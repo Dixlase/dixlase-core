@@ -18,7 +18,7 @@
         "php": "^8.3",
         "composer/installers": "^2.0",
         "composer/semver": "^3.4",
-        "dixlase/dixlase-onepage": "dev-main@dev",
+        "dixlase/dixlase-onepage": ">=0.2 <1.0",
         "google/cloud-recaptcha-enterprise": "^2.1",
         "laravel/fortify": "^1.25",
         "laravel/framework": "^13.0",

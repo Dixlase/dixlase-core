@@ -25,6 +25,7 @@ namespace Tests\Unit\Middleware;
 use App\Contracts\Site\SiteContextInterface;
 use App\Http\Middleware\EnsurePluginActiveOnSite;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\TestCase;
 
 class EnsurePluginActiveOnSiteTest extends TestCase
@@ -69,5 +70,29 @@ class EnsurePluginActiveOnSiteTest extends TestCase
         $body = json_decode($response->getContent(), true);
         $this->assertSame('not_found', $body['error']['code']);
         $this->assertArrayHasKey('timestamp', $body['meta']);
+    }
+
+    public function test_web_format_aborts_with_html_404_when_plugin_is_not_active_on_site(): void
+    {
+        $siteContext = $this->createMock(SiteContextInterface::class);
+        $siteContext->method('isPluginActive')->with('disabled-plugin')->willReturn(false);
+
+        $middleware = new EnsurePluginActiveOnSite($siteContext);
+        $request = Request::create('/disabled-plugin/page', 'GET');
+
+        $reached = false;
+
+        try {
+            $middleware->handle($request, function () use (&$reached) {
+                $reached = true;
+
+                return response('ok');
+            }, 'disabled-plugin', 'web');
+            $this->fail('An inactive plugin web route must abort with 404');
+        } catch (NotFoundHttpException $e) {
+            $this->assertSame(404, $e->getStatusCode());
+        }
+
+        $this->assertFalse($reached, 'next handler must NOT be called when the plugin is disabled for the site');
     }
 }

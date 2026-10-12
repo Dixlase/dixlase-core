@@ -811,9 +811,12 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_blocked'));
             }
 
-            // Switch theme using Artisan command
+            // Switch theme using Artisan command. --force: the warning /
+            // acknowledgement outcomes are confirmed in the admin panel, and
+            // the command still refuses a Blocked theme on its own.
             $exitCode = Artisan::call('dls:theme:switch', [
                 'themeName' => $theme->slug,
+                '--force' => true,
             ]);
 
             if ($exitCode !== 0) {

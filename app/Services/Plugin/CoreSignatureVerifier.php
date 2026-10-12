@@ -206,25 +206,12 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             ]);
         }
 
-        // Retrieve public key: a pinned key_id is verified with the pinned
-        // key only (see PinnedPublicKeys); anything else is fetched from the
-        // Authority.
-        $publicKey = PinnedPublicKeys::get($signatureKeyId)
-            ?? $this->publicKeyResolver->resolve($signatureKeyId)?->public_key;
-        if ($publicKey === null) {
-            // Network unavailable and no cache → treat as verification pending
-            // (require policy side determines pending = reject)
-            return new SignatureVerificationResult(
-                status: SignatureVerificationResult::STATUS_PENDING,
-                type: $this->determineSignatureType($signatureKeyId),
-                signedBy: $signedBy,
-                signedAt: $signedAt,
-                keyId: $signatureKeyId,
-                message: __('services/plugin/core_signature_verifier.verification_suspended_no_key'),
-            );
-        }
-
-        // Detect file tampering
+        // Compare the manifest against the files on disk first. This is local
+        // computation -- it needs no key and no network -- and it answers a
+        // different question from the signature: whether the tree is the tree
+        // the manifest describes. Running it before the key is resolved means
+        // the result says something about the files even when the key cannot
+        // be had, instead of saying nothing at all.
         if (! isset($pluginData['files']) || ! is_array($pluginData['files'])) {
             return SignatureVerificationResult::invalid(__('services/plugin/core_signature_verifier.plugin_json_no_files_section'));
         }
@@ -236,6 +223,26 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
                 'missing' => $tamper['missing'] ?? [],
                 'extra' => $tamper['extra'] ?? [],
             ]);
+        }
+
+        // Retrieve public key: a pinned key_id is verified with the pinned
+        // key only (see PinnedPublicKeys); anything else is fetched from the
+        // Authority.
+        $publicKey = PinnedPublicKeys::get($signatureKeyId)
+            ?? $this->publicKeyResolver->resolve($signatureKeyId)?->public_key;
+        if ($publicKey === null) {
+            // Network unavailable and no cache → verification pending (the
+            // require-policy side determines pending = reject). The hashes
+            // above already matched, so this means "the files are intact but
+            // the signer could not be confirmed".
+            return new SignatureVerificationResult(
+                status: SignatureVerificationResult::STATUS_PENDING,
+                type: $this->determineSignatureType($signatureKeyId),
+                signedBy: $signedBy,
+                signedAt: $signedAt,
+                keyId: $signatureKeyId,
+                message: __('services/plugin/core_signature_verifier.verification_suspended_no_key'),
+            );
         }
 
         // Ed25519 signature verification

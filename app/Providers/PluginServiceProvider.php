@@ -379,12 +379,14 @@ class PluginServiceProvider extends ServiceProvider
         $groupStackProperty->setAccessible(true);
 
         foreach ($enabledPlugins as $plugin) {
-            $pluginPath = base_path("plugins/{$plugin->directory}");
+            $pluginPath = PluginHelper::getPluginPath($plugin->directory);
 
-            // Load web routes
+            // Load web routes, gated on the plugin being active on the
+            // resolved site (#494). Without the gate a plugin enabled on one
+            // site of a multisite install answered its web routes on all.
             $webRoutePath = "{$pluginPath}/routes/web.php";
             if (File::exists($webRoutePath)) {
-                \Route::middleware('web')->group($webRoutePath);
+                \Route::middleware(['web', PluginHelper::webActivationGate($plugin->slug)])->group($webRoutePath);
             }
 
             // Load admin routes - plugin side has full control over route names

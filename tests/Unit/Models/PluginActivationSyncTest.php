@@ -91,14 +91,23 @@ class PluginActivationSyncTest extends TestCase
         ]);
     }
 
-    public function test_initial_create_does_not_trigger_sync_hook(): void
+    public function test_creating_an_enabled_plugin_creates_activation_row(): void
     {
-        // Documents the v0.1.0 behaviour: the saved() hook checks
-        // wasChanged('enabled_at') which returns false for a fresh INSERT.
-        // Activation rows are seeded by dls:plugin:enable on update, not
-        // by Plugin::create(). If this changes, update the documentation
-        // in app/Models/Plugin.php booted() before adjusting the test.
+        // wasChanged('enabled_at') is false for a fresh INSERT, so the hook
+        // also checks wasRecentlyCreated. Without it a plugin created already
+        // enabled had no row and its gated routes answered 404 (#494).
         $plugin = $this->makePlugin(enabledAt: now());
+
+        $this->assertDatabaseHas('site_plugin_activations', [
+            'site_id' => $this->primarySite->id,
+            'plugin_id' => $plugin->id,
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_creating_a_disabled_plugin_creates_no_activation_row(): void
+    {
+        $plugin = $this->makePlugin(enabledAt: null);
 
         $this->assertDatabaseMissing('site_plugin_activations', [
             'site_id' => $this->primarySite->id,

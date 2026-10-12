@@ -48,6 +48,23 @@ use App\Models\SecuritySetting;
 class TwoFaStatusService
 {
     /**
+     * Read a member's own two-factor mode as an int.
+     *
+     * The attribute is cast to AuthenticationMode, but a Member instance that
+     * was never given the attribute reports null -- a model built without it
+     * rather than loaded from a row, since the column itself defaults to 0.
+     * Fall back to that same default instead of dereferencing null.
+     */
+    public static function twoFaModeValue(AuthenticationMode|int|null $mode): int
+    {
+        return match (true) {
+            $mode instanceof AuthenticationMode => $mode->value,
+            is_int($mode) => $mode,
+            default => AuthenticationMode::Disabled->value,
+        };
+    }
+
+    /**
      * Get the actual two-factor authentication mode
      *
      * @param  \App\Models\Member  $user
@@ -57,7 +74,7 @@ class TwoFaStatusService
     {
         // Get global settings
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
-        $profileTwoFaMode = is_int($user->two_fa_mode) ? $user->two_fa_mode : $user->two_fa_mode->value;
+        $profileTwoFaMode = self::twoFaModeValue($user->two_fa_mode);
 
         // Determine the actual two-factor authentication mode
         if ($twoFaForceMode === AuthenticationMode::UseProfileSetting->value) {
