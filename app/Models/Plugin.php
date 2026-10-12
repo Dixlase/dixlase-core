@@ -143,6 +143,8 @@ class Plugin extends Model
 
     /**
      * Extension source that this plugin was installed from
+     *
+     * @return BelongsTo<ExtensionSource, $this>
      */
     public function source(): BelongsTo
     {

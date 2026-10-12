@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Helpers\ComposerLocalHelper;
+use App\Models\ExtensionSource;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionSourceManager;
@@ -97,6 +98,28 @@ class ThemeInstall extends Command
         // If --force option is specified, only run migrations and seeders
         if ($exists && $this->option('force')) {
             $this->info('Theme already registered. Running migrations and seeders only...');
+
+            // A registered theme is otherwise never re-linked, so --source
+            // here is the way to point it at a source again (for example
+            // after the one it was installed from was removed).
+            if ($this->option('source') !== null) {
+                $sourceId = (int) $this->option('source');
+                $source = ExtensionSource::query()->find($sourceId);
+                if ($source === null) {
+                    $this->error("Extension source #{$sourceId} does not exist (see dls:source:list).");
+
+                    return Command::FAILURE;
+                }
+
+                $linkage = app(ExtensionSourceManager::class)->resolveSourceLinkage($source, $slug, 'theme');
+                Theme::where('slug', $slug)->update([
+                    'source_id' => $linkage['source_id'],
+                    'source_repo' => $linkage['source_repo'],
+                    'installed_from_url' => $linkage['installed_from_url'],
+                    'installation_method' => $linkage['installation_method'],
+                ]);
+                $this->info("Theme linked to extension source #{$sourceId}.");
+            }
 
             // Run migrations
             $migrationPath = base_path("themes/{$themeDirName}/database/migrations");

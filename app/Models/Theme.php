@@ -107,6 +107,8 @@ class Theme extends Model
 
     /**
      * Extension source that this theme was installed from
+     *
+     * @return BelongsTo<ExtensionSource, $this>
      */
     public function source(): BelongsTo
     {

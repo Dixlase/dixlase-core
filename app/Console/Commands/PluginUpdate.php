@@ -84,6 +84,14 @@ class PluginUpdate extends Command
             return self::FAILURE;
         }
 
+        // Removing a source nulls source_id, but a rebuild of
+        // extension_sources outside the foreign key can leave it dangling.
+        if ($plugin->source === null) {
+            $this->error("Plugin '{$slug}' is linked to extension source #{$plugin->source_id}, which no longer exists. Link it to a registered source with `dls:plugin:install {$plugin->directory} --source=<id>` (see dls:source:list).");
+
+            return self::FAILURE;
+        }
+
         $this->info("Checking for updates for '{$slug}' (current: v{$plugin->version})...");
 
         $snapshotPath = null;

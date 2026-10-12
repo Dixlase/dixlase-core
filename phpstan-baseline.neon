@@ -258,11 +258,6 @@ parameters:
 			count: 1
 			path: app/Console/Commands/PluginSeed.php
 
-		-
-			message: '#^Parameter \#1 \$source of method App\\Services\\Extension\\ExtensionSourceManager\:\:makeProvider\(\) expects App\\Models\\ExtensionSource, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Console/Commands/PluginUpdate.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
@@ -450,11 +445,6 @@ parameters:
 			count: 2
 			path: app/Console/Commands/SyncGitIgnore.php
 
-		-
-			message: '#^Parameter \#1 \$source of method App\\Services\\Extension\\ExtensionSourceManager\:\:makeProvider\(\) expects App\\Models\\ExtensionSource, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Console/Commands/ThemeUpdate.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'

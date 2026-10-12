@@ -80,7 +80,15 @@ class ThemeUpdate extends Command
         }
 
         if (! $theme->source_id) {
-            $this->error("Theme '{$slug}' has no linked source. Use dls:theme:download instead.");
+            $this->error("Theme '{$slug}' has no linked source. Link it with `dls:theme:install {$theme->directory} --force --source=<id>` (see dls:source:list).");
+
+            return self::FAILURE;
+        }
+
+        // Removing a source nulls source_id, but a rebuild of
+        // extension_sources outside the foreign key can leave it dangling.
+        if ($theme->source === null) {
+            $this->error("Theme '{$slug}' is linked to extension source #{$theme->source_id}, which no longer exists. Link it to a registered source with `dls:theme:install {$theme->directory} --force --source=<id>` (see dls:source:list).");
 
             return self::FAILURE;
         }
