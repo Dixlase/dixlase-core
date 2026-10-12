@@ -71,6 +71,18 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   `dls:theme:update` と `dls:plugin:update` は `TypeError` で止まらず、同じ案内を出して
   中止する(#510)
 
+- 10 個の `dls:` コマンドが、`php artisan list` と `--help` でふたたび説明を表示する
+  ようにした。5 つはどの言語ファイルにも無い翻訳キー（`command.theme_install.description`
+  など。引数の説明も同様）を、2 つは `make:command` の仮の文言 `Command description` を
+  表示し、3 つは Symfony が説明を読み終えたあとに設定していたため何も表示していなかった。
+  説明が空・仮の文言・キーの `dls:` コマンドがあれば落ちる Feature テストを追加した(#509)
+
+- `dls:theme:list` が、インストール済みのテーマをふたたび一覧するようにした。`themes` では
+  なく、有効なテーマの id を持つキーと値の表 `theme_settings` を読んでいたため、テーマが
+  有効になっているサイトでは `Undefined property: stdClass::$name` で止まり、無いサイトでは
+  「テーマなし」と表示していた。各テーマのディレクトリ、バージョン、有効かどうかを表示する
+  (#508)
+
 ### セキュリティ
 - プラグイン・テーマ・監査ログ・コアを定期的に確認し、失敗を管理画面に出すようにした。
   これまでの確認は誰かが動かしたときにしか実行されず、有効なプラグインのファイルが変わっても、

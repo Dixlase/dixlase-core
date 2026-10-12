@@ -35,8 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Theme;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class ThemeList extends Command
 {
@@ -59,7 +59,9 @@ class ThemeList extends Command
      */
     public function handle()
     {
-        $themes = DB::table('theme_settings')->get();
+        // theme_settings is a key/value store (enabled_theme_id and the
+        // like), not the list of themes; installed themes live in themes.
+        $themes = Theme::query()->orderBy('name')->get();
 
         if ($themes->isEmpty()) {
             $this->info(__('admin/command/theme-list.no_themes'));
@@ -67,15 +69,16 @@ class ThemeList extends Command
             return;
         }
 
-        $data = $themes->map(function ($theme) {
+        $data = $themes->map(function (Theme $theme) {
             return [
                 'ID' => $theme->id,
                 'Name' => $theme->name,
                 'Directory' => $theme->directory,
-                'Status' => $theme->enabled_at ? __('admin/command/theme-list.enabled') : __('admin/command/theme-list.disabled'),
+                'Version' => $theme->version,
+                'Status' => $theme->isEnabled() ? __('admin/command/theme-list.enabled') : __('admin/command/theme-list.disabled'),
             ];
         })->toArray();
 
-        $this->table(['ID', 'Name', 'Directory', 'Status'], $data);
+        $this->table(['ID', 'Name', 'Directory', 'Version', 'Status'], $data);
     }
 }

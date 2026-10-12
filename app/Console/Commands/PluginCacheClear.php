@@ -44,14 +44,14 @@ class PluginCacheClear extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:cache:clear {pluginName}';
+    protected $signature = 'dls:plugin:cache:clear {pluginName : The name of the plugin whose cache to clear}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Clear the cache entry of a plugin';
 
     /**
      * Execute the console command.

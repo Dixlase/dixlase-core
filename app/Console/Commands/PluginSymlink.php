@@ -52,15 +52,11 @@ class PluginSymlink extends Command
                             {--all : Apply the action to every plugin directory on disk}';
 
     /**
-     * Create a new command instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->description = __('admin/command/plugin-symlink.description');
-    }
+    protected $description = 'Manage plugin asset symlinks';
 
     /**
      * Execute the console command.
