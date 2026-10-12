@@ -69,6 +69,12 @@ repository to be notified of changes.
   because they set the description after Symfony had already read it. A feature test now
   fails on any `dls:` command whose description is empty, a placeholder or a key (#509)
 
+- `dls:theme:list` lists the installed themes again. It read `theme_settings`, the
+  key/value store that holds the active theme id, instead of `themes`, so it stopped with
+  `Undefined property: stdClass::$name` on any site with an active theme, and reported
+  "no themes" on a site without one. It now shows each theme's directory, version and
+  whether it is the active one (#508)
+
 ### Security
 - Plugins, themes, the audit log and core are now checked on a schedule, and a failure
   reaches the admin panel. Until now these checks ran only when someone triggered them, so
