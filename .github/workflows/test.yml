@@ -528,9 +528,13 @@ jobs:
   # ============================================
   # Reports comment-translation coverage on every PR / push as a
   # non-blocking warning. Pending entries surface in the job log so
-  # contributors notice them, but the build is not failed — that gate
-  # is enforced separately by the release workflow (see
-  # laravel-ci.yml -> "Comment translation coverage (strict)").
+  # contributors notice them, but the build is not failed.
+  #
+  # Nothing blocks on coverage today. The strict gate lived in
+  # laravel-ci.yml, which fired on `v*` tags and failed on every tag it
+  # ran for; that workflow has been removed (dixlase-core#526). A strict
+  # gate on the release path can only be turned on once the pending
+  # entries are translated, so it is tracked in dixlase-core#527.
   comment-translation-status:
     name: Comment Translation Coverage
     runs-on: ubuntu-latest
