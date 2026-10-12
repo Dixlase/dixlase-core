@@ -122,6 +122,28 @@ repository to be notified of changes.
   removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
   controller routes for one session, not as disabling plugins (#495)
 
+## [0.1.9] — 2026-10-12
+
+### Security
+- Extension verification compares the manifest's `files` hashes before it resolves the
+  signer's public key. The two halves answer different questions and only the signature
+  needs a key, so a result reached without one now still reflects the files on disk, and
+  `pending` narrows to its proper meaning: the files are intact but the signer could not
+  be confirmed
+
+### Fixed
+- A new installation gets the theme's current release. Every delivery path — the one-line
+  installer, the ZIP download, `composer create-project` — installs the version
+  `composer.lock` records, and that lock had never moved since the theme's first release,
+  so 0.1.7 and 0.1.8 shipped a theme from 2026-09-26. The lock now points at the theme's
+  latest release, and a release build stops rather than ship an outdated one (#517)
+
+### Internal
+- `scripts/check-bundled-theme.php` compares the locked theme version against the theme's
+  newest stable tag; `release.yml` runs it, with an opt-out for deliberately rebuilding an
+  older tag. `docs/development/releasing.md` and its Japanese mirror describe the
+  pre-release step (#517)
+
 ## [0.1.8] — 2026-10-12
 
 ### Added
