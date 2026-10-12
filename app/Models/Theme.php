@@ -37,6 +37,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\ReadsExtensionManifest;
 use App\Models\Traits\ResolvesExtensionDirectory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Theme extends Model
 {
     use HasFactory;
+    use ReadsExtensionManifest;
     use ResolvesExtensionDirectory;
 
     /**
@@ -112,12 +114,41 @@ class Theme extends Model
     }
 
     /**
-     * Check if an update is available from the source
+     * Absolute path of this theme's manifest on disk.
+     *
+     * The root comes from config, as the plugin side does, so a test can point
+     * it at a throwaway directory instead of the real themes/.
+     */
+    public function manifestPath(): ?string
+    {
+        $directory = is_string($this->directory) && $this->directory !== ''
+            ? $this->directory
+            : static::resolveDirectoryFromSlug((string) $this->slug);
+
+        if ($directory === null || $directory === '') {
+            return null;
+        }
+
+        $root = trim((string) config('themes.theme_directory', 'themes'), '/');
+
+        return base_path(($root !== '' ? $root : 'themes')."/{$directory}/theme.json");
+    }
+
+    /**
+     * Check if an update is available from the source.
+     *
+     * Compared against the version in theme.json on disk, not the recorded
+     * one -- see Plugin::hasUpdateAvailable() for why (dixlase-core#521).
+     * A theme is the worse case of the two: its directory is also written by
+     * Composer and by its own deploy workflow, so a destructive update there
+     * restarts the move-aside cycle.
      */
     public function hasUpdateAvailable(): bool
     {
+        $installed = $this->versionOnDisk() ?? $this->version;
+
         return $this->available_version !== null
-            && version_compare($this->available_version, $this->version, '>');
+            && version_compare($this->available_version, $installed, '>');
     }
 
     /**

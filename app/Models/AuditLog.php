@@ -257,6 +257,10 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_ROLLBACK_FAILED = 'plugin_rollback_failed';
 
+    // The recorded version was reconciled with the manifest on disk: the
+    // files moved without going through an install or an update.
+    public const ACTION_PLUGIN_VERSION_RECONCILED = 'plugin_version_reconciled';
+
     // Actions for supply chain attack defense
     public const ACTION_PLUGIN_SIGNING_KEY_CHANGED = 'plugin_signing_key_changed';
 
@@ -288,6 +292,8 @@ class AuditLog extends Model
     public const ACTION_THEME_ROLLED_BACK = 'theme_rolled_back';
 
     public const ACTION_THEME_ROLLBACK_FAILED = 'theme_rollback_failed';
+
+    public const ACTION_THEME_VERSION_RECONCILED = 'theme_version_reconciled';
 
     // Theme supply-chain attack defense actions (mirror plugin equivalents)
     public const ACTION_THEME_SIGNING_KEY_CHANGED = 'theme_signing_key_changed';

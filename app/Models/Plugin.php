@@ -37,6 +37,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\ReadsExtensionManifest;
 use App\Models\Traits\ResolvesExtensionDirectory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -47,6 +48,7 @@ use Illuminate\Support\Facades\Schema;
  */
 class Plugin extends Model
 {
+    use ReadsExtensionManifest;
     use ResolvesExtensionDirectory;
 
     /**
@@ -148,12 +150,46 @@ class Plugin extends Model
     }
 
     /**
-     * Check if an update is available from the source
+     * Absolute path of this plugin's manifest on disk.
+     *
+     * The root comes from config, as PluginHelper::getPluginPath() does, so a
+     * test can point it at a throwaway directory instead of the real plugins/.
+     */
+    public function manifestPath(): ?string
+    {
+        $directory = is_string($this->directory) && $this->directory !== ''
+            ? $this->directory
+            : static::resolveDirectoryFromSlug((string) $this->slug);
+
+        if ($directory === null || $directory === '') {
+            return null;
+        }
+
+        $root = trim((string) config('plugins.plugins_directory', 'plugins'), '/');
+
+        return base_path(($root !== '' ? $root : 'plugins')."/{$directory}/plugin.json");
+    }
+
+    /**
+     * Check if an update is available from the source.
+     *
+     * Compared against the version in plugin.json on disk, not the recorded
+     * one. The recorded version is written only by the install and update
+     * paths, so files that arrive another way -- a git deploy, an operator
+     * replacing the directory -- leave it stale, and comparing against a
+     * stale value offers an update to a version that is already installed.
+     * Accepting that offer is destructive: the update path deletes the
+     * directory, taking any nested `.git` with it (dixlase-core#521 / #472).
+     *
+     * Falls back to the recorded version when the manifest cannot be read,
+     * so a plugin with no directory on disk keeps the old behaviour.
      */
     public function hasUpdateAvailable(): bool
     {
+        $installed = $this->versionOnDisk() ?? $this->version;
+
         return $this->available_version !== null
-            && version_compare($this->available_version, $this->version, '>');
+            && version_compare($this->available_version, $installed, '>');
     }
 
     /**
