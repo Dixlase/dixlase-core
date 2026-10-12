@@ -301,6 +301,20 @@ jobs:
                 docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" view:clear
                 docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" route:clear
               fi
+
+              # 8. Bring the recorded extension versions back in line with the
+              # manifests this deploy just placed. Without it the admin panel
+              # offers an update to a version that is already on disk, and
+              # accepting that offer deletes the directory the deploy owns
+              # (dixlase-core#521). `HOME` is set because artisan writes through
+              # it. A failure here is a warning, not a deploy failure: the files
+              # are already live, and the daily dls:extensions:rescan reconciles
+              # as well.
+              if [ -f artisan ]; then
+                docker exec -u www-data -e HOME=/tmp "$CONTAINER" \
+                  php "$APP_PATH/artisan" dls:extensions:reconcile-versions \
+                  || echo "  warning: $SITE: could not reconcile the extension versions"
+              fi
             done
 
             if [ "$DEPLOY_FAILURES" != "0" ]; then
