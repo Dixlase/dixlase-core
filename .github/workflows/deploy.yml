@@ -1,18 +1,66 @@
-# Dixlase auto-deploy workflow
+# Dixlase deploy workflow
 name: Deploy Dixlase
 
+# A production site receives only a released tag, never the tip of a branch
+# (dixlase-core#520). A merge to `main` used to deploy, which meant whatever
+# had just been merged was serving traffic before anyone decided it should
+# be: there was no point at which a person said "this version goes out".
+#
+#   - `release: published` deploys that release's tag.
+#   - `workflow_dispatch` deploys a tag you name, which is how a specific
+#     version is put somewhere deliberately. The rule says to dispatch the
+#     workflow at the ref you want rather than work on the server by hand,
+#     and until now this workflow offered no way to do that.
+#
+# Nothing here deploys a branch: `main` moving has no effect on production.
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g. v0.1.8). It must already exist on the remote.'
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Resolve the tag to deploy
+        id: release
+        env:
+          # Both values come from the repository -- a release GitHub created,
+          # or an input that needed workflow-write access to send -- but they
+          # are still read through the environment instead of being
+          # interpolated into the script, so a tag name can never be parsed
+          # as shell.
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -e
+          TAG="${RELEASE_TAG:-$INPUT_TAG}"
+          if [ -z "$TAG" ]; then
+            echo "::error::No tag to deploy: neither a release tag nor a dispatch input was given"
+            exit 1
+          fi
+          case "$TAG" in
+            *[!A-Za-z0-9._/-]*)
+              echo "::error::Refusing tag '$TAG': it contains characters a tag name may not have"
+              exit 1
+              ;;
+          esac
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Deploying tag $TAG"
+
+      - name: Checkout the tag
         uses: actions/checkout@v5
+        with:
+          # Explicit, because a workflow_dispatch run would otherwise check
+          # out the branch it was dispatched from rather than the tag being
+          # deployed, and the assets built below would come from the wrong
+          # tree.
+          ref: refs/tags/${{ steps.release.outputs.tag }}
 
       - name: Set deploy target
         id: target
@@ -56,13 +104,24 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_TAG: ${{ steps.release.outputs.tag }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          # Forwarded rather than interpolated into the script below, so the
+          # tag reaches the server as a value and not as shell source.
+          envs: DEPLOY_TAG
           script: |
             set -e
             BASE="${{ steps.target.outputs.base_dir }}"
+
+            if [ -z "$DEPLOY_TAG" ]; then
+              echo "::error::DEPLOY_TAG did not reach the server"
+              exit 1
+            fi
+            echo "=== Deploying tag $DEPLOY_TAG ==="
 
             # Recoverable per-site problems set this instead of killing the
             # loop, so one site cannot stop the sites after it from being
@@ -177,8 +236,15 @@ jobs:
               # Composer は、この deploy で composer.lock が実際に動いたときだけ
               # 走らせたい (手順 4)。reset の前の中身を控えておく。
               LOCK_BEFORE=$(sha256sum composer.lock 2>/dev/null | cut -d" " -f1)
-              git fetch origin
-              git reset --hard origin/main
+              # `--tags --force` because a tag moved upstream has to move
+              # here too, and a fetch without it keeps the old object.
+              git fetch origin --tags --force
+              if ! git rev-parse -q --verify "refs/tags/$DEPLOY_TAG" >/dev/null; then
+                echo "::error::$SITE: tag $DEPLOY_TAG is not on this checkout after fetching"
+                DEPLOY_FAILURES=1
+                continue
+              fi
+              git reset --hard "refs/tags/$DEPLOY_TAG"
 
               # 3. ストレージディレクトリの復元（git reset で消える場合がある）
               mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
