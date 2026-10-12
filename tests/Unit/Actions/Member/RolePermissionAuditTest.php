@@ -127,14 +127,15 @@ class RolePermissionAuditTest extends TestCase
         $this->assertSame('Root Admin', $row->actor_name);
 
         $this->assertSame(1, $row->context['changed_count']);
-        $this->assertSame(
-            ['access_roles' => MemberRole::ADMIN->value, 'view_roles' => MemberRole::ADMIN->value],
-            $row->context['changed'][self::MENU_KEY]['from'],
-        );
-        $this->assertSame(
-            ['access_roles' => MemberRole::SUPER_ADMIN->value, 'view_roles' => MemberRole::ADMIN->value],
-            $row->context['changed'][self::MENU_KEY]['to'],
-        );
+
+        // Asserted key by key: the context is a JSON column, and MySQL
+        // normalises the key order of a JSON object, so comparing the arrays
+        // whole would depend on the driver (see core #541).
+        $change = $row->context['changed'][self::MENU_KEY];
+        $this->assertSame(MemberRole::ADMIN->value, $change['from']['access_roles']);
+        $this->assertSame(MemberRole::ADMIN->value, $change['from']['view_roles']);
+        $this->assertSame(MemberRole::SUPER_ADMIN->value, $change['to']['access_roles']);
+        $this->assertSame(MemberRole::ADMIN->value, $change['to']['view_roles']);
 
         $this->assertNotNull(RolePermissionOverride::getCoreOverride(self::MENU_KEY));
     }
@@ -167,10 +168,9 @@ class RolePermissionAuditTest extends TestCase
         $this->assertNull(RolePermissionOverride::getCoreOverride(self::MENU_KEY));
 
         $row = AuditLog::where('action', AuditLog::ACTION_ROLE_CHANGED)->sole();
-        $this->assertSame(
-            ['access_roles' => MemberRole::ADMIN->value, 'view_roles' => MemberRole::ADMIN->value],
-            $row->context['changed'][self::MENU_KEY]['to'],
-        );
+        $to = $row->context['changed'][self::MENU_KEY]['to'];
+        $this->assertSame(MemberRole::ADMIN->value, $to['access_roles']);
+        $this->assertSame(MemberRole::ADMIN->value, $to['view_roles']);
     }
 
     public function test_reset_removes_the_override_and_writes_a_row(): void
