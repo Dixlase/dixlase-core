@@ -217,6 +217,9 @@ return [
     'action_member_updated' => 'Member Updated',
     'action_member_deleted' => 'Member Deleted',
     'action_role_changed' => 'Role Changed',
+    'action_api_key_created' => 'API Key Created',
+    'action_api_key_revoked' => 'API Key Revoked',
+    'action_api_key_regenerated' => 'API Key Regenerated',
 
     // Status labels
     'status_ok' => 'OK',

@@ -43,6 +43,15 @@ repository to be notified of changes.
   under Strict, an unsigned plugin the admin panel refused (#492)
 
 ### Fixed
+- Creating, revoking and regenerating an API key is recorded in the audit log. The three
+  operations wrote only to the `admin_activity` file log, which reads as "recorded" while
+  the tamper-evident trail had nothing, and a key is a credential that can act on the site
+  without a login. They now go through actions and write `api_key_created`,
+  `api_key_revoked` and `api_key_regenerated`, naming the key by id and name and — for a
+  regeneration — both the old and the new id. No key material (the plain key, its hash or
+  its prefix) is ever put in the row. The file log stays as the request trace it always
+  was. The unrouted duplicate `AdminApiSettingsController`, which carried the same gap, is
+  deleted (#476)
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an
   acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin

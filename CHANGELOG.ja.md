@@ -43,6 +43,14 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   プラグインを(#492)
 
 ### 修正
+- API キーの作成・失効・再生成を監査ログに記録するようにした。この 3 つの操作は
+  `admin_activity` のファイルログにしか書いておらず、改ざん検知の対象である監査ログには
+  何も無いのに「記録されている」ように読めていた。API キーはログインを経ずにサイトに対して
+  動ける資格情報である。これらを Action 経由にし、`api_key_created` /
+  `api_key_revoked` / `api_key_regenerated` を書くようにした。キーは id と名前で識別し、
+  再生成では旧 id と新 id の両方を残す。鍵そのもの（平文・ハッシュ・前置き）は行に
+  入れない。ファイルログは従来どおりリクエストの痕跡として残す。同じ欠けを持つ、ルートの
+  無い重複コントローラ `AdminApiSettingsController` は削除した (#476)
 - `dls:plugin:download --extract` が、スラッグの studly 形ではなく、プラグイン自身の
   マニフェストが宣言するディレクトリにインストールするようにした。名前に略語が入る
   プラグインではこの 2 つが食い違う — `dixlase-seo` は `plugins/DixlaseSeo` になるが、
