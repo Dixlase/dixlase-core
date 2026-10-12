@@ -334,11 +334,17 @@ class PluginHelper
     /**
      * Get plugin path
      *
+     * The plugins root is `config('plugins.plugins_directory')` relative to
+     * the application base path (default `plugins`), so tests can point the
+     * route loaders at a throwaway directory instead of the real plugins/.
+     *
      * @param  string  $directory  Plugin directory name
      */
     public static function getPluginPath(string $directory): string
     {
-        return base_path("plugins/{$directory}");
+        $root = trim((string) config('plugins.plugins_directory', 'plugins'), '/');
+
+        return base_path(($root !== '' ? $root : 'plugins')."/{$directory}");
     }
 
     /**
@@ -377,9 +383,21 @@ class PluginHelper
     }
 
     /**
+     * Middleware string that gates a plugin's web routes on per-site activation
+     *
+     * An inactive plugin's web route answers with the site's ordinary HTML
+     * 404 (EnsurePluginActiveOnSite in `web` format), not the API envelope.
+     */
+    public static function webActivationGate(string $pluginSlug): string
+    {
+        return EnsurePluginActiveOnSite::class.':'.$pluginSlug.',web';
+    }
+
+    /**
      * Load web routes for enabled plugins
      *
-     * This method is intended to be called within routes/web.php
+     * This method is intended to be called within routes/web.php. Each
+     * plugin's routes are wrapped in its per-site activation gate.
      */
     public static function loadEnabledWebRoutes(): void
     {
@@ -398,7 +416,8 @@ class PluginHelper
                 $webRoutePath = self::getPluginPath($plugin->directory).'/routes/web.php';
 
                 if (File::exists($webRoutePath)) {
-                    include $webRoutePath;
+                    // Answer only on sites where the plugin is active (#494)
+                    Route::middleware(self::webActivationGate($plugin->slug))->group($webRoutePath);
                 }
             }
         } catch (\Exception $e) {
@@ -424,10 +443,10 @@ class PluginHelper
      *      not active on the resolved site.
      *
      *   2. LEGACY (deprecated) — plugins/{Name}/routes/api.php
-     *      Loaded as-is at the application root with no auto prefix
-     *      and no per-site activation gate. A deprecation warning is
-     *      written to the application log on every boot until the
-     *      plugin migrates to layout (1).
+     *      Loaded at the application root with no auto prefix, behind
+     *      the same per-site activation gate as layout (1). A
+     *      deprecation warning is written to the application log on
+     *      every boot until the plugin migrates to layout (1).
      *
      * If both files exist for the same plugin, only the v1 layout is
      * loaded and the legacy file is ignored (with a warning) so plugin
@@ -473,10 +492,14 @@ class PluginHelper
                 }
 
                 if ($hasLegacy) {
-                    Log::warning('PluginHelper: plugin uses deprecated routes/api.php; migrate to routes/api/v1.php for auto-prefix and per-site activation gating', [
+                    Log::warning('PluginHelper: plugin uses deprecated routes/api.php; migrate to routes/api/v1.php for the auto prefix', [
                         'plugin' => $plugin->directory,
                     ]);
-                    include $legacyPath;
+
+                    // Still loaded at the application root without a prefix,
+                    // but no longer without the per-site activation gate (#494).
+                    Route::middleware(EnsurePluginActiveOnSite::class.':'.$plugin->slug)
+                        ->group($legacyPath);
                 }
             }
         } catch (\Exception $e) {

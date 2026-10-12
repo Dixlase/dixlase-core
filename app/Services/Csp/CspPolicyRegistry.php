@@ -38,12 +38,21 @@
 namespace App\Services\Csp;
 
 use App\Contracts\CspPolicyProvider;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
  * CSP Policy Registry
  *
  * Registry for collecting and managing CSP policies from plugins and themes
+ *
+ * Everything that reaches the registry comes from an extension (or from core
+ * code using the same extension-facing API), so every source expression is
+ * checked by CspSourceValidator before it is accepted. Values that would
+ * relax the policy for the whole site ('unsafe-inline', a bare `*`, `data:`
+ * in script-src, ...) are dropped, logged, and recorded per source so the
+ * admin can see them. The admin's own CSP settings are applied by
+ * CspBuilder outside the registry and are not filtered.
  */
 class CspPolicyRegistry
 {
@@ -60,6 +69,15 @@ class CspPolicyRegistry
      * @var array<string, array<string>>
      */
     protected array $directives = [];
+
+    /**
+     * Values dropped by validation, keyed by source name
+     *
+     * @var array<string, array<int, array{directive: string, value: string, reason: string}>>
+     */
+    protected array $rejected = [];
+
+    protected ?CspSourceValidator $validator = null;
 
     /**
      * Register a policy provider
@@ -89,13 +107,17 @@ class CspPolicyRegistry
      */
     public function addDirective(string $directive, array $values, ?string $source = null): void
     {
-        if (! isset($this->directives[$directive])) {
-            $this->directives[$directive] = [];
-        }
+        $filtered = $this->validate([$directive => $values], $source ?? 'unknown');
 
-        foreach ($values as $value) {
-            if (! in_array($value, $this->directives[$directive], true)) {
-                $this->directives[$directive][] = $value;
+        foreach ($filtered as $name => $accepted) {
+            if (! isset($this->directives[$name])) {
+                $this->directives[$name] = [];
+            }
+
+            foreach ($accepted as $value) {
+                if (! in_array($value, $this->directives[$name], true)) {
+                    $this->directives[$name][] = $value;
+                }
             }
         }
     }
@@ -155,7 +177,11 @@ class CspPolicyRegistry
                 continue;
             }
 
-            foreach ($providerDirectives as $directive => $values) {
+            if (! is_array($providerDirectives)) {
+                continue;
+            }
+
+            foreach ($this->validate($providerDirectives, $name) as $directive => $values) {
                 if (! isset($collected[$directive])) {
                     $collected[$directive] = [];
                 }
@@ -169,6 +195,70 @@ class CspPolicyRegistry
         }
 
         return $collected;
+    }
+
+    /**
+     * Values dropped by validation so far, keyed by source name
+     *
+     * Provider values are validated when collectDirectives() runs, so call
+     * this afterwards to see them.
+     *
+     * @return array<string, array<int, array{directive: string, value: string, reason: string}>>
+     */
+    public function getRejected(): array
+    {
+        return $this->rejected;
+    }
+
+    /**
+     * Validate extension-supplied directives, recording and logging what is dropped
+     *
+     * @param  array<mixed, mixed>  $directives
+     * @return array<string, array<int, string>> Accepted values per directive
+     */
+    protected function validate(array $directives, string $source): array
+    {
+        $this->validator ??= new CspSourceValidator();
+        $result = $this->validator->filter($directives);
+
+        foreach ($result['rejected'] as $entry) {
+            $known = $this->rejected[$source] ?? [];
+            if (in_array($entry, $known, true)) {
+                continue;
+            }
+
+            $this->rejected[$source][] = $entry;
+            $this->logRejection($source, $entry);
+        }
+
+        return $result['accepted'];
+    }
+
+    /**
+     * Log a dropped value, at most once an hour per source/directive/value
+     *
+     * The registry is rebuilt on every request, so an unthrottled warning
+     * would repeat for every page view while the extension stays enabled.
+     *
+     * @param  array{directive: string, value: string, reason: string}  $entry
+     */
+    protected function logRejection(string $source, array $entry): void
+    {
+        try {
+            $key = 'csp_rejected_source:'.sha1($source.'|'.$entry['directive'].'|'.$entry['value']);
+            if (! Cache::add($key, true, 3600)) {
+                return;
+            }
+        } catch (\Throwable) {
+            // No cache available: log every time rather than not at all.
+        }
+
+        Log::warning('CSP source from an extension was rejected and left out of the policy', [
+            'source' => $source,
+            'directive' => $entry['directive'],
+            'value' => $entry['value'],
+            'reason' => $entry['reason'],
+        ]);
     }
 
     /**
@@ -188,5 +278,6 @@ class CspPolicyRegistry
     {
         $this->providers = [];
         $this->directives = [];
+        $this->rejected = [];
     }
 }

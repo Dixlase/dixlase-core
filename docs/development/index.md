@@ -25,6 +25,12 @@ How to write, label and close GitHub issues, and how they link to releases.
 
 - [Issue Guidelines](issues.md)
 
+## Releasing
+
+Steps to take before tagging a core release, including updating the bundled theme.
+
+- [Releasing Core](releasing.md)
+
 ## Revisions
 
 Shared revision API: Revisionable contract, HasRevisions trait,

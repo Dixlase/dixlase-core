@@ -38,6 +38,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Services\AuditLogIntegrityService;
+use App\Services\Security\ScheduledSecurityCheckMonitor;
 use Illuminate\Console\Command;
 
 /**
@@ -195,7 +196,17 @@ class AuditLogIntegrityCommand extends Command
             $this->line(__('admin/command/audit.integrity.full_verify_hint'));
         }
 
-        return $result['is_valid'] && $chainValid ? self::SUCCESS : self::FAILURE;
+        $valid = $result['is_valid'] && $chainValid;
+
+        // Only the whole-log run (the scheduled one) raises or clears the
+        // admin alert; a --date or --from/--to run covers just a slice.
+        app(ScheduledSecurityCheckMonitor::class)->recordAuditVerification(
+            $valid,
+            (int) $result['tampered_total'],
+            (int) $result['seals']['invalid'],
+        );
+
+        return $valid ? self::SUCCESS : self::FAILURE;
     }
 
     /**

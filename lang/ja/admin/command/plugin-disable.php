@@ -37,4 +37,5 @@ return [
     'description' => 'プラグインを無効にし、シンボリックリンクを削除します',
     'disabled' => 'プラグイン :pluginName を無効化しました。',
     'not_found' => 'プラグイン :pluginName が見つかりません。',
+    'autoload_pending' => 'プラグイン :pluginName は無効になりましたが、オートローダーを再生成できなかったため、その autoload のファイルはまだ読み込まれます。`php artisan dls:plugin:sync-autoload` を実行して仕上げてください。',
 ];

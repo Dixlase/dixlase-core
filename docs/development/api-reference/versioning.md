@@ -246,7 +246,9 @@ Result: `GET /api/v1/authority/keys`.
 
 If the plugin is not active on the resolved site, `EnsurePluginActiveOnSite` returns a 404 JSON response before the controller runs.
 
-The legacy convention of placing routes in `routes/api.php` (without the `v1.php` filename) remains supported for backward compatibility but is deprecated. The auto-loader will emit a log warning on load.
+The legacy convention of placing routes in `routes/api.php` (without the `v1.php` filename) remains supported for backward compatibility but is deprecated. The auto-loader will emit a log warning on load. The file is still mounted at the application root with no prefix, but behind the same `EnsurePluginActiveOnSite` gate, so its routes also return the 404 JSON envelope on a site where the plugin is not active (#494).
+
+A plugin's `routes/web.php` is gated the same way, in the `web` format (`EnsurePluginActiveOnSite::class.':'.$slug.',web'`): on a site where the plugin is not active its web routes answer with the site's ordinary HTML 404 page instead of the JSON envelope.
 
 ## 10. Deprecation Policy
 

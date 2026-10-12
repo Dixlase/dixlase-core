@@ -265,6 +265,13 @@ class CoreSignatureVerifierTest extends TestCase
      */
     protected function createTempPlugin(array $pluginJson, ?array $signatureData = null): string
     {
+        // A signed extension always carries a `files` list, so the fixture
+        // does too. The fixture's only files are plugin.json and
+        // signature.sig, both excluded from hashing, so an empty list is the
+        // correct one and the hash comparison passes -- which is what lets
+        // these tests reach the key-resolution stage they are about.
+        $pluginJson['files'] ??= [];
+
         $pluginName = 'TestPlugin';
         $pluginDir = base_path("plugins/{$pluginName}");
 

@@ -170,4 +170,20 @@ return [
         'geoip_timeout' => env('GEOIP_TIMEOUT', 5),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Scheduled security checks
+    |--------------------------------------------------------------------------
+    |
+    | The daily plugin/theme rescan, audit log verification and core signed-
+    | manifest check record their latest result and any open alert here
+    | (see App\Services\Security\ScheduledSecurityCheckMonitor). The file is
+    | kept outside the cache so that clearing the cache cannot hide an alert.
+    | A relative path is resolved against storage_path().
+    |
+    */
+    'scheduled_checks' => [
+        'state_file' => 'app/private/security/scheduled-checks.json',
+    ],
+
 ];

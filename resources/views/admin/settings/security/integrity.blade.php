@@ -42,6 +42,104 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 
+    {{-- Core signed-manifest check (latest result of dls:core:verify) --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ __('admin/settings/security/integrity.scheduled.core_manifest_heading') }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ __('admin/settings/security/integrity.scheduled.core_manifest_help') }}</p>
+
+        @if($coreManifestCheck)
+            @php
+                $coreBadgeVariant = match($coreManifestCheck['status'] ?? '') {
+                    'genuine' => 'green',
+                    'modified' => 'yellow',
+                    'invalid', 'error' => 'red',
+                    'pending_verification' => 'blue',
+                    default => 'gray',
+                };
+            @endphp
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.status') }}</p>
+                    <x-ui-status-badge :variant="$coreBadgeVariant" :label="$coreManifestCheck['status_label']" />
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scheduled.checked_at') }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ $coreManifestCheck['formatted_checked_at'] ?? 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_version') }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ $coreManifestCheck['version'] ?? 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scheduled.changed_count') }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ (int) ($coreManifestCheck['changed_count'] ?? 0) }}</p>
+                </div>
+            </div>
+            @if(! empty($coreManifestCheck['message']))
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-3">{{ $coreManifestCheck['message'] }}</p>
+            @endif
+            @if($coreManifestFailed)
+                <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+                    <i class="fas fa-times-circle mr-2"></i>{{ __('admin/settings/security/integrity.scheduled.core_manifest_title') }}
+                </div>
+            @endif
+        @else
+            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-600 dark:text-gray-400">{{ __('admin/settings/security/integrity.scheduled.core_manifest_not_checked') }}</p>
+            </div>
+        @endif
+    </div>
+
+    {{-- Open alerts from the scheduled security checks --}}
+    @if($auditChainAlert || ! empty($extensionAlerts))
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-800 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.scheduled.alerts_heading') }}</h2>
+                @if(! empty($extensionAlerts))
+                    <form method="POST" action="{{ route('admin.settings.security.integrity.acknowledge-extensions') }}">
+                        @csrf
+                        <x-form-button type="submit" variant="secondary" size="md" icon="fas fa-check" :disabled="$viewOnly" :title="$tooltipText">
+                            {{ __('admin/settings/security/integrity.scheduled.acknowledge') }}
+                        </x-form-button>
+                    </form>
+                @endif
+            </div>
+
+            @if($auditChainAlert)
+                <div class="p-4 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+                    <p class="font-semibold">{{ __('admin/settings/security/integrity.scheduled.audit_chain_title') }}</p>
+                    <p class="text-sm">{{ __('admin/settings/security/integrity.scheduled.audit_chain_message', ['tampered' => (int) ($auditChainAlert['tampered'] ?? 0), 'seals' => (int) ($auditChainAlert['invalid_seals'] ?? 0)]) }}</p>
+                </div>
+            @endif
+
+            @if(! empty($extensionAlerts))
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">{{ __('admin/settings/security/integrity.scheduled.acknowledge_help') }}</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('admin/settings/security/integrity.scheduled.extension') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('admin/settings/security/integrity.scheduled.reason') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('admin/settings/security/integrity.scheduled.health') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('admin/settings/security/integrity.scheduled.signature') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach($extensionAlerts as $alert)
+                                <tr>
+                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ $alert['name'] }} <span class="text-gray-500 dark:text-gray-400">({{ $alert['type'] }})</span></td>
+                                    <td class="px-4 py-3 text-sm text-red-600 dark:text-red-400">{{ $alert['reasons'] }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ $alert['baseline_health'] }} &rarr; {{ $alert['current_health'] }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ $alert['baseline_signature'] }} &rarr; {{ $alert['current_signature'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    @endif
+
     <!-- ベースライン情報 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">

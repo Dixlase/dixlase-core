@@ -515,6 +515,33 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 | `external_scripts` | 外部スクリプトURL |
 | `external_styles` | 外部スタイルURL |
 
+#### 受け付ける CSP の値
+
+拡張機能が足す CSP の値は、マニフェストの `csp`、`CspPolicyProvider`、
+`csp_add_directive()`、`RegistersCspPolicy` のどこから来たものでも、ポリシーに入る前に
+コアが確かめる(`App\Services\Csp\CspSourceValidator`、#494)。サイト全体のポリシーを
+ゆるめる値は捨て、警告としてログに書き、マニフェストの値は管理画面の拡張機能のカードにも
+出す。管理者自身の CSP の設定には影響しない。
+
+| 受け付けるもの | 例 |
+|----------------|----|
+| ホスト(http・https・ws・wss。スキームは省略可) | `https://cdn.example.com`、`cdn.example.com`、`wss://ws.example.com:8443` |
+| 登録可能なドメインのサブドメインのワイルドカード | `https://*.example.com` |
+| `'self'` | |
+| `'nonce'` のプレースホルダーと `'sha256-…'` / `'sha384-…'` / `'sha512-…'` のハッシュ | script-src・script-src-elem・style-src・style-src-elem だけ |
+| `data:` | img-src・font-src・media-src だけ |
+| `blob:` | img-src・media-src・worker-src だけ |
+
+受け付けないもの: `'unsafe-inline'`、`'unsafe-eval'`、`'unsafe-hashes'`、
+`'wasm-unsafe-eval'`、`'strict-dynamic'`(CSP のモードで決まる)、`'none'`、
+固定の `'nonce-…'`、`*` だけ、`https://*`、`*.com`、script-src の `https:` や `data:` の
+ようなスキームだけの値、空白・`;`・`,` を含む値。
+
+拡張機能が値を足せるディレクティブは script-src、script-src-elem、style-src、
+style-src-elem、img-src、font-src、connect-src、media-src、frame-src、child-src、
+worker-src、manifest-src、form-action。それ以外(`frame-ancestors`、`base-uri`、
+`object-src`、`default-src`、`script-src-attr`、`report-uri` など)は受け付けない。
+
 ---
 
 ## 権限カテゴリ

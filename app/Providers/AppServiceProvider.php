@@ -206,8 +206,17 @@ class AppServiceProvider extends ServiceProvider
         // Register legal page registry service as singleton
         $this->app->singleton(LegalPageService::class);
 
-        // Register system warning banner registry as singleton
-        $this->app->singleton(\App\Services\SystemWarningService::class);
+        // Register system warning banner registry as singleton. Core registers
+        // one provider of its own: the alerts raised by the scheduled security
+        // checks (extension rescan, audit log verification, core manifest).
+        $this->app->singleton(\App\Services\SystemWarningService::class, function () {
+            $service = new \App\Services\SystemWarningService();
+            $service->register(
+                fn (): array => app(\App\Services\Security\ScheduledSecurityCheckMonitor::class)->banners()
+            );
+
+            return $service;
+        });
 
         // Bind Contract interfaces to concrete classes
         $this->app->bind(LegalPageServiceInterface::class, LegalPageService::class);

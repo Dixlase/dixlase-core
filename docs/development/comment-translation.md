@@ -305,9 +305,13 @@ The `dls:comment:extract` / `:translate` pipeline was originally designed for th
 | Trigger | Workflow | Mode | Effect |
 |---|---|---|---|
 | PR / push | `.github/workflows/test.yml` (job: Comment Translation Coverage) | warning | Coverage printed to job log; PR not failed even if pending entries exist |
-| `v*` tag | `.github/workflows/laravel-ci.yml` (step: Comment translation coverage) | strict | Release ZIP build fails if any pending entries exist |
 
-So PRs may carry work-in-progress translations, but a tagged release cannot ship with translation gaps.
+A release is not gated on coverage today. The strict gate used to live in a second
+release workflow that fired on `v*` tags; it failed on every tag it ran for, the
+releases were published through the other workflow regardless, and the workflow has
+been removed (dixlase-core#526). Putting a strict gate on the release path is
+tracked in dixlase-core#527, because it can only be turned on once the remaining
+pending entries are translated.
 
 ---
 

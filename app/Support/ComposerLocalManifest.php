@@ -103,6 +103,96 @@ final class ComposerLocalManifest
     }
 
     /**
+     * Where the list of plugins whose `autoload.files` are withheld is kept,
+     * relative to the Core root.
+     *
+     * Composer requires every hoisted `autoload.files` entry on every request,
+     * whether or not the plugin that ships it is enabled. The plugin's
+     * ServiceProvider, routes and views are skipped while it is disabled, so
+     * its eager files should be too. Enabled state lives in the database,
+     * which this class cannot read -- `scripts/sync-local-autoload.php` runs
+     * before the framework exists -- so the plugin lifecycle records the
+     * directories that are not enabled in this file, and the generator only
+     * reads it.
+     *
+     * It lives under storage/ rather than inside each plugin directory: a
+     * plugin update replaces the whole directory, a marker inside it would
+     * show up in the plugin's own repository and signature check, and storage/
+     * survives a core update untouched.
+     */
+    public const DISABLED_PLUGINS_FILE = 'storage/app/private/plugin-autoload-state.json';
+
+    /**
+     * Plugin directory names whose `autoload.files` are withheld.
+     *
+     * An absent or unreadable file withholds nothing, which is how a site
+     * behaved before the list existed: every plugin's files load.
+     *
+     * @return list<string>
+     */
+    public static function disabledPlugins(string $baseDir): array
+    {
+        $path = rtrim($baseDir, '/').'/'.self::DISABLED_PLUGINS_FILE;
+        if (! is_file($path) || ! is_readable($path)) {
+            return [];
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+        $list = is_array($decoded) ? ($decoded['disabled_plugins'] ?? []) : [];
+        if (! is_array($list)) {
+            return [];
+        }
+
+        $names = array_values(array_unique(array_filter(
+            $list,
+            static fn ($name): bool => is_string($name) && $name !== ''
+        )));
+        sort($names);
+
+        return $names;
+    }
+
+    /**
+     * Replace the list of plugin directories whose `autoload.files` are
+     * withheld. Written to a temporary file and renamed into place, so a
+     * reader never sees half a document.
+     *
+     * @param  list<string>  $directories
+     * @return bool Whether the list was written
+     */
+    public static function writeDisabledPlugins(string $baseDir, array $directories): bool
+    {
+        $directories = array_values(array_unique(array_filter(
+            $directories,
+            static fn ($name): bool => is_string($name) && $name !== ''
+        )));
+        sort($directories);
+
+        $path = rtrim($baseDir, '/').'/'.self::DISABLED_PLUGINS_FILE;
+        $dir = dirname($path);
+        if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
+            return false;
+        }
+
+        $document = json_encode([
+            '_comment' => 'Maintained by core. Plugins listed here are not enabled; their autoload.files are left out of composer.local.json.',
+            'disabled_plugins' => $directories,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n";
+
+        $tmp = $path.'.'.getmypid().'.tmp';
+        if (@file_put_contents($tmp, $document) === false) {
+            return false;
+        }
+        if (! @rename($tmp, $path)) {
+            @unlink($tmp);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * The whole `composer.local.json` document for the tree at `$baseDir`.
      *
      * @return array<string, mixed>
@@ -120,12 +210,20 @@ final class ComposerLocalManifest
         // is emitted unconditionally so that once the loader lands, code already
         // written under those namespaces autoloads without a second migration
         // of this file. Composer tolerates missing target directories.
+        $disabledPlugins = array_flip(self::disabledPlugins($baseDir));
+
         foreach (self::detect($baseDir.'/plugins') as $name) {
             $psr4["Plugins\\{$name}\\App\\"] = "plugins/{$name}/app";
             $psr4["Plugins\\{$name}\\Database\\Factories\\"] = "plugins/{$name}/database/factories";
             $psr4["Plugins\\{$name}\\Database\\Seeders\\"] = "plugins/{$name}/database/seeders";
             $psr4["Plugins\\{$name}\\Tests\\"] = "plugins/{$name}/tests";
             $psr4["Custom\\Plugins\\{$name}\\App\\"] = "custom/plugins/{$name}/app";
+
+            // Not enabled: its ServiceProvider does not boot, so its eager
+            // files have no business running either. PSR-4 stays, as above.
+            if (isset($disabledPlugins[$name])) {
+                continue;
+            }
 
             foreach (self::autoloadFiles($baseDir."/plugins/{$name}", "plugins/{$name}/") as $path) {
                 $files[] = $path;
@@ -296,7 +394,8 @@ final class ComposerLocalManifest
      * the function available before the extension's ServiceProvider boots.
      *
      * Returns an empty array when the file is missing, unreadable or has no
-     * `autoload.files` section -- only well-formed extensions contribute.
+     * `autoload.files` section -- only well-formed extensions contribute. An
+     * entry naming a file that does not exist is dropped.
      *
      * @return list<string>
      */
@@ -333,6 +432,14 @@ final class ComposerLocalManifest
             $relative = ltrim($entry, '/');
             if (str_contains($relative, "\0") || str_contains($relative, '\\')
                 || in_array('..', explode('/', $relative), true)) {
+                continue;
+            }
+
+            // Composer requires each entry unconditionally, so one that names
+            // a missing file is a fatal error on every request and every
+            // artisan command. Leaving it out costs only the helper it would
+            // have defined.
+            if (! is_file($extensionDir.'/'.$relative)) {
                 continue;
             }
 

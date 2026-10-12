@@ -246,7 +246,9 @@ Route::prefix('authority')
 
 プラグインが解決済みサイト上で有効化されていない場合、`EnsurePluginActiveOnSite` がコントローラ実行前に 404 JSON を返します。
 
-旧来の `routes/api.php`（`v1.php` ファイル名なし）に置く方式は後方互換のため引き続きサポートしますが **deprecated** 扱いです。自動ローダはロード時にログ警告を出します。
+旧来の `routes/api.php`（`v1.php` ファイル名なし）に置く方式は後方互換のため引き続きサポートしますが **deprecated** 扱いです。自動ローダはロード時にログ警告を出します。このファイルはこれまでどおり接頭辞なしでアプリケーションのルートに読み込みますが、同じ `EnsurePluginActiveOnSite` の確認を通すため、プラグインが有効でないサイトでは 404 JSON を返します(#494)。
+
+プラグインの `routes/web.php` も同じ確認を `web` 形式で通します(`EnsurePluginActiveOnSite::class.':'.$slug.',web'`)。プラグインが有効でないサイトでは、web ルートは JSON ではなくサイトの通常の HTML の 404 ページを返します。
 
 ## 10. 廃止 (Deprecation) ポリシー
 

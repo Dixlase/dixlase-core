@@ -48,7 +48,8 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * The single, complete extension rescan: permissions + CSP + signature +
- * health + files_hash + owned_tables, persisted to plugin_audits/theme_audits.
+ * health + files_hash + owned_tables, persisted to plugin_audits/theme_audits,
+ * plus the recorded version reconciled with the manifest on disk.
  *
  * Extracted verbatim from AdminPluginsSettingsController / AdminThemesSettingsController
  * so both the admin rescan endpoints AND the post-update auto-scan run the
@@ -70,6 +71,8 @@ class ExtensionRescanService
     {
         try {
             Log::info('Plugin audit starting', ['plugin' => $pluginSlug]);
+
+            $this->reconcileVersion('plugin', $pluginSlug);
 
             Artisan::call('dls:plugin:audit', [
                 'plugin' => $pluginSlug,
@@ -178,6 +181,8 @@ class ExtensionRescanService
     {
         try {
             Log::info('Theme audit starting', ['theme' => $themeSlug]);
+
+            $this->reconcileVersion('theme', $themeSlug);
 
             Artisan::call('dls:theme:audit', [
                 'theme' => $themeSlug,
@@ -332,6 +337,43 @@ class ExtensionRescanService
             'total_checked' => 0,
             'audited_at' => null,
         ];
+    }
+
+    /**
+     * Bring the recorded version back in line with the manifest on disk
+     * before auditing.
+     *
+     * The recorded version is written only by the install and update paths,
+     * so files that arrive another way leave it stale -- and a stale value
+     * makes the admin panel offer an update to a version that is already
+     * installed (dixlase-core#521). The rescan is the right place for it:
+     * it already opens every manifest, the admin panel runs it, and so does
+     * the daily schedule (#500).
+     *
+     * Wrapped, because a reconciliation that fails must not cost the site
+     * the audit it was really asked for.
+     *
+     * @param  'plugin'|'theme'  $type
+     */
+    protected function reconcileVersion(string $type, string $slug): void
+    {
+        try {
+            $reconciler = app(ExtensionVersionReconciler::class);
+
+            $change = $type === 'plugin'
+                ? $reconciler->reconcilePluginBySlug($slug)
+                : $reconciler->reconcileThemeBySlug($slug);
+
+            if ($change !== null) {
+                Log::notice('Extension version reconciled from the manifest', $change);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Extension version reconciliation failed', [
+                'type' => $type,
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

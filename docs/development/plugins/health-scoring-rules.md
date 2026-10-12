@@ -133,6 +133,28 @@ Under the default Balanced preset, a plugin whose status is `NeedsAttention` (sc
 
 The gate runs when an extension is installed or enabled in the admin panel, when a theme is switched in the admin panel, and in the update commands (`dls:plugin:update` / `dls:theme:update`), which put the previous version back if the new one scans as Blocked.
 
+A preset can also block an extension outright: one whose health status is above the
+preset's maximum level, or one without a verified signature under a preset that requires
+signatures (Strict), resolves to **Blocked** and cannot be enabled.
+
+#### On the command line
+
+`dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
+determination as the admin panel:
+
+- The extension is scanned first when it has no current scan result (never scanned, or its
+  files changed since the last scan). A scan that fails counts as Blocked.
+- **Blocked** is refused. `--force` does not override it.
+- A warning or an acknowledgement, which the admin panel asks the operator to confirm, is
+  refused unless `--force` is passed; with `--force` the command prints a warning and
+  proceeds.
+- `dls:plugin:install` without `--enable` still refuses a Blocked plugin under a preset that
+  requires a scan, the same as the admin panel's install button.
+- The Development preset is unrestricted: nothing is scanned or refused.
+
+Run `php artisan dls:plugin:audit <slug>` or `dls:theme:audit <slug>` to see the findings
+behind a refusal.
+
 ### Deduction Rules
 
 Rule keys are the issue types `PluginHealthScorer` emits. Themes are scored by `ThemeHealthScorer` with the same table and a subset of the checks.
