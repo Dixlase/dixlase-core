@@ -43,6 +43,14 @@ repository to be notified of changes.
   under Strict, an unsigned plugin the admin panel refused (#492)
 
 ### Fixed
+- Changing a role's access to an admin screen is recorded in the audit log. The role /
+  permission matrix and the per-menu reset button wrote their overrides straight from the
+  controller, so one of the few settings that changes what another account can do left no
+  `audit_logs` row. Both paths now go through an action and record the effective values
+  before and after, keyed by menu key, under `role_changed`. A save that changes nothing
+  writes no row. The matrix is also validated before anything is written, so a form
+  rejected for giving edit permission below view permission no longer leaves the values it
+  rejected saved (#474)
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an
   acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
