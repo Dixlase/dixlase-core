@@ -305,9 +305,13 @@ Windows 用の `convert-comments.bat` も同梱されています。
 | トリガー | ワークフロー | モード | 効果 |
 |---|---|---|---|
 | PR / push | `.github/workflows/test.yml`（job: Comment Translation Coverage） | warning | カバレッジを job ログに表示。pending があっても PR は失敗させない |
-| `v*` タグ | `.github/workflows/laravel-ci.yml`（step: Comment translation coverage） | strict | pending があればリリース ZIP ビルドが失敗 |
 
-つまり PR には作業中の翻訳が混じっても OK ですが、タグ付けされたリリースは翻訳ギャップを抱えたまま出荷できません。
+現在、リリースはカバレッジで止められていません。strict の関門は、`v*` タグで発火する
+2 本目のリリースワークフローに置かれていましたが、走ったすべてのタグで失敗しており、
+リリースはもう一方のワークフローを通してそのまま公開されていました。そのワークフローは
+削除しました（dixlase-core#526）。リリースの経路に strict の関門を置くことは
+dixlase-core#527 で追っています。残っている pending を訳し終えてからしか有効に
+できないためです。
 
 ---
 
