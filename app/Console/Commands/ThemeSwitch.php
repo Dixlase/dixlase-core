@@ -49,14 +49,14 @@ class ThemeSwitch extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:switch {themeName? : '.'command.theme_switch.theme_name_prompt'.'} {--force : Switch even when the health check asks for confirmation (warning or acknowledgement); a blocked theme is still refused}';
+    protected $signature = 'dls:theme:switch {themeName? : The name or slug of the theme to switch to (omit to choose interactively)} {--force : Switch even when the health check asks for confirmation (warning or acknowledgement); a blocked theme is still refused}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'command.theme_switch.description';
+    protected $description = 'Switch the active theme';
 
     /**
      * Alias for backward compatibility

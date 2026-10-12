@@ -49,15 +49,15 @@ class ThemeDelete extends Command
      *
      * @var string
      */
-    protected $signature = 'dls:theme:delete {themeDirectory : '.'command.theme_delete.theme_directory_prompt'.'}
-                            {--force : '.'command.theme_delete.force_option'.'}';
+    protected $signature = 'dls:theme:delete {themeDirectory : The directory name of the theme to delete}
+                            {--force : Force delete without confirmation}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'command.theme_delete.description';
+    protected $description = 'Delete a theme\'s files and directory (uninstall it first)';
 
     /**
      * Whether the argument names a directory rather than a path.

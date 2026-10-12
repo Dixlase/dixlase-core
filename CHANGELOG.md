@@ -62,6 +62,13 @@ repository to be notified of changes.
   English line — and the one line that asks the operator to decide whether to install the
   older copy. The admin panel had the message translated all along (#487)
 
+- Ten `dls:` commands describe themselves again in `php artisan list` and `--help`. Five
+  showed a translation key that exists in no language file
+  (`command.theme_install.description` and the like, also in their argument help), two
+  showed the `make:command` placeholder `Command description`, and three showed nothing,
+  because they set the description after Symfony had already read it. A feature test now
+  fails on any `dls:` command whose description is empty, a placeholder or a key (#509)
+
 - `dls:theme:list` lists the installed themes again. It read `theme_settings`, the
   key/value store that holds the active theme id, instead of `themes`, so it stopped with
   `Undefined property: stdClass::$name` on any site with an active theme, and reported
