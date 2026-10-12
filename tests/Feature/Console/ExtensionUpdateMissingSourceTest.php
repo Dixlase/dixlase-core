@@ -39,6 +39,7 @@ use App\Models\Plugin;
 use App\Models\Theme;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -99,15 +100,24 @@ class ExtensionUpdateMissingSourceTest extends TestCase
 
     /**
      * Write a row whose source_id names no extension_sources row, the state
-     * an out-of-band rebuild of that table leaves behind. RefreshDatabase
-     * keeps each test inside a transaction, where SQLite ignores
-     * `PRAGMA foreign_keys`; deferring the check to a commit that never
-     * comes lets the dangling row in.
+     * an out-of-band rebuild of that table leaves behind.
+     *
+     * The driver matters here. On SQLite, RefreshDatabase keeps each test
+     * inside a transaction where `PRAGMA foreign_keys` is ignored, so the
+     * check is deferred to a commit that never comes. That pragma is SQLite
+     * syntax and a syntax error on MySQL, which is what the suite connects to
+     * in CI -- hence Laravel's portable form everywhere else.
      */
     private function withoutForeignKeys(callable $write): void
     {
-        DB::statement('PRAGMA defer_foreign_keys = ON');
-        $write();
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA defer_foreign_keys = ON');
+            $write();
+
+            return;
+        }
+
+        Schema::withoutForeignKeyConstraints($write);
     }
 
     private function createTheme(array $overrides): Theme
