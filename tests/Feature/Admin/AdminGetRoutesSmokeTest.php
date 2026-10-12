@@ -212,7 +212,7 @@ class AdminGetRoutesSmokeTest extends TestCase
      * @param  Member  $member  Used so `{member}` resolves to an id the
      *                          acting user is allowed to open on their
      *                          own profile pages.
-     * @return array<string, string>  Map of route name to request URL.
+     * @return array<string, string> Map of route name to request URL.
      */
     private function adminGetRouteUrls(Member $member): array
     {
