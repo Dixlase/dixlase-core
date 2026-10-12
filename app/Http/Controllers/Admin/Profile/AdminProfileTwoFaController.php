@@ -81,8 +81,8 @@ class AdminProfileTwoFaController extends AdminLoggedInController
         $validated = $request->validated();
 
         // Get value before saving (as integer) to detect changes in two-factor authentication mode
-        $twoFaOldMode = is_int($member->two_fa_mode) ? $member->two_fa_mode : $member->two_fa_mode->value;
         $beforeMode = $member->two_fa_mode;
+        $twoFaOldMode = TwoFaStatusService::twoFaModeValue($beforeMode);
 
         // two_fa_mode is only overwritten when global settings is UseProfileSetting
         $twoFaForceMode = (int) SecuritySetting::getValue('two_fa_mode', AuthenticationMode::UseProfileSetting->value);
@@ -108,7 +108,7 @@ class AdminProfileTwoFaController extends AdminLoggedInController
             'severity' => 'notice',
             'context' => [
                 'before' => $beforeMode,
-                'after' => auth()->user()->fresh()->two_fa_mode,
+                'after' => $member->two_fa_mode,
             ],
         ]);
 

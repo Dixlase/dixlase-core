@@ -35,6 +35,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AuthenticationMode;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Models\Member;
@@ -65,6 +66,10 @@ class MemberFactory extends Factory
             'role' => MemberRole::ADMIN,
             'status' => MemberStatus::Active,
             'remember_token' => Str::random(10),
+            // Matches the members.two_fa_mode column default. Without it the
+            // attribute is unset on the built model, and the 2FA status code
+            // reads ->value on null.
+            'two_fa_mode' => AuthenticationMode::Disabled,
         ];
     }
 

@@ -82,6 +82,17 @@ abstract class TestCase extends BaseTestCase
             return 'Database\\Factories\\'.$basename.'Factory';
         });
 
+        // The scheduled security checks keep their alerts in a file under
+        // storage (ScheduledSecurityCheckMonitor). Give every test its own
+        // throwaway file, so an alert raised by one test (e.g. a failing
+        // `audit:integrity verify`) never shows up as an admin banner in
+        // another, and the real storage/app is never written.
+        $scheduledChecksState = storage_path('framework/testing/scheduled-checks-'.uniqid('', true).'.json');
+        config(['security.scheduled_checks.state_file' => $scheduledChecksState]);
+        $this->beforeApplicationDestroyed(static function () use ($scheduledChecksState): void {
+            @unlink($scheduledChecksState);
+        });
+
         $this->ensurePrimarySiteSeeded();
     }
 

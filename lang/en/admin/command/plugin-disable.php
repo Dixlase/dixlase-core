@@ -37,4 +37,5 @@ return [
     'description' => 'Disable a plugin by setting its status to 0 and removing symlinks',
     'disabled' => 'Plugin :pluginName has been disabled.',
     'not_found' => 'Plugin :pluginName not found.',
+    'autoload_pending' => 'Plugin :pluginName is disabled, but the autoloader could not be regenerated, so its autoload files still load. Run `php artisan dls:plugin:sync-autoload` to finish.',
 ];

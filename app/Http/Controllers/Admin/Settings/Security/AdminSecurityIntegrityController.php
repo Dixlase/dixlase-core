@@ -40,6 +40,7 @@ use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
+use App\Services\Security\ScheduledSecurityCheckMonitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -83,6 +84,39 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         $this->viewParams['hasBaseline'] = $hasBaseline;
         $this->viewParams['baselineMeta'] = $baselineMeta;
         $this->viewParams['recentAudits'] = $recentAudits;
+
+        // Latest core signed-manifest check and open scheduled-check alerts
+        $monitor = app(ScheduledSecurityCheckMonitor::class);
+        $coreManifestCheck = $monitor->latestCoreManifestCheck();
+        if ($coreManifestCheck !== null) {
+            $coreManifestCheck['status_label'] = $monitor->coreStatusLabel((string) ($coreManifestCheck['status'] ?? ''));
+            $coreManifestCheck['formatted_checked_at'] = isset($coreManifestCheck['checked_at'])
+                ? \Carbon\Carbon::parse($coreManifestCheck['checked_at'])->timezone(config('app.timezone'))->format($dateFormat)
+                : null;
+        }
+        $alerts = $monitor->alerts();
+        $healthLabel = fn ($status): string => \App\Enums\PluginHealthStatus::tryFrom((string) $status)?->label() ?? (string) $status;
+        $signatureLabel = function ($status): string {
+            $key = 'admin/settings/security/integrity.scheduled.signature_status.'.$status;
+
+            return __($key) === $key ? (string) $status : __($key);
+        };
+        $extensionAlerts = [];
+        foreach ($monitor->extensionAlerts() as $alert) {
+            $extensionAlerts[] = [
+                'type' => __('admin/settings/security/integrity.scheduled.type_'.($alert['type'] ?? 'plugin')),
+                'name' => (string) ($alert['name'] ?? $alert['slug'] ?? ''),
+                'reasons' => $monitor->reasonLabels(array_values((array) ($alert['reasons'] ?? []))),
+                'baseline_health' => $healthLabel($alert['baseline']['health_status'] ?? ''),
+                'current_health' => $healthLabel($alert['current']['health_status'] ?? ''),
+                'baseline_signature' => $signatureLabel($alert['baseline']['signature_status'] ?? ''),
+                'current_signature' => $signatureLabel($alert['current']['signature_status'] ?? ''),
+            ];
+        }
+        $this->viewParams['coreManifestCheck'] = $coreManifestCheck;
+        $this->viewParams['coreManifestFailed'] = isset($alerts[ScheduledSecurityCheckMonitor::KEY_CORE_MANIFEST]);
+        $this->viewParams['auditChainAlert'] = $alerts[ScheduledSecurityCheckMonitor::KEY_AUDIT_CHAIN] ?? null;
+        $this->viewParams['extensionAlerts'] = $extensionAlerts;
         $this->addIntegrityConstants();
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.security.integrity');
 
@@ -116,6 +150,18 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.security.integrity')
             ->with($audit->hasIssues() ? 'warning' : 'success', $message);
+    }
+
+    /**
+     * Accept the current status of every plugin/theme flagged by the scheduled
+     * rescan as the new baseline, and clear their alerts
+     */
+    public function acknowledgeExtensionAlerts()
+    {
+        app(ScheduledSecurityCheckMonitor::class)->acknowledgeExtensions();
+
+        return redirect()->route('admin.settings.security.integrity')
+            ->with('success', __('admin/settings/security/integrity.scheduled.acknowledged'));
     }
 
     /**

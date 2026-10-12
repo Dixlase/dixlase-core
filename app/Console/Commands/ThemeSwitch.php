@@ -35,18 +35,21 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\GuardsExtensionActivation;
 use App\Models\Theme;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class ThemeSwitch extends Command
 {
+    use GuardsExtensionActivation;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:theme:switch {themeName? : '.'command.theme_switch.theme_name_prompt'.'}';
+    protected $signature = 'dls:theme:switch {themeName? : '.'command.theme_switch.theme_name_prompt'.'} {--force : Switch even when the health check asks for confirmation (warning or acknowledgement); a blocked theme is still refused}';
 
     /**
      * The console command description.
@@ -115,6 +118,13 @@ class ThemeSwitch extends Command
             $this->info(__('admin/command/theme-switch.already_enabled', ['themeName' => $theme->name]));
 
             return Command::SUCCESS;
+        }
+
+        // Same health / signature check the admin panel runs before it
+        // switches the theme, so the security preset means the same thing
+        // on the command line (dixlase-core#492).
+        if (! $this->passesActivationGate('theme', (string) $theme->slug, (string) $theme->name, 'switched', (bool) $this->option('force'))) {
+            return Command::FAILURE;
         }
 
         // Get current theme for display message

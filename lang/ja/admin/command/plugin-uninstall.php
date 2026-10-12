@@ -48,4 +48,5 @@ return [
     'database_removed' => 'プラグイン \':pluginName\' をデータベースから削除しました。',
     'completed' => 'プラグイン \':pluginName\' のアンインストールが完了しました。',
     'delete_hint' => 'ファイルを削除するには `php artisan plugin:delete <directory>` コマンドを実行してください。',
+    'autoload_pending' => 'プラグイン :pluginName はアンインストールされましたが、オートローダーを再生成できなかったため、その autoload のファイルはまだ読み込まれます。`php artisan dls:plugin:sync-autoload` を実行して仕上げてください。',
 ];
