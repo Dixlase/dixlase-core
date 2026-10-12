@@ -25,6 +25,12 @@ GitHub Issue の書き方・ラベルの付け方・閉じ方と、リリース�
 
 - [Issue の書き方](issues.md)
 
+## リリース
+
+コアのリリースにタグを付ける前の手順です。同梱するテーマの更新もここに含みます。
+
+- [コアのリリース](releasing.md)
+
 ## リビジョン
 
 共通リビジョン API: Revisionable コントラクト、HasRevisions トレイト、

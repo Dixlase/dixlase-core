@@ -30,6 +30,11 @@ on:
         type: boolean
         required: false
         default: false
+      allow_outdated_theme:
+        description: 'Build even when composer.lock does not lock the theme''s latest release (rebuilding an older tag)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write   # required for softprops/action-gh-release to upload the asset
@@ -72,6 +77,16 @@ jobs:
           extensions: mbstring, xml, zip, gd, intl, bcmath, pdo_mysql, sqlite3
           coverage: none
           tools: composer:v2
+
+      - name: Check composer.lock bundles the theme's latest release
+        # Every delivery path installs the theme composer.lock locks, and
+        # nothing moves that lock when the theme cuts a release (#517). Stop
+        # here rather than publish a ZIP with an outdated theme. A manual
+        # rebuild of an older tag can opt out with allow_outdated_theme.
+        if: ${{ !inputs.allow_outdated_theme }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: php scripts/check-bundled-theme.php
 
       - name: Setup Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v5
