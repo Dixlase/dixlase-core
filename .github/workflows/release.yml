@@ -80,13 +80,52 @@ jobs:
 
       - name: Check composer.lock bundles the theme's latest release
         # Every delivery path installs the theme composer.lock locks, and
-        # nothing moves that lock when the theme cuts a release (#517). Stop
-        # here rather than publish a ZIP with an outdated theme. A manual
-        # rebuild of an older tag can opt out with allow_outdated_theme.
+        # nothing moves that lock when the theme cuts a release (#517).
+        #
+        # On a `release` event this warns and carries on. It used to stop, and
+        # stopping here is the wrong trade: this job is triggered by
+        # `release: published`, so by the time it can refuse, the release is
+        # already public. v0.1.10 came out with no archives at all because the
+        # theme published v0.4.0 fifty-three seconds earlier — the static
+        # `releases/latest/download/dixlase-core.zip` link answered 404 and the
+        # one-line installer fell back to its Composer path, which fails on a
+        # host without Composer. A theme one release behind is installable and
+        # `dls:theme:update` moves it; no archive at all cannot be repaired,
+        # because archives attach only at the moment a release is published.
+        #
+        # Blocking happens before the merge instead: `release-preflight.yml`
+        # fails any pull request that bumps VERSION while the lock is behind
+        # (#557). A `workflow_dispatch` keeps the hard failure — it only
+        # produces an artifact, so stopping costs nothing there.
         if: ${{ !inputs.allow_outdated_theme }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: php scripts/check-bundled-theme.php
+        run: |
+          set +e
+          output=$(php scripts/check-bundled-theme.php 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+
+          if [ "${{ github.event_name }}" != "release" ]; then
+            exit "$status"
+          fi
+
+          echo "::warning::$(printf '%s' "$output" | tr '\n' ' ') Building anyway so this release carries its archives; move the lock and cut another release (dixlase-core#557)."
+          {
+            echo '### The bundled theme is behind'
+            echo
+            printf '%s\n' "$output"
+            echo
+            echo 'Built anyway, so this release carries its archives. Move the lock with'
+            echo '`composer update dixlase/dixlase-onepage` and cut another release; a new'
+            echo "installation taken from this one gets a theme one release behind, which"
+            echo '`dls:theme:update` moves. See dixlase-core#557.'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v5
