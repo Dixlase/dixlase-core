@@ -32,6 +32,18 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
+  lands on its own line. Without it the setting continued the last line
+  (`HSTS_PRELOAD=falseAPP_KEY=base64:…`). `CheckInstallationReady` reads the key with
+  `/^APP_KEY=(.+)$/m`, so it found none — the file's own `APP_KEY=` line is empty and
+  does not match either — generated a key and redirected the request to its own URL.
+  Every official plugin and theme builds its CI `.env` that way, so the first HTTP
+  request of each run was answered with a 302 to itself and checked nothing. An
+  operator script that appends a setting to a fresh `.env` is affected the same way,
+  and not only for `APP_KEY`. A unit test now pins the newline: `.editorconfig` has
+  asked for it all along and did not keep it (#538)
+
 ### Internal
 - A deploy that moves the bundled theme's locked version no longer fails on a site whose
   theme directory is not group-writable, and a Composer failure no longer skips the rest
@@ -44,7 +56,6 @@ repository to be notified of changes.
   the site serving a half-deleted theme as an HTTP 200 with a tiny body. The cache clears
   tolerate a failure for the same reason: with a broken autoload they would otherwise take
   every site after this one down with them (#537)
-
 
 ## [0.1.11] — 2026-10-13
 
