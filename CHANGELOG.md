@@ -32,6 +32,20 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Internal
+- A deploy that moves the bundled theme's locked version no longer fails on a site whose
+  theme directory is not group-writable, and a Composer failure no longer skips the rest
+  of that site's deploy. Step 1 sets the group write bit on `themes/` after the ownership
+  fix: the chown put the web group on the tree but never touched the mode, and the theme's
+  own deploy rsyncs its built assets back to mode 755 every time it runs — so this is
+  corrected on every deploy rather than once. When Composer fails anyway, the deploy
+  records the failure and carries on through the theme re-adoption, the asset copy, the
+  permission fixes and the cache clears, instead of aborting mid-replacement and leaving
+  the site serving a half-deleted theme as an HTTP 200 with a tiny body. The cache clears
+  tolerate a failure for the same reason: with a broken autoload they would otherwise take
+  every site after this one down with them (#537)
+
+
 ## [0.1.11] — 2026-10-13
 
 ### Fixed

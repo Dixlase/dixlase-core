@@ -215,6 +215,21 @@ jobs:
               # migrations/ などに broken symlink が残っていてもこれで通る。
               docker exec "$CONTAINER" chown -hR "$OWNER" "$APP_PATH"
 
+              # 1-a. Composer がテーマを差し替えられるよう、themes/ にグループの
+              # 書き込みビットを立てる。上の chown はグループを web グループに
+              # するだけで、モードには触らない。テーマ側の deploy は
+              # themes/DixlaseOnePage/resources/assets/ を自分の umask で rsync
+              # するため、そこだけ 755 のまま残る。ファイルの削除には親ディレクトリ
+              # の書き込み権が必要で、手順 4 の Composer は Docker インストーラの
+              # 構成では www-data として走るので、lock が動いたときに差し替えが
+              # "Could not delete" で失敗する (#537)。
+              #
+              # 毎回やり直す理由は、これが一度で済む修正ではないことである。
+              # テーマがデプロイされるたびにモードは 755 に戻る。
+              if docker exec "$CONTAINER" test -d "$APP_PATH/themes"; then
+                docker exec "$CONTAINER" chmod -R g+w "$APP_PATH/themes"
+              fi
+
               # 1-b. 半壊 submodule pointer のクリーンアップ
               # plugins/*/.git や themes/*/.git の gitfile が残っているのに
               # 指す先の .git/modules/* が存在しないと、git reset --hard が
@@ -282,8 +297,19 @@ jobs:
                 echo "  composer: composer.lock unchanged and vendor present, so not running Composer"
               else
                 echo "  composer: running install$NO_DEV"
-                docker exec $RUN_AS "$CONTAINER" bash -c \
-                  "cd $APP_PATH && composer install $NO_DEV --no-interaction --optimize-autoloader"
+                # 失敗しても `set -e` でここで止めない。止まる位置が最悪で、
+                # ツリーはすでに新しいタグに移っており、Composer はテーマを
+                # 大半削除したあとで、しかも手順 4-b の再採用・手順 5 のアセット
+                # のコピー・手順 6 の権限の修正・手順 7 のキャッシュの破棄・
+                # 手順 8 のバージョン台帳の整合のすべてより前である。サイトは
+                # 半分消えたテーマを配り続け、それが Composer の autoload 段階
+                # での fatal なので HTTP 200 のまま本文だけが小さくなる (#537)。
+                # 失敗は記録して run を赤にし、残りの工程は通す。
+                if ! docker exec $RUN_AS "$CONTAINER" bash -c \
+                  "cd $APP_PATH && composer install $NO_DEV --no-interaction --optimize-autoloader"; then
+                  echo "::error::$SITE: composer install failed; continuing so the theme is re-adopted and the caches are cleared"
+                  DEPLOY_FAILURES=1
+                fi
               fi
 
               # 4-b. Composer がテーマの作業ツリーを置き換えていたら git 管理下に戻す
@@ -362,10 +388,19 @@ jobs:
               # ステップではなく手順 4 の composer install が呼ぶ package:discover
               # である。そちらは手順 6 に chown を足して手当てした。
               # 手順 1・6 の chown / chmod は root が必要なのでそのままにする。
+              #
+              # 手順 4 の Composer が失敗していると autoload が壊れていて
+              # artisan が起動しない。素で呼ぶと `set -e` がここでスクリプトを
+              # 落とし、このサイト以降のサイトが丸ごとデプロイされなくなる。
+              # 4-b が「ここで exit すると後続サイトが丸ごとデプロイされなく
+              # なる」と書いているのと同じ理由で、記録して次へ進む。
               if [ -f artisan ]; then
-                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" config:clear
-                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" view:clear
-                docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" route:clear
+                for cache in config:clear view:clear route:clear; do
+                  if ! docker exec -u www-data "$CONTAINER" php "$APP_PATH/artisan" "$cache"; then
+                    echo "::error::$SITE: artisan $cache failed"
+                    DEPLOY_FAILURES=1
+                  fi
+                done
               fi
 
               # 8. Bring the recorded extension versions back in line with the
