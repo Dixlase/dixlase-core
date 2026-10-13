@@ -32,7 +32,29 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
+  lands on its own line. Without it the setting continued the last line
+  (`HSTS_PRELOAD=falseAPP_KEY=base64:…`). `CheckInstallationReady` reads the key with
+  `/^APP_KEY=(.+)$/m`, so it found none — the file's own `APP_KEY=` line is empty and
+  does not match either — generated a key and redirected the request to its own URL.
+  Every official plugin and theme builds its CI `.env` that way, so the first HTTP
+  request of each run was answered with a 302 to itself and checked nothing. An
+  operator script that appends a setting to a fresh `.env` is affected the same way,
+  and not only for `APP_KEY`. A unit test now pins the newline: `.editorconfig` has
+  asked for it all along and did not keep it (#538)
+
 ### Internal
+- A pull request that changes only Markdown or only `docs/` can be merged again. Two
+  workflows produced required status checks from behind a `pull_request` path filter —
+  `test.yml` (`Core Tests (PHP 8.3)`) and `generated-docs-drift.yml`
+  (`Regenerate and compare`) — and GitHub matches required checks by name against what was
+  reported for the head commit. A workflow a filter skips reports nothing at all, not
+  "skipped, therefore passing", so the requirement was never satisfied and the pull request
+  stayed pending for ever with every check that did run green. Both `pull_request` triggers
+  now run unconditionally; their `push` triggers keep their filters, because no check is
+  required there. The cost is one suite run on a documentation-only pull request (#561)
+
 - The bundled-theme check now blocks before a release is published instead of failing after
   it. It used to run only inside the release build, which `release: published` triggers, so
   the earliest it could refuse was once the release was already public — and archives are
@@ -48,20 +70,6 @@ repository to be notified of changes.
   procedure gains the last-moment re-check and the theme-then-core ordering, because the
   window this does not close is small — 53 seconds, on the day it bit (#557)
 
-
-### Fixed
-- `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
-  lands on its own line. Without it the setting continued the last line
-  (`HSTS_PRELOAD=falseAPP_KEY=base64:…`). `CheckInstallationReady` reads the key with
-  `/^APP_KEY=(.+)$/m`, so it found none — the file's own `APP_KEY=` line is empty and
-  does not match either — generated a key and redirected the request to its own URL.
-  Every official plugin and theme builds its CI `.env` that way, so the first HTTP
-  request of each run was answered with a 302 to itself and checked nothing. An
-  operator script that appends a setting to a fresh `.env` is affected the same way,
-  and not only for `APP_KEY`. A unit test now pins the newline: `.editorconfig` has
-  asked for it all along and did not keep it (#538)
-
-### Internal
 - A deploy that moves the bundled theme's locked version no longer fails on a site whose
   theme directory is not group-writable, and a Composer failure no longer skips the rest
   of that site's deploy. Step 1 sets the group write bit on `themes/` after the ownership
