@@ -32,6 +32,21 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.11] — 2026-10-13
+
+### Fixed
+- The release carries its distribution archives again, and a new installation gets the
+  theme's current release. The theme published `v0.4.0` 53 seconds before 0.1.10 was
+  published, so `composer.lock` still named the theme's `v0.3.0` and the release build
+  refused to ship a theme that is not the newest (#517). 0.1.10 was therefore published
+  with no assets at all: the versioned ZIP, the `dixlase-core.zip` alias that the static
+  `releases/latest/download/` link resolves to, and `checksums.sha256` all answered 404,
+  and the one-line installer fell back to its Composer path, which fails outright on a
+  host without Composer. `composer.lock` now names the theme's `v0.4.0`. 0.1.10 cannot be
+  repaired in place, because archives are attached only when a release is published — so
+  install this release instead of 0.1.10. Where that check runs, after publication rather
+  than before the tag, is filed as #557
+
 ## [0.1.10] — 2026-10-13
 
 ### Fixed
