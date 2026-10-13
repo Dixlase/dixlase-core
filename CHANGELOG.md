@@ -32,36 +32,9 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
-### Security
-- `dls:plugin:install --enable`, `dls:plugin:enable` and `dls:theme:switch` apply the same
-  health and signature check as the admin panel, so a security preset means the same thing
-  on the command line. They scan an extension that has no current scan result, refuse one
-  that resolves to Blocked, and ask for `--force` before enabling one the admin panel would
-  ask the operator to confirm. `dls:plugin:install` without `--enable` refuses a Blocked
-  plugin under a scan-required preset, like the admin panel's install button. The
-  Development preset stays unrestricted. Until now the CLI enabled whatever was on disk —
-  under Strict, an unsigned plugin the admin panel refused (#492)
+## [0.1.10] — 2026-10-13
 
 ### Fixed
-- `dls:plugin:download --extract` installs into the directory the plugin's own manifest
-  declares, instead of the studly form of its slug. For a plugin whose name carries an
-  acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
-  declares `Plugins\DixlaseSEO` — and the directory name is what `composer.local.json`
-  builds the PSR-4 prefix from. Composer matches a prefix case-sensitively, so the
-  plugin's own classes resolved only through an optimized classmap, and the same release
-  installed from the admin panel produced a different tree. On top of the download path:
-  `dls:plugin:install` records the namespace the manifest declares rather than composing
-  one from the argument; `dls:plugin:lint` reports a directory whose name is not the one
-  its manifest asks for; the recovery command core prints when an autoload sync fails now
-  carries `--optimize`, as does the regeneration `dls:app:uninstall` runs, because
-  without it the advice broke the extension it was meant to rescue. Existing installs
-  still carry the wrong directory name; correcting them needs its own change (#488)
-
-- `dls:plugin:install` and `dls:theme:install` print the stale-download warning in the
-  active locale. It was a literal English sentence, so in a Japanese run it was the one
-  English line — and the one line that asks the operator to decide whether to install the
-  older copy. The admin panel had the message translated all along (#487)
-
 - A theme can be linked to an extension source again after the one it came from was
   removed. Removing a source leaves its extensions unlinked, and `dls:theme:update` then
   told the operator to run `dls:theme:download`, which does not exist; a registered theme
@@ -84,65 +57,12 @@ repository to be notified of changes.
   "no themes" on a site without one. It now shows each theme's directory, version and
   whether it is the active one (#508)
 
-### Security
-- Plugins, themes, the audit log and core are now checked on a schedule, and a failure
-  reaches the admin panel. Until now these checks ran only when someone triggered them, so
-  a change to an enabled plugin's files went unnoticed until someone looked. Every day,
-  `audit:integrity verify` runs at 03:45 (after the seal), `dls:core:verify` at 04:15 and
-  the new `dls:extensions:rescan` — the same full audit as the "Rescan" button, for every
-  enabled plugin and the enabled theme — at 04:30. When the audit log fails verification,
-  the core signature is invalid or cannot be checked, or a plugin or theme is worse than at
-  the previous rescan (its health status dropped or its signature stopped verifying),
-  administrators who can open Security → Integrity see a banner across the admin panel,
-  and the admin notification mail is sent once if notifications are configured. The banner
-  clears when a later run passes; an expected plugin or theme change can be accepted on the
-  integrity screen. Security → Integrity now also shows the latest core signature check
-  (#493)
-- CSP sources from an extension are checked before they reach the policy. Values that relax
-  it for the whole site — `'unsafe-inline'`, `'unsafe-eval'`, `'unsafe-hashes'`,
-  `'wasm-unsafe-eval'`, `'strict-dynamic'`, a bare `*` or `https://*`, `data:` / `blob:` in
-  script-src, values that smuggle in another directive, and directives such as
-  `frame-ancestors` or `base-uri` — are dropped, logged, and listed on the extension's
-  card. Host sources, `'self'`, the nonce placeholder and hashes are kept, and the admin's
-  own CSP settings are not filtered. A bare `*` in a manifest was turned into `https://*`
-  on load, which allowed every HTTPS origin; it is now judged as written (#494)
-- A plugin's `routes/web.php` and the deprecated `routes/api.php` answer only on sites where
-  the plugin is active. Web routes were mounted with `web` alone and the legacy API file with
-  no middleware at all, so a plugin enabled on one site of a multisite install answered on
-  every site. An inactive plugin's web routes now return the site's HTML 404, its legacy API
-  routes the JSON 404 envelope. A new migration gives every enabled plugin that lacks one an
-  active row for the primary site (existing rows are left alone), and a plugin created
-  already enabled now gets its row too, so existing sites keep their plugin routes (#494)
-
-### Plugin API — Changed
-- `CspPolicyRegistry::addDirective()` and `addDirectives()` — and the directives a
-  `CspPolicyProvider` returns — now drop sources that would weaken the site's policy
-  (`'unsafe-inline'`, `'unsafe-eval'`, a bare `*`, `data:` in script-src, directives such as
-  `frame-ancestors`, …) instead of adding them. Dropped values are logged and returned by
-  the new `CspPolicyRegistry::getRejected()`. An extension that relied on one of them must
-  load the resource from a concrete host or ask the operator to allow it in the CSP
-  settings (#494)
-
-### Plugin API — Deprecated
-- `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
-  audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
-  core, the official plugins or the themes ever used it — so two mechanisms appeared to
-  audit a change while only one was wired up. Auditing goes through the Action layer:
-  put the operation in an `App\Actions\AbstractAction` subclass and let `audit()` write
-  the row, or call the `Audit` facade from a service an action invokes. A model that uses
-  the trait and is also touched inside an action should wrap the save with
-  `$model->withoutAudit(...)` until the trait is gone (#477)
-
-### Documentation
-- The plugin security pages now describe what the code does. `security.sandbox`,
-  `verification.permission_policy` and the other reserved manifest fields are marked as not
-  read by core; `permissions` are documented as declarations for scanning, the health score
-  and the admin panel, checked at runtime only for mail capabilities and privacy
-  export / erase. Enabling is Blocked only by the preset's signature requirement or its
-  status limit — not by a score below 50. The deduction table lists the rules the scorers
-  actually emit, and the unused `signature_mismatch` and `file_outside_scope` rules are
-  removed from `PluginHealthStatus`. Plugin safe mode is described as blocking plugin
-  controller routes for one session, not as disabling plugins (#495)
+### Internal
+- Every admin `GET` route core registers is opened in a feature test and asserted not to
+  return 5xx, as both an ADMIN and an EDITOR. A page can pass its route and permission
+  tests and still crash on open, because those do not run the request lifecycle —
+  middleware, controller, view resolution, Blade compile — that a release regression
+  surfaces in (#524)
 
 ## [0.1.9] — 2026-10-12
 
@@ -192,6 +112,25 @@ repository to be notified of changes.
 - `AuditableTrait` is deprecated. Audit entries are produced in the action layer only, so
   one operation can no longer be recorded twice or, worse, once from each of two places
   that disagree (#484)
+
+### Plugin API — Changed
+- `CspPolicyRegistry::addDirective()` and `addDirectives()` — and the directives a
+  `CspPolicyProvider` returns — now drop sources that would weaken the site's policy
+  (`'unsafe-inline'`, `'unsafe-eval'`, a bare `*`, `data:` in script-src, directives such as
+  `frame-ancestors`, …) instead of adding them. Dropped values are logged and returned by
+  the new `CspPolicyRegistry::getRejected()`. An extension that relied on one of them must
+  load the resource from a concrete host or ask the operator to allow it in the CSP
+  settings (#494)
+
+### Plugin API — Deprecated
+- `App\Traits\AuditableTrait` is deprecated and will be removed in v0.2.0. It wrote an
+  audit entry from a model's `created` / `updated` / `deleted` events, and nothing in
+  core, the official plugins or the themes ever used it — so two mechanisms appeared to
+  audit a change while only one was wired up. Auditing goes through the Action layer:
+  put the operation in an `App\Actions\AbstractAction` subclass and let `audit()` write
+  the row, or call the `Audit` facade from a service an action invokes. A model that uses
+  the trait and is also touched inside an action should wrap the save with
+  `$model->withoutAudit(...)` until the trait is gone (#477)
 
 ### Fixed
 - The version an extension records in the database is reconciled with its manifest. A deploy
