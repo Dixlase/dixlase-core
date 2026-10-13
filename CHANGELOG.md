@@ -32,6 +32,23 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Internal
+- The bundled-theme check now blocks before a release is published instead of failing after
+  it. It used to run only inside the release build, which `release: published` triggers, so
+  the earliest it could refuse was once the release was already public — and archives are
+  attached only at that moment, so a refusal left a release that could never be given any.
+  `v0.1.10` went out that way: no ZIP, a 404 on the static
+  `releases/latest/download/dixlase-core.zip` link, and a one-line installer falling back to
+  its Composer path. A new `Bundled Theme Lock` check now fails any pull request that changes
+  `VERSION` while `composer.lock` names a theme release that is not the newest, and the
+  release build warns and builds instead of refusing, because a theme one release behind is
+  installable while no archive at all is not repairable. The check runs on every pull request
+  with no path filter on purpose: a required check whose workflow a filter skips never
+  reports, and branch protection then holds the pull request pending for ever. The release
+  procedure gains the last-moment re-check and the theme-then-core ordering, because the
+  window this does not close is small — 53 seconds, on the day it bit (#557)
+
+
 ### Fixed
 - `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
   lands on its own line. Without it the setting continued the last line

@@ -1,0 +1,97 @@
+name: Release preflight
+
+# The bundled-theme check lives inside the release build, and that build is
+# triggered by `release: published` — so the earliest it can fail is after the
+# release is already public. When it does, what is left is a published release
+# with no archives at all: the static `releases/latest/download` link answers
+# 404 and the one-line installer falls back to its Composer path, which fails
+# on a host without Composer. Measured on v0.1.10 (dixlase-core#557).
+#
+# This workflow moves the same check in front of the merge. A pull request that
+# bumps `VERSION` cannot land while `composer.lock` names a theme release that
+# is not the newest, so the release that follows starts from a correct lock.
+#
+# It runs on EVERY pull request on purpose, with no `paths` filter. A required
+# status check whose workflow a path filter skips never reports at all, and
+# branch protection then holds the pull request pending for ever
+# (dixlase-core#561). So the job always runs and decides for itself whether
+# this pull request is a version bump.
+#
+# This does not close the window between merging the bump and pushing the tag.
+# Nothing in a pull request can: the theme published v0.4.0 fifty-three
+# seconds before v0.1.10 went out. That window is covered from the other side,
+# by the release build warning instead of refusing — see `release.yml`.
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  bundled-theme-lock:
+    name: Bundled Theme Lock
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          # The base commit has to be present for the VERSION comparison.
+          fetch-depth: 0
+
+      - name: Decide whether this pull request bumps the version
+        id: bump
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # HEAD here is the merge commit GitHub builds for the pull request,
+          # so this compares the base against the tree the merge would produce.
+          if git diff --quiet "$BASE_SHA" HEAD -- VERSION; then
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+            echo "VERSION is unchanged, so this pull request is not a release bump."
+            echo "VERSION is unchanged; nothing to check." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+            printf 'VERSION: %s -> %s\n' \
+              "$(git show "$BASE_SHA":VERSION 2>/dev/null | tr -d '\n')" \
+              "$(tr -d '\n' < VERSION)"
+          fi
+
+      - name: Setup PHP 8.3
+        if: steps.bump.outputs.bumped == 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: composer.lock must name the theme's latest release
+        if: steps.bump.outputs.bumped == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # The same script the release build runs. Failing here costs a
+          # `composer update dixlase/dixlase-onepage` on the branch; failing
+          # there costs a release with no archives, which cannot be repaired.
+          if php scripts/check-bundled-theme.php; then
+            exit 0
+          fi
+
+          {
+            echo '### The bundled theme is behind'
+            echo
+            echo 'This pull request bumps `VERSION`, but `composer.lock` does not name the'
+            echo "theme's latest release. Run:"
+            echo
+            echo '```'
+            echo 'composer update dixlase/dixlase-onepage'
+            echo 'php scripts/check-bundled-theme.php'
+            echo '```'
+            echo
+            echo 'and commit `composer.lock`. Releasing from this lock would build a ZIP with'
+            echo 'an outdated theme, which the release build refuses — leaving a published'
+            echo 'release with no archives at all (dixlase-core#557).'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit 1
