@@ -118,6 +118,7 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - No `---` line between the two halves: `git format-patch` / `git am` read it as the end of the message. A blank line is enough
 - Pull request descriptions use the same order (English block, then Japanese block). Put the issue reference (`Fixes #N`) or `No issue: <reason>` on its own line at the top
 - No `Co-Authored-By:` line
+- **Never write a site's admin URL** (its prefix or the string after it) in a commit message, pull request description, issue, code comment or test — in a private repository too. A pushed commit message cannot be changed without rewriting history, and a private repository can later be made public. Write `/<admin-url>/` or describe the mechanism (the `admin_url` security setting) instead; test fixtures use an obviously invented value such as `admin-custom`. Check the message as well as the diff for a value copied from a URL bar, a log line or a stack trace
 - Template:
   ```
   feat(banner): compact mobile layout / モバイルで小さく開く
@@ -169,6 +170,65 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - The extension's `tests/Unit/VersionManifestConsistencyTest.php` fails CI when the manifest and `composer.json` disagree (`package.json` is not checked — nothing reads its version)
 - `dls:make:plugin` / `dls:make:theme` generate both files, so new extensions start with the guard
 - A plugin signature covers `composer.json` and `package.json`, so re-sign a signed plugin after every bump
+
+### Branch, Verify, Merge, Release — the gate for core and extensions
+
+Two things must hold at all times, and they are separate requirements:
+
+- **A repository's remote `main` is always stable.** It is what every site, every CI run and every other session builds on.
+- **A production site receives only a signed, tagged release.** Nothing else reaches it.
+
+**The gate, in order:**
+
+1. **Branch.** Never commit implementation work on `main`. Confirm the branch with the maintainer first, and sync the base before cutting it (see the two rules above on confirmation and syncing).
+2. **Push the branch and open a pull request.** CI runs here, which is the point: it runs *before* remote `main` has the change. Local verification is not a substitute — it exercises behaviour, while CI runs the suite, PHPStan, Pint, the migration lint and the manifest check. A change can pass by hand and fail PHPStan.
+3. **Bring the base into the branch** (`git merge origin/main`, or GitHub's *Update branch*). The branch tree is then the tree the merge will produce, so what you verify next is what `main` gets.
+4. **Verify locally.** Use the site checkout that owns the verification — each site has its own core root and its own `plugins/`. Do **not** switch a branch inside the shared Dev checkout's `plugins/` or `themes/`: parallel sessions read those directories, and switching one has been done out from under another session before. After checking a branch out inside a plugin or theme, regenerate the autoload, and again when you switch back — see the autoload rule below; `composer.local.json` otherwise still describes the branch you left.
+5. **Merge the pull request, then delete the working branch** — remote and local. The merge or squash commit keeps its `#N`, so every commit on `main` stays traceable to its pull request.
+6. **Approval by the maintainer**, before anything is released. Approval is tied to a **commit**: any commit after it voids it, otherwise "approved" drifts the way a signature does.
+7. **Release.** Bump → changelog → **sign** → commit → tag, in that order, in the environment that holds the signing key. Signing is last because the signature manifest covers the version files and the changelog, so a signature made earlier invalidates itself. A public repository then gets a GitHub Release and a ZIP, and the ZIP is checked against the signature; an unpublished repository gets the tag alone.
+8. **Deploy.** Triggered by the release, never by a push to `main`, and it verifies the signature before installing. Verification needs only the **public** key, which the key-publishing site serves, so no secret is involved.
+
+**After the tag, `main` carries a development version.** A released version number on `main` is a claim that `main` *is* that release, and the next merge makes it false. So the release is followed by a bump to the next patch with a `-dev` suffix (`0.1.9` → `0.1.10-dev`), on its own pull request, and the next release's bump is what removes the suffix again. `scripts/bump-version.php` and the manifest consistency test both accept the suffix, and `version_compare` places `0.1.10-dev` above `0.1.9` and below `0.1.10`, so an install that tracks `main` is never offered the release it has already passed. This matters wherever a branch can be installed: the Docker installer clones core at `main` (`dixlase-core#548`).
+
+**Where the signing steps apply.** Steps 7 and 8 assume the thing being released carries a signature manifest (`files` in `plugin.json` / `theme.json`). Core does not carry one yet, so a core release is bump → changelog → commit → tag with no signature to refresh, and a core change does not force a release the way an extension change does. When core gains a manifest, this rule applies to it unchanged.
+
+**A change that ships no runnable code** — documentation, AI rules, a changelog — skips step 4, because there is nothing to exercise. It still goes through 5 onward: where a manifest covers those files, skipping the release would leave the signature invalid.
+
+**A change spanning core and an extension.** An extension's CI checks out core at `ref: main`, so an extension pull request that needs an unreleased core change cannot go green. Land the core side on `main` first, keeping it backwards-compatible, then the extension. Do not work around it by pointing CI at a branch.
+
+**Staging.** Default is local-only; staging is not a required step. Reach for it when what you need to verify depends on the server's own shape and a local container cannot show it: the Installer layout, the reverse proxy and TLS, cron, mail delivery, queue workers, or data volume.
+
+- **Staging may run unsigned code. Production may not.** That is the whole distinction, and it is mechanical: the staging deploy does not verify the signature, the production deploy does.
+- Get code there by dispatching the deploy workflow at the ref you want, so there is a run record — not by an ad-hoc session on the server.
+- **On staging, `signature_invalid` is the expected state for an unreleased build. Never sign early to silence it.** Signing before approval is the defect this gate exists to prevent. Staging therefore runs the Development security preset, so the activation gate does not block an unsigned extension.
+
+**The signing key stays in one place** and never goes into CI secrets. A key reachable from a workflow can be used by anything with workflow-write access, and the `key_id` is recorded in every signed manifest ever produced — so a leak invalidates the whole history, not one build. A session that needs a release asks the environment that holds the key; it does not sign where the work happened.
+
+### After an Automatic Deploy, the Database Agrees With the Manifests
+
+A deploy places files; it installs nothing. `plugins.version` / `themes.version`
+are written only by the install and update paths, so after an automatic deploy
+the recorded version is stale until something reconciles it with the manifest.
+
+That is not cosmetic. `hasUpdateAvailable()` decides what the admin panel
+offers, and an update offered for a version that is **already installed** is
+destructive: the update path deletes the extension directory and moves an
+extracted ZIP in, taking the nested `.git` the deploy owns with it. A stale
+version also makes `requires.dixlase` compatibility reasoning wrong, and
+misreports what a site is running in every inventory built from the database.
+
+- **A deploy ends with the versions reconciled.** The core deploy runs
+  `dls:extensions:reconcile-versions` on each site once it has placed files; a
+  deploy that lands an extension should do the same. A failure there is a
+  warning, not a failed deploy — the files are already live.
+- **A rescan reconciles as well**, so the admin *Rescan* button and the daily
+  `dls:extensions:rescan` repair drift with nothing extra to run.
+- **A version that moves with no install behind it is recorded** in the audit
+  log as a warning (`plugin_version_reconciled` / `theme_version_reconciled`).
+  After a deploy that is expected; anywhere else it is worth reading.
+- **Never write the version by hand** to make a panel look right. Reconcile
+  from the manifest, which is what the running code actually declares.
 
 ### Core Update vs. Theme Update (bundled themes are bootstrap-only)
 - **A core update never changes an installed theme.** `CoreUpdater::applyBundledThemes()` copies a theme declared in the release manifest (`.dixlase-release.json`, produced by the `[bundle-theme]` release-notes marker) into `themes/<slug>` **only when that directory does not exist yet** (fresh install-from-release)
