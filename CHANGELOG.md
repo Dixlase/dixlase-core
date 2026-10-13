@@ -32,6 +32,19 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
+  lands on its own line. Without it the setting continued the last line
+  (`HSTS_PRELOAD=falseAPP_KEY=base64:…`). `CheckInstallationReady` reads the key with
+  `/^APP_KEY=(.+)$/m`, so it found none — the file's own `APP_KEY=` line is empty and
+  does not match either — generated a key and redirected the request to its own URL.
+  Every official plugin and theme builds its CI `.env` that way, so the first HTTP
+  request of each run was answered with a 302 to itself and checked nothing. An
+  operator script that appends a setting to a fresh `.env` is affected the same way,
+  and not only for `APP_KEY`. A unit test now pins the newline: `.editorconfig` has
+  asked for it all along and did not keep it (#538)
+
+
 ## [0.1.11] — 2026-10-13
 
 ### Fixed
