@@ -75,12 +75,12 @@ Dixlaseのデータベースクリーンアップ機能は、古いログやセ�
 
 ### 1. 設定ファイルの作成
 
-プラグインまたはテーマのディレクトリに `config/database-cleanup.php` ファイルを作成します。
+プラグインまたはテーマのディレクトリに `config/admin/database-cleanup.php` ファイルを作成します。以前の場所 `config/database-cleanup.php` に置いたプラグインのために、core はそちらも読みます。新しいプラグインは、`plugin.json` の `declares.configs.database_cleanup` が確かめる `config/admin/` に置いてください。
 
 **ファイルパス例:**
 ```
-plugins/YourPlugin/config/database-cleanup.php
-themes/YourTheme/config/database-cleanup.php
+plugins/YourPlugin/config/admin/database-cleanup.php
+themes/YourTheme/config/admin/database-cleanup.php
 ```
 
 **設定ファイルの例:**
@@ -191,7 +191,7 @@ return [
 ## 実装例: DixlaseUsersプラグイン
 
 ### 設定ファイル
-`plugins/DixlaseUsers/config/database-cleanup.php`
+`plugins/DixlaseUsers/config/admin/database-cleanup.php`
 
 ```php
 <?php
@@ -278,7 +278,7 @@ return [
 
 ### プラグインのクリーンアップ項目が表示されない
 
-1. `config/database-cleanup.php` が正しい場所に配置されているか確認
+1. `config/admin/database-cleanup.php` が正しい場所に配置されているか確認
 2. 設定ファイルの構文エラーがないか確認
 3. `enabled` が `true` に設定されているか確認
 

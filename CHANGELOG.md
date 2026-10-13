@@ -43,6 +43,10 @@ repository to be notified of changes.
   under Strict, an unsigned plugin the admin panel refused (#492)
 
 ### Fixed
+- Database cleanup reads a plugin's entries from `config/admin/database-cleanup.php`, the
+  place the documentation, `DeclaresVerifier` and `dls:plugin:permissions` all use. It read
+  `config/database-cleanup.php`, so no plugin that followed the rules had its old rows
+  cleaned up, and nothing said so. The old path is still read as a fallback (#550)
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an
   acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin
