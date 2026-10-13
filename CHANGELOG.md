@@ -43,6 +43,9 @@ repository to be notified of changes.
   under Strict, an unsigned plugin the admin panel refused (#492)
 
 ### Fixed
+- Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
+  localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin
+  that refused them on its own no longer needs to (#551)
 - `dls:plugin:download --extract` installs into the directory the plugin's own manifest
   declares, instead of the studly form of its slug. For a plugin whose name carries an
   acronym the two differ — `dixlase-seo` became `plugins/DixlaseSeo` while the plugin

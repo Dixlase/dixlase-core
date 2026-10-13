@@ -43,6 +43,9 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   プラグインを(#492)
 
 ### 修正
+- 対応している言語コード（`ja`、`en`）を、URL の予約語にした。言語つき URL の先頭なのに、
+  プラグインの URL のプレフィックスや管理画面の URL に設定できていた。自前で拒んでいた
+  プラグインは、その確認がいらなくなる(#551)
 - `dls:plugin:download --extract` が、スラッグの studly 形ではなく、プラグイン自身の
   マニフェストが宣言するディレクトリにインストールするようにした。名前に略語が入る
   プラグインではこの 2 つが食い違う — `dixlase-seo` は `plugins/DixlaseSeo` になるが、
