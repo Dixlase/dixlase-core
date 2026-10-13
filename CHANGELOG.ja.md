@@ -32,6 +32,8 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.12] — 2026-10-14
+
 ### 修正
 - `.env.example` が改行で終わるようになり、そのコピーに `>>` で書き足した設定が独立した
   行に載るようになりました。これまでは書き足した設定が最後の行の続きになっていました
