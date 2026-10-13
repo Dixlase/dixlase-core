@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.12] — 2026-10-14
+
 ### Fixed
 - `.env.example` ends with a newline, so a setting appended to a copy of it with `>>`
   lands on its own line. Without it the setting continued the last line
