@@ -32,6 +32,18 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Internal
+- A core deploy that moves the bundled theme's lock no longer leaves the theme without its
+  built assets. Composer installs the theme from an archive carrying neither `.git` nor the
+  build output, and step 4-b restores only the `.git` half: `resources/assets/` is gitignored,
+  so neither the archive nor the git checkout holds it. The re-adopt therefore reported
+  success while every site served pages with no theme stylesheet or script tag at all — at
+  200, and within a few hundred bytes of the normal size, so neither a status check nor a size
+  check noticed. The deploy now restores the directory from the copy the theme's own deploy
+  already keeps under `_shared/themes/`, the same way step 5 restores core's own build, and
+  when there is no copy to restore from it says so and the run goes red rather than reporting
+  a clean deploy (#539)
+
 ## [0.1.12] — 2026-10-14
 
 ### Fixed

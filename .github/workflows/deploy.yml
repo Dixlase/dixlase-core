@@ -356,6 +356,48 @@ jobs:
                 fi
               fi
 
+              # 4-c. テーマのビルド済みアセットが消えていたら共有ディレクトリから戻す
+              # themes/DixlaseOnePage/resources/assets は gitignore されたビルド
+              # 成果物なので、手順 4 の Composer が展開し直す zip にも、手順 4-b が
+              # 取り直す git のツリーにも入っていない。つまり 4-b が成功してもここは
+              # 戻らず、テーマは manifest を読めずにスタイルシートとスクリプトの
+              # タグを 1 つも出力しなくなる。ページは 200 を返し、サイズも普段と
+              # 数百バイトしか違わないので、ステータスやサイズで見る確認では
+              # 気付けない (#539。2026-10-13 に全サイトで発生し、4-b は成功を
+              # 報告していた)。
+              #
+              # 戻し元はテーマ側の deploy が置いた共有ディレクトリである。テーマの
+              # deploy は自分のビルドをまず $BASE/_shared/themes/<dir>/ へ置き、
+              # そこから各サイトへ配る。手順 5 がコアのビルドに対してやっているのと
+              # 同じ形で、別の退避コピーもトークンも要らない。
+              #
+              # 発火条件を manifest.json の不在にしているのは、それがテーマが何も
+              # 出力しなくなる条件そのものだからである。揃っているときは触らない。
+              # 戻すときの --delete は安全である。このディレクトリは全体がビルド
+              # 成果物で、テーマ側の deploy も同じ形で配っている。
+              #
+              # 恒久対応は Composer に所有させるのをやめること (#483)。
+              THEME_BUILD="$BASE/_shared/themes/DixlaseOnePage"
+              THEME_ASSETS="themes/DixlaseOnePage/resources/assets"
+              if [ -d themes/DixlaseOnePage ] && [ ! -f "$THEME_ASSETS/manifest.json" ]; then
+                if [ ! -f "$THEME_BUILD/manifest.json" ]; then
+                  # ここで止めない。サイトは配信を続けられる (スタイルだけが
+                  # 落ちる) ので、残りの工程は通したうえで run を赤にする。戻し元が
+                  # 無いのは、テーマの deploy がこのサーバで一度も走っていない
+                  # ときである。
+                  echo "::error::$SITE: $THEME_ASSETS is missing and $THEME_BUILD holds no build to restore from; the theme renders without its styles until the theme's own deploy runs"
+                  DEPLOY_FAILURES=1
+                # `&&` で連結して失敗を伝播させる。`set -e` は if の条件部では
+                # 無効になるため、ここでは頼れない (手順 4-b と同じ形)。
+                elif mkdir -p "$THEME_ASSETS" \
+                  && rsync -a --delete "$THEME_BUILD/" "$THEME_ASSETS/"; then
+                  echo "  $THEME_ASSETS had no manifest — restored the theme's built assets from _shared"
+                else
+                  echo "::error::$SITE: failed to restore $THEME_ASSETS from $THEME_BUILD; the theme renders without its styles"
+                  DEPLOY_FAILURES=1
+                fi
+              fi
+
               # 5. CIでビルド済みのフロントエンドアセットをコピー
               mkdir -p public/assets/build
               rsync -a "$BASE/_shared/build/" public/assets/build/
