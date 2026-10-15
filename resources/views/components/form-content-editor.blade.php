@@ -125,10 +125,7 @@ Optional parts:
     {{-- Storage type selector --}}
     @if($showStorageSelector)
     <div class="mb-4">
-        @include('components::form-label', [
-            'for' => $storageFieldName,
-            'text' => __('common.content_storage.label'),
-        ])
+        <x-form-label :for="$storageFieldName" :text="__('common.content_storage.label')" />
 
         <x-form-radio-card-group
             :name="$storageFieldName"
@@ -149,10 +146,7 @@ Optional parts:
          number (auto-fit), so three types fill it as four do. --}}
     @if($showEditorSelector)
     <div class="mb-4">
-        @include('components::form-label', [
-            'for' => $editorFieldName,
-            'text' => __('common.content_editor.label'),
-        ])
+        <x-form-label :for="$editorFieldName" :text="__('common.content_editor.label')" />
 
         <div class="grid gap-4 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
             @foreach (\App\Enums\ContentEditorType::radioCardOptions() as $option)
@@ -234,10 +228,7 @@ Optional parts:
         <div x-ref="editorPane" class="w-full min-w-0" :class="editorPaneClass()" :style="editorPaneStyle()">
             <div class="space-y-4">
                 @if ($contentLabel !== false)
-                    @include('components::form-label', [
-                        'for' => $contentFieldName,
-                        'text' => $contentLabel ?? __('common.content'),
-                    ])
+                    <x-form-label :for="$contentFieldName" :text="$contentLabel ?? __('common.content')" />
                 @endif
 
                 {{-- CSS / JS tabs (HTML editor) --}}
