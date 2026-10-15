@@ -44,6 +44,16 @@ use Illuminate\Support\Facades\Log;
 class DatabaseCleanupService
 {
     /**
+     * Where a plugin keeps its cleanup entries, first match wins.
+     * config/admin/ is the documented place (DeclaresVerifier checks it);
+     * config/ is still read for a plugin written against the old path.
+     */
+    private const PLUGIN_CONFIG_FILES = [
+        'config/admin/database-cleanup.php',
+        'config/database-cleanup.php',
+    ];
+
+    /**
      * Get Core cleanup settings
      */
     public function getCoreCleanupConfig(): array
@@ -67,9 +77,9 @@ class DatabaseCleanupService
             ->get();
 
         foreach ($plugins as $plugin) {
-            $configPath = base_path("plugins/{$plugin->directory}/config/database-cleanup.php");
+            $configPath = $this->pluginConfigPath($plugin->directory);
 
-            if (! File::exists($configPath)) {
+            if ($configPath === null) {
                 continue;
             }
 
@@ -101,6 +111,30 @@ class DatabaseCleanupService
         }
 
         return $pluginCleanupConfig;
+    }
+
+    /**
+     * The plugin's cleanup config file, or null when it has none.
+     */
+    private function pluginConfigPath(string $directory): ?string
+    {
+        foreach (self::PLUGIN_CONFIG_FILES as $file) {
+            $path = $this->pluginsRoot()."/{$directory}/{$file}";
+
+            if (File::exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Directory that holds the plugins. Tests point it at a throwaway tree.
+     */
+    protected function pluginsRoot(): string
+    {
+        return base_path('plugins');
     }
 
     /**

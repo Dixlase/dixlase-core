@@ -33,6 +33,13 @@ repository to be notified of changes.
 ## [Unreleased]
 
 ### Fixed
+- Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
+  localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin
+  that refused them on its own no longer needs to (#551)
+- Database cleanup reads a plugin's entries from `config/admin/database-cleanup.php`, the
+  place the documentation, `DeclaresVerifier` and `dls:plugin:permissions` all use. It read
+  `config/database-cleanup.php`, so no plugin that followed the rules had its old rows
+  cleaned up, and nothing said so. The old path is still read as a fallback (#550)
 - Changing a role's access to an admin screen is recorded in the audit log. The role /
   permission matrix and the per-menu reset button wrote their overrides straight from the
   controller, so one of the few settings that changes what another account can do left no
