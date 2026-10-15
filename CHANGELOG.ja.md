@@ -32,6 +32,8 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-10-15
+
 ### 修正
 - 対応している言語コード（`ja`、`en`）を、URL の予約語にしました。言語つき URL の先頭なのに、
   プラグインの URL のプレフィックスや管理画面の URL に設定できていました。自前で拒んでいた

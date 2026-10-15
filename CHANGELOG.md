@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-10-15
+
 ### Fixed
 - Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
   localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin
