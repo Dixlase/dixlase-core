@@ -32,6 +32,11 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- A confirmation modal that submits a form no longer stays in its saving state when the browser
+  refuses the form, such as an empty required field (#580). The modal closes and the browser
+  points at the field; a field in the collapsed right sidebar opens the sidebar first
+
 ## [0.1.13] — 2026-10-15
 
 ### Added
