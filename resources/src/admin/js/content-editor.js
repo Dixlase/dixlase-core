@@ -610,5 +610,117 @@ export function contentEditorStorageInfo() {
     };
 }
 
+/**
+ * Root-relative path of a media URL, so inserted content keeps working when
+ * the site's domain changes. A URL on another origin is kept whole.
+ */
+export function mediaPath(url) {
+    try {
+        const parsed = new URL(url, window.location.origin);
+        return parsed.origin === window.location.origin
+            ? parsed.pathname + parsed.search + parsed.hash
+            : parsed.href;
+    } catch (e) {
+        return String(url || '');
+    }
+}
+
+function escapeHtmlAttribute(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function escapeMarkdownText(value) {
+    return String(value ?? '').replace(/([\\\[\]])/g, '\\$1');
+}
+
+function markdownUrl(path) {
+    // Spaces and parentheses would end the link early.
+    let decoded = path;
+    try {
+        decoded = decodeURI(path);
+    } catch (e) {
+        // Keep a path whose escapes do not decode as it is.
+    }
+    return encodeURI(decoded).replace(/\(/g, '%28').replace(/\)/g, '%29');
+}
+
+/**
+ * The tag for a media item: an image, or a link for any other file.
+ * Markdown gets Markdown; HTML and Blade get HTML.
+ */
+export function mediaTag(media, editorType) {
+    const path = mediaPath(media.url || '');
+    const isImage = String(media.type || '').startsWith('image/');
+    const text = media.alt_text || media.name || '';
+
+    if (editorType === 'markdown') {
+        return isImage
+            ? '![' + escapeMarkdownText(text) + '](' + markdownUrl(path) + ')'
+            : '[' + escapeMarkdownText(media.name || path) + '](' + markdownUrl(path) + ')';
+    }
+
+    if (!isImage) {
+        return '<a href="' + escapeHtmlAttribute(path) + '">' + escapeHtmlAttribute(media.name || path) + '</a>';
+    }
+
+    let tag = '<img src="' + escapeHtmlAttribute(path) + '" alt="' + escapeHtmlAttribute(text) + '"';
+    if (media.width && media.height) {
+        tag += ' width="' + parseInt(media.width, 10) + '" height="' + parseInt(media.height, 10) + '"';
+    }
+    return tag + ' loading="lazy">';
+}
+
+/**
+ * "Insert image" button of the content editor. Opens the media selector
+ * and, when an item is chosen, writes its tag over the field's selection
+ * (or at the cursor) and fires input, so x-model and the preview follow.
+ * The editor type comes from the field's data-editor-type.
+ */
+export function contentEditorInsertImage() {
+    return {
+        targetId: '',
+        selectorId: '',
+
+        init() {
+            this.targetId = this.$el.dataset.target || '';
+            this.selectorId = this.$el.dataset.selectorId || '';
+            this._onSelected = (event) => {
+                if (event.detail?.inputId === this.selectorId + '_input') {
+                    this.insert(event.detail.media);
+                }
+            };
+            document.addEventListener('media-selected', this._onSelected);
+        },
+
+        destroy() {
+            document.removeEventListener('media-selected', this._onSelected);
+        },
+
+        open() {
+            if (typeof window.openMediaSelector === 'function') {
+                window.openMediaSelector(this.selectorId, this.selectorId + '_input', this.selectorId + '_preview', false);
+            }
+        },
+
+        insert(media) {
+            const field = document.getElementById(this.targetId);
+            if (!field || !media) {
+                return;
+            }
+            const tag = mediaTag(media, field.dataset.editorType || 'html');
+            const start = field.selectionStart ?? field.value.length;
+            const end = field.selectionEnd ?? start;
+            field.focus();
+            field.setRangeText(tag, start, end, 'end');
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        },
+    };
+}
+
 Alpine.data('contentEditor', contentEditor);
+Alpine.data('contentEditorInsertImage', contentEditorInsertImage);
 Alpine.data('contentEditorStorageInfo', contentEditorStorageInfo);

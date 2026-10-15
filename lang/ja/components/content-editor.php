@@ -37,6 +37,8 @@ return [
     'tab_content' => 'コンテンツ',
     'tab_css' => 'CSS',
     'tab_js' => 'JavaScript',
+    'insert_image' => '画像を挿入',
+    'insert_image_help' => 'メディアライブラリから画像を選び、カーソルの位置に挿入します',
 
     'editor_type_locked_help' => 'エディタータイプは作成後に変更できません。変更するにはリセットして再作成してください。',
 

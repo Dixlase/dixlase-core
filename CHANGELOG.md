@@ -34,6 +34,12 @@ repository to be notified of changes.
 
 ## [0.1.13] — 2026-10-15
 
+### Added
+- The content editor has an "Insert image" button (#570). It opens the media library and puts
+  the chosen item at the cursor: `![alt](path)` in Markdown, `<img … loading="lazy">` with its
+  width and height in HTML and Blade, and a link for a file that is not an image. Paths are
+  root-relative, so content survives a change of domain. `insertImage` turns it off
+
 ### Changed
 - `<x-form-content-editor>` is the one content editor (#569). It can now carry a split-pane
   live preview, the CSS / JS tabs of the HTML editor, a fixed list of editor types, starter
