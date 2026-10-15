@@ -9,13 +9,18 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+  # No path filter on the pull-request trigger. `Core Tests (PHP 8.3)` is a
+  # required status check on `main`, and GitHub matches required checks by
+  # name against what was reported for the head commit. A workflow a filter
+  # skips reports nothing at all -- not "skipped, therefore passing" -- so
+  # the requirement is never satisfied and the pull request stays pending
+  # for ever. A documentation-only change could not be merged (#561).
+  #
+  # The `push` trigger above keeps its filter: no check is required there.
   pull_request:
     branches:
       - main
       - develop
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
 
 # DB 接続情報を YAML アンカーで一元管理
 env:
