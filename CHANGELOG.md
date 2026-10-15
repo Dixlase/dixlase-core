@@ -32,6 +32,12 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Changed
+- A single line break in Markdown renders as a line break (`<br>`) on the page, in the server
+  preview and in the editor's browser preview (#584). Japanese text is written a clause per line,
+  and CommonMark joined such lines into one run of text. Existing Markdown pages, front pages and
+  plugin content now show their single line breaks
+
 ## [0.1.13] — 2026-10-15
 
 ### Added
