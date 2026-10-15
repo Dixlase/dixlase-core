@@ -32,6 +32,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 追加
+- コンテンツエディタに「画像を挿入」ボタンを付けた(#570)。メディアライブラリを開き、選んだ
+  ものをカーソルの位置に入れる。Markdown は `![代替テキスト](パス)`、HTML と Blade は幅と高さ
+  つきの `<img … loading="lazy">`、画像でないファイルはリンクになる。パスはドメインを含まない
+  ので、ドメインが変わっても切れない。`insertImage` で外せる
+
 ### 変更
 - `<x-form-content-editor>` を、ただ 1 つのコンテンツエディタにした(#569)。左右分割の
   ライブプレビュー、HTML エディタの CSS／JS タブ、エディタタイプの固定の一覧、言語ごとの

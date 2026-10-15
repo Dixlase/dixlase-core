@@ -37,6 +37,8 @@ return [
     'tab_content' => 'Content',
     'tab_css' => 'CSS',
     'tab_js' => 'JavaScript',
+    'insert_image' => 'Insert image',
+    'insert_image_help' => 'Choose an image from the media library and insert it at the cursor',
 
     'editor_type_locked_help' => 'Editor type is locked after creation. To change it, reset and recreate the content.',
 

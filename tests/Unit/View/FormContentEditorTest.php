@@ -102,6 +102,23 @@ class FormContentEditorTest extends TestCase
         $this->assertSame($content, $this->config($html)['content']);
     }
 
+    public function test_the_insert_image_button_targets_the_field(): void
+    {
+        $html = Blade::render('<x-form-content-editor contentFieldName="body" />');
+
+        $this->assertStringContainsString('x-data="contentEditorInsertImage"', $html);
+        $this->assertStringContainsString('data-target="body"', $html);
+        $this->assertStringContainsString('data-selector-id="body_image_selector"', $html);
+        $this->assertStringContainsString(':data-editor-type="editorType"', $html);
+    }
+
+    public function test_the_insert_image_button_can_be_left_out(): void
+    {
+        $html = Blade::render('<x-form-content-editor :insertImage="false" />');
+
+        $this->assertStringNotContainsString('contentEditorInsertImage', $html);
+    }
+
     /**
      * @return array<string, mixed>
      */

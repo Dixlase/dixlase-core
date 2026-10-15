@@ -55,6 +55,8 @@ Optional parts:
     (content.md / content.html, style.css, script.js), shown by
     <x-content-editor.storage-info>.
   - rightSidebar: tell the admin layout the page has a right sidebar.
+  - insertImage (on by default): an "Insert image" button above the text
+    field that puts a media library item at the cursor.
 --}}
 
 @props([
@@ -95,6 +97,7 @@ Optional parts:
     'lang' => '',
     'fileStorageBasePath' => '',
     'rightSidebar' => false,
+    'insertImage' => true,
 ])
 
 <div data-translations='@json($editorTranslations)'
@@ -281,6 +284,14 @@ Optional parts:
 
                 {{-- Markdown / HTML / Blade: one field --}}
                 <div x-show="showContentTab">
+                    @if ($insertImage)
+                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                            <x-content-editor.insert-image
+                                :target="$contentFieldName"
+                                :selectorId="$contentFieldName.'_image_selector'"
+                            />
+                        </div>
+                    @endif
                     <div :class="contentGridClass()">
                         <div class="min-w-0">
                             <textarea id="{{ $contentFieldName }}"
@@ -289,6 +300,7 @@ Optional parts:
                                       placeholder="{{ $placeholder }}"
                                       class="input-common input-full font-mono text-sm"
                                       data-editor-field="content"
+                                      :data-editor-type="editorType"
                                       data-auto-resize
                                       x-model="content"
                                       :disabled="isGuiEditor">{{ $content }}</textarea>
