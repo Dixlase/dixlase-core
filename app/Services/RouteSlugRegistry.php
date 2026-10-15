@@ -39,6 +39,7 @@ namespace App\Services;
 
 use App\Contracts\RouteSlugProvider;
 use App\DTO\RouteSlug\RegisteredSlug;
+use App\Helpers\LocaleHelper;
 use App\Repositories\SiteSettingRepository;
 
 /**
@@ -102,6 +103,15 @@ class RouteSlugRegistry
         $reserved = config('admin.reserved-slugs.reserved', []);
         foreach ($reserved as $path) {
             $slugs[] = RegisteredSlug::reserved($path);
+        }
+
+        // Locale codes are the first segment of localized URLs (/ja/...),
+        // so a prefix equal to one would collide with them. They come from
+        // LocaleHelper rather than the config because the list can grow.
+        foreach (LocaleHelper::supportedLocales() as $locale) {
+            if (! in_array($locale, $reserved, true)) {
+                $slugs[] = RegisteredSlug::reserved($locale);
+            }
         }
 
         // 2. Add Core dynamic slugs (admin_url)

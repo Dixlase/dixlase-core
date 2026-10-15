@@ -32,6 +32,11 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
+  localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin
+  that refused them on its own no longer needs to (#551)
+
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
   built assets. Composer installs the theme from an archive carrying neither `.git` nor the
