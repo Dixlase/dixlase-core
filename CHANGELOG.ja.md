@@ -33,6 +33,9 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 ## [Unreleased]
 
 ### 修正
+- 対応している言語コード（`ja`、`en`）を、URL の予約語にしました。言語つき URL の先頭なのに、
+  プラグインの URL のプレフィックスや管理画面の URL に設定できていました。自前で拒んでいた
+  プラグインは、その確認がいらなくなります(#551)
 - DB のクリーンアップが、プラグインの項目を `config/admin/database-cleanup.php` から読む
   ようになりました。ドキュメント、`DeclaresVerifier`、`dls:plugin:permissions` はどれもこの
   場所を使います。これまでは `config/database-cleanup.php` を読んでいたので、決まりどおりに
