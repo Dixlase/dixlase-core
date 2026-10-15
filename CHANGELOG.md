@@ -40,6 +40,14 @@ repository to be notified of changes.
   place the documentation, `DeclaresVerifier` and `dls:plugin:permissions` all use. It read
   `config/database-cleanup.php`, so no plugin that followed the rules had its old rows
   cleaned up, and nothing said so. The old path is still read as a fallback (#550)
+- Changing a role's access to an admin screen is recorded in the audit log. The role /
+  permission matrix and the per-menu reset button wrote their overrides straight from the
+  controller, so one of the few settings that changes what another account can do left no
+  `audit_logs` row. Both paths now go through an action and record the effective values
+  before and after, keyed by menu key, under `role_changed`. A save that changes nothing
+  writes no row. The matrix is also validated before anything is written, so a form
+  rejected for giving edit permission below view permission no longer leaves the values it
+  rejected saved (#474)
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
