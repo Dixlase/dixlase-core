@@ -37,138 +37,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-create-form"
           action="{{ route('admin.front.store') }}"
           method="POST"
-          class="min-w-0 overflow-hidden"
-          x-data="frontPageCreate({
-              defaultLang: '{{ old('lang', $defaultLang) }}',
-              defaultEditorType: '{{ old('editor_type', 'markdown') }}',
-              defaultStorageType: '{{ old('storage_type', $defaultStorageType) }}',
-              fileStorageBasePath: '{{ $fileStorageBasePath }}',
-              templates: {{ Js::from($templates) }},
-              previewFrameUrl: '{{ $previewFrameUrl }}',
-              previewUrl: '{{ $previewUrl }}'
-          })">
+          class="min-w-0 overflow-hidden">
         @csrf
 
-        {{-- ===== Editor Type + Preview Toggle ===== --}}
-        <div class="mb-4 space-y-3">
-            {{-- Editor Type --}}
-            <div>
-                <x-form-label :text="__('admin/front.create.editor_type_label')" class="mb-3" />
-                <x-form-radio-card-group
-                    name="editor_type"
-                    :options="$editorCardOptions"
-                    :value="old('editor_type', 'markdown')"
-                    :columns="3"
-                    xModel="editorType"
-                />
-                <x-form-error name="editor_type" />
-                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-info-circle mr-1"></i>{{ __('admin/front.create.editor_type_help') }}
-                </p>
-            </div>
-
-            {{-- Preview Toggle --}}
-            <div class="flex flex-wrap items-center gap-3 text-xs">
-                <button type="button" @click="togglePreview()"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
-                    :class="previewVisible
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                    :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
-                    <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
-                    <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
-                </button>
-            </div>
-        </div>
-
-        {{-- ===== Split Pane Container ===== --}}
-        <div x-ref="splitContainer"
-             class="flex gap-4 overflow-hidden"
-             :class="[
-                 isHorizontal ? 'flex-row' : 'flex-col',
-                 (isDragging || isResizingPreview) ? 'select-none' : ''
-             ]">
-
-            {{-- ===== Editor Pane ===== --}}
-            <div x-ref="editorPane"
-                 class="w-full min-w-0"
-                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal && previewVisible ? 'width: ' + (splitRatio * 100) + '%; max-height: calc(100vh - 160px)' : ''">
-
-                <div class="space-y-4">
-
-                    {{-- Tab Navigation (HTML Editor only) --}}
-                    <div x-show="isHtmlEditor" x-cloak>
-                        <x-content-editor.tabs />
-                    </div>
-
-                    {{-- Content Tab --}}
-                    <div x-show="(activeTab === 'content' || !isHtmlEditor) && editorType !== 'gui'">
-                        <x-form-textarea
-                            id="content"
-                            name="content"
-                            :value="old('content', '')"
-                            rows="6"
-                            :placeholder="__('admin/front.create.content_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                        />
-                        <x-form-error name="content" />
-                    </div>
-
-                    {{-- GUI Editor (excluded from DOM with x-if to prevent name="content" duplication) --}}
-                    <template x-if="editorType === 'gui'">
-                        <div>
-                            @if($guiEditorInfo ?? null)
-                                @include($guiEditorInfo->viewName, [
-                                    'contentFieldName' => 'content',
-                                    'editorInfo' => $guiEditorInfo,
-                                    'initialContent' => '',
-                                ])
-                            @else
-                                <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                                    <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-gray-600 dark:text-gray-400">
-                                        {{ __('common.content_editor.gui_coming_soon') }}
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-                    </template>
-
-                    {{-- CSS Tab (HTML Editor only) --}}
-                    <div x-show="activeTab === 'css' && isHtmlEditor" x-cloak>
-                        <x-form-textarea
-                            id="custom_css"
-                            name="custom_css"
-                            :value="old('custom_css', '')"
-                            rows="6"
-                            :placeholder="__('admin/front.create.custom_css_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                            data-auto-resize
-                        />
-                        <x-form-error name="custom_css" />
-                    </div>
-
-                    {{-- JavaScript Tab (HTML Editor only) --}}
-                    <div x-show="activeTab === 'js' && isHtmlEditor" x-cloak>
-                        <x-form-textarea
-                            id="custom_js"
-                            name="custom_js"
-                            :value="old('custom_js', '')"
-                            rows="6"
-                            :placeholder="__('admin/front.create.custom_js_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                            data-auto-resize
-                        />
-                        <x-form-error name="custom_js" />
-                    </div>
-                </div>
-            </div>
-
-            @include('components.content-editor.preview-pane')
-        </div>
-
-        @include('components.content-editor.scroll-buttons')
+        <x-form-content-editor
+            :storageType="old('storage_type', $defaultStorageType)"
+            :editorType="old('editor_type', 'markdown')"
+            :content="old('content', '')"
+            :showStorageSelector="false"
+            :editors="collect($editorCardOptions)->pluck('value')->all()"
+            :editorHelp="__('admin/front.create.editor_type_help')"
+            :contentLabel="false"
+            :placeholder="__('admin/front.create.content_placeholder')"
+            :guiEditorInfo="$guiEditorInfo ?? null"
+            :preview="true"
+            :previewFrameUrl="$previewFrameUrl"
+            :previewUrl="$previewUrl"
+            :assetTabs="true"
+            :customCss="old('custom_css', '')"
+            :customJs="old('custom_js', '')"
+            :cssPlaceholder="__('admin/front.create.custom_css_placeholder')"
+            :jsPlaceholder="__('admin/front.create.custom_js_placeholder')"
+            :templates="$templates"
+            langField="lang"
+            :lang="old('lang', $defaultLang)"
+            :fileStorageBasePath="$fileStorageBasePath"
+            :rightSidebar="true"
+        />
+        <x-form-error name="editor_type" />
+        <x-form-error name="content" />
 
         {{-- ===== Right Sidebar ===== --}}
         <x-admin.right-sidebar
@@ -191,7 +88,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     name="lang"
                     :options="$languages"
                     :value="old('lang', $defaultLang)"
-                    x-model="lang"
                 />
                 <x-form-error name="lang" />
             </div>

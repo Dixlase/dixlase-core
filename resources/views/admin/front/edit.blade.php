@@ -37,134 +37,33 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form id="front-page-edit-form"
           action="{{ route('admin.front.edit.update') }}"
           method="POST"
-          class="min-w-0 overflow-hidden"
-          x-data="splitPaneEditor({
-              defaultStorageType: '{{ old('storage_type', $storageType) }}',
-              fileStorageBasePath: '{{ $fileStorageBasePath }}',
-              editorType: '{{ $editorType }}',
-              editorTypeValue: '{{ $editorTypeValue }}',
-              previewUrl: '{{ $previewUrl }}',
-              previewFrameUrl: '{{ $previewFrameUrl }}'
-          })">
+          class="min-w-0 overflow-hidden">
         @csrf
         @method('PUT')
 
-        {{-- ===== Preview Toggle ===== --}}
-        <div class="flex flex-wrap items-center gap-3 mb-4 text-xs">
-            <button type="button" @click="togglePreview()"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
-                :class="previewVisible
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'"
-                :title="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'">
-                <i class="fas" :class="previewVisible ? 'fa-eye' : 'fa-eye-slash'"></i>
-                <span x-text="previewVisible ? '{{ __('components/content-editor.preview_hide') }}' : '{{ __('components/content-editor.preview_show') }}'"></span>
-            </button>
-        </div>
-
-        {{-- ===== Split Pane Container ===== --}}
-        <div x-ref="splitContainer"
-             class="flex gap-4 overflow-hidden"
-             :class="[
-                 isHorizontal ? 'flex-row' : 'flex-col',
-                 (isDragging || isResizingPreview) ? 'select-none' : ''
-             ]">
-
-            {{-- ===== Editor Pane ===== --}}
-            <div x-ref="editorPane"
-                 class="w-full min-w-0"
-                 :class="isHorizontal && previewVisible ? 'overflow-y-auto' : ''"
-                 :style="isHorizontal && previewVisible ? { width: (splitRatio * 100) + '%', maxHeight: 'calc(100vh - 160px)' } : {}">
-
-                <div class="space-y-4">
-                    {{-- Tab navigation (HTML editor only) --}}
-                    @if ($isHtmlEditor)
-                        <x-content-editor.tabs />
-                    @endif
-
-                    {{-- Content tab (non-GUI editors) --}}
-                    @if(!($isGuiEditor ?? false))
-                    <div x-show="activeTab === 'content'">
-                        <x-form-textarea
-                            id="content"
-                            name="content"
-                            :value="$body"
-                            rows="6"
-                            :placeholder="__('admin/front.edit.content_placeholder')"
-                            class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                        />
-                        <x-form-error name="content" />
-                    </div>
-                    @endif
-
-                    {{-- GUI Editor --}}
-                    @if($isGuiEditor ?? false)
-                    <div>
-                        @if($guiEditorInfo ?? null)
-                            @include($guiEditorInfo->viewName, [
-                                'contentFieldName' => 'content',
-                                'editorInfo' => $guiEditorInfo,
-                                'initialContent' => $body,
-                            ])
-                        @else
-                            <div class="p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg">
-                                <div class="flex items-start">
-                                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-3"></i>
-                                    <div>
-                                        <p class="text-yellow-200 text-sm">
-                                            {{ __('common.content_editor.gui_unavailable') }}
-                                        </p>
-                                        <x-form-textarea
-                                            id="content"
-                                            name="content"
-                                            :value="$body"
-                                            rows="8"
-                                            class="mt-3 font-mono text-sm"
-                                            readonly
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                    @endif
-
-                    @if ($isHtmlEditor)
-                        {{-- CSS Tab --}}
-                        <div x-show="activeTab === 'css'" x-cloak>
-                            <x-form-textarea
-                                id="custom_css"
-                                name="custom_css"
-                                :value="$customCss ?? ''"
-                                rows="6"
-                                :placeholder="__('admin/front.edit.custom_css_placeholder')"
-                                class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                                data-auto-resize
-                            />
-                            <x-form-error name="custom_css" />
-                        </div>
-
-                        {{-- JavaScript Tab --}}
-                        <div x-show="activeTab === 'js'" x-cloak>
-                            <x-form-textarea
-                                id="custom_js"
-                                name="custom_js"
-                                :value="$customJs ?? ''"
-                                rows="6"
-                                :placeholder="__('admin/front.edit.custom_js_placeholder')"
-                                class="font-mono text-sm !bg-gray-950 !text-gray-200 !border-gray-600 focus:!border-blue-500"
-                                data-auto-resize
-                            />
-                            <x-form-error name="custom_js" />
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            @include('components.content-editor.preview-pane')
-        </div>
-
-        @include('components.content-editor.scroll-buttons')
+        {{-- The editor type and storage are fixed once the front page
+             exists (see the sidebar). --}}
+        <x-form-content-editor
+            :storageType="$storageType"
+            :editorType="$editorType"
+            :content="$body"
+            :showStorageSelector="false"
+            :showEditorSelector="false"
+            :contentLabel="false"
+            :placeholder="__('admin/front.edit.content_placeholder')"
+            :guiEditorInfo="$guiEditorInfo ?? null"
+            :preview="true"
+            :previewFrameUrl="$previewFrameUrl"
+            :previewUrl="$previewUrl"
+            :assetTabs="$isHtmlEditor"
+            :customCss="$customCss ?? ''"
+            :customJs="$customJs ?? ''"
+            :cssPlaceholder="__('admin/front.edit.custom_css_placeholder')"
+            :jsPlaceholder="__('admin/front.edit.custom_js_placeholder')"
+            :fileStorageBasePath="$fileStorageBasePath"
+            :rightSidebar="true"
+        />
+        <x-form-error name="content" />
 
         {{-- ===== Right Sidebar ===== --}}
         <x-admin.right-sidebar
@@ -195,17 +94,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin/front.edit.storage_locked_help') }}
                 </p>
 
-                {{-- Path display on file save --}}
-                <div x-show="isFileStorage" x-cloak class="mt-3 text-xs space-y-1">
+                {{-- Path display on file save; the paths come from the
+                     editor (see the contentEditorStorageInfo component). --}}
+                <div x-data="contentEditorStorageInfo" data-storage-type="{{ $storageType }}"
+                     x-show="isFileStorage" x-cloak class="mt-3 text-xs space-y-1">
                     <div>
                         <span class="text-gray-500 dark:text-gray-400">{{ __('admin/front.edit.storage_file_path') }}</span>
                         <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="filePath"></span>
                     </div>
-                    <div x-show="isHtmlEditor && jsFilePath" x-cloak>
+                    <div x-show="showJsPath" x-cloak>
                         <span class="text-gray-500 dark:text-gray-400">JS:</span>
                         <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="jsFilePath"></span>
                     </div>
-                    <div x-show="isHtmlEditor && cssFilePath" x-cloak>
+                    <div x-show="showCssPath" x-cloak>
                         <span class="text-gray-500 dark:text-gray-400">CSS:</span>
                         <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="cssFilePath"></span>
                     </div>
