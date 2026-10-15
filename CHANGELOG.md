@@ -76,6 +76,9 @@ repository to be notified of changes.
   its prefix) is ever put in the row. The file log stays as the request trace it always
   was. The unrouted duplicate `AdminApiSettingsController`, which carried the same gap, is
   deleted (#476)
+- A confirmation modal that submits a form no longer stays in its saving state when the browser
+  refuses the form, such as an empty required field (#580). The modal closes and the browser
+  points at the field; a field in the collapsed right sidebar opens the sidebar first
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
