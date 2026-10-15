@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-10-15
+
 ### Added
 - The content editor has an "Insert image" button (#570). It opens the media library and puts
   the chosen item at the cursor: `![alt](path)` in Markdown, `<img … loading="lazy">` with its
