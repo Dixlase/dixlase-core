@@ -40,12 +40,14 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
 @props(['isAdminLayout' => false])
 
 @php
-    // データベースが存在しない場合（アンインストール後など）は何も表示しない
-    try {
-        $isAuthenticated = auth('member')->check();
-    } catch (\Exception $e) {
-        $isAuthenticated = false;
-    }
+    // The member signed in to the admin panel, which the member guard
+    // cannot see from a front page: the admin login lives in
+    // `members_sessions` and a front request opens `sessions`, under the
+    // same cookie. The resolver reads the member behind the shared
+    // session id, and answers null when there is no database at all (an
+    // uninstalled or torn-down site).
+    $signedInMember = app(\App\Services\Auth\SignedInMemberResolver::class)->resolve();
+    $isAuthenticated = $signedInMember !== null;
 
     // Pick a logout endpoint that matches the session table the current
     // page was rendered against. Admin-layout pages run with the member
@@ -209,7 +211,7 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                 <div class="hidden sm:block relative">
                     <button @click="userMenuOpen = !userMenuOpen" @click.away="userMenuOpen = false" class="flex items-center space-x-2 px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         <i class="fas fa-user-circle text-xl"></i>
-                        <span class="text-sm hidden lg:inline whitespace-nowrap">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</span>
+                        <span class="text-sm hidden lg:inline whitespace-nowrap">{{ $signedInMember->display_name ?? $signedInMember->account_name }}</span>
                         <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <div x-show="userMenuOpen"
@@ -225,8 +227,8 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                         <div class="px-4 py-3 flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                             <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-400"></i>
                             <div>
-                                <div class="font-medium text-base text-gray-900 dark:text-white">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</div>
-                                <div class="text-sm text-gray-900 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                                <div class="font-medium text-base text-gray-900 dark:text-white">{{ $signedInMember->display_name ?? $signedInMember->account_name }}</div>
+                                <div class="text-sm text-gray-900 dark:text-gray-400">{{ $signedInMember->email }}</div>
                             </div>
                         </div>
                         {{-- Menu items --}}
@@ -310,8 +312,8 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                     <div class="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                         <i class="fas fa-user-circle text-3xl text-gray-600 dark:text-gray-300"></i>
                         <div>
-                            <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ auth('member')->user()->display_name ?? auth('member')->user()->account_name }}</div>
-                            <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ auth('member')->user()->email }}</div>
+                            <div class="font-medium text-base text-gray-900 dark:text-gray-100">{{ $signedInMember->display_name ?? $signedInMember->account_name }}</div>
+                            <div class="font-medium text-sm text-gray-600 dark:text-gray-400">{{ $signedInMember->email }}</div>
                         </div>
                     </div>
 

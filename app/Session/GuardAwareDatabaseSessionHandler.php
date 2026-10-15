@@ -84,6 +84,19 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     }
 
     /**
+     * Table registered for a guard, or null when it has none.
+     *
+     * The mapping is set once, in SessionServiceProvider, so anything that
+     * has to read another guard's session row -- SignedInMemberResolver
+     * reads the member guard's -- asks here instead of repeating the
+     * table name.
+     */
+    public function tableForGuard(string $guard): ?string
+    {
+        return $this->guardTables[$guard] ?? null;
+    }
+
+    /**
      * Get table name based on current guard
      */
     protected function getTable(): string

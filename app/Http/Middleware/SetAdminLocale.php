@@ -38,6 +38,7 @@ namespace App\Http\Middleware;
 use App\Enums\Locale;
 use App\Helpers\AdminHelper;
 use App\Helpers\LocaleHelper;
+use App\Services\Auth\SignedInMemberResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -104,11 +105,11 @@ class SetAdminLocale
 
     private function getMemberLocale(): ?string
     {
-        if (! auth('member')->check()) {
-            return null;
-        }
+        // The resolver, not the guard: a front request opens the
+        // `sessions` row, so the guard cannot see the member signed in to
+        // the admin under the same cookie.
+        $member = app(SignedInMemberResolver::class)->resolve();
 
-        $member = auth('member')->user();
         if ($member === null) {
             return null;
         }

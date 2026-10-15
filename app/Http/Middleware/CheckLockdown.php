@@ -38,10 +38,10 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\LockdownStatus;
+use App\Services\Auth\SignedInMemberResolver;
 use App\Services\LockdownService;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -79,8 +79,10 @@ class CheckLockdown
             return $next($request);
         }
 
-        // Check access permission
-        $member = Auth::guard('member')->user();
+        // Check access permission. The resolver, not the guard: on a front
+        // path the guard opens the `sessions` row and the admin login sits
+        // in `members_sessions` under the same cookie.
+        $member = app(SignedInMemberResolver::class)->resolve();
         $ip = $request->ip();
 
         if (LockdownService::isAccessAllowed($ip, $member, $type)) {
