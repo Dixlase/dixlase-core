@@ -32,6 +32,10 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- The editor type cards of the content editor stay on one row when the right sidebar narrows
+  the editor (#582)
+
 ## [0.1.13] — 2026-10-15
 
 ### Added

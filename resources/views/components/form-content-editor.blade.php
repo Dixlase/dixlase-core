@@ -145,13 +145,14 @@ Optional parts:
     <input type="hidden" name="{{ $storageFieldName }}" x-model="storageType">
     @endif
 
-    {{-- Editor type selector. The cards share the row whatever their
-         number (auto-fit), so three types fill it as four do. --}}
+    {{-- Editor type selector. From sm the visible cards share one row in
+         equal columns, whatever their number and however narrow the
+         column (the right sidebar takes width), so they never wrap. --}}
     @if($showEditorSelector)
     <div class="mb-4">
         <x-form-label :for="$editorFieldName" :text="__('common.content_editor.label')" />
 
-        <div class="grid gap-4 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-none sm:grid-flow-col sm:auto-cols-fr">
             @foreach (\App\Enums\ContentEditorType::radioCardOptions() as $option)
                 @if ($editors === [] || in_array($option['value'], $editors, true))
                     <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
