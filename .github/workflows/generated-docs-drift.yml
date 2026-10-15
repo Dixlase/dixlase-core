@@ -39,11 +39,17 @@ on:
       - 'feature/**'
     paths-ignore:
       - 'docs/**'
+  # No path filter here, for the same reason as in test.yml: this job
+  # reports `Regenerate and compare`, a required status check on `main`, and
+  # a filter that skips the workflow leaves that check unreported and the
+  # pull request unmergeable (#561). Skipping it for `docs/**` was only a
+  # saving -- none of the documents this job regenerates live under `docs/`
+  # -- and that saving is not worth a merge that cannot happen.
+  #
+  # The `push` trigger above keeps its filter.
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - 'docs/**'
 
 # Cancel older runs on the same ref when a new one starts.
 concurrency:
