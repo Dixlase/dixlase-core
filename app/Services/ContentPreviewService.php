@@ -56,6 +56,15 @@ class ContentPreviewService
     ) {}
 
     /**
+     * CommonMark options shared by every content Markdown render (preview
+     * and page). A single line break renders as <br>: Japanese text is
+     * written a clause per line, and joining those lines into one run
+     * of text is never what the author meant. The editor's browser-side
+     * preview gives marked the matching `breaks: true`.
+     */
+    public const MARKDOWN_RENDERER = ['soft_break' => "<br>\n"];
+
+    /**
      * Render content to HTML for preview.
      *
      * Security: when $editorType is BLADE, this method invokes Blade::render
@@ -87,6 +96,7 @@ class ContentPreviewService
                 ContentEditorType::MARKDOWN => Str::markdown($this->normalizeMarkdown($content), [
                     'allow_unsafe_links' => false,
                     'html_input' => $allowRawHtml ? 'allow' : 'escape',
+                    'renderer' => self::MARKDOWN_RENDERER,
                 ]),
                 ContentEditorType::BLADE => Blade::render($content),
                 ContentEditorType::HTML => $content,

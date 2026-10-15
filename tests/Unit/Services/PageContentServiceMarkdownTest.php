@@ -86,6 +86,27 @@ class PageContentServiceMarkdownTest extends TestCase
         );
     }
 
+    public function test_a_single_line_break_renders_as_br(): void
+    {
+        $markdown = "一行目\n二行目\n\n次の段落";
+
+        $this->assertStringContainsString("<p>一行目<br>\n二行目</p>", $this->render($markdown));
+        // The preview renders the same, with raw HTML allowed or escaped.
+        $this->assertStringContainsString(
+            "一行目<br>\n二行目",
+            app(ContentPreviewService::class)->render($markdown, ContentEditorType::MARKDOWN, false),
+        );
+    }
+
+    public function test_code_blocks_and_lists_keep_their_line_breaks(): void
+    {
+        $html = $this->render("- a\n- b\n\n```\ncode1\ncode2\n```");
+
+        $this->assertStringContainsString("<li>a</li>\n<li>b</li>", $html);
+        $this->assertStringContainsString("code1\ncode2", $html);
+        $this->assertStringNotContainsString('code1<br>', $html);
+    }
+
     public function test_inline_html_is_allowed_but_script_tags_are_neutralised(): void
     {
         // Documents the HTML policy rather than asserting it is sufficient.
