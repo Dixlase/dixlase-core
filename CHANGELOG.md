@@ -38,6 +38,10 @@ repository to be notified of changes.
   and CommonMark joined such lines into one run of text. Existing Markdown pages, front pages and
   plugin content now show their single line breaks
 
+### Fixed
+- The editor type cards of the content editor stay on one row when the right sidebar narrows
+  the editor (#582)
+
 ## [0.1.13] — 2026-10-15
 
 ### Added
