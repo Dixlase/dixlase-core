@@ -34,6 +34,17 @@ repository to be notified of changes.
 
 ## [0.1.13] — 2026-10-15
 
+### Changed
+- `<x-form-content-editor>` is the one content editor (#569). It can now carry a split-pane
+  live preview, the CSS / JS tabs of the HTML editor, a fixed list of editor types, starter
+  templates per language and file storage under one directory, each optional, and its Alpine
+  data is the registered `contentEditor` component (CSP-ready). The Markdown, HTML and Blade
+  editors share one field. The front page create and edit screens use it; their own
+  `splitPaneEditor` and `frontPageCreate` components are gone. `<x-content-editor.storage-info>`
+  talks to the editor through window events, so it works from a sidebar. The editor type cards
+  fill the row whatever their number. Existing props keep working; `inlineMarkdownPreview`
+  turns off the side-by-side Markdown view for a page with a preview of its own
+
 ### Fixed
 - Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
   localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin

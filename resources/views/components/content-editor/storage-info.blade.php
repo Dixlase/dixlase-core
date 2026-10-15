@@ -41,7 +41,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'locked' => false,
 ])
 
-<div>
+{{-- Talks to <x-form-content-editor> through window events (see the
+     contentEditorStorageInfo component), so it can sit in a sidebar
+     outside the editor. --}}
+<div x-data="contentEditorStorageInfo" data-storage-type="{{ $storageType }}">
     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
         {{ __('components/content-editor.storage_section') }}
     </h3>
@@ -77,11 +80,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <span>{{ __('components/content-editor.storage_file_warning') }}</span>
         </div>
         @if ($showJsCss)
-            <div x-show="isHtmlEditor && jsFilePath" x-cloak>
+            <div x-show="showJsPath" x-cloak>
                 <span class="text-gray-500 dark:text-gray-400">JS:</span>
                 <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="jsFilePath"></span>
             </div>
-            <div x-show="isHtmlEditor && cssFilePath" x-cloak>
+            <div x-show="showCssPath" x-cloak>
                 <span class="text-gray-500 dark:text-gray-400">CSS:</span>
                 <span class="font-mono text-blue-600 dark:text-blue-400 break-all" x-text="cssFilePath"></span>
             </div>

@@ -34,6 +34,18 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [0.1.13] — 2026-10-15
 
+### 変更
+- `<x-form-content-editor>` を、ただ 1 つのコンテンツエディタにしました(#569)。左右分割の
+  ライブプレビュー、HTML エディタの CSS／JS タブ、エディタタイプの固定の一覧、言語ごとの
+  ひな形、1 つのディレクトリへのファイル保存を持てるようになりました（どれも任意）。Alpine
+  のデータは登録済みの `contentEditor` コンポーネントにしています（CSP 対応）。Markdown、
+  HTML、Blade のエディタは 1 つの入力欄を共有します。フロントページの作成と編集の画面は
+  これを使い、独自の `splitPaneEditor` と `frontPageCreate` はなくなりました。
+  `<x-content-editor.storage-info>` は window のイベントでエディタとやり取りするので、
+  サイドバーに置けます。エディタタイプのカードは、数にかかわらず行の幅いっぱいに並びます。
+  これまでの属性はそのまま使えます。`inlineMarkdownPreview` は、自前のプレビューを持つ
+  画面で Markdown の左右表示を切ります
+
 ### 修正
 - 対応している言語コード（`ja`、`en`）を、URL の予約語にしました。言語つき URL の先頭なのに、
   プラグインの URL のプレフィックスや管理画面の URL に設定できていました。自前で拒んでいた

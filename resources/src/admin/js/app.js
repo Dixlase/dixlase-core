@@ -30,8 +30,7 @@ import '../../components/mail-server/js/settings-admin';
 import '../security/js/safe-mode-banner';
 import '../security/js/integrity';
 import './sidebar-edit';
-import './split-pane-editor';
-import './front-page-editor';
+import './content-editor';
 
 // プラグイン/テーマ向けランタイム API（import 不要で使用可能）
 import { previewMixin, DEVICE_PRESETS } from './mixins/preview-mixin';
