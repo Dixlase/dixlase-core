@@ -38,6 +38,7 @@ declare(strict_types=1);
 namespace Tests\Unit\View;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
 
 /**
@@ -47,6 +48,14 @@ use Tests\TestCase;
  */
 class FormContentEditorTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Rendered outside a request: no middleware shares $errors.
+        view()->share('errors', new ViewErrorBag());
+    }
+
     public function test_it_names_its_component_and_carries_the_settings(): void
     {
         $html = Blade::render('<x-form-content-editor storageType="database" editorType="markdown" content="# Hi" />');
