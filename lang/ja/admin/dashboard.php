@@ -217,6 +217,9 @@ return [
     'action_member_updated' => 'メンバー更新',
     'action_member_deleted' => 'メンバー削除',
     'action_role_changed' => 'ロール変更',
+    'action_api_key_created' => 'API キー作成',
+    'action_api_key_revoked' => 'API キー失効',
+    'action_api_key_regenerated' => 'API キー再生成',
 
     // ステータスラベル
     'status_ok' => 'OK',

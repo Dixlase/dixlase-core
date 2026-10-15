@@ -48,6 +48,15 @@ repository to be notified of changes.
   writes no row. The matrix is also validated before anything is written, so a form
   rejected for giving edit permission below view permission no longer leaves the values it
   rejected saved (#474)
+- Creating, revoking and regenerating an API key is recorded in the audit log. The three
+  operations wrote only to the `admin_activity` file log, which reads as "recorded" while
+  the tamper-evident trail had nothing, and a key is a credential that can act on the site
+  without a login. They now go through actions and write `api_key_created`,
+  `api_key_revoked` and `api_key_regenerated`, naming the key by id and name and — for a
+  regeneration — both the old and the new id. No key material (the plain key, its hash or
+  its prefix) is ever put in the row. The file log stays as the request trace it always
+  was. The unrouted duplicate `AdminApiSettingsController`, which carried the same gap, is
+  deleted (#476)
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its

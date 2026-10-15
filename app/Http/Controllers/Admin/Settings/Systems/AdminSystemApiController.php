@@ -35,7 +35,12 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Actions\Api\GenerateApiKeyAction;
+use App\Actions\Api\RegenerateApiKeyAction;
+use App\Actions\Api\RevokeApiKeyAction;
+use App\Actors\MemberActor;
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemApiGenerateKeyRequest;
@@ -146,43 +151,31 @@ class AdminSystemApiController extends AdminLoggedInController
 
     /**
      * Generate new API key
+     *
+     * The key is created through an action so the operation reaches the audit
+     * log; the admin_activity line stays as the request trace it always was.
      */
     public function generateKey(AdminSystemApiGenerateKeyRequest $request)
     {
         $validated = $request->validated();
 
-        // Parse allowed IP list
-        $allowedIps = null;
-        if (! empty($validated['allowed_ips'])) {
-            $allowedIps = array_filter(
-                array_map('trim', explode(',', $validated['allowed_ips']))
-            );
-        }
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        // Generate API key
-        $result = ApiKey::generate(
-            name: $validated['name'],
-            environment: $validated['environment'],
-            scopes: $validated['scopes'] ?? [],
-            createdBy: Auth::guard('member')->id(),
-            options: [
-                'rate_limit' => $validated['rate_limit'] ?? null,
-                'allowed_ips' => $allowedIps,
-                'expires_at' => $validated['expires_at'] ?? null,
-                'description' => $validated['description'] ?? null,
-            ]
-        );
+        $result = (new GenerateApiKeyAction())->execute($actor, $validated);
+
+        /** @var ApiKey $apiKey */
+        $apiKey = $result->model;
 
         Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_system_api_controller.api_key_generated'), [
             'member_id' => Auth::guard('member')->id(),
-            'api_key_id' => $result['model']->id,
+            'api_key_id' => $apiKey->id,
             'name' => $validated['name'],
             'environment' => $validated['environment'],
         ]);
 
         // Save generated key to session (display only once)
-        session()->flash('generated_key', $result['plain_key']);
-        session()->flash('generated_key_id', $result['model']->id);
+        session()->flash('generated_key', $result->metadata['plain_key'] ?? null);
+        session()->flash('generated_key_id', $apiKey->id);
 
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_generated'));
@@ -196,7 +189,10 @@ class AdminSystemApiController extends AdminLoggedInController
         $apiKey = ApiKey::findOrFail($id);
 
         $keyName = $apiKey->name;
-        $apiKey->delete();
+
+        $actor = new MemberActor(AdminHelper::getMember());
+
+        (new RevokeApiKeyAction())->execute($actor, ['api_key' => $apiKey]);
 
         Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_system_api_controller.api_key_deleted'), [
             'member_id' => Auth::guard('member')->id(),
@@ -215,33 +211,23 @@ class AdminSystemApiController extends AdminLoggedInController
     {
         $apiKey = ApiKey::findOrFail($id);
 
-        // Generate new key
-        $result = ApiKey::generate(
-            name: $apiKey->name,
-            environment: $apiKey->environment,
-            scopes: $apiKey->scopes ?? [],
-            createdBy: Auth::guard('member')->id(),
-            options: [
-                'rate_limit' => $apiKey->rate_limit,
-                'allowed_ips' => $apiKey->allowed_ips,
-                'expires_at' => $apiKey->expires_at,
-                'description' => $apiKey->description,
-            ]
-        );
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        // Delete old key
-        $apiKey->delete();
+        $result = (new RegenerateApiKeyAction())->execute($actor, ['api_key' => $apiKey]);
+
+        /** @var ApiKey $newKey */
+        $newKey = $result->model;
 
         Log::channel('admin_activity')->info(__('http/controllers/admin/settings/systems/admin_system_api_controller.api_key_regenerated'), [
             'member_id' => Auth::guard('member')->id(),
             'old_api_key_id' => $id,
-            'new_api_key_id' => $result['model']->id,
-            'name' => $result['model']->name,
+            'new_api_key_id' => $newKey->id,
+            'name' => $newKey->name,
         ]);
 
         // Save generated key to session (display only once)
-        session()->flash('generated_key', $result['plain_key']);
-        session()->flash('generated_key_id', $result['model']->id);
+        session()->flash('generated_key', $result->metadata['plain_key'] ?? null);
+        session()->flash('generated_key_id', $newKey->id);
 
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_regenerated'));

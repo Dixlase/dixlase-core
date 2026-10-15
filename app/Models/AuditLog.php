@@ -347,6 +347,15 @@ class AuditLog extends Model
     public const ACTION_ROLE_CHANGED = 'role_changed';
 
     // ========================================
+    // Action constants - API key related
+    // ========================================
+    public const ACTION_API_KEY_CREATED = 'api_key_created';
+
+    public const ACTION_API_KEY_REVOKED = 'api_key_revoked';
+
+    public const ACTION_API_KEY_REGENERATED = 'api_key_regenerated';
+
+    // ========================================
     // Action constants - AI operation related
     // ========================================
     public const ACTION_AI_CONTENT_GENERATED = 'ai_content_generated';
@@ -857,6 +866,9 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UNINSTALLED,    // Plugin uninstallation
             self::ACTION_THEME_INSTALLED,       // Theme installation
             self::ACTION_THEME_UNINSTALLED,     // Theme uninstallation
+            self::ACTION_API_KEY_CREATED,       // API key created
+            self::ACTION_API_KEY_REVOKED,       // API key revoked
+            self::ACTION_API_KEY_REGENERATED,   // API key regenerated
         ];
 
         // High: Deletion, critical settings changes, AI batch operations
