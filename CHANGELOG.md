@@ -33,6 +33,21 @@ repository to be notified of changes.
 ## [Unreleased]
 
 ### Fixed
+- Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
+  localized URLs, but a plugin's URL prefix or the admin URL could be set to one. A plugin
+  that refused them on its own no longer needs to (#551)
+- Database cleanup reads a plugin's entries from `config/admin/database-cleanup.php`, the
+  place the documentation, `DeclaresVerifier` and `dls:plugin:permissions` all use. It read
+  `config/database-cleanup.php`, so no plugin that followed the rules had its old rows
+  cleaned up, and nothing said so. The old path is still read as a fallback (#550)
+- Changing a role's access to an admin screen is recorded in the audit log. The role /
+  permission matrix and the per-menu reset button wrote their overrides straight from the
+  controller, so one of the few settings that changes what another account can do left no
+  `audit_logs` row. Both paths now go through an action and record the effective values
+  before and after, keyed by menu key, under `role_changed`. A save that changes nothing
+  writes no row. The matrix is also validated before anything is written, so a form
+  rejected for giving edit permission below view permission no longer leaves the values it
+  rejected saved (#474)
 - Creating, revoking and regenerating an API key is recorded in the audit log. The three
   operations wrote only to the `admin_activity` file log, which reads as "recorded" while
   the tamper-evident trail had nothing, and a key is a credential that can act on the site

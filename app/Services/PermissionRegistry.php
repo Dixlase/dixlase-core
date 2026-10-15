@@ -96,7 +96,7 @@ class PermissionRegistry
      * Get effective permission (Core feature)
      *
      * @param  string  $menuKey  Menu key (e.g., settings.base.index)
-     * @return array{access_roles: int, view_roles: int}|null
+     * @return array{access_roles: int, view_roles: int, is_overridden: bool, default_access_roles: int, default_view_roles: int}|null
      */
     public static function getEffective(string $menuKey): ?array
     {
@@ -153,7 +153,7 @@ class PermissionRegistry
      *
      * @param  string  $pluginSlug  Plugin slug
      * @param  string  $menuKey  Menu key
-     * @return array{access_roles: int, view_roles: int}|null
+     * @return array{access_roles: int, view_roles: int, is_overridden: bool, default_access_roles: int, default_view_roles: int}|null
      */
     public static function getPluginEffective(string $pluginSlug, string $menuKey): ?array
     {

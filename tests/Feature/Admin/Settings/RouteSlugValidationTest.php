@@ -185,4 +185,20 @@ class RouteSlugValidationTest extends TestCase
 
         $response->assertSessionHasErrors('admin_url');
     }
+
+    /**
+     * A locale code is the first segment of localized URLs, so it is reserved.
+     */
+    public function test_admin_url_update_rejects_a_locale_code(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->from(route('admin.settings.base.admin'))
+            ->post(route('admin.settings.base.admin.update'), [
+                'admin_url' => 'ja',
+            ]);
+
+        $response->assertSessionHasErrors([
+            'admin_url' => __('validation/route-slug.reserved', ['slug' => 'ja']),
+        ]);
+    }
 }

@@ -24,6 +24,7 @@ namespace Tests\Unit\Services;
 
 use App\Contracts\RouteSlugProvider;
 use App\DTO\RouteSlug\RegisteredSlug;
+use App\Helpers\LocaleHelper;
 use App\Repositories\SiteSettingRepository;
 use App\Services\RouteSlugRegistry;
 use Mockery;
@@ -84,6 +85,22 @@ class RouteSlugRegistryTest extends TestCase
         }
 
         $this->fail('予約パス "api" が見つかりませんでした');
+    }
+
+    public function test_every_supported_locale_is_reserved(): void
+    {
+        foreach (LocaleHelper::supportedLocales() as $locale) {
+            $conflict = $this->registry->findConflict($locale);
+
+            $this->assertNotNull($conflict, "Locale \"{$locale}\" must be reserved.");
+            $this->assertTrue($conflict->isReserved);
+            $this->assertSame('system:reserved', $conflict->owner);
+        }
+    }
+
+    public function test_a_locale_code_is_reserved_in_any_case(): void
+    {
+        $this->assertNotNull($this->registry->findConflict('JA'));
     }
 
     /**

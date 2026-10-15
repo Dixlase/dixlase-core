@@ -35,9 +35,12 @@
 
 namespace App\Http\Controllers\Admin\Members;
 
+use App\Actions\Member\ResetRolePermissionAction;
+use App\Actions\Member\UpdateRolePermissionsAction;
+use App\Actors\MemberActor;
 use App\Enums\MemberRole;
+use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
-use App\Models\RolePermissionOverride;
 use App\Services\PermissionRegistry;
 use Illuminate\Http\Request;
 
@@ -113,82 +116,19 @@ class AdminMemberRolesController extends AdminLoggedInController
     /**
      * Update permission settings
      *
-     * Save as override only if different from default value
-     * Delete override when reverting to default value
+     * The write is delegated to an action so the change is audited. Values that
+     * match the default remove their override; values that differ save one.
      */
     public function update(Request $request)
     {
         $this->authorizeEdit('members.settings.roles');
 
-        $memberId = auth()->id();
-        $data = $request->input('permissions', []);
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        // Collect validation errors
-        $errors = [];
-
-        // Process Core permissions
-        foreach ($data as $menuKey => $values) {
-            $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::GUEST->value;
-            $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::GUEST->value;
-
-            // Check that edit permission is not lower than view permission
-            if ($accessRoles < $viewRoles) {
-                $errors[] = __('admin/members/roles.validation.access_must_be_greater_than_view', [
-                    'menu_key' => $menuKey,
-                ]);
-            }
-
-            // Get default value (nested structure support)
-            $default = PermissionRegistry::getEffective($menuKey);
-
-            if ($default) {
-                // Delete override if same as default value
-                if ($accessRoles === $default['default_access_roles'] && $viewRoles === $default['default_view_roles']) {
-                    RolePermissionOverride::resetCoreOverride($menuKey);
-                } else {
-                    // Save override if different from default value
-                    RolePermissionOverride::setCoreOverride($menuKey, $accessRoles, $viewRoles, $memberId);
-                }
-            }
-        }
-
-        // Process plugin permissions
-        $pluginData = $request->input('plugin_permissions', []);
-
-        foreach ($pluginData as $pluginSlug => $menuItems) {
-            foreach ($menuItems as $menuKey => $values) {
-                $accessRoles = isset($values['access_roles']) ? (int) $values['access_roles'] : MemberRole::ADMIN->value;
-                $viewRoles = isset($values['view_roles']) ? (int) $values['view_roles'] : MemberRole::ADMIN->value;
-
-                // Check that edit permission is not lower than view permission
-                if ($accessRoles < $viewRoles) {
-                    $errors[] = __('admin/members/roles.validation.access_must_be_greater_than_view', [
-                        'menu_key' => "{$pluginSlug}.{$menuKey}",
-                    ]);
-                }
-
-                // Get default value using PermissionRegistry (nested structure support)
-                $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
-
-                if ($effective) {
-                    // Delete override if same as default value
-                    if ($accessRoles === $effective['default_access_roles'] && $viewRoles === $effective['default_view_roles']) {
-                        RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
-                    } else {
-                        // Save override if different from default value
-                        RolePermissionOverride::setPluginOverride($pluginSlug, $menuKey, $accessRoles, $viewRoles, $memberId);
-                    }
-                }
-            }
-        }
-
-        // Redirect if there are validation errors
-        if (! empty($errors)) {
-            return redirect()->back()->withErrors($errors)->withInput();
-        }
-
-        // Clear cache
-        PermissionRegistry::clearCache();
+        (new UpdateRolePermissionsAction())->execute($actor, [
+            'permissions' => $request->input('permissions', []),
+            'plugin_permissions' => $request->input('plugin_permissions', []),
+        ]);
 
         return redirect()->back()->with('success', __('admin/members/index.messages.permissions_saved'));
     }
@@ -200,16 +140,12 @@ class AdminMemberRolesController extends AdminLoggedInController
     {
         $this->authorizeEdit('members.settings.roles');
 
-        $menuKey = $request->input('menu_key');
-        $pluginSlug = $request->input('plugin_slug');
+        $actor = new MemberActor(AdminHelper::getMember());
 
-        if ($pluginSlug) {
-            RolePermissionOverride::resetPluginOverride($pluginSlug, $menuKey);
-        } else {
-            RolePermissionOverride::resetCoreOverride($menuKey);
-        }
-
-        PermissionRegistry::clearCache();
+        (new ResetRolePermissionAction())->execute($actor, [
+            'menu_key' => $request->input('menu_key'),
+            'plugin_slug' => $request->input('plugin_slug'),
+        ]);
 
         return response()->json(['success' => true]);
     }

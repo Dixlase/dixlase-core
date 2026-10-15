@@ -75,12 +75,12 @@ Admin Panel > Settings > System Settings > Database Management
 
 ### 1. Creating a Configuration File
 
-Create a `config/database-cleanup.php` file in your plugin or theme directory.
+Create a `config/admin/database-cleanup.php` file in your plugin or theme directory. Core also reads `config/database-cleanup.php` for a plugin written against that older path; new plugins use `config/admin/`, which is where `plugin.json`'s `declares.configs.database_cleanup` is checked.
 
 **Example file paths:**
 ```
-plugins/YourPlugin/config/database-cleanup.php
-themes/YourTheme/config/database-cleanup.php
+plugins/YourPlugin/config/admin/database-cleanup.php
+themes/YourTheme/config/admin/database-cleanup.php
 ```
 
 **Example configuration file:**
@@ -191,7 +191,7 @@ Translation keys for plugins/themes follow this format:
 ## Implementation Example: DixlaseUsers Plugin
 
 ### Configuration File
-`plugins/DixlaseUsers/config/database-cleanup.php`
+`plugins/DixlaseUsers/config/admin/database-cleanup.php`
 
 ```php
 <?php
@@ -278,7 +278,7 @@ return [
 
 ### Plugin cleanup items are not displayed
 
-1. Verify that `config/database-cleanup.php` is placed in the correct location
+1. Verify that `config/admin/database-cleanup.php` is placed in the correct location
 2. Check the configuration file for syntax errors
 3. Verify that `enabled` is set to `true`
 
