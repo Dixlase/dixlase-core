@@ -126,6 +126,25 @@ $page->withoutAudit(fn () => $page->update([
 ]));
 ```
 
+### 行に入るもの
+
+`AbstractAction::audit()` はアクターをモデル（`toAuditMorph()`）として、対象を
+`ActionResult::$model` として渡す。そのため行には `actor_type` / `actor_id` と
+`target_type` / `target_id` が入る。`actor_id` と対象の組はハッシュチェーンの対象で、
+`actor_name` と `target_label` はその外にある表示用のスナップショットである。
+
+Eloquent モデルでない対象も名指しできる。モデル無しで `targetType` と `targetId` を
+持つ `ActionResult` を返すか、`audit()` を上書きするなら `Audit::log()` に
+`target_type` / `target_id` を渡す。id の列は符号なし整数なので、数値でない id は
+挿入を失敗させる代わりに落とされる（ラベルは残る）。
+
+**0.1.13 より前に書かれた行には、アクターと対象の id が無い。** そのリリースまで
+`AuditLog::log()` は `audit()` が渡す列名のキーを無視していたので、Action が書いた行は
+すべて `actor_type` / `actor_id` / `target_type` / `target_id` が NULL で、誰が・何をを
+示すのは `actor_name` / `target_label` だけである。これらの行は遡って埋めない。
+`actor_name` からアカウントを確実に引き当てることはできず、id を書き換えれば行の
+ハッシュが壊れるためである（#546）。
+
 ## Plugin API サーフェス
 
 以下の Action レイヤーシンボルは `@api`（Plugin API）:

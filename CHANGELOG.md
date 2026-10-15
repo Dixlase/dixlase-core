@@ -57,6 +57,13 @@ repository to be notified of changes.
   its prefix) is ever put in the row. The file log stays as the request trace it always
   was. The unrouted duplicate `AdminApiSettingsController`, which carried the same gap, is
   deleted (#476)
+- An audit row written through an action records who did it and to what. `AbstractAction`
+  passed the actor and the target under the column names, which `AuditLog::log()` ignored,
+  so every action-produced row had NULL `actor_type`, `actor_id`, `target_type` and
+  `target_id`; only the display name was kept, and the actor's identity was missing from the
+  hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
+  plugin whose target is not an Eloquent model is not dropped the same way. Rows written
+  before this release are not backfilled (#546)
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
