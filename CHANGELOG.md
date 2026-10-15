@@ -32,6 +32,8 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-10-15
+
 ### Changed
 - `<x-form-content-editor>` is the one content editor (#569). It can now carry a split-pane
   live preview, the CSS / JS tabs of the HTML editor, a fixed list of editor types, starter
