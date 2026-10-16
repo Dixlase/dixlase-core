@@ -41,6 +41,13 @@ repository to be notified of changes.
 ### Fixed
 - The editor type cards of the content editor stay on one row when the right sidebar narrows
   the editor (#582)
+- A front page can see the member signed in to the admin panel (#585). The guard-aware session
+  driver keeps the admin login in `members_sessions` and a front request's session in `sessions`
+  under one cookie, so `auth('member')` was false on the front: the admin bar never appeared on a
+  theme page, the maintenance banner never appeared, and the lockdown did not recognise them. The
+  new `App\Services\Auth\SignedInMemberResolver` reads the member behind the shared session id.
+  It is read-only, so the two session rows stay separate and the CSRF token still belongs to the
+  row the page was rendered against
 
 ## [0.1.13] — 2026-10-15
 
