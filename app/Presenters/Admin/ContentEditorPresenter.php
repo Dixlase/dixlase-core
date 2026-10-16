@@ -6,6 +6,8 @@
  * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
  *
+ * @api Stable API available for plugins/themes
+ *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
