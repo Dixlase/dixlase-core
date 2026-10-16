@@ -426,6 +426,10 @@ Plugins/themes may extend the following Blade layouts via `@extends('layouts.{na
 | Layout | Usage | Description |
 |---|---|---|
 | `layouts.admin` | `@extends('layouts.admin')` | Admin panel layout (sidebar, top bar, dark mode, flash messages). Used by all admin pages including plugin admin views. |
+| `themes::layouts.app` | `@extends('themes::layouts.app')` | The active theme's front layout. A plugin's front view extends the theme the operator chose. |
+| `themes::layouts.preview` | `@extends('themes::layouts.preview')` | The active theme's layout for content rendered inside an admin preview frame. |
+
+The two `themes::` layouts are a different kind of promise from `layouts.admin`: the files belong to the active theme, not to core. What core promises is the `themes` view namespace (registered by core, so the lookup always resolves to whichever theme is active) and the names a plugin may rely on inside those layouts — the `title`, `description` and `content` sections, and the `styles` and `scripts` stacks. A theme is expected to provide them; what it puts around them is the theme's own.
 
 ---
 
@@ -445,6 +449,12 @@ Plugins/themes may extend the following Blade layouts via `@extends('layouts.{na
 | `plugin` | Basic plugin routes (session, cookies, view sharing, bindings) |
 | `plugin.web` | Plugin front-end routes (with IP filtering) |
 | `plugin.admin` | Plugin admin routes (auth required + IP filtering) |
+
+Beside the groups, a plugin may name this middleware on a route of its own:
+
+| Alias | Description |
+|---|---|
+| `front.ip` | The front-end IP filter. Use it on a public route that does not go through the `plugin.web` group. |
 
 ### 7.3 API URL Versioning & Plugin Route Layout
 
@@ -595,6 +605,7 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\SystemNotificationService`
 - `App\Services\Auth\AuthContextRegistryService`
 - `App\Services\Auth\SignedInMemberResolver`
+- `App\Services\RevisionService`
 - `App\Services\Editor\EditorManager`
 - `App\Services\LegalPageService`
 - `App\Services\MailServerValidatorService`
@@ -633,6 +644,7 @@ The remaining services are accessed via their respective interfaces (see Section
 
 | Helper | Description |
 |---|---|
+| `App\Helpers\AdminHelper` | Admin request detection and the member signed in to the admin panel (`getMember()`) |
 | `App\Helpers\CaptchaHelper` | CAPTCHA enablement check, widget rendering, and driver configuration |
 | `App\Helpers\ConfigHelper` | Security and session configuration retrieval (incl. `getDisplayTimezone()`) |
 | `App\Helpers\DateTimeHelper` | UTC→display timezone conversion and formatting (named formats, DST safe, null tolerant) |
@@ -680,6 +692,15 @@ and can be partitioned per site once multisite is visible.
 
 See [Cache Key Convention](docs/development/cache-key-convention.md) for
 the full format reference, tag rules, and worked examples.
+
+### 9.6.3 Admin Presenters (`App\Presenters\Admin\*`)
+
+Static presenters that turn core data into the shape an admin view needs. A plugin's admin screen uses them so its rendering matches core's.
+
+| Presenter | Description |
+|---|---|
+| `App\Presenters\Admin\ContentEditorPresenter` | The icons and translated labels for the editor types of `x-form-content-editor`: `editorIcons()`, `editorTranslations()` |
+| `App\Presenters\Admin\RevisionDiffPresenter` | Formats a revision diff into the rows `x-revision.diff` renders |
 
 ### 9.7 Actors
 
@@ -766,12 +787,14 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 | `shortcode_parse(string $content): string` | Parse and execute shortcodes in content |
 | `render_x_cloak_style(): string` | Render the `[x-cloak]` style block to suppress Alpine.js flicker on initial render |
 | `dls_page_title(?string $pageName = null): string` | Compose the document title from the site name, the site tagline and the page name. Returns plain text; escape it at the call site |
+| `load_plugin_assets(string $pluginDirectory, array $files): string` | Emit the plugin's own built asset tags. Reads the plugin's Vite manifest under `public/assets/plugins/{directory}/`, and the dev server's URLs while it is running. Returns HTML — echo it unescaped |
 
 ### 11.1 Blade Directives
 
 | Directive | Description |
 |---|---|
 | `@pageTitle` | Render the whole `<title>` element. Reads the `title` section of the page being rendered, or an explicit argument: `@pageTitle($post->title)`. This is how a theme emits its title; it wraps `dls_page_title()` and escapes the result once. A theme that also has to run on an older core guards it with `@if(function_exists('dls_page_title'))`, since an unregistered directive is left as literal text rather than failing the compile |
+| `@cspNonce` | Add the request's CSP nonce to a script tag: `<script @cspNonce>`. The policy sets `script-src-attr 'none'` and allows an inline script only by nonce, so every inline script a plugin or theme emits needs this |
 
 ---
 
@@ -833,6 +856,12 @@ Plugins/themes may read the following core config keys via Laravel's `config()` 
 | `extension-sources.default_author_id` | `string\|null` | Default author ID for new extension entries. |
 | `extension-sources.default_authority_key_id` | `string\|null` | Default Ed25519 authority key ID. |
 
+### 11.5.8 Custom Overrides (`config/custom.php`)
+
+| Key | Type | Description |
+|---|---|---|
+| `custom.custom_files_dir` | `string` | Directory holding the site's custom overrides (relative to base). Resolve paths through this key instead of hardcoding `custom/`. A test must override it in `setUp()` so the code under test cannot reach the real directory |
+
 > **Not Plugin API:** Laravel built-in config (`app.*`, `auth.*`, `cache.*`, `queue.*`, `session.*`, `mail.*`, `database.*`, `filesystems.*`, etc.) follows Laravel's own stability — refer to Laravel documentation. Other core configs not listed here may change without notice.
 
 ---
@@ -891,6 +920,18 @@ class PluginNameServiceProvider extends ServiceProvider
     public function register(): void { /* ... */ }
     public function boot(): void { /* ... */ }
 }
+```
+
+A provider is found through these container tags. The contracts in section 1 are only reachable once the implementation carries the matching tag:
+
+| Tag | What resolves it |
+|---|---|
+| `plugin.capabilities` | `App\Services\Plugin\PluginServiceResolver` maps a capability name to its provider. The string equals `PluginServiceResolver::CAPABILITY_TAG` |
+| `linkable.providers` | Collected wherever a link picker is built, for `App\Contracts\PluginIntegration\LinkableProviderInterface` implementations |
+| `localized-url.providers` | Collected by the localization integration, for `App\Contracts\I18n\LocalizedUrlProvider` implementations |
+
+```php
+$this->app->tag([PostLinkableProvider::class], ['linkable.providers']);
 ```
 
 ### 12.4 plugin.json Schema
@@ -1018,5 +1059,7 @@ The following are **internal implementation details** and are NOT covered by the
 - Internal job queue infrastructure (except `ShouldQueue` interface)
 - Private/protected methods of any listed class
 - Database schema internals not exposed through models
+- Core's own translation keys (`lang/*/common.php` and every other core lang file). A plugin may read them, and core's admin views do, but the keys and their wording may change in any release. Define your own keys for anything you cannot afford to have move
+- The `multilingual_content` block of `plugin.json`. Core does not read it; the multilingual integration does. Core's own seam for translatable content is `App\Contracts\Multilingual\TranslatableContentProvider`
 
 Plugins relying on internal components become derivative works subject to full AGPL-3.0 terms.

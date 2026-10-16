@@ -101,11 +101,17 @@ async function loadMediaForSelector(modalId, page = 1) {
     const apiUrl = modal?.dataset.apiUrl || '/admin/media/api';
     const errorMessage = modal?.dataset.errorMessage || 'Failed to load media';
 
+    const state = window.mediaSelectorData[modalId];
+    if (state) state.currentPage = page;
+
     try {
         const response = await fetch(`${apiUrl}?page=${page}&per_page=20`);
         const data = await response.json();
 
         if (data.success) {
+            // Drop the response when the modal was closed, or another page
+            // was asked for, while the request was in flight.
+            if (window.mediaSelectorData[modalId]?.currentPage !== page) return;
             renderMediaGrid(modalId, data.media.data);
             renderPagination(modalId, data.media);
         }
@@ -378,7 +384,39 @@ function renderPagination(modalId, paginationData) {
     }
 
     container.classList.remove('hidden');
-    // Pagination implementation can be added here if needed
+
+    const modal = document.getElementById(modalId);
+    const current = Number(paginationData.current_page) || 1;
+    const last = Number(paginationData.last_page) || 1;
+    const previousLabel = escapeAttribute(modal?.dataset.previousLabel || 'Previous');
+    const nextLabel = escapeAttribute(modal?.dataset.nextLabel || 'Next');
+    const pageLabel = escapeAttribute((modal?.dataset.pageLabel || 'Page :current of :last')
+        .replace(':current', current)
+        .replace(':last', last));
+    const buttonClass = 'px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 '
+        + 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 '
+        + 'disabled:opacity-50 disabled:cursor-not-allowed';
+
+    container.innerHTML = `
+        <nav class="flex items-center justify-between gap-4" aria-label="${pageLabel}">
+            <button type="button" class="${buttonClass}" data-page="${current - 1}" ${current <= 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left mr-1"></i>${previousLabel}
+            </button>
+            <span class="text-sm text-gray-600 dark:text-gray-300" aria-live="polite">${pageLabel}</span>
+            <button type="button" class="${buttonClass}" data-page="${current + 1}" ${current >= last ? 'disabled' : ''}>
+                ${nextLabel}<i class="fas fa-chevron-right ml-1"></i>
+            </button>
+        </nav>
+    `;
+
+    // Event delegation, as for the grid (CSP-safe). The selection lives in
+    // mediaSelectorData, so it survives moving between pages.
+    container.onclick = function (e) {
+        const button = e.target.closest('button[data-page]');
+        if (!button || button.disabled) return;
+        loadMediaForSelector(modalId, Number(button.dataset.page))
+            .then(() => document.getElementById(`${modalId}-grid`)?.scrollIntoView({ block: 'start' }));
+    };
 }
 
 console.log('[Media Selector] Script loaded');

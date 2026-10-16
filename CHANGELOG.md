@@ -32,6 +32,25 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.14] — 2026-10-17
+
+### Plugin API — Added
+- Ten elements that plugins and themes already used are now listed in `PLUGIN-API.md`, so a
+  reference to them is covered by the Plugin and Theme Exception: `AdminHelper`,
+  `RevisionService`, `RevisionDiffPresenter`, `ContentEditorPresenter`, `load_plugin_assets()`,
+  `@cspNonce`, the `front.ip` middleware, `custom.custom_files_dir`, the `plugin.capabilities` /
+  `linkable.providers` / `localized-url.providers` tags, and the `themes::layouts.app` /
+  `themes::layouts.preview` layouts. `ContentEditorPresenter`, `load_plugin_assets()` and
+  `render_x_cloak_style()` gain their `@api` tags. Core's own translation keys and the
+  `multilingual_content` block of `plugin.json` are recorded as not promised (#603, fixes #594)
+
+### Fixed
+- The media selector pages through the whole library. It showed only the 20 newest items, so
+  "Insert image" in the content editor and every `x-media.picker` could not reach older media.
+  It now has previous / next buttons and the page position, and the selection is kept while
+  moving between pages. `openMediaSelector()` and the `media-selected` event are unchanged
+  (#601, fixes #600)
+
 ## [0.1.13] — 2026-10-16
 
 ### Added
