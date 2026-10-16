@@ -32,6 +32,25 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.14] — 2026-10-17
+
+### Plugin API — 追加
+- プラグインとテーマがすでに使っていた 10 件を `PLUGIN-API.md` に載せました。これらへの参照は、
+  プラグインとテーマの例外の対象になります。`AdminHelper`、`RevisionService`、
+  `RevisionDiffPresenter`、`ContentEditorPresenter`、`load_plugin_assets()`、`@cspNonce`、
+  ミドルウェアの `front.ip`、`custom.custom_files_dir`、タグの `plugin.capabilities` /
+  `linkable.providers` / `localized-url.providers`、レイアウトの `themes::layouts.app` /
+  `themes::layouts.preview` です。`ContentEditorPresenter`、`load_plugin_assets()`、
+  `render_x_cloak_style()` に `@api` タグを付けました。core の翻訳キーと、`plugin.json` の
+  `multilingual_content` は、約束しないものとして記録しました(#603、#594 を修正)
+
+### 修正
+- メディア選択で、ライブラリのすべてのメディアをページを送って選べるようにしました。これまでは
+  新しい 20 件しか出ず、コンテンツエディタの「画像を挿入」からも、どの `x-media.picker` からも、
+  古いメディアを選べませんでした。前へ・次へのボタンと今のページ位置を出し、ページを移っても
+  選択は残ります。`openMediaSelector()` と `media-selected` イベントは変わりません
+  (#601、#600 を修正)
+
 ## [0.1.13] — 2026-10-16
 
 ### 追加
