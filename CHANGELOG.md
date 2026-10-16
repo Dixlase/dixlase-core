@@ -32,24 +32,7 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
-### Changed
-- A single line break in Markdown renders as a line break (`<br>`) on the page, in the server
-  preview and in the editor's browser preview (#584). Japanese text is written a clause per line,
-  and CommonMark joined such lines into one run of text. Existing Markdown pages, front pages and
-  plugin content now show their single line breaks
-
-### Fixed
-- The editor type cards of the content editor stay on one row when the right sidebar narrows
-  the editor (#582)
-- A front page can see the member signed in to the admin panel (#585). The guard-aware session
-  driver keeps the admin login in `members_sessions` and a front request's session in `sessions`
-  under one cookie, so `auth('member')` was false on the front: the admin bar never appeared on a
-  theme page, the maintenance banner never appeared, and the lockdown did not recognise them. The
-  new `App\Services\Auth\SignedInMemberResolver` reads the member behind the shared session id.
-  It is read-only, so the two session rows stay separate and the CSRF token still belongs to the
-  row the page was rendered against
-
-## [0.1.13] — 2026-10-15
+## [0.1.13] — 2026-10-16
 
 ### Added
 - The content editor has an "Insert image" button (#570). It opens the media library and puts
@@ -67,6 +50,10 @@ repository to be notified of changes.
   talks to the editor through window events, so it works from a sidebar. The editor type cards
   fill the row whatever their number. Existing props keep working; `inlineMarkdownPreview`
   turns off the side-by-side Markdown view for a page with a preview of its own
+- A single line break in Markdown renders as a line break (`<br>`) on the page, in the server
+  preview and in the editor's browser preview (#584). Japanese text is written a clause per line,
+  and CommonMark joined such lines into one run of text. Existing Markdown pages, front pages and
+  plugin content now show their single line breaks
 
 ### Fixed
 - Supported locale codes (`ja`, `en`) are reserved route slugs. They are the first segment of
@@ -96,6 +83,15 @@ repository to be notified of changes.
 - A confirmation modal that submits a form no longer stays in its saving state when the browser
   refuses the form, such as an empty required field (#580). The modal closes and the browser
   points at the field; a field in the collapsed right sidebar opens the sidebar first
+- The editor type cards of the content editor stay on one row when the right sidebar narrows
+  the editor (#582)
+- A front page can see the member signed in to the admin panel (#585). The guard-aware session
+  driver keeps the admin login in `members_sessions` and a front request's session in `sessions`
+  under one cookie, so `auth('member')` was false on the front: the admin bar never appeared on a
+  theme page, the maintenance banner never appeared, and the lockdown did not recognise them. The
+  new `App\Services\Auth\SignedInMemberResolver` reads the member behind the shared session id.
+  It is read-only, so the two session rows stay separate and the CSRF token still belongs to the
+  row the page was rendered against
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
@@ -108,6 +104,9 @@ repository to be notified of changes.
   already keeps under `_shared/themes/`, the same way step 5 restores core's own build, and
   when there is no copy to restore from it says so and the run goes red rather than reporting
   a clean deploy (#539)
+- The bundled theme moves to `v0.4.1`, which adds a CSP self-audit test and a manual
+  trigger for its deploy workflow and changes no runtime code. `composer.lock` has to
+  name the theme's newest release or the release build refuses to produce the ZIP
 
 ## [0.1.12] — 2026-10-14
 
