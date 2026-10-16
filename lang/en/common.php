@@ -92,6 +92,8 @@ return [
     // Navigation
     'back' => 'Back',
     'next' => 'Next',
+    'previous' => 'Previous',
+    'page_of' => 'Page :current of :last',
     'close' => 'Close',
     'later' => 'Later',
     'finish' => 'Finish',

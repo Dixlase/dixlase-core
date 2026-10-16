@@ -48,6 +48,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      data-api-url="{{ route('admin.media.api') }}"
      data-error-message="{{ __('common.error_loading_media') }}"
      data-no-media-message="{{ __('common.no_media_found') }}"
+     data-previous-label="{{ __('common.previous') }}"
+     data-next-label="{{ __('common.next') }}"
+     data-page-label="{{ __('common.page_of') }}"
      aria-labelledby="{{ $id }}-title"
      role="dialog"
      aria-modal="true">
