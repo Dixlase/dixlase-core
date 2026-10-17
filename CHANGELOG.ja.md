@@ -32,6 +32,15 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 修正
+- Action を通して書かれた監査行に、誰が・何に対して行ったかが入るようになりました。
+  `AbstractAction` はアクターと対象を列名のキーで渡していましたが、`AuditLog::log()` は
+  それを無視していたため、Action が書いた行はすべて `actor_type` / `actor_id` /
+  `target_type` / `target_id` が NULL で、残るのは表示名だけ、ハッシュチェーンにも
+  アクターの識別が入っていませんでした。`AuditLog::log()` はモデルが渡されない場合も
+  この 4 つのキーを受け取るようにしたので、対象が Eloquent モデルでないプラグインも
+  同じ形で落ちることはありません。このリリースより前に書かれた行は遡って埋めません (#546)
+
 ## [0.1.14] — 2026-10-17
 
 ### Plugin API — 追加
@@ -111,13 +120,6 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   でした。新しい `App\Services\Auth\SignedInMemberResolver` が、共有のセッション id から
   メンバーを読み取ります。読み取りだけなので、2 つのセッションの行は分かれたままで、CSRF トークンは
   ページを描いた行のものであり続けます
-- Action を通して書かれた監査行に、誰が・何に対して行ったかが入るようになりました。
-  `AbstractAction` はアクターと対象を列名のキーで渡していましたが、`AuditLog::log()` は
-  それを無視していたため、Action が書いた行はすべて `actor_type` / `actor_id` /
-  `target_type` / `target_id` が NULL で、残るのは表示名だけ、ハッシュチェーンにも
-  アクターの識別が入っていませんでした。`AuditLog::log()` はモデルが渡されない場合も
-  この 4 つのキーを受け取るようにしたので、対象が Eloquent モデルでないプラグインも
-  同じ形で落ちることはありません。このリリースより前に書かれた行は遡って埋めません (#546)
 
 ### 内部
 - 同梱テーマの lock を動かすコアのデプロイが、テーマのビルド済みファイルを欠けたままにする

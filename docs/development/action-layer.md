@@ -143,7 +143,7 @@ A target that is not an Eloquent model can still be named: return an
 The id columns are unsigned integers, so a non-numeric id is dropped (the
 label is kept) rather than failing the insert.
 
-**Rows written before 0.1.13 have no actor or target ids.** Up to that
+**Rows written before 0.1.15 have no actor or target ids.** Up to that
 release `AuditLog::log()` ignored the column-named keys `audit()` passed, so
 every action-produced row has NULL `actor_type`, `actor_id`, `target_type`
 and `target_id`, and only `actor_name` / `target_label` name who and what.

@@ -32,6 +32,15 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- An audit row written through an action records who did it and to what. `AbstractAction`
+  passed the actor and the target under the column names, which `AuditLog::log()` ignored,
+  so every action-produced row had NULL `actor_type`, `actor_id`, `target_type` and
+  `target_id`; only the display name was kept, and the actor's identity was missing from the
+  hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
+  plugin whose target is not an Eloquent model is not dropped the same way. Rows written
+  before this release are not backfilled (#546)
+
 ## [0.1.14] — 2026-10-17
 
 ### Plugin API — Added
@@ -111,13 +120,6 @@ repository to be notified of changes.
   new `App\Services\Auth\SignedInMemberResolver` reads the member behind the shared session id.
   It is read-only, so the two session rows stay separate and the CSRF token still belongs to the
   row the page was rendered against
-- An audit row written through an action records who did it and to what. `AbstractAction`
-  passed the actor and the target under the column names, which `AuditLog::log()` ignored,
-  so every action-produced row had NULL `actor_type`, `actor_id`, `target_type` and
-  `target_id`; only the display name was kept, and the actor's identity was missing from the
-  hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
-  plugin whose target is not an Eloquent model is not dropped the same way. Rows written
-  before this release are not backfilled (#546)
 
 ### Internal
 - A core deploy that moves the bundled theme's lock no longer leaves the theme without its
