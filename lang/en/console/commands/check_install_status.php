@@ -38,6 +38,7 @@ return [
     'admin_user_check_error' => '5. Administrator user check error: ',
     'admin_user_not_exist' => '⚠️ Administrator user does not exist',
     'administrator_user_count' => '5. Administrator user (role 9,10): :adminCount users',
+    'check_could_not_complete' => '❌ One or more checks could not be completed. See the errors above.',
     'check_install_and_migration_status' => 'Check installation status and migration state',
     'database_name_display' => '   Database name: :dbName',
     'determination_error' => 'Determination error: ',

@@ -17,9 +17,8 @@ Dixlase をリリース済みのバージョン間でアップグレードする
 
 1. **コア**（`database/migrations/`）
 2. **DixlasePages** — ページツリー。下流コンテンツから利用される
-3. **DixlaseLegal** — 法的ページ。Pages に依存する
-4. **DixlaseMenus** — メニュー項目。Pages / Legal のルートを参照しうる
-5. **DixlaseInquiry** — フォーム送信記録。下流依存なし
+3. **DixlaseMenus** — メニュー項目。Pages のルートを参照しうる
+4. **DixlaseInquiry** — フォーム送信記録。下流依存なし
 
 マイグレーションが存在しないプラグインはスキップする。デプロイ後に `php artisan dls:plugin:list` で有効プラグインを確認すること。
 
@@ -135,7 +134,6 @@ docker exec dixlase-php php artisan migrate --force
 
 # プラグイン（依存順序で）
 docker exec dixlase-php php artisan dls:plugin:migrate DixlasePages --force
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseLegal --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseMenus --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseInquiry --force
 

@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-10-16
+**Last Updated:** 2026-10-17
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -1037,13 +1037,13 @@ All classes that form the Plugin API are annotated with the `@api` PHPDoc tag:
 ### Guidelines for Plugin Developers
 - **Safe to depend on:** Classes with `@api` tag are stable and covered by the license exception
 - **Avoid depending on:** Classes without `@api` tag are internal implementation details
-- **PHPStan enforcement:** DixlaseDevKit provides a PHPStan rule that warns about non-`@api` imports
+- **PHPStan enforcement:** the first-party developer tooling provides a PHPStan rule that warns about non-`@api` imports
 - **Quick check:** Run `dls:plugin:check-api {plugin-name}` to scan your plugin for non-API imports
 
 ### Guidelines for Core Contributors
 - Add `@api` to any new class intended for plugin/theme use
 - Removing `@api` from an existing class is a breaking change requiring a major version bump
-- Run `dls:plugin:check-api` (DixlaseDevKit) to verify API surface consistency
+- Run `dls:plugin:check-api`, from that same tooling, to verify API surface consistency
 
 ---
 

@@ -17,9 +17,8 @@ Plugin migrations must run in the order below because foreign keys reference tab
 
 1. **Core** (`database/migrations/`)
 2. **DixlasePages** — page tree consumed by downstream content
-3. **DixlaseLegal** — legal pages depend on Pages
-4. **DixlaseMenus** — menu items may target Pages / Legal routes
-5. **DixlaseInquiry** — form submissions; no downstream dependents
+3. **DixlaseMenus** — menu items may target Pages routes
+4. **DixlaseInquiry** — form submissions; no downstream dependents
 
 Plugins without migrations are skipped. Run `php artisan dls:plugin:list` after deployment to confirm the enabled plugin set.
 
@@ -138,7 +137,6 @@ docker exec dixlase-php php artisan migrate --force
 
 # Plugins (in dependency order)
 docker exec dixlase-php php artisan dls:plugin:migrate DixlasePages --force
-docker exec dixlase-php php artisan dls:plugin:migrate DixlaseLegal --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseMenus --force
 docker exec dixlase-php php artisan dls:plugin:migrate DixlaseInquiry --force
 

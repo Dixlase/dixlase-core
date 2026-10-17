@@ -3,7 +3,7 @@
 return [
     'Signature verification result DTO' => '署名検証結果DTO',
     'Represents the Core signature verification result' => 'コア側の署名検証結果を表現します。',
-    'Converted from DixlaseDevKit plugin\'s SignatureResult,' => 'DixlaseDevKit プラグインの SignatureResult から変換、',
+    'Converted from the verification module\'s own result object,' => '検証モジュール自身の結果オブジェクトから変換、',
     'or generated directly from stub implementation' => 'またはスタブ実装から直接生成されます。',
     'Status constants' => 'ステータス定数',
     'Verification status' => '検証ステータス',
@@ -27,7 +27,7 @@ return [
     '_review_status' => [
         'Signature verification result DTO' => 'machine',
         'Represents the Core signature verification result' => 'machine',
-        'Converted from DixlaseDevKit plugin\'s SignatureResult,' => 'machine',
+        'Converted from the verification module\'s own result object,' => 'machine',
         'or generated directly from stub implementation' => 'machine',
         'Status constants' => 'machine',
         'Verification status' => 'machine',

@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 /**
- * PageTitleBuilder::tagline() consults DixlaseMultilingual's singleton
+ * PageTitleBuilder::tagline() consults the translation provider's singleton
  * translation resolver so /ja and /en can show different taglines when
  * the operator has authored per-locale values. Fall-through order:
  *   1. Resolver bound + returns non-empty translation → translation.
@@ -111,7 +111,7 @@ class PageTitleBuilderTaglineTranslationTest extends TestCase
     /**
      * Bind a stand-in SingletonTranslationResolver that serves a fixed
      * locale => value map for the `core:site-tagline` / `tagline` pair
-     * and nothing else. Mimics how DixlaseMultilingual answers a lookup
+     * and nothing else. Mimics how a translation provider answers a lookup
      * once the operator has stored per-locale translations.
      *
      * @param  array<string, string>  $localeMap

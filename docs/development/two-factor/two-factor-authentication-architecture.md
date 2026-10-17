@@ -937,7 +937,7 @@ $attemptService->recordAttempt($user, 'email', $success);
 $service = new TwoFaRecoveryCodeService(\App\Models\MemberSetting::class);
 
 // For the user plugin
-$service = new TwoFaRecoveryCodeService(\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::class);
+$service = new TwoFaRecoveryCodeService(\Plugins\AcmeAccounts\App\Models\AcmeAccountsUserSetting::class);
 ```
 
 ---

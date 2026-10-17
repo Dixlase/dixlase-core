@@ -133,8 +133,8 @@ class ComposerLocalManifestTest extends TestCase
      */
     public function test_a_move_aside_copy_contributes_nothing(): void
     {
-        $this->makeExtension('plugins', 'DixlaseDeploy', 'plugin.json');
-        $this->makeExtension('plugins', 'DixlaseDeploy.stale.20260710-221107', 'plugin.json');
+        $this->makeExtension('plugins', 'AcmeExample', 'plugin.json');
+        $this->makeExtension('plugins', 'AcmeExample.stale.20260710-221107', 'plugin.json');
         $this->makeExtension('themes', 'DixlaseOnePage', 'theme.json');
         $this->makeExtension('themes', 'DixlaseOnePage.stale.20260817-211837', 'theme.json');
         $this->makeExtension('plugins', 'DixlaseSEO.bak', 'plugin.json');
@@ -152,7 +152,7 @@ class ComposerLocalManifestTest extends TestCase
         }
 
         $this->assertSame([
-            'plugins/DixlaseDeploy/app/Helpers/Helpers.php',
+            'plugins/AcmeExample/app/Helpers/Helpers.php',
             'themes/DixlaseOnePage/app/Helpers/Helpers.php',
         ], $autoload['files']);
     }

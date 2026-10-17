@@ -138,8 +138,8 @@ When implementing CAPTCHA in plugins or themes, action names must be prefixed.
 - **Themes**: `{theme-slug}.{action}` format
 
 **Examples:**
-- DixlaseUsers plugin: `dixlase-users.user_register`
-- DixlaseUsers plugin: `dixlase-users.user_profile_update`
+- AcmeAccounts plugin: `acme-accounts.user_register`
+- AcmeAccounts plugin: `acme-accounts.user_profile_update`
 - DixlaseBlog plugin: `dixlase-blog.comment_submit`
 
 ### Controller Implementation
@@ -151,19 +151,19 @@ Implement the `getCaptchaAction()` method in your plugin's controller to return 
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Front\Register;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Front\Register;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class DixlaseUsersRegisterController extends Controller
+class AcmeAccountsRegisterController extends Controller
 {
     /**
      * Returns the CAPTCHA action name
      */
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_register';
+        return 'acme-accounts.user_register';
     }
 
     /**
@@ -176,7 +176,7 @@ class DixlaseUsersRegisterController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::front.register.create', [
+        return view('acme-accounts::front.register.create', [
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
         ]);
@@ -189,7 +189,7 @@ class DixlaseUsersRegisterController extends Controller
 In views, use the `$captchaEnabled` and `$captchaWidget` variables passed from the controller to display the CAPTCHA.
 
 ```blade
-<form method="POST" action="{{ route('dixlase-users.register.store') }}">
+<form method="POST" action="{{ route('acme-accounts.register.store') }}">
     @csrf
 
     <!-- Form fields -->
@@ -221,19 +221,19 @@ Use the `VerifiesCaptcha` trait to verify the CAPTCHA when the form is submitted
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Front\Register;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Front\Register;
 
 use App\Http\Controllers\Controller;
 use App\Traits\VerifiesCaptcha;
 use Illuminate\Http\Request;
 
-class DixlaseUsersRegisterController extends Controller
+class AcmeAccountsRegisterController extends Controller
 {
     use VerifiesCaptcha;
 
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_register';
+        return 'acme-accounts.user_register';
     }
 
     public function store(Request $request)
@@ -251,7 +251,7 @@ class DixlaseUsersRegisterController extends Controller
         // Registration processing
         // ...
 
-        return redirect()->route('dixlase-users.register.complete')
+        return redirect()->route('acme-accounts.register.complete')
             ->with('success', 'Registration is complete.');
     }
 }
@@ -264,13 +264,13 @@ Here is an example of using the same CAPTCHA action name across multiple forms.
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Mypage\Profile;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Mypage\Profile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\VerifiesCaptcha;
 use Illuminate\Http\Request;
 
-class DixlaseUsersMypageProfileController extends Controller
+class AcmeAccountsMypageProfileController extends Controller
 {
     use VerifiesCaptcha;
 
@@ -279,7 +279,7 @@ class DixlaseUsersMypageProfileController extends Controller
      */
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_profile_update';
+        return 'acme-accounts.user_profile_update';
     }
 
     /**
@@ -291,7 +291,7 @@ class DixlaseUsersMypageProfileController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::mypage.profile.basic-info', [
+        return view('acme-accounts::mypage.profile.basic-info', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
@@ -308,7 +308,7 @@ class DixlaseUsersMypageProfileController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::mypage.profile.appearance', [
+        return view('acme-accounts::mypage.profile.appearance', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
@@ -323,7 +323,7 @@ When using save buttons with Alpine.js, an `x-data` scope is required.
 
 ```blade
 <div x-data="{}">
-    <form method="POST" action="{{ route('dixlase-users.profile.update') }}">
+    <form method="POST" action="{{ route('acme-accounts.profile.update') }}">
         @csrf
 
         <!-- Form fields -->
@@ -366,7 +366,7 @@ After implementing CAPTCHA in a plugin, administrators enable it with the follow
 Determines whether CAPTCHA should be displayed for the specified action.
 
 ```php
-$captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('dixlase-users.user_register');
+$captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('acme-accounts.user_register');
 // Returns true or false
 ```
 
@@ -375,7 +375,7 @@ $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('dixlase-users.u
 Generates the CAPTCHA widget HTML.
 
 ```php
-$captchaWidget = \App\Helpers\CaptchaHelper::renderWidget('dixlase-users.user_register');
+$captchaWidget = \App\Helpers\CaptchaHelper::renderWidget('acme-accounts.user_register');
 // Returns HTML code (output in Blade as {!! $captchaWidget !!})
 ```
 

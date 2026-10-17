@@ -318,7 +318,7 @@ class RevisionService
             // Expected name for plugin
             'page',     // DixlasePages
             'post',     // Future DixlaseBlog
-            'legal',    // DixlaseLegal
+            'legal',
             'article',
             'entry',
         ];

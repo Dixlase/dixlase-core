@@ -85,7 +85,7 @@ class FrontPageContentService extends ContentFileService
     {
         $locale = $locale ?? app()->getLocale();
 
-        // Consult a registered TranslationResolver (DixlaseMultilingual) first
+        // Consult a registered TranslationResolver first
         // regardless of storage_type. The translation editor writes to the
         // polymorphic translations table even for FILE-backed entities, so a
         // per-locale override can exist independently of where the primary

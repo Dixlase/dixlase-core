@@ -32,7 +32,7 @@ use Tests\TestCase;
 /**
  * Guards that core can build a usable Member on its own (#511).
  *
- * tests/TestCase prefers a DixlaseCoreDevKit factory when that plugin is on
+ * tests/TestCase prefers a development plugin's factory when that plugin is on
  * disk, and the plugin's MemberFactory sets two_fa_mode while core's did not.
  * Because the plugin is present in every CI run that clones the integration
  * plugins, the gap in core's own factory stayed invisible, and a checkout

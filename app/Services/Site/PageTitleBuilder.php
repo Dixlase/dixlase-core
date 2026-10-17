@@ -127,7 +127,7 @@ class PageTitleBuilder implements PageTitleBuilderInterface
      * operator has not set one.
      *
      * The tagline is a single site setting stored in the operator's
-     * primary locale. When DixlaseMultilingual is installed it
+     * primary locale. When a translation provider is installed it
      * registers a `core:site-tagline` singleton translatable type and
      * binds {@see SingletonTranslationResolver}; the plugin's central
      * translation editor then holds one value per enabled locale. This

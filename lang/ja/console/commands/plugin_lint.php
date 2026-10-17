@@ -49,5 +49,5 @@ return [
     'no_issues_detected' => '  <fg=green>✓ 検出された問題はありません</>',
     'plugin_health_check' => '<fg=cyan>🔍 :plugin の健全性チェック</>',
     'set_security_preset_development' => '開発中であれば security_preset を development にすると減点を回避できます',
-    'sign_with_dixlase_signer' => 'DixlaseSigner で署名すると本番で 100 点を達成できます',
+    'sign_to_reach_full_score' => '拡張機能に署名すると本番で 100 点を達成できます',
 ];

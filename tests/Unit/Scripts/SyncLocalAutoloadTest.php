@@ -171,8 +171,8 @@ class SyncLocalAutoloadTest extends TestCase
      */
     public function test_a_move_aside_copy_is_not_registered(): void
     {
-        $this->makeExtension('plugins', 'DixlaseDeploy', 'plugin.json');
-        $this->makeExtension('plugins', 'DixlaseDeploy.stale.20260710-221107', 'plugin.json');
+        $this->makeExtension('plugins', 'AcmeExample', 'plugin.json');
+        $this->makeExtension('plugins', 'AcmeExample.stale.20260710-221107', 'plugin.json');
         $this->makeExtension('themes', 'DixlaseOnePage', 'theme.json');
         $this->makeExtension('themes', 'DixlaseOnePage.stale.20260817-211837', 'theme.json');
 
@@ -187,7 +187,7 @@ class SyncLocalAutoloadTest extends TestCase
         }
 
         // The live extensions are still registered.
-        $this->assertArrayHasKey('Plugins\\DixlaseDeploy\\App\\', $result['psr4']);
+        $this->assertArrayHasKey('Plugins\\AcmeExample\\App\\', $result['psr4']);
         $this->assertArrayHasKey('Themes\\DixlaseOnePage\\App\\', $result['psr4']);
         $this->assertCount(2, $result['files']);
     }

@@ -471,7 +471,7 @@ document.getElementById('passkey-auth-button').addEventListener('click', async f
 ### ユーザープラグインでの実装例
 
 ```blade
-{{-- plugins/DixlaseUsers/resources/views/two-fa/email-challenge.blade.php --}}
+{{-- plugins/AcmeAccounts/resources/views/two-fa/email-challenge.blade.php --}}
 
 @extends('users-plugin::layouts.auth')
 

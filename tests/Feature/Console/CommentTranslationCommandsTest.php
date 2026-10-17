@@ -45,11 +45,11 @@ use Tests\TestCase;
  * Core-side coverage for `dls:comment:build` and `dls:comment:status`.
  *
  * Both commands live in Core but their only tests used to live in
- * DixlaseCoreDevKit's suite, which runs in a separate CI job (`plugin-tests`,
+ * the development plugin's suite, which runs in a separate CI job (`plugin-tests`,
  * gated on `needs: core-tests`) and needs the plugin to be checked out at all.
  * A Core-only change could therefore break them without Core Tests noticing —
  * and did: the commands imported their services from
- * `Plugins\DixlaseCoreDevKit\...`, so every release build, which checks out
+ * that plugin's namespace, so every release build, which checks out
  * without plugins, aborted with "Target class ... does not exist".
  *
  * These tests stay read-only on purpose. `--dry-run` computes substitutions
