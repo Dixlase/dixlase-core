@@ -39,8 +39,6 @@ use App\Console\Traits\TakesExtensionBackup;
 use App\Enums\PluginEnableAction;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminThemeDeleteRequest;
 use App\Http\Requests\Admin\Settings\AdminThemeInstallRequest;
@@ -665,10 +663,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
             }
 
-            // Add theme exclusion rules to .git/info/exclude and .gitignore
-            GitExcludeHelper::addThemeExclusion($themeDir);
-            GitIgnoreHelper::addThemeExclusion($themeDir);
-
             // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
             if ($theme) {
@@ -830,10 +824,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_failed'));
             }
 
-            // Add theme exclusion rules to .git/info/exclude and .gitignore
-            GitExcludeHelper::addThemeExclusion($theme->directory);
-            GitIgnoreHelper::addThemeExclusion($theme->directory);
-
             // Notification and logging of extension operations
             $permissionService = app(ThemePermissionService::class);
             $summary = $permissionService->getSummary($theme->slug);
@@ -910,10 +900,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
                 return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_deletion_failed'));
             }
-
-            // Remove theme exclusion rules from .git/info/exclude and .gitignore
-            GitExcludeHelper::removeThemeExclusion($themeDir);
-            GitIgnoreHelper::removeThemeExclusion($themeDir);
 
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_successfully_deleted'));
@@ -1398,9 +1384,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 ComposerLocalManifest::markPendingInstall($destinationPath);
             }
 
-            // Update Git exclusion rules and composer.local.json
-            GitExcludeHelper::addThemeExclusion($directoryName);
-            GitIgnoreHelper::addThemeExclusion($directoryName);
+            // Update composer.local.json
             ComposerLocalHelper::syncAutoload();
 
             // Get display name from theme.json

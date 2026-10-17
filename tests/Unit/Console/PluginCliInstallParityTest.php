@@ -70,12 +70,14 @@ class PluginCliInstallParityTest extends TestCase
         );
     }
 
-    public function test_plugin_install_keeps_git_exclusions_in_step_like_the_admin_path(): void
+    public function test_plugin_install_does_not_re_include_the_plugin_in_cores_git(): void
     {
         $source = $this->source('Console/Commands/PluginInstall.php');
 
-        $this->assertStringContainsString('GitExcludeHelper::addPluginExclusion($pluginName)', $source);
-        $this->assertStringContainsString('GitIgnoreHelper::addPluginExclusion($pluginName)', $source);
+        // Core ignores plugins/* on purpose; a !plugins/<Name>/ rule would make
+        // core's git track the plugin (#626).
+        $this->assertStringNotContainsString('GitExcludeHelper::', $source);
+        $this->assertStringNotContainsString('GitIgnoreHelper::', $source);
         $this->assertStringNotContainsString(
             'is already done during plugin creation (make:plugin), so not needed here',
             $source,

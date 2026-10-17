@@ -36,8 +36,6 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -141,18 +139,6 @@ class PluginDelete extends Command
             $this->error(__('admin/command/plugin-delete.failed', ['error' => $e->getMessage()]));
 
             return 1;
-        }
-
-        // Remove plugin exclusion rule from .git/info/exclude
-        if (GitExcludeHelper::removePluginExclusion($pluginDirectory)) {
-            $this->info(__('console/commands/plugin_delete.plugin_removed_from_git_exclude', ['pluginDirectory' => $pluginDirectory]));
-        } else {
-            $this->warn(__('console/commands/plugin_delete.plugin_remove_from_git_exclude_failed', ['pluginDirectory' => $pluginDirectory]));
-        }
-
-        // Remove plugin exclusion rule from .gitignore
-        if (GitIgnoreHelper::removePluginExclusion($pluginDirectory)) {
-            $this->info(__('console/commands/plugin_delete.plugin_removed_from_gitignore', ['pluginDirectory' => $pluginDirectory]));
         }
 
         // Update composer.local.json

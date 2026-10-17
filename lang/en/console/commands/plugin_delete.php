@@ -34,8 +34,5 @@
  */
 
 return [
-    'plugin_remove_from_git_exclude_failed' => '⚠ Failed to remove plugin \':pluginDirectory\' from .git/info/exclude (may already be removed)',
-    'plugin_removed_from_git_exclude' => '✓ Removed plugin \':pluginDirectory\' from .git/info/exclude',
-    'plugin_removed_from_gitignore' => '✓ Removed plugin \':pluginDirectory\' from .gitignore',
     'updated_composer_local_json' => '✓ Updated composer.local.json',
 ];

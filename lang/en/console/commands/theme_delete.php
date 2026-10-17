@@ -34,7 +34,5 @@
  */
 
 return [
-    'theme_removed_from_git_info_exclude' => '✓ Removed theme \':themeDirectory\' from .git/info/exclude',
-    'theme_removed_from_gitignore' => '✓ Removed theme \':themeDirectory\' from .gitignore',
     'updated_composer_local_json' => '✓ Updated composer.local.json',
 ];

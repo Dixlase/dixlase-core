@@ -40,8 +40,6 @@ use App\Enums\PluginEnableAction;
 use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminPluginDeleteRequest;
 use App\Http\Requests\Admin\Settings\AdminPluginInstallRequest;
@@ -1745,9 +1743,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ComposerLocalManifest::markPendingInstall($destinationPath);
             }
 
-            // Update Git exclusion rules and composer.local.json
-            GitExcludeHelper::addPluginExclusion($pluginDir);
-            GitIgnoreHelper::addPluginExclusion($pluginDir);
+            // Update composer.local.json
             ComposerLocalHelper::syncAutoload();
 
             // The audit runs at install time, in the two-stage modal (scan → confirm).

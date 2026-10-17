@@ -34,7 +34,5 @@
  */
 
 return [
-    'theme_removed_from_git_info_exclude' => '✓ テーマ \':themeDirectory\' を .git/info/exclude から削除しました',
-    'theme_removed_from_gitignore' => '✓ テーマ \':themeDirectory\' を .gitignore から削除しました',
     'updated_composer_local_json' => '✓ composer.local.json を更新しました',
 ];
