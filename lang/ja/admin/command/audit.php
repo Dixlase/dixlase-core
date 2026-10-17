@@ -61,6 +61,7 @@ return [
         'total' => '合計',
         'valid' => '正常',
         'invalid' => '異常',
+        'redacted' => '消去済み（記録された消去）',
         'total_logs' => '総ログ数',
         'with_hash' => 'ハッシュチェーン設定済み',
         'without_hash' => 'ハッシュチェーン未設定',

@@ -80,6 +80,8 @@ class AuditLog extends Model
         'hash_algorithm',
         'verification_status',
         'last_verified_at',
+        'redacted_at',
+        'redaction_id',
     ];
 
     protected $casts = [
@@ -89,6 +91,7 @@ class AuditLog extends Model
         'schema_version' => 'integer',
         'chain_sequence' => 'integer',
         'last_verified_at' => 'datetime',
+        'redacted_at' => 'datetime',
     ];
 
     // ========================================
@@ -99,6 +102,12 @@ class AuditLog extends Model
     public const VERIFICATION_INVALID = 'invalid';
 
     public const VERIFICATION_SKIPPED = 'skipped';
+
+    /**
+     * Changed on purpose by a recorded personal-data erasure. The row's own
+     * hash no longer verifies, but its place in the chain still does.
+     */
+    public const VERIFICATION_REDACTED = 'redacted';
 
     // Hash algorithm
     public const HASH_ALGORITHM = 'sha256';
@@ -354,6 +363,11 @@ class AuditLog extends Model
     public const ACTION_API_KEY_REVOKED = 'api_key_revoked';
 
     public const ACTION_API_KEY_REGENERATED = 'api_key_regenerated';
+
+    // ========================================
+    // Action constants - Privacy related
+    // ========================================
+    public const ACTION_PRIVACY_DATA_ERASED = 'privacy_data_erased';
 
     // ========================================
     // Action constants - AI operation related
@@ -890,6 +904,7 @@ class AuditLog extends Model
             self::ACTION_API_KEY_CREATED,       // API key created
             self::ACTION_API_KEY_REVOKED,       // API key revoked
             self::ACTION_API_KEY_REGENERATED,   // API key regenerated
+            self::ACTION_PRIVACY_DATA_ERASED,   // Personal data erased
         ];
 
         // High: Deletion, critical settings changes, AI batch operations
@@ -1180,6 +1195,25 @@ class AuditLog extends Model
             'verification_status' => $isValid ? self::VERIFICATION_VALID : self::VERIFICATION_INVALID,
             'last_verified_at' => now(),
         ]);
+    }
+
+    /**
+     * Record that verification accepted the row as redacted
+     */
+    public function markAsRedacted(): void
+    {
+        $this->update([
+            'verification_status' => self::VERIFICATION_REDACTED,
+            'last_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Whether a personal-data erasure has redacted this row
+     */
+    public function isRedacted(): bool
+    {
+        return $this->redacted_at !== null;
     }
 
     /**

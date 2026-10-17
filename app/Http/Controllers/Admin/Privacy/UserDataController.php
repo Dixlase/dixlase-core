@@ -41,6 +41,7 @@ use App\Enums\MemberRole;
 use App\Enums\PluginPrivacy\DeletionMode;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Member;
+use App\Services\Privacy\ErasureNotRecordedException;
 use App\Services\Privacy\UserPrivacyEraser;
 use App\Services\Privacy\UserPrivacyExporter;
 use App\Services\Site\SiteContext;
@@ -141,7 +142,13 @@ class UserDataController extends AdminLoggedInController
         $member = Member::findOrFail($id);
         $siteId = $validated['scope'] === 'site' ? $siteContext->currentSiteId() : null;
 
-        $results = $eraser->erase((int) $member->id, $mode, $siteId);
+        try {
+            $results = $eraser->erase((int) $member->id, $mode, $siteId, $request->user('member'));
+        } catch (ErasureNotRecordedException) {
+            return redirect()
+                ->route('admin.privacy.users.index', ['search' => (string) $id])
+                ->with('error', __('admin/privacy/users.errors.erasure_not_recorded'));
+        }
 
         $totalDeleted = 0;
         $totalAnonymized = 0;

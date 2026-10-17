@@ -122,7 +122,7 @@ Contract では `DeletionMode` で 3 つのモードを定義しています:
 
 | モード | 戦略 |
 |---|---|
-| `HardDelete` | 行を物理削除。監査ログ系（`audit_logs`, `security_events`）は **行は残し PII のみ匿名化** すること（追加専用ハッシュチェーンを保つため）。 |
+| `HardDelete` | 行を物理削除。監査ログ系（`audit_logs`, `security_events`）は **行は残し PII のみ匿名化** すること（証跡の行を残すため）。コアの `audit_logs` の行はコアが匿名化して記録する。`docs/ja/operations/maintenance/audit-log-integrity.md` を参照。 |
 | `SoftDelete` | 親行の `deleted_at` をセット。子行は復元のために残します。soft-delete 非対応のテーブルは `HardDelete` にフォールバックし、その制約を `errors[]` に記録します。 |
 | `Anonymize` | 全行を残し、識別フィールド（メール、IP、UA、氏名、電話）を `app.key` 由来の salt による HMAC-SHA256 で置換します。元値は復元不能（同じ `app.key` でも復号できません）。 |
 

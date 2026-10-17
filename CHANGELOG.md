@@ -40,6 +40,15 @@ repository to be notified of changes.
   hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
   plugin whose target is not an Eloquent model is not dropped the same way. Rows written
   before this release are not backfilled (#546)
+- Erasing a member's personal data no longer makes their audit rows fail verification. The
+  erasure rewrote `ip_address`, which the record hash covers, so every chained row of that
+  member was reported as tampered after a routine privacy request, and the erasure left no
+  row of its own to explain it. The erasure now clears the address instead of hashing it,
+  writes a `privacy_data_erased` row naming the operator and the subject by id, and marks
+  each row it changed. Verification reports those rows as redacted — still checked for
+  their place in the chain and the daily seal — and treats a row marked redacted with no
+  recorded erasure behind it as tampering. If the erasure cannot be recorded, nothing is
+  erased. Rows anonymised before this release still fail and are not backfilled (#478)
 
 ## [0.1.14] — 2026-10-17
 

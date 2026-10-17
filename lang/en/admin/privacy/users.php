@@ -73,7 +73,7 @@ return [
 
     'delete' => [
         'heading' => 'Delete or anonymize',
-        'description' => 'Choose a scope and a strategy. The action is dispatched to every registered privacy data provider. Hard-delete on audit_logs and security_events still preserves the rows themselves and only anonymizes their PII so the audit chain stays intact.',
+        'description' => 'Choose a scope and a strategy. The action is dispatched to every registered privacy data provider. Hard-delete on audit_logs and security_events still preserves the rows themselves and only anonymizes their PII. Redacted audit rows are recorded with the erasure, and integrity verification reports them as redacted rather than tampered.',
         'scope_label' => 'Scope',
         'mode_label' => 'Strategy',
         'confirm_checkbox' => 'I understand this action affects user data across every privacy provider and may be irreversible.',
@@ -87,5 +87,6 @@ return [
 
     'errors' => [
         'invalid_mode' => 'The selected deletion mode is not recognized.',
+        'erasure_not_recorded' => 'Nothing was erased: the erasure could not be recorded in the audit log. Check the application log and try again.',
     ],
 ];

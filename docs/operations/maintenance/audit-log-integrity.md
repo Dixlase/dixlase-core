@@ -296,6 +296,40 @@ periodically (see "Verifying Integrity").
 | `chain_broken` | Link to the previous record is broken |
 | `sequence_gap` | Gap in the sequence numbers |
 | `invalid_genesis` | Invalid first record |
+| `redaction_unrecorded` | The record is marked redacted, but no recorded erasure explains it |
+
+### Redacted Records (Personal-Data Erasure)
+
+Erasing a member's personal data (Privacy → erase) keeps their audit rows
+but clears `ip_address` and replaces the other identifying fields. Because
+`ip_address` is part of the record hash, a redacted row no longer matches
+its own hash, and the hash cannot be recomputed without the value that was
+erased.
+
+So the erasure records itself. It writes one `privacy_data_erased` row
+naming the operator and the subject (by id only), and stamps every row it
+redacts with `redacted_at` and `redaction_id`, which equals that row's
+`request_id`. The erasure is refused, and nothing is erased, if its row
+cannot be written.
+
+Verification then treats a redacted row as follows:
+
+- The row's own hash is not checked. Its place in the chain still is: the
+  next row's `previous_hash` and the daily seal pin its `record_hash`, so the
+  row cannot be removed or reordered unnoticed.
+- The erasure row must exist, carry the row's `redaction_id`, name the row's
+  actor as its subject and come after the row. Otherwise the row fails with
+  `redaction_unrecorded`.
+- An accepted row is counted as **redacted** (verification status
+  `redacted`), not as valid or tampered, and does not raise the tampering
+  alert.
+
+Fields outside the hash (`user_agent`, `actor_name`, `target_label`) were
+never protected by it; see "Hash Calculation Target" above.
+
+Rows redacted before this behaviour existed carry no `redacted_at` and still
+fail with `hash_mismatch`. They are not backfilled: nothing records which
+erasure changed them.
 
 ### Performance
 

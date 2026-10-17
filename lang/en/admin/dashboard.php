@@ -220,6 +220,7 @@ return [
     'action_api_key_created' => 'API Key Created',
     'action_api_key_revoked' => 'API Key Revoked',
     'action_api_key_regenerated' => 'API Key Regenerated',
+    'action_privacy_data_erased' => 'Personal Data Erased',
 
     // Status labels
     'status_ok' => 'OK',
