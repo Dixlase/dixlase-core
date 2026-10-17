@@ -49,8 +49,8 @@ use Illuminate\Support\Str;
  *
  * Ed25519-based cryptographic verification completed within Core alone. Public keys for verification are
  * retrieved from authority.dixlase.net via AuthorityPublicKeyResolver and
- * cached in the local DB. This allows signature verification to work in user environments (DixlaseDevKit
- * not installed).
+ * cached in the local DB. This allows signature verification to work in a user
+ * environment with no verification module installed.
  *
  * The signature format matches the format produced by an Ed25519 signer
  * tool (typically run by a signing/distribution plugin):

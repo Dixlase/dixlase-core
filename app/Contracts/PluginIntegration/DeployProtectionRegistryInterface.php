@@ -58,7 +58,7 @@ use App\DTO\PluginIntegration\DeployProtectionSource;
  * of `plugin.json` / `theme.json`:
  *
  *   {
- *     "name": "DixlaseLegal",
+ *     "name": "AcmeExample",
  *     ...
  *     "deploy": {
  *       "protected_tables": [

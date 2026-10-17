@@ -33,7 +33,7 @@ class PasswordConfirmationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->markTestSkipped('DixlaseUsers プラグイン (App\Models\User) 依存');
+        $this->markTestSkipped('Depends on a plugin that provides App\Models\User');
     }
 
     public function test_confirm_password_screen_can_be_rendered(): void

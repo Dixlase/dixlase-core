@@ -54,7 +54,7 @@ use Tests\TestCase;
  * Nothing in Core called it. That was luck rather than design -- the class
  * carries `@api`, appears in PLUGIN-API.md, and the method is declared on
  * TwoFaPasskeyServiceInterface, so it reads as the supported way for a plugin
- * to verify a passkey. The DixlaseUsers 2FA work that would have used it is
+ * to verify a passkey. The member-accounts 2FA work that would have used it is
  * still ahead, which is exactly why this is worth closing now: the cost is
  * zero while there are no callers.
  *

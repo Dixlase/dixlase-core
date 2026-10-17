@@ -56,7 +56,7 @@ use Tests\TestCase;
  * referenced App\Models\User, a class this application does not have. The
  * crash was the only thing standing between an anonymous visitor and a
  * self-registered admin member — and the test that would have caught it had
- * been skipped with the note "DixlaseUsers プラグイン (App\Models\User) 依存".
+ * been skipped with the note "Depends on a plugin that provides App\Models\User".
  * A crash is not an access control.
  */
 class NoPublicRegistrationTest extends TestCase

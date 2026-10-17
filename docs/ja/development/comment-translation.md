@@ -122,7 +122,7 @@ glossary はスリムに保つこと: Dixlase 固有用語、または AI のデ
 
 ## コマンド
 
-パイプラインは Artisan コマンド 4 つで構成。コアに 2 つ（ユーザー向け）、DixlaseCoreDevKit プラグインに 2 つ（開発者向け）:
+パイプラインは Artisan コマンド 4 つで構成。コアに 2 つ（ユーザー向け）、公開して配布していない開発用プラグインに 2 つ（開発者向け）:
 
 ### `dls:comment:build`（コア）
 
@@ -164,7 +164,7 @@ php artisan dls:comment:status --filter=untranslated --limit=20
 php artisan dls:comment:status --filter=unreviewed   # alias: machine + 状態未設定の翻訳済み
 ```
 
-### `dls:comment:extract`（DevKit）
+### `dls:comment:extract`（開発者向け）
 
 PHP ソースから日本語コメントをスキャンして辞書に pending エントリ（`'JP' => ''`）として追加。新しい言語を作るときに既存 JP ソースから種を播くのに使います。コアソースは既に正本英語化されているので、日常運用では不要。
 
@@ -172,7 +172,7 @@ PHP ソースから日本語コメントをスキャンして辞書に pending �
 php artisan dls:comment:extract --path=app/Traits
 ```
 
-### `dls:comment:translate`（DevKit）
+### `dls:comment:translate`（開発者向け）
 
 pending エントリを Claude API に送信し、辞書を `'EN' => 'JP'` 形式にローテーション。`.env` に `ANTHROPIC_API_KEY` が必要。
 
@@ -285,7 +285,7 @@ Windows 用の `convert-comments.bat` も同梱されています。
 コアに `zh`（中国語）を追加する例:
 
 1. `resources/comment-translations/zh/_glossary.php` を作成。EN キーに対する ZH の訳語。
-2. （任意）DevKit パイプラインで正本 EN ソースから辞書を播種し、AI に ZH 翻訳を依頼:
+2. （任意）開発者向けのパイプラインで正本 EN ソースから辞書を播種し、AI に ZH 翻訳を依頼:
 
    ```bash
    # translate コマンドは現状 JP-keyed pending エントリを前提としているため、
@@ -331,7 +331,7 @@ Dixlase Core のリリースは **英語ソースコメントのみ** で出荷�
 
 ## アーキテクチャメモ
 
-- **サービスクラス** は `plugins/DixlaseCoreDevKit/app/Services/CommentTranslation/` に存在します（パイプラインが動くには DevKit のインストールが必要）:
+- **サービスクラス** は、このパイプラインを提供する開発用プラグインに存在します（動かすにはそのプラグインのインストールが必要）:
   - `TranslationFileService` — 辞書の読み書き / マージ。`setLocale()` / `getLocale()` で言語状態を制御。
   - `CommentBuilderService` — 置換実行。`applyToContent()`（token-AST 認識）または `applyExtension()`（拡張機能単位のウォーカー）。
   - `ClaudeTranslationService` — `dls:comment:translate` で使う Claude API クライアント。

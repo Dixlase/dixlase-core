@@ -57,9 +57,9 @@ class PluginMigrationDiscoveryTest extends TestCase
 
     public function test_requested_testsuites_parses_the_comma_separated_form(): void
     {
-        $_SERVER['argv'] = ['phpunit', '--testsuite=DixlaseLegal,DixlaseInquiry'];
+        $_SERVER['argv'] = ['phpunit', '--testsuite=AcmeExample,DixlaseInquiry'];
 
-        $this->assertSame(['DixlaseLegal', 'DixlaseInquiry'], static::requestedTestsuites());
+        $this->assertSame(['AcmeExample', 'DixlaseInquiry'], static::requestedTestsuites());
     }
 
     public function test_requested_testsuites_parses_the_space_separated_form(): void

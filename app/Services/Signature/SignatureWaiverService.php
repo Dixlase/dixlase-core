@@ -6,7 +6,7 @@
  * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
  *
- * @internal Core use only. The mutating CLI lives in first-party DixlaseDevKit
+ * @internal Core use only. The mutating CLI lives in the first-party developer tooling
  *           and reaches this via App\Contracts\Signature\SignatureWaiverServiceInterface.
  *
  * Dixlase is dual-licensed. You may use this file under either:

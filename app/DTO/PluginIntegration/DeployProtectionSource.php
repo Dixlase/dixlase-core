@@ -44,7 +44,7 @@ namespace App\DTO\PluginIntegration;
  *
  * Carries the extension's identity (name + type) alongside its declared
  * protected tables and storage paths so deploy tools can render a
- * per-extension audit line ("DixlaseLegal → 1 table, 0 storage paths")
+ * per-extension audit line ("AcmeExample → 1 table, 0 storage paths")
  * rather than just a flat count. Immutable by design — the registry is
  * built once at boot and shared across every deploy invocation for the
  * request lifecycle.

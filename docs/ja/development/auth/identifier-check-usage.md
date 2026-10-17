@@ -71,13 +71,13 @@ class UserLoginIdentifierCheckController extends Controller
         
         // プラグインの設定モデルとユーザーモデルを使用
         $settings = IdentifierCheckHelper::getLockoutSettings(
-            \Plugins\DixlaseUsers\App\Models\UserSetting::class
+            \Plugins\AcmeAccounts\App\Models\UserSetting::class
         );
         
         $result = IdentifierCheckHelper::checkWithRateLimit(
             $login,
             $ipAddress,
-            \Plugins\DixlaseUsers\App\Models\User::class,
+            \Plugins\AcmeAccounts\App\Models\User::class,
             $settings,
             'user' // コンテキストを'user'に設定
         );
@@ -94,12 +94,12 @@ class UserLoginIdentifierCheckController extends Controller
 
 より複雑なロジックが必要な場合は、プラグイン内に専用のサービスクラスを作成できます：
 
-**ファイル配置**: `plugins/DixlaseUsers/app/Services/UserLoginIdentifierCheckService.php`
+**ファイル配置**: `plugins/AcmeAccounts/app/Services/UserLoginIdentifierCheckService.php`
 
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Services;
+namespace Plugins\AcmeAccounts\App\Services;
 
 use App\Helpers\IdentifierCheckHelper;
 
@@ -129,7 +129,7 @@ class UserLoginIdentifierCheckService
 **コントローラーでの使用**:
 
 ```php
-use Plugins\DixlaseUsers\App\Services\UserLoginIdentifierCheckService;
+use Plugins\AcmeAccounts\App\Services\UserLoginIdentifierCheckService;
 
 class UserLoginIdentifierCheckController extends Controller
 {
@@ -149,8 +149,8 @@ class UserLoginIdentifierCheckController extends Controller
         $result = $this->identifierCheckService->check(
             $request->input('login'),
             $request->ip(),
-            \Plugins\DixlaseUsers\App\Models\User::class,
-            \Plugins\DixlaseUsers\App\Models\UserSetting::class
+            \Plugins\AcmeAccounts\App\Models\User::class,
+            \Plugins\AcmeAccounts\App\Models\UserSetting::class
         );
         
         return response()->json([

@@ -453,7 +453,7 @@ class PluginPermissionService implements PluginPermissionServiceInterface
      * Get plugin signature information
      *
      * Performs signature verification using SignatureVerifierInterface.
-     * If DixlaseDevKit plugin is installed, uses Ed25519-based verification;
+     * If a signature verification module is installed, uses Ed25519-based verification;
      * if not installed, uses stub implementation (metadata reading only).
      */
     public function getSignatureInfo(string $pluginSlug): array

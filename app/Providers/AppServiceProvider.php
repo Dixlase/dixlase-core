@@ -162,15 +162,15 @@ class AppServiceProvider extends ServiceProvider
         // plugin may rebind it to add per-page or localised overrides.
         $this->app->bind(PageTitleBuilderInterface::class, PageTitleBuilder::class);
 
-        // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
+        // Bind signature verification service (a verification module can override this binding)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
 
         // Bind the Core integrity manifest builder (shared by the verifier and
-        // the first-party DixlaseSigner sign-core command).
+        // the first-party sign-core command).
         $this->app->bind(CoreManifestBuilderInterface::class, CoreManifestBuilder::class);
 
         // Bind the signature waiver/removal manager (used by Core + the
-        // first-party DixlaseDevKit dls:signature:* commands).
+        // first-party dls:signature:* commands).
         $this->app->bind(SignatureWaiverServiceInterface::class, SignatureWaiverService::class);
 
         // Bind license verification service. Ships as a no-op stub in v0.1.0;
@@ -180,7 +180,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Runtime-data protection registry — aggregates the `deploy`
         // section of every installed plugin.json / theme.json so deploy
-        // tools (DixlaseDeploy today, others in the future) can query a
+        // tools can query a
         // single source of truth for tables and storage paths that must
         // never be overwritten by cross-environment sync. Singleton so
         // the plugins/themes tree walk happens at most once per request.
