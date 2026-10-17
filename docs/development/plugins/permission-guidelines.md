@@ -346,7 +346,7 @@ Category-based structure with all items explicitly stated as `true`/`false`.
 | `storage` | `public_uploads` | bool | Accesses public upload area |
 | `storage` | `temp_files` | bool | Uses temporary files |
 | `settings` | `read_core` | bool | Reads core settings |
-| `settings` | `write_own` | bool | Writes plugin settings |
+| `settings` | `write_own` | bool | Writes the plugin's settings into core's settings store (`SiteSetting` / `SecuritySetting`) |
 | `members` | `read` | bool | Reads member information |
 | `members` | `write` | bool | Writes member information |
 | `members` | `create` | bool | Creates members |
@@ -362,6 +362,8 @@ Category-based structure with all items explicitly stated as `true`/`false`.
 | `system` | `modify_routes` | bool | Modifies routes |
 | - | `_optional` | array | Scanner hint: no penalty if not detected |
 | - | `_notes` | object | Explanation of permission usage (bilingual `ja`/`en`) |
+
+`settings.write_own` is about where the settings are stored, not about the plugin having settings. A plugin that keeps its settings in its own table (a `plg_*_settings` table with its own model) declares that table with `database.own_tables` and leaves `settings.write_own` `false`. The scanner detects `settings.write_own` only from writes through `SiteSetting` and `SecuritySetting`, so declaring it for an own-table write is reported as unused.
 
 ### What Permissions Do at Runtime
 
@@ -558,7 +560,7 @@ Scan targets corresponding to the category-based permissions structure:
 | `storage.public_uploads` | Public disk writes | Public upload area |
 | `storage.temp_files` | Temp file operations | Temporary files |
 | `settings.read_core` | config() reading core settings | Core settings read |
-| `settings.write_own` | Plugin settings saving | Plugin settings write |
+| `settings.write_own` | `SiteSetting` / `SecuritySetting` `set`, `setValue`, `update`, `create` | Plugin settings written to core's settings store |
 | `members.read/write/create/delete` | Member model operations | Member-related operations |
 | `mail.send` | Mail facade, Mailable | Email sending |
 | `mail.bulk_send` | Batch email, queues | Bulk email sending |
