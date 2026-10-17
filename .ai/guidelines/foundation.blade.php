@@ -1,5 +1,5 @@
 {{--
-This file is part of Dixlase Core DevKit.
+This file is part of Dixlase.
 
 Copyright (C) 2026 exc-D inc. and Dixlase contributors
 https://exc-d.com
