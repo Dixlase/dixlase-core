@@ -38,7 +38,7 @@ Dixlase での GitHub Issue の使い方です。何を Issue にするか、ど
 
 | 理由 | 対象 |
 | --- | --- |
-| `security` | 修正前の脆弱性。非公開で直し、修正を出したあとに Security Advisory で公開します([Issue にするもの](#issue-にするもの)を参照) |
+| `security` | 修正前の脆弱性。非公開で直し、修正を出したあとに Security Advisory で公開します([Issue にするもの](#issue-にするもの)と[セキュリティの Pull Request の書き方](#セキュリティの-pull-request-の書き方)を参照) |
 | `release` | リリースのための版上げと CHANGELOG の記入 |
 | `signing` | プラグイン・テーマの再署名 |
 | `dependencies` | 依存関係の更新。Dependabot の Pull Request を含む |
@@ -150,6 +150,33 @@ extensions: installing without a token hits the GitHub rate limit / 拡張機能
 4. 直さずに閉じる Issue には、閉じた理由のラベル(`wontfix`・`duplicate`・`invalid`)と、理由を 1 行書きます。
 
 これで「報告 → Issue → PR → リリース」の流れを、どこからでもたどれます。
+
+---
+
+## セキュリティの Pull Request の書き方
+
+`fix(security):` の Pull Request は、非公開で直したコードを `main` に入れるものです。修正がリリースに入るまで、**Pull Request そのものには脆弱性の説明を書きません**。穴の中身は非公開のままにし、GitHub Security Advisory に書きます。
+
+**規則。** タイトルと本文は、**ふつうの変更**として書きます。コードが変わったあとに何をするのか、ほかの `fix:` や `refactor:` の Pull Request と同じ言葉で説明します。`main` に残る squash コミットの件名と本文も、同じ内容を引き継ぎます。
+
+**公開の Pull Request に書かないもの:**
+
+- 攻撃の仕組み、PoC、再現できるリクエスト・レスポンス
+- 影響した箇所の数(「約 78 か所」)や、それらの列挙
+- 攻撃面を漏らすロール・権限の名前(「どんな contributor / editor でも …できた」)
+- 深刻度の分類(「Critical」「未認証 RCE」仮の CVSS)
+- 穴が出荷されていた版 — これは Security Advisory 側に記します
+
+**公開の Pull Request に書くもの:**
+
+- 変更後の挙動を、出荷された動きの言葉で(「取得したものを適用前に確かめる」「フラッシュメッセージをエスケープする」「管理ルートを認可で守る」)
+- `Fixes #N` の代わりに `No issue: security` の 1 行
+
+**脆弱性そのものは Security Advisory に書きます**(`Security` タブ → *Draft advisory*、または `gh api repos/{owner}/{repo}/security-advisories`)。修正を出荷するまで非公開のままで、CVE 付きで公開し、影響する版と直った版も記します。CHANGELOG は**リリース**のときに、Advisory の公開と合わせて書きます。修正を入れる Pull Request で書くものではありません。
+
+**すでに公開されている穴** — 依存先の CVE、どこかで報告・修正済みの問題 — は、その Advisory を Pull Request で引用してかまいません。守るものはもう無いからです。
+
+**レビューコメントは Pull Request 本文と同じだけ公開されます。** レビューで仕組みに触れる必要があるときは、その部分を Security Advisory のスレッドに移してください。
 
 ---
 
