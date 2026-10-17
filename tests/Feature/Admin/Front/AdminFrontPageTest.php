@@ -137,6 +137,10 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewHas('editorOptions');
         $response->assertViewHas('storageOptions');
         $response->assertViewHas('templates');
+        // The shared editor, with the preview and the CSS / JS tabs.
+        $response->assertSee('x-data="contentEditor"', false);
+        $response->assertSee('x-ref="previewIframe"', false);
+        $response->assertSee('name="custom_css"', false);
     }
 
     public function test_create_redirects_to_edit_when_content_exists(): void
@@ -485,6 +489,10 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewHas('isHtmlEditor', true);
         $response->assertViewHas('customJs', 'console.log("edit");');
         $response->assertViewHas('customCss', 'h1 { color: blue; }');
+        // The shared editor shows the CSS / JS tabs for HTML.
+        $response->assertSee('x-data="contentEditor"', false);
+        $response->assertSee('name="custom_css"', false);
+        $response->assertSee('name="custom_js"', false);
     }
 
     public function test_edit_does_not_pass_js_css_for_markdown_editor(): void
@@ -505,6 +513,8 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewHas('isHtmlEditor', false);
         $response->assertViewHas('customJs', null);
         $response->assertViewHas('customCss', null);
+        $response->assertSee('x-data="contentEditor"', false);
+        $response->assertDontSee('name="custom_css"', false);
     }
 
     // =========================================================

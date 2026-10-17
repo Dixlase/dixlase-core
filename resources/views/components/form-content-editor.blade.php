@@ -33,6 +33,32 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
+{{--
+Shared content editor for every content screen (the front page, and
+plugins such as DixlasePages and DixlaseBlog). The Alpine side is the
+registered contentEditor component (resources/src/admin/js/content-editor.js);
+its settings travel as JSON in data-config, so x-data stays a bare name.
+
+Optional parts:
+  - preview + previewFrameUrl (+ previewUrl): split-pane live preview.
+    previewRender 'auto' renders HTML and Markdown in the browser and the
+    rest through previewUrl; 'server' sends everything to previewUrl.
+    Without a preview, Markdown keeps its side-by-side rendered view
+    unless inlineMarkdownPreview is false (a page with its own preview).
+  - assetTabs: CSS / JS tabs for the HTML editor (customCss, customJs).
+  - editors: a fixed list of editor types, instead of the ones the
+    storage type allows.
+  - templates + langField: starter content per language and editor type,
+    applied when either changes (the language comes from the form field
+    named langField).
+  - fileStorageBasePath: file storage under one directory
+    (content.md / content.html, style.css, script.js), shown by
+    <x-content-editor.storage-info>.
+  - rightSidebar: tell the admin layout the page has a right sidebar.
+  - insertImage (on by default): an "Insert image" button above the text
+    field that puts a media library item at the cursor.
+--}}
+
 @props([
     'storageType' => 'database',
     'editorType' => 'html',
@@ -50,65 +76,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'pluginEditors' => [],
     'guiEditorInfo' => null,
     'guiEditorAssetHtml' => '',
+    'editors' => [],
+    'editorHelp' => null,
+    'contentLabel' => null,
+    'placeholder' => '',
+    'preview' => false,
+    'inlineMarkdownPreview' => true,
+    'previewFrameUrl' => '',
+    'previewUrl' => '',
+    'previewRender' => 'auto',
+    'assetTabs' => false,
+    'customCss' => '',
+    'customJs' => '',
+    'customCssFieldName' => 'custom_css',
+    'customJsFieldName' => 'custom_js',
+    'cssPlaceholder' => '',
+    'jsPlaceholder' => '',
+    'templates' => [],
+    'langField' => '',
+    'lang' => '',
+    'fileStorageBasePath' => '',
+    'rightSidebar' => false,
+    'insertImage' => true,
 ])
 
 <div data-translations='@json($editorTranslations)'
-     x-data="{
-    storageType: '{{ $storageType }}',
-    editorType: '{{ $editorType }}',
-    content: @js($content),
-    identifier: @js($identifier),
-    hasGuiEditor: {{ $guiEditorInfo ? 'true' : 'false' }},
-
-    get availableEditors() {
-        const editors = {
-            'database': ['gui', 'markdown', 'html'],
-            'file': ['blade', 'markdown', 'html']
-        };
-        return editors[this.storageType] || [];
-    },
-
-    get isFileStorage() {
-        return this.storageType === 'file';
-    },
-
-    get filePath() {
-        if (!this.isFileStorage || !this.identifier) return '';
-        const extensions = {
-            'blade': 'blade.php',
-            'markdown': 'md',
-            'html': 'html',
-            'gui': 'json'
-        };
-        const ext = extensions[this.editorType] || 'txt';
-        return `storage/app/pages/${this.identifier}.${ext}`;
-    },
-
-    updateEditorType() {
-        if (!this.availableEditors.includes(this.editorType)) {
-            this.editorType = this.availableEditors[0] || 'html';
-        }
-    },
-
-    onEditorContentUpdated(event) {
-        if (event.detail && event.detail.content !== undefined) {
-            this.content = event.detail.content;
-        }
-    }
-}" x-init="
-    $watch('storageType', () => updateEditorType());
-    $watch('editorType', (value) => {
-        $dispatch('editor-type-changed', { editorType: value, storageType: storageType });
-    });
-" @editor-content-updated.window="onEditorContentUpdated($event)" class="space-y-4">
+     data-config="{{ json_encode([
+         'storageType' => $storageType,
+         'editorType' => $editorType,
+         'content' => (string) $content,
+         'identifier' => $identifier,
+         'hasGuiEditor' => (bool) $guiEditorInfo,
+         'editors' => array_values($editors),
+         'fileStorageBasePath' => $fileStorageBasePath,
+         'preview' => (bool) $preview,
+         'inlineMarkdownPreview' => (bool) $inlineMarkdownPreview,
+         'previewFrameUrl' => $previewFrameUrl,
+         'previewUrl' => $previewUrl,
+         'previewRender' => $previewRender,
+         'assetTabs' => (bool) $assetTabs,
+         'templates' => $templates ?: new \stdClass(),
+         'langField' => $langField,
+         'lang' => $lang,
+         'rightSidebar' => (bool) $rightSidebar,
+     ], JSON_INVALID_UTF8_SUBSTITUTE) }}"
+     data-preview-show="{{ __('components/content-editor.preview_show') }}"
+     data-preview-hide="{{ __('components/content-editor.preview_hide') }}"
+     x-data="contentEditor"
+     {{ $attributes->merge(['class' => 'dixlase-content-editor space-y-4 min-w-0']) }}>
 
     {{-- Storage type selector --}}
     @if($showStorageSelector)
     <div class="mb-4">
-        @include('components::form-label', [
-            'for' => $storageFieldName,
-            'text' => __('common.content_storage.label'),
-        ])
+        <x-form-label :for="$storageFieldName" :text="__('common.content_storage.label')" />
 
         <x-form-radio-card-group
             :name="$storageFieldName"
@@ -125,81 +145,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <input type="hidden" name="{{ $storageFieldName }}" x-model="storageType">
     @endif
 
-    {{-- Editor type selector --}}
+    {{-- Editor type selector. From sm the visible cards share one row in
+         equal columns, whatever their number and however narrow the
+         column (the right sidebar takes width), so they never wrap. --}}
     @if($showEditorSelector)
     <div class="mb-4">
-        @include('components::form-label', [
-            'for' => $editorFieldName,
-            'text' => __('common.content_editor.label'),
-        ])
+        <x-form-label :for="$editorFieldName" :text="__('common.content_editor.label')" />
 
-        <div x-data="{
-            editorIcons: {{ Js::from($editorIcons) }},
-            editorOptions: [],
-            updateEditorOptions() {
-                this.editorOptions = this.availableEditors.map(editor => ({
-                    value: editor,
-                    label: this.$t(`common.content_editor.${editor}`),
-                    description: this.$t(`common.content_editor.${editor}_description`),
-                    icon: this.editorIcons[editor] || 'fas fa-file',
-                    disabled: editor === 'gui' && !this.hasGuiEditor
-                }));
-            }
-        }" x-init="updateEditorOptions(); $watch('availableEditors', () => updateEditorOptions())">
-            <template x-if="editorOptions.length > 0">
-                <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <template x-for="option in editorOptions" :key="option.value">
-                        <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
-                               :class="[
-                                   option.disabled ? 'opacity-50 cursor-not-allowed' : '',
-                                   editorType === option.value
-                                       ? 'border-blue-600 dark:border-blue-500 ring-3 ring-blue-600 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                       : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'
-                               ]"
-                               @click="if (!option.disabled) editorType = option.value">
-                            <input type="radio"
-                                   name="{{ $editorFieldName }}"
-                                   :value="option.value"
-                                   x-model="editorType"
-                                   :disabled="option.disabled"
-                                   class="sr-only">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-none sm:grid-flow-col sm:auto-cols-fr">
+            @foreach (\App\Enums\ContentEditorType::radioCardOptions() as $option)
+                @if ($editors === [] || in_array($option['value'], $editors, true))
+                    <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
+                           x-show="isAvailable('{{ $option['value'] }}')"
+                           :class="editorCardClass('{{ $option['value'] }}')"
+                           @click="selectEditor('{{ $option['value'] }}')">
+                        <input type="radio"
+                               name="{{ $editorFieldName }}"
+                               value="{{ $option['value'] }}"
+                               x-model="editorType"
+                               :disabled="isEditorDisabled('{{ $option['value'] }}')"
+                               class="sr-only">
 
-                            <span class="flex flex-1">
-                                <span class="flex flex-col justify-center">
-                                    <span class="flex items-center gap-2 text-sm font-medium"
-                                          :class="editorType === option.value ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'">
-                                        <i :class="option.icon"></i>
-                                        <span x-text="option.label"></span>
-                                    </span>
-                                    <span class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="option.description"></span>
+                        <span class="flex flex-1">
+                            <span class="flex flex-col justify-center">
+                                <span class="flex items-center gap-2 text-sm font-medium"
+                                      :class="editorCardTitleClass('{{ $option['value'] }}')">
+                                    <i class="{{ $editorIcons[$option['value']] ?? $option['icon'] }}"></i>
+                                    <span>{{ $option['label'] }}</span>
                                 </span>
+                                <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $option['description'] }}</span>
                             </span>
+                        </span>
 
-                            <span class="absolute top-3 right-3 flex items-center justify-center"
-                                  x-show="editorType === option.value && !option.disabled"
-                                  x-transition:enter="transition ease-out duration-100"
-                                  x-transition:enter-start="opacity-0 scale-75"
-                                  x-transition:enter-end="opacity-100 scale-100"
-                                  x-transition:leave="transition ease-in duration-75"
-                                  x-transition:leave-start="opacity-100 scale-100"
-                                  x-transition:leave-end="opacity-0 scale-75">
-                                <i class="fas fa-check-circle text-lg text-blue-600 dark:text-blue-400"></i>
-                            </span>
-
-                            <span class="pointer-events-none absolute -inset-px rounded-lg"
-                                  :class="editorType === option.value ? 'border-2 border-blue-600 dark:border-blue-500' : 'border border-transparent'"
-                                  aria-hidden="true"></span>
-                        </label>
-                    </template>
-                </div>
-            </template>
+                        <span class="absolute top-3 right-3 flex items-center justify-center"
+                              x-show="isEditorCardChecked('{{ $option['value'] }}')" x-cloak>
+                            <i class="fas fa-check-circle text-lg text-blue-600 dark:text-blue-400"></i>
+                        </span>
+                    </label>
+                @endif
+            @endforeach
         </div>
+        @if ($editorHelp)
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i>{{ $editorHelp }}
+            </p>
+        @endif
     </div>
     @else
     <input type="hidden" name="{{ $editorFieldName }}" x-model="editorType">
     @endif
 
-    {{-- File storage info --}}
+    {{-- File storage info (pages that show it in a sidebar use
+         <x-content-editor.storage-info> instead) --}}
+    @if ($showStorageSelector)
     <div x-show="isFileStorage" x-cloak class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div class="flex items-start">
             <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
@@ -214,85 +212,147 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </div>
     </div>
+    @endif
 
-    {{-- Content editor panels --}}
-    <div class="mb-4">
-        @include('components::form-label', [
-            'for' => $contentFieldName,
-            'text' => __('common.content'),
-        ])
-
-        {{-- GUI editor (plugin-provided) --}}
-        <div x-show="editorType === 'gui'" x-cloak>
-            @if($guiEditorInfo)
-                @include($guiEditorInfo->viewName, [
-                    'contentFieldName' => $contentFieldName,
-                    'editorInfo' => $guiEditorInfo,
-                    'initialContent' => $content,
-                ])
-            @else
-                {{-- Fallback: no GUI editor plugin installed --}}
-                <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                    <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        {{ __('common.content_editor.gui_coming_soon') }}
-                    </p>
-                </div>
-                <input type="hidden" name="{{ $contentFieldName }}" x-model="content">
-            @endif
-        </div>
-
-        {{-- Markdown editor --}}
-        <div x-show="editorType === 'markdown'" x-cloak>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div>
-                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ __('common.content_editor.markdown_editor') }}
-                    </div>
-                    @include('components::form-textarea', [
-                        'id' => $contentFieldName . '_markdown',
-                        'name' => $contentFieldName,
-                        'value' => $content,
-                        'class' => 'min-h-96 font-mono text-sm',
-                        'xModel' => 'content',
-                    ])
-                </div>
-                <div>
-                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {{ __('common.content_editor.preview') }}
-                    </div>
-                    <div class="min-h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 prose dark:prose-invert max-w-none overflow-auto"
-                         x-html="marked.parse(content || '')"></div>
-                </div>
-            </div>
-        </div>
-
-        {{-- HTML editor --}}
-        <div x-show="editorType === 'html'" x-cloak>
-            @include('components::form-textarea', [
-                'id' => $contentFieldName . '_html',
-                'name' => $contentFieldName,
-                'value' => $content,
-                'class' => 'min-h-96 font-mono text-sm',
-                'xModel' => 'content',
-            ])
-        </div>
-
-        {{-- Blade editor --}}
-        <div x-show="editorType === 'blade'" x-cloak>
-            @include('components::form-textarea', [
-                'id' => $contentFieldName . '_blade',
-                'name' => $contentFieldName,
-                'value' => $content,
-                'class' => 'min-h-96 font-mono text-sm',
-                'xModel' => 'content',
-            ])
-            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
-                {{ __('common.content_editor.blade_warning') }}
-            </div>
-        </div>
+    {{-- Preview toggle --}}
+    @if ($preview)
+    <div class="flex flex-wrap items-center gap-3 text-xs">
+        <button type="button" @click="togglePreview()"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors"
+            :class="previewToggleClass()"
+            :title="previewToggleLabel()">
+            <i :class="previewToggleIcon()"></i>
+            <span x-text="previewToggleLabel()"></span>
+        </button>
     </div>
+    @endif
+
+    {{-- Split pane: editor, and the preview when there is one --}}
+    <div x-ref="splitContainer" class="flex gap-4 overflow-hidden" :class="splitContainerClass()">
+        <div x-ref="editorPane" class="w-full min-w-0" :class="editorPaneClass()" :style="editorPaneStyle()">
+            <div class="space-y-4">
+                @if ($contentLabel !== false)
+                    <x-form-label :for="$contentFieldName" :text="$contentLabel ?? __('common.content')" />
+                @endif
+
+                {{-- CSS / JS tabs (HTML editor) --}}
+                @if ($assetTabs)
+                    <div x-show="showAssetTabs" x-cloak>
+                        <nav class="border-b border-gray-200 dark:border-gray-600">
+                            <div class="flex -mb-px space-x-4">
+                                <button type="button" @click="showTab('content')"
+                                        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                        :class="tabClass('content')">
+                                    <i class="fas fa-code mr-1.5"></i>{{ __('components/content-editor.tab_content') }}
+                                </button>
+                                <button type="button" @click="showTab('css')"
+                                        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                        :class="tabClass('css')">
+                                    <i class="fab fa-css3-alt mr-1.5"></i>{{ __('components/content-editor.tab_css') }}
+                                </button>
+                                <button type="button" @click="showTab('js')"
+                                        class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+                                        :class="tabClass('js')">
+                                    <i class="fab fa-js mr-1.5"></i>{{ __('components/content-editor.tab_js') }}
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                @endif
+
+                {{-- GUI editor (plugin-provided). Placed before the text
+                     field: with both in the form the later field wins,
+                     and the text field is disabled while GUI is chosen. --}}
+                <div x-show="isGuiEditor" x-cloak>
+                    @if($guiEditorInfo)
+                        @include($guiEditorInfo->viewName, [
+                            'contentFieldName' => $contentFieldName,
+                            'editorInfo' => $guiEditorInfo,
+                            'initialContent' => $content,
+                        ])
+                    @else
+                        {{-- No GUI editor plugin: keep the stored content
+                             in the form so saving does not drop it. --}}
+                        <div class="p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                            <i class="fas fa-paint-brush text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                {{ (string) $content !== '' ? __('common.content_editor.gui_unavailable') : __('common.content_editor.gui_coming_soon') }}
+                            </p>
+                        </div>
+                        <input type="hidden" name="{{ $contentFieldName }}" x-model="content" :disabled="isTextEditor">
+                    @endif
+                </div>
+
+                {{-- Markdown / HTML / Blade: one field --}}
+                <div x-show="showContentTab">
+                    @if ($insertImage)
+                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                            <x-content-editor.insert-image
+                                :target="$contentFieldName"
+                                :selectorId="$contentFieldName.'_image_selector'"
+                            />
+                        </div>
+                    @endif
+                    <div :class="contentGridClass()">
+                        <div class="min-w-0">
+                            <textarea id="{{ $contentFieldName }}"
+                                      name="{{ $contentFieldName }}"
+                                      rows="10"
+                                      placeholder="{{ $placeholder }}"
+                                      class="input-common input-full font-mono text-sm"
+                                      data-editor-field="content"
+                                      :data-editor-type="editorType"
+                                      data-auto-resize
+                                      x-model="content"
+                                      :disabled="isGuiEditor">{{ $content }}</textarea>
+                        </div>
+                        <div x-show="showInlineMarkdownPreview" x-cloak class="min-w-0">
+                            <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                {{ __('common.content_editor.preview') }}
+                            </div>
+                            <div class="min-h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 prose dark:prose-invert max-w-none overflow-auto"
+                                 x-html="markdownHtml()"></div>
+                        </div>
+                    </div>
+                    <div x-show="isEditorSelected('blade')" x-cloak class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
+                        {{ __('common.content_editor.blade_warning') }}
+                    </div>
+                </div>
+
+                @if ($assetTabs)
+                    <div x-show="showCssTab" x-cloak>
+                        <textarea id="{{ $customCssFieldName }}"
+                                  name="{{ $customCssFieldName }}"
+                                  rows="6"
+                                  placeholder="{{ $cssPlaceholder }}"
+                                  class="input-common input-full font-mono text-sm"
+                                  data-editor-field="css"
+                                  data-auto-resize>{{ $customCss }}</textarea>
+                        <x-form-error :name="$customCssFieldName" />
+                    </div>
+                    <div x-show="showJsTab" x-cloak>
+                        <textarea id="{{ $customJsFieldName }}"
+                                  name="{{ $customJsFieldName }}"
+                                  rows="6"
+                                  placeholder="{{ $jsPlaceholder }}"
+                                  class="input-common input-full font-mono text-sm"
+                                  data-editor-field="js"
+                                  data-auto-resize>{{ $customJs }}</textarea>
+                        <x-form-error :name="$customJsFieldName" />
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        @if ($preview)
+            @include('components.content-editor.preview-pane')
+        @endif
+    </div>
+
+    @if ($preview)
+        @include('components.content-editor.scroll-buttons')
+    @endif
 </div>
 
 {{-- Plugin editor assets --}}

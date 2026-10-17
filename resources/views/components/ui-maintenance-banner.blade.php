@@ -34,17 +34,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 {{--
-管理者ログイン時にメンテナンスモード中であることを示すバナー
+Banner telling a signed-in administrator that maintenance mode is on.
 --}}
 @php
-    // データベースが存在しない場合は何も表示しない
+    // The resolver, not the guard: a front page opens the `sessions` row
+    // while the admin login lives in `members_sessions` under the same
+    // cookie. It answers null when there is no database to read.
     try {
-        $isAuthenticated = auth('member')->check();
+        $isAuthenticated = app(\App\Services\Auth\SignedInMemberResolver::class)->check();
         
         if (!$isAuthenticated) {
             $showBanner = false;
         } else {
-            // メンテナンスモード設定を取得
+            // Maintenance mode settings
             $maintenanceMode = DB::table('site_settings')
                 ->where('name', 'maintenance_mode')
                 ->value('value');
