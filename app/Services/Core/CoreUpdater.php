@@ -452,6 +452,9 @@ class CoreUpdater
             try {
                 $relinked = (new PublicAssetRelinker())->relink();
                 $log("Relinked public assets (themes: {$relinked['themes']}, plugins: {$relinked['plugins']}).");
+                foreach ($relinked['notices'] as $notice) {
+                    $log('WARNING: '.$notice);
+                }
             } catch (\Throwable $relinkError) {
                 $log('WARNING: public asset relink failed ('.$relinkError->getMessage().'); if the front page renders unstyled, run `php artisan dls:theme:symlink create --all` and `php artisan dls:plugin:symlink create --all`.');
             }
