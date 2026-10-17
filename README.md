@@ -89,7 +89,8 @@ Dixlase ships a minimal core, and the following official plugins are maintained 
 
 | Plugin | What it does |
 | --- | --- |
-| **Dixlase Pages** | Static pages and the essential content-creation features. Blog posts and custom post types are planned as separate plugins. |
+| **Dixlase Pages** | Static pages and the essential content-creation features. |
+| **Dixlase Blog** | A blog: posts with revisions, a trash and featured images, hierarchical categories and tags, moderated comments with notification mail and CAPTCHA, search and date archives, related posts, breadcrumbs and an RSS feed. |
 | **Dixlase Inquiry** | Contact form with auto-reply email, spam protection, and admin-side message management. |
 | **Dixlase Menus** | Visually edit header / footer / sidebar menu structures by drag and drop. |
 | **Dixlase SEO** | Manage meta tags, sitemaps, OGP, and structured data per page or site-wide. |
