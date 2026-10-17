@@ -79,8 +79,6 @@ class PluginUninstall extends Command
             // Set flag in both environment variable and config
             putenv("PLUGIN_UNINSTALLING={$pluginName}");
             config(['app.plugin_uninstalling' => $pluginName]);
-            $this->info("DEBUG: Early flag set for plugin: {$pluginName}");
-            $this->info('DEBUG: ENV variable: '.getenv('PLUGIN_UNINSTALLING'));
         }
     }
 
