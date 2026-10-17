@@ -178,14 +178,14 @@ abstract class AbstractAction implements ActionInterface
             return;
         }
 
-        $model = $actor->toAuditMorph();
-
         Audit::log([
             'category' => $this->auditCategory(),
             'action' => $this->auditAction(),
-            'actor_type' => $model ? get_class($model) : null,
-            'actor_id' => $actor->getActorId(),
+            'actor' => $actor->toAuditMorph(),
             'actor_name' => $actor->getActorName(),
+            // The model is preferred; the type / id pair covers a target that
+            // is not an Eloquent model.
+            'target' => $result->model,
             'target_type' => $result->targetType,
             'target_id' => $result->targetId,
             'target_label' => $result->targetLabel,
