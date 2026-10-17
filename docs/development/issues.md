@@ -38,7 +38,7 @@ Before editing the source of core or of an official plugin or theme, open an iss
 
 | Reason | Covers |
 | --- | --- |
-| `security` | An unfixed vulnerability. It is fixed privately, and the fix is published as a Security Advisory afterwards (see [What belongs in an issue](#what-belongs-in-an-issue)) |
+| `security` | An unfixed vulnerability. It is fixed privately, and the fix is published as a Security Advisory afterwards (see [What belongs in an issue](#what-belongs-in-an-issue) and [Writing a security pull request](#writing-a-security-pull-request)) |
 | `release` | Version bumps and changelog entries for a release |
 | `signing` | Re-signing a plugin or theme |
 | `dependencies` | Dependency updates, including Dependabot pull requests |
@@ -150,6 +150,33 @@ Move the milestone when the plan changes, instead of leaving an issue on a relea
 4. An issue closed without a fix gets a resolution label (`wontfix`, `duplicate` or `invalid`) and a one-line reason.
 
 This keeps the chain report → issue → PR → release visible from any of its ends.
+
+---
+
+## Writing a security pull request
+
+A `fix(security):` pull request lands privately-fixed code to `main`. Until the fix is in a release, **the pull request itself does not describe the vulnerability** — the hole stays private, and the GitHub Security Advisory carries the mechanics.
+
+**Rule.** The title and the body describe the **ordinary change**: what the code now does, in the plain terms any other `fix:` or `refactor:` pull request would use. The squash commit on `main` inherits the same subject and body.
+
+**Do not write, in the public pull request:**
+
+- The exploit mechanics, a proof of concept, or a request / response payload that reproduces the issue
+- Enumerations or counts of the affected call sites ("about 78 sites")
+- Role or capability names that leak the attack surface ("any contributor / editor could …")
+- A severity classification ("Critical", "unauthenticated RCE", a mock CVSS)
+- The versions the hole shipped in — the Security Advisory records them
+
+**Do write, in the public pull request:**
+
+- What the code now does, in terms of the shipped behaviour ("verify the download before applying it", "escape the flash message", "gate the admin route behind authorization")
+- A `No issue: security` line in place of `Fixes #N`
+
+**The vulnerability itself lives in the Security Advisory** (`Security` tab → *Draft advisory*, or `gh api repos/{owner}/{repo}/security-advisories`). It stays private until the fix ships, publishes with a CVE, and names the affected and fixed versions. The CHANGELOG entry is written at **release** time, alongside publishing the advisory — not as part of the pull request that lands the fix.
+
+**An already-public hole** — an upstream dependency CVE, an issue already disclosed elsewhere — may name the upstream advisory in the pull request. There is nothing left to protect.
+
+**Review comments are as public as the pull request itself.** When a review needs to discuss the mechanics, move that part to the Security Advisory thread.
 
 ---
 
