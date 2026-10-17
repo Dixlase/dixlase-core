@@ -37,6 +37,7 @@ namespace App\Http\Middleware;
 
 use App\Helpers\IpAccessControlHelper;
 use App\Models\SiteSetting;
+use App\Services\Auth\SignedInMemberResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -60,14 +61,14 @@ class FrontIpFilter
             return $next($request);
         }
 
-        // Bypass if an admin is logged in
-        try {
-            $member = auth('member')->user();
-            if ($member && $member->is_admin) {
-                return $next($request);
-            }
-        } catch (\Exception $e) {
-            // Guard not available, continue with IP check
+        // Bypass if an admin is logged in. The resolver is asked rather
+        // than the guard: a front request opens the `sessions` row, while
+        // the admin login lives in `members_sessions` under the same
+        // cookie, so the guard sees nobody here.
+        $member = app(SignedInMemberResolver::class)->resolve();
+
+        if ($member && $member->is_admin) {
+            return $next($request);
         }
 
         // Check if site_settings table exists
