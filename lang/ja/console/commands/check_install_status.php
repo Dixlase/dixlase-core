@@ -38,6 +38,7 @@ return [
     'admin_user_check_error' => '5. Administrator userチェックエラー: ',
     'admin_user_not_exist' => '   ⚠️ 管理者ユーザーが存在しません',
     'administrator_user_count' => '5. Administrator user (role 9,10): :adminCount人',
+    'check_could_not_complete' => '❌ 完了できなかった確認があります。上のエラーを確認してください。',
     'check_install_and_migration_status' => 'インストール状態とマイグレーション状況をチェック',
     'database_name_display' => '   データベース名: :dbName',
     'determination_error' => '判定エラー: ',
