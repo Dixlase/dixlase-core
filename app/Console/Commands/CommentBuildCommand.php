@@ -229,7 +229,7 @@ class CommentBuildCommand extends Command
     protected function renderResult(array $stats): int
     {
         if ($stats['files'] === 0) {
-            $this->components->warn('No source files found to process.');
+            $this->components->warn('No PHP files found to process (.php or .stub).');
 
             return self::SUCCESS;
         }
