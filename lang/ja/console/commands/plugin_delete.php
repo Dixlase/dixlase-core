@@ -34,8 +34,5 @@
  */
 
 return [
-    'plugin_remove_from_git_exclude_failed' => '⚠ プラグイン \':pluginDirectory\' の .git/info/exclude からの削除に失敗しました（既に削除されている可能性があります）',
-    'plugin_removed_from_git_exclude' => '✓ プラグイン \':pluginDirectory\' を .git/info/exclude から削除しました',
-    'plugin_removed_from_gitignore' => '✓ プラグイン \':pluginDirectory\' を .gitignore から削除しました',
     'updated_composer_local_json' => '✓ composer.local.json を更新しました',
 ];

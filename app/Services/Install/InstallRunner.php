@@ -42,8 +42,6 @@ use App\DTO\Core\CoreIntegrityResult;
 use App\Exceptions\Install\CoreIntegrityBlockedException;
 use App\Exceptions\Install\SqliteDatabaseUnusableException;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Models\Site;
 use App\Models\ThemeAudit;
 use App\Services\Core\CoreIntegrityVerifier;
@@ -369,10 +367,6 @@ class InstallRunner
                     'theme' => $activeTheme->directory,
                 ]);
                 Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_symlink_creation_completed'), ['theme' => $activeTheme->directory]);
-
-                GitExcludeHelper::addThemeExclusion($activeTheme->directory);
-                GitIgnoreHelper::addThemeExclusion($activeTheme->directory);
-                Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.theme_git_exclusion_rule_added'), ['theme' => $activeTheme->directory]);
             } catch (\Exception $e) {
                 Log::channel('install')->error(__('http/controllers/install/install_confirm_controller.symlink_creation_failed', ['_e__getmessage__' => $e->getMessage()]));
             }

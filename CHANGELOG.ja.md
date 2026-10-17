@@ -40,6 +40,20 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   アクターの識別が入っていませんでした。`AuditLog::log()` はモデルが渡されない場合も
   この 4 つのキーを受け取るようにしたので、対象が Eloquent モデルでないプラグインも
   同じ形で落ちることはありません。このリリースより前に書かれた行は遡って埋めません (#546)
+- プラグインやテーマをインストール・作成・削除しても、core の追跡対象の `.gitignore` と
+  `.git/info/exclude` に `!plugins/<Name>/` や `!themes/<Name>/` のルールを書かなく
+  なりました。このルールは拡張機能を 1 つずつ core の git に追跡させ直すもので、
+  `git status` に拡張が出て、`git add -A` でそのファイルが core にステージされる状態でした。
+  `dls:sync-gitignore` と `dls:sync-git-exclude` はこのルールを削除するだけのコマンドに
+  なりました。そのまま実行すると内容を確認でき、`--confirm` を付けると書き込みます。
+  `--add-plugin` / `--add-theme` は何もしません (#626)
+
+### Plugin API — 非推奨
+- `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` と
+  `GitExcludeHelper::addPluginExclusion()` / `addThemeExclusion()` は非推奨になり、
+  何もしません。既存の呼び出し元が動き続けるよう `true` を返します。core は拡張機能の
+  ディレクトリを git で追跡し直さなくなったので、呼び出しをやめてください。`remove*()` と
+  `syncAll()` は既存のルールを削除するようになりました (#626)
 
 ## [0.1.14] — 2026-10-17
 

@@ -39,11 +39,8 @@ namespace Tests\Unit\Console;
 
 use App\Console\Commands\PluginAudit;
 use App\Console\Commands\PluginLint;
-use App\Console\Commands\SyncGitExclude;
-use App\Console\Commands\SyncGitIgnore;
 use App\Console\Commands\ThemeAudit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -55,8 +52,6 @@ use Tests\TestCase;
  * alone accepts it. What each command then does with it differs, and none of
  * it is harmless:
  *
- *   - `dls:sync:git-exclude` / `dls:sync:gitignore` propose a negation entry,
- *     which would make Core's git track the copy's whole tree.
  *   - `dls:plugin:audit --fix` / `dls:theme:audit --fix` resolve the copy by
  *     its manifest slug once the live directory is gone, then write into the
  *     abandoned directory while reporting success.
@@ -132,45 +127,6 @@ class ExtensionScansSkipCopiesTest extends TestCase
         $reflection->setAccessible(true);
 
         return $reflection->invokeArgs($command, $args);
-    }
-
-    /**
-     * @return list<array{0: class-string}>
-     */
-    public static function syncCommandProvider(): array
-    {
-        return [[SyncGitExclude::class], [SyncGitIgnore::class]];
-    }
-
-    /**
-     * @param  class-string  $commandClass
-     */
-    #[DataProvider('syncCommandProvider')]
-    public function test_the_git_sync_commands_skip_copies(string $commandClass): void
-    {
-        $this->makeExtension('plugins', 'DixlaseSEO', 'plugin.json', 'dixlase-seo');
-        $this->makeExtension('plugins', 'DixlaseSEO.stale.20260710-221107', 'plugin.json', 'dixlase-seo');
-        $this->makeExtension('plugins', 'DixlaseOld.bak', 'plugin.json', 'dixlase-old');
-
-        $names = $this->invokeProtected(app($commandClass), 'detectDirectories', [$this->root.'/plugins', []]);
-
-        $this->assertSame(['DixlaseSEO'], $names);
-    }
-
-    public function test_the_git_sync_commands_still_honour_the_explicit_exclude(): void
-    {
-        $this->makeExtension('themes', 'DixlaseOnePage', 'theme.json', 'dixlase-one-page');
-        $this->makeExtension('themes', 'OtherTheme', 'theme.json', 'other-theme');
-
-        $names = $this->invokeProtected(
-            app(SyncGitExclude::class),
-            'detectDirectories',
-            [$this->root.'/themes', ['DixlaseOnePage']]
-        );
-
-        // DixlaseOnePage is installed by composer/installers and gitignored
-        // outright, so it is excluded for a different reason than a copy.
-        $this->assertSame(['OtherTheme'], $names);
     }
 
     public function test_plugin_lint_does_not_collect_copies(): void

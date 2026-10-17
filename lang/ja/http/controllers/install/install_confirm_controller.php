@@ -100,7 +100,6 @@ return [
     'theme_audit_failed_continue_install' => 'テーマ監査に失敗しましたが、インストールは続行します: :slug',
     'theme_audit_json_parse_failed' => 'テーマ監査のJSON解析に失敗: :slug',
     'theme_audit_started' => 'テーマ監査開始: :slug',
-    'theme_git_exclusion_rule_added' => 'テーマGit除外ルール追加完了',
     'theme_symlink_creation_completed' => 'テーマシンボリックリンク作成完了',
     'theme_symlink_creation_started' => 'テーマシンボリックリンク作成開始',
     'update_env_file_completed' => 'Update .env file完了',
