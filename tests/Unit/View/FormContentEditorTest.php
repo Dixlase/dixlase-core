@@ -75,11 +75,11 @@ class FormContentEditorTest extends TestCase
         $this->assertStringContainsString('name="body"', $html);
     }
 
-    public function test_the_editor_cards_fill_the_row_and_follow_a_fixed_list(): void
+    public function test_the_editor_cards_share_one_row_and_follow_a_fixed_list(): void
     {
         $html = Blade::render('<x-form-content-editor :editors="[\'markdown\', \'html\']" />');
 
-        $this->assertStringContainsString('repeat(auto-fit,minmax(12rem,1fr))', $html);
+        $this->assertStringContainsString('sm:grid-flow-col sm:auto-cols-fr', $html);
         $this->assertStringContainsString('value="markdown"', $html);
         $this->assertStringContainsString('value="html"', $html);
         $this->assertStringNotContainsString('value="blade"', $html);
@@ -109,6 +109,23 @@ class FormContentEditorTest extends TestCase
 
         $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
         $this->assertSame($content, $this->config($html)['content']);
+    }
+
+    public function test_the_insert_image_button_targets_the_field(): void
+    {
+        $html = Blade::render('<x-form-content-editor contentFieldName="body" />');
+
+        $this->assertStringContainsString('x-data="contentEditorInsertImage"', $html);
+        $this->assertStringContainsString('data-target="body"', $html);
+        $this->assertStringContainsString('data-selector-id="body_image_selector"', $html);
+        $this->assertStringContainsString(':data-editor-type="editorType"', $html);
+    }
+
+    public function test_the_insert_image_button_can_be_left_out(): void
+    {
+        $html = Blade::render('<x-form-content-editor :insertImage="false" />');
+
+        $this->assertStringNotContainsString('contentEditorInsertImage', $html);
     }
 
     /**

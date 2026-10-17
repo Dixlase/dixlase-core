@@ -232,7 +232,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             variant="{{ $confirm_variant ?? 'primary' }}"
                             form="{{ $form }}"
                             xDisabled="submitting"
-                            @click="submitting = true; submitModalForm('{{ $form }}')"
+                            @click="confirmSubmit('{{ $form }}', $event)"
                             class="mx-2"
                         >
                             <i x-show="!submitting" class="fas fa-check mr-2"></i>

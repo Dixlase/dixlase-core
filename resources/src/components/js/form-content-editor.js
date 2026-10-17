@@ -25,6 +25,9 @@
 
 import { marked } from 'marked';
 
+// Single line breaks render as <br>, as ContentPreviewService does.
+marked.setOptions({ breaks: true });
+
 // Expose marked to window for use in Alpine components
 window.marked = marked;
 

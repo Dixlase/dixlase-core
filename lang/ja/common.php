@@ -117,6 +117,8 @@ return [
 
     'back' => '戻る',
     'next' => '次へ',
+    'previous' => '前へ',
+    'page_of' => ':current / :last ページ',
     'close' => '閉じる',
     'later' => '後で',
     'index' => '一覧',

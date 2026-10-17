@@ -55,6 +55,8 @@ Optional parts:
     (content.md / content.html, style.css, script.js), shown by
     <x-content-editor.storage-info>.
   - rightSidebar: tell the admin layout the page has a right sidebar.
+  - insertImage (on by default): an "Insert image" button above the text
+    field that puts a media library item at the cursor.
 --}}
 
 @props([
@@ -95,6 +97,7 @@ Optional parts:
     'lang' => '',
     'fileStorageBasePath' => '',
     'rightSidebar' => false,
+    'insertImage' => true,
 ])
 
 <div data-translations='@json($editorTranslations)'
@@ -142,13 +145,14 @@ Optional parts:
     <input type="hidden" name="{{ $storageFieldName }}" x-model="storageType">
     @endif
 
-    {{-- Editor type selector. The cards share the row whatever their
-         number (auto-fit), so three types fill it as four do. --}}
+    {{-- Editor type selector. From sm the visible cards share one row in
+         equal columns, whatever their number and however narrow the
+         column (the right sidebar takes width), so they never wrap. --}}
     @if($showEditorSelector)
     <div class="mb-4">
         <x-form-label :for="$editorFieldName" :text="__('common.content_editor.label')" />
 
-        <div class="grid gap-4 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-none sm:grid-flow-col sm:auto-cols-fr">
             @foreach (\App\Enums\ContentEditorType::radioCardOptions() as $option)
                 @if ($editors === [] || in_array($option['value'], $editors, true))
                     <label class="relative flex cursor-pointer rounded-lg border p-4 shadow-sm focus:outline-none transition-all duration-150"
@@ -281,6 +285,14 @@ Optional parts:
 
                 {{-- Markdown / HTML / Blade: one field --}}
                 <div x-show="showContentTab">
+                    @if ($insertImage)
+                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                            <x-content-editor.insert-image
+                                :target="$contentFieldName"
+                                :selectorId="$contentFieldName.'_image_selector'"
+                            />
+                        </div>
+                    @endif
                     <div :class="contentGridClass()">
                         <div class="min-w-0">
                             <textarea id="{{ $contentFieldName }}"
@@ -289,6 +301,7 @@ Optional parts:
                                       placeholder="{{ $placeholder }}"
                                       class="input-common input-full font-mono text-sm"
                                       data-editor-field="content"
+                                      :data-editor-type="editorType"
                                       data-auto-resize
                                       x-model="content"
                                       :disabled="isGuiEditor">{{ $content }}</textarea>

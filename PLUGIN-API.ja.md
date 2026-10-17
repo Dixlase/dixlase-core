@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-09-27
+**最終更新日:** 2026-10-16
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -426,6 +426,10 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 | レイアウト | 使用例 | 説明 |
 |---|---|---|
 | `layouts.admin` | `@extends('layouts.admin')` | 管理画面レイアウト(サイドバー、トップバー、ダークモード、フラッシュメッセージ)。プラグインの管理画面ビューを含むすべての管理ページで使用。 |
+| `themes::layouts.app` | `@extends('themes::layouts.app')` | 有効なテーマのフロントのレイアウト。プラグインのフロントのビューは、運営者が選んだテーマを継承します。 |
+| `themes::layouts.preview` | `@extends('themes::layouts.preview')` | 管理画面のプレビュー枠の中で描くコンテンツ用の、有効なテーマのレイアウト。 |
+
+この 2 つの `themes::` のレイアウトは、`layouts.admin` とは約束の種類が違います。ファイルはコアのものではなく、有効なテーマのものです。コアが約束するのは `themes` というビューの名前空間（コアが登録しているので、参照は常にその時点で有効なテーマに解決されます）と、そのレイアウトの中でプラグインが頼ってよい名前です。`title`・`description`・`content` のセクションと、`styles`・`scripts` のスタックです。テーマはこれらを用意することが期待されますが、その周りに何を置くかはテーマ自身のものです。
 
 ---
 
@@ -445,6 +449,12 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 | `plugin` | 基本プラグインルート（セッション、クッキー、ビュー共有、バインディング） |
 | `plugin.web` | プラグインフロントエンドルート（IP フィルタリング付き） |
 | `plugin.admin` | プラグイン管理画面ルート（認証必須 + IP フィルタリング） |
+
+グループとは別に、プラグインは自分のルートにこのミドルウェアを名前で指定できます。
+
+| 別名 | 説明 |
+|---|---|
+| `front.ip` | 公開側の IP フィルタ。`plugin.web` グループを通さない公開ルートで使います。 |
 
 ### 7.3 API URL バージョニングとプラグインルートのレイアウト
 
@@ -594,6 +604,8 @@ return [
 - `App\Services\DatabaseCleanupService`
 - `App\Services\SystemNotificationService`
 - `App\Services\Auth\AuthContextRegistryService`
+- `App\Services\Auth\SignedInMemberResolver`
+- `App\Services\RevisionService`
 - `App\Services\Editor\EditorManager`
 - `App\Services\LegalPageService`
 - `App\Services\MailServerValidatorService`
@@ -632,6 +644,7 @@ return [
 
 | ヘルパー | 説明 |
 |---|---|
+| `App\Helpers\AdminHelper` | 管理画面のリクエストの判定と、管理画面にログイン中のメンバーの取得（`getMember()`） |
 | `App\Helpers\CaptchaHelper` | CAPTCHA 有効判定・ウィジェット描画・ドライバー設定ヘルパー |
 | `App\Helpers\ConfigHelper` | セキュリティ設定・セッション設定の取得ヘルパー（`getDisplayTimezone()` を含む） |
 | `App\Helpers\DateTimeHelper` | UTC→表示用 TZ 変換とフォーマット（名前付きフォーマット・DST 対応・null 許容） |
@@ -678,6 +691,15 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 | `App\Support\Cache\SiteScopedCacheKey` | `CacheKey::site($id)` が返す fluent Builder。サイト id でパーティション化された複合キーを生成 |
 
 詳細フォーマット・タグ規約・実用例は [キャッシュキー命名規約](docs/ja/development/cache-key-convention.md) を参照。
+
+### 9.6.3 管理画面プレゼンター (`App\Presenters\Admin\*`)
+
+コアのデータを、管理画面のビューが必要とする形に変える静的なプレゼンターです。プラグインの管理画面がこれを使うことで、描画がコアとそろいます。
+
+| プレゼンター | 説明 |
+|---|---|
+| `App\Presenters\Admin\ContentEditorPresenter` | `x-form-content-editor` のエディタタイプのアイコンと訳された表示名。`editorIcons()`、`editorTranslations()` |
+| `App\Presenters\Admin\RevisionDiffPresenter` | リビジョンの差分を `x-revision.diff` が描く行の形に整えます |
 
 ### 9.7 アクター
 
@@ -764,12 +786,14 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 | `shortcode_parse(string $content): string` | コンテンツ内のショートコードを解析・実行する |
 | `render_x_cloak_style(): string` | `[x-cloak]` 用の style ブロックを出力(Alpine.js 初期描画時のちらつき抑制) |
 | `dls_page_title(?string $pageName = null): string` | サイト名・タグライン・ページ名からドキュメントタイトルを合成する。戻り値はプレーンテキストなので、呼び出し側でエスケープすること |
+| `load_plugin_assets(string $pluginDirectory, array $files): string` | プラグイン自身のビルド済み資産のタグを出します。`public/assets/plugins/{ディレクトリ}/` のプラグインの Vite マニフェストを読み、dev server が動いていればそちらの URL を使います。HTML を返すので、エスケープせずに出力してください |
 
 ### 11.1 Blade ディレクティブ
 
 | ディレクティブ | 説明 |
 |---|---|
 | `@pageTitle` | `<title>` 要素全体を出力する。描画中のページの `title` セクション、または明示的な引数 (`@pageTitle($post->title)`) を読む。テーマがタイトルを出力する際の標準手段で、内部で `dls_page_title()` を呼び、結果を 1 度だけエスケープする。旧バージョンのコアでも動かす必要があるテーマは `@if(function_exists('dls_page_title'))` でガードする(未登録のディレクティブはコンパイルエラーにならず、そのまま文字列として残るため) |
+| `@cspNonce` | script タグにそのリクエストの CSP nonce を付けます: `<script @cspNonce>`。ポリシーは `script-src-attr 'none'` を設定し、インラインのスクリプトを nonce でのみ許可するため、プラグインやテーマが出すインラインのスクリプトには必ず必要です |
 
 ---
 
@@ -831,6 +855,12 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 | `extension-sources.default_author_id` | `string\|null` | 新規拡張エントリのデフォルト著者 ID |
 | `extension-sources.default_authority_key_id` | `string\|null` | デフォルトの Ed25519 署名鍵 ID |
 
+### 11.5.8 カスタム上書き (`config/custom.php`)
+
+| キー | 型 | 説明 |
+|---|---|---|
+| `custom.custom_files_dir` | `string` | サイトのカスタム上書きを置くディレクトリ（base からの相対）。`custom/` を直接書かず、このキーを通して解決してください。テストは `setUp()` でこれを上書きし、テスト対象が本物のディレクトリに届かないようにする必要があります |
+
 > **Plugin API 対象外:** Laravel 標準の config(`app.*`, `auth.*`, `cache.*`, `queue.*`, `session.*`, `mail.*`, `database.*`, `filesystems.*` 等)は Laravel 自身の安定性に従う — Laravel ドキュメントを参照。一覧にないコア config は予告なく変更される可能性あり。
 
 ---
@@ -889,6 +919,18 @@ class PluginNameServiceProvider extends ServiceProvider
     public function register(): void { /* ... */ }
     public function boot(): void { /* ... */ }
 }
+```
+
+提供側は、次のコンテナのタグで見つけられます。1 節の契約は、実装がそのタグを持ってはじめて到達できます。
+
+| タグ | 何が解決するか |
+|---|---|
+| `plugin.capabilities` | `App\Services\Plugin\PluginServiceResolver` が capability の名前から提供側を引きます。文字列は `PluginServiceResolver::CAPABILITY_TAG` と同じです |
+| `linkable.providers` | リンクの選択 UI を組むところが集めます。`App\Contracts\PluginIntegration\LinkableProviderInterface` の実装向けです |
+| `localized-url.providers` | 多言語の連携が集めます。`App\Contracts\I18n\LocalizedUrlProvider` の実装向けです |
+
+```php
+$this->app->tag([PostLinkableProvider::class], ['linkable.providers']);
 ```
 
 ### 12.4 plugin.json スキーマ
@@ -1016,5 +1058,7 @@ plugins/PluginName/lang/
 - 内部ジョブキュー基盤（`ShouldQueue` インターフェースを除く）
 - リストされたクラスの private/protected メソッド
 - モデルを通じて公開されていないデータベーススキーマの内部
+- コア自身の翻訳キー（`lang/*/common.php` とその他すべてのコアの lang ファイル）。プラグインが読むことはでき、コアの管理画面のビューも読んでいますが、キーとその文言はどのリリースでも変わりえます。動いては困るものは自分のキーを定義してください
+- `plugin.json` の `multilingual_content` ブロック。読んでいるのはコアではなく多言語の連携です。翻訳できるコンテンツについてのコア自身の継ぎ目は `App\Contracts\Multilingual\TranslatableContentProvider` です
 
 内部コンポーネントに依存するプラグインは、完全な AGPL-3.0 条件の対象となる派生著作物となります。

@@ -185,6 +185,8 @@ if (! function_exists('render_js_script')) {
 
 if (! function_exists('render_x_cloak_style')) {
     /**
+     * @api Stable API available for use from plugins/themes
+     *
      * Generate style tag for x-cloak (with CSP nonce support)
      */
     function render_x_cloak_style(): string
@@ -588,6 +590,8 @@ if (! function_exists('load_theme_assets')) {
 if (! function_exists('load_plugin_assets')) {
     /**
      * For plugin: Load plugin assets
+     *
+     * @api Stable API available for use from plugins/themes
      *
      * @param  string  $pluginDirectory  Plugin directory name
      * @param  array  $files  Array of files to load

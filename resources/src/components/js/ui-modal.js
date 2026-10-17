@@ -110,6 +110,22 @@ window.modal = function () {
         },
 
         /**
+         * Confirm button of a modal that submits a form. A form the browser
+         * refuses (an empty required field, say) would leave the modal in
+         * its saving state, so the modal closes instead and the browser
+         * points at the field (see submitModalForm()).
+         */
+        confirmSubmit(formId, event) {
+            this.submitting = true;
+            if (window.submitModalForm(formId) === false) {
+                // The button is type="submit": stop its own submit too.
+                event?.preventDefault();
+                this.submitting = false;
+                this.close();
+            }
+        },
+
+        /**
          * モーダルを閉じる（送信中は無効）
          */
         close() {
@@ -226,9 +242,29 @@ window.submitModalForm = function (formId) {
         console.warn(`[ui-modal] submitModalForm('${formId}'): no form with that id is in the DOM.`);
         return;
     }
+    if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+        revealInvalidField(form);
+        return false;
+    }
     if (typeof form.requestSubmit === 'function') {
         form.requestSubmit();
     } else {
         form.submit();
     }
 };
+
+/**
+ * Point the browser at the first invalid field of a form, once the
+ * confirmation modal has closed. A field in the collapsed right sidebar is
+ * hidden, and the browser cannot show its message there, so the sidebar is
+ * opened first.
+ */
+function revealInvalidField(form) {
+    const field = form.querySelector(':invalid:not(fieldset)');
+    const sidebar = document.getElementById('admin-right-sidebar-panel');
+    if (field && sidebar && sidebar.contains(field)) {
+        window.dispatchEvent(new CustomEvent('right-sidebar-force-open'));
+    }
+    // Wait for the modal's leave transition and the sidebar to open.
+    setTimeout(() => form.reportValidity(), 300);
+}

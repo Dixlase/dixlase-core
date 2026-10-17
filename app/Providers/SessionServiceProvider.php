@@ -35,6 +35,7 @@
 
 namespace App\Providers;
 
+use App\Services\Auth\SignedInMemberResolver;
 use App\Session\GuardAwareDatabaseSessionHandler;
 use Illuminate\Support\ServiceProvider;
 
@@ -65,6 +66,10 @@ class SessionServiceProvider extends ServiceProvider
 
             return $handler;
         });
+
+        // Scoped, not singleton: the cached answer belongs to one request,
+        // and a long-lived worker must not carry it into the next one.
+        $this->app->scoped(SignedInMemberResolver::class);
 
         // Extend session driver in register()
         // Allow session access from other ServiceProviders' boot() methods without depending on boot order

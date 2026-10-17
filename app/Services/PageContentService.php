@@ -316,6 +316,8 @@ class PageContentService
         // come from a remote source rather than from a trusted author.
         return Str::markdown($this->normalizeMarkdown($content), [
             'allow_unsafe_links' => false,
+            // Single line breaks render as <br>, as in the preview.
+            'renderer' => ContentPreviewService::MARKDOWN_RENDERER,
         ]);
     }
 
