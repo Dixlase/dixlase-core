@@ -180,18 +180,18 @@ Translation keys for plugins/themes follow this format:
 
 **Example:**
 ```php
-'name' => 'dixlase-users::admin/settings/systems/database.login_attempts.name',
-'description' => 'dixlase-users::admin/settings/systems/database.login_attempts.description',
+'name' => 'acme-accounts::admin/settings/systems/database.login_attempts.name',
+'description' => 'acme-accounts::admin/settings/systems/database.login_attempts.description',
 ```
 
 **How to determine the plugin slug:**
 - Convert the plugin directory name to kebab-case (lowercase with hyphens)
-- Example: `DixlaseUsers` -> `dixlase-users`
+- Example: `AcmeAccounts` -> `acme-accounts`
 
-## Implementation Example: DixlaseUsers Plugin
+## Implementation Example: AcmeAccounts Plugin
 
 ### Configuration File
-`plugins/DixlaseUsers/config/admin/database-cleanup.php`
+`plugins/AcmeAccounts/config/admin/database-cleanup.php`
 
 ```php
 <?php
@@ -201,8 +201,8 @@ return [
         'table' => 'plg_dixlase_users_login_attempts',
         'date_column' => 'created_at',
         'default_days' => 30,
-        'name' => 'dixlase-users::admin/settings/systems/database.login_attempts.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.login_attempts.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.login_attempts.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.login_attempts.description',
         'enabled' => true,
     ],
 
@@ -210,8 +210,8 @@ return [
         'table' => 'plg_dixlase_users_sessions',
         'date_column' => 'last_activity',
         'default_days' => 7,
-        'name' => 'dixlase-users::admin/settings/systems/database.sessions.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.sessions.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.sessions.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.sessions.description',
         'enabled' => true,
         'date_column_type' => 'timestamp',
     ],
@@ -220,8 +220,8 @@ return [
         'table' => 'plg_dixlase_users_trusted_devices',
         'date_column' => 'last_used_at',
         'default_days' => 90,
-        'name' => 'dixlase-users::admin/settings/systems/database.trusted_devices.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.trusted_devices.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.trusted_devices.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.trusted_devices.description',
         'enabled' => true,
         'additional_conditions' => 'unused',
     ],
@@ -229,7 +229,7 @@ return [
 ```
 
 ### Translation File (Japanese)
-`plugins/DixlaseUsers/lang/ja/admin/settings/systems/database.php`
+`plugins/AcmeAccounts/lang/ja/admin/settings/systems/database.php`
 
 ```php
 <?php

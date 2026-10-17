@@ -71,13 +71,13 @@ class UserLoginIdentifierCheckController extends Controller
 
         // Use the plugin's settings model and user model
         $settings = IdentifierCheckHelper::getLockoutSettings(
-            \Plugins\DixlaseUsers\App\Models\UserSetting::class
+            \Plugins\AcmeAccounts\App\Models\UserSetting::class
         );
 
         $result = IdentifierCheckHelper::checkWithRateLimit(
             $login,
             $ipAddress,
-            \Plugins\DixlaseUsers\App\Models\User::class,
+            \Plugins\AcmeAccounts\App\Models\User::class,
             $settings,
             'user' // Set context to 'user'
         );
@@ -94,12 +94,12 @@ class UserLoginIdentifierCheckController extends Controller
 
 For more complex logic, you can create a dedicated service class within your plugin:
 
-**File location**: `plugins/DixlaseUsers/app/Services/UserLoginIdentifierCheckService.php`
+**File location**: `plugins/AcmeAccounts/app/Services/UserLoginIdentifierCheckService.php`
 
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Services;
+namespace Plugins\AcmeAccounts\App\Services;
 
 use App\Helpers\IdentifierCheckHelper;
 
@@ -129,7 +129,7 @@ class UserLoginIdentifierCheckService
 **Usage in a controller**:
 
 ```php
-use Plugins\DixlaseUsers\App\Services\UserLoginIdentifierCheckService;
+use Plugins\AcmeAccounts\App\Services\UserLoginIdentifierCheckService;
 
 class UserLoginIdentifierCheckController extends Controller
 {
@@ -149,8 +149,8 @@ class UserLoginIdentifierCheckController extends Controller
         $result = $this->identifierCheckService->check(
             $request->input('login'),
             $request->ip(),
-            \Plugins\DixlaseUsers\App\Models\User::class,
-            \Plugins\DixlaseUsers\App\Models\UserSetting::class
+            \Plugins\AcmeAccounts\App\Models\User::class,
+            \Plugins\AcmeAccounts\App\Models\UserSetting::class
         );
 
         return response()->json([

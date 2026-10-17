@@ -26,7 +26,7 @@ GDPR / 個人情報保護法における「ユーザーごとの全データエ�
 運用者 → 管理画面 → 集約器 (Exporter / Eraser)
                        │
                        ├── Provider A (あなたのプラグイン)
-                       ├── Provider B (DixlaseUsers)
+                       ├── Provider B (AcmeAccounts)
                        └── Provider C (CoreMember)
 ```
 
@@ -99,7 +99,7 @@ public function register(): void
 ### パターン A: 完全サイトスコープ Provider
 すべての対象テーブルが `site_id` 列を持つ。`$siteId` 指定時はそれで絞り、`null` 時は全サイト含めます。
 
-### パターン B: 完全非サイトスコープ Provider（DixlaseUsers パターン）
+### パターン B: 完全非サイトスコープ Provider（AcmeAccounts パターン）
 対象テーブルに `site_id` 列がない。`$siteId !== null` のときは空 DTO + warning を返します:
 
 ```php
@@ -252,6 +252,6 @@ class YourPluginPrivacyProvider implements PrivacyDataProviderInterface
 
 - Contract: `app/Contracts/PluginIntegration/PrivacyDataProviderInterface.php`
 - 参考実装: `app/Services/Privacy/Providers/CoreMemberPrivacyProvider.php`
-- プラグイン実装例: `plugins/DixlaseUsers/app/Privacy/DixlaseUsersPrivacyProvider.php`
+- プラグイン実装例: `plugins/AcmeAccounts/app/Privacy/AcmeAccountsPrivacyProvider.php`
 - 集約器: `app/Services/Privacy/UserPrivacyExporter.php`, `UserPrivacyEraser.php`
-- テスト: `tests/Feature/PluginPrivacy/`, `plugins/DixlaseUsers/tests/Feature/Privacy/`
+- テスト: `tests/Feature/PluginPrivacy/`, `plugins/AcmeAccounts/tests/Feature/Privacy/`

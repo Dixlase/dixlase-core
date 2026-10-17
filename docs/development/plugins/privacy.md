@@ -26,7 +26,7 @@ Implementations are the engine behind GDPR / personal-information-protection wor
 Operator → Admin UI → Aggregator (Exporter / Eraser)
                           │
                           ├── Provider A (your plugin)
-                          ├── Provider B (DixlaseUsers)
+                          ├── Provider B (AcmeAccounts)
                           └── Provider C (CoreMember)
 ```
 
@@ -99,7 +99,7 @@ Three patterns to handle:
 ### Pattern A: fully site-scoped provider
 Every table you query has a `site_id` column. Filter by `$siteId` when supplied. When `$siteId` is `null`, include all sites.
 
-### Pattern B: fully non-site-scoped provider (DixlaseUsers pattern)
+### Pattern B: fully non-site-scoped provider (AcmeAccounts pattern)
 Your tables have no `site_id`. When `$siteId !== null`, return an empty DTO with a warning:
 
 ```php
@@ -252,6 +252,6 @@ The page is intentionally a stub. Plugins can layer their own UI on top of the s
 
 - Contract: `app/Contracts/PluginIntegration/PrivacyDataProviderInterface.php`
 - Reference impl: `app/Services/Privacy/Providers/CoreMemberPrivacyProvider.php`
-- Plugin example: `plugins/DixlaseUsers/app/Privacy/DixlaseUsersPrivacyProvider.php`
+- Plugin example: `plugins/AcmeAccounts/app/Privacy/AcmeAccountsPrivacyProvider.php`
 - Aggregators: `app/Services/Privacy/UserPrivacyExporter.php`, `UserPrivacyEraser.php`
-- Tests: `tests/Feature/PluginPrivacy/`, `plugins/DixlaseUsers/tests/Feature/Privacy/`
+- Tests: `tests/Feature/PluginPrivacy/`, `plugins/AcmeAccounts/tests/Feature/Privacy/`

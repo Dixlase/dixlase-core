@@ -49,5 +49,5 @@ return [
     'no_issues_detected' => '  <fg=green>✓ No issues detected</>',
     'plugin_health_check' => '<fg=cyan>🔍 Health check for :plugin</>',
     'set_security_preset_development' => 'Set security_preset to development during development to avoid point deductions',
-    'sign_with_dixlase_signer' => 'Sign with DixlaseSigner to achieve 100 points in production',
+    'sign_to_reach_full_score' => 'Sign the extension to achieve 100 points in production',
 ];

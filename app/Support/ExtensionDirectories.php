@@ -43,7 +43,7 @@ namespace App\Support;
  * `plugins/` and `themes/` accumulate copies over a site's lifetime:
  * operators and deploy tooling move the previous version aside instead of
  * deleting it, leaving names like `DixlaseOnePage.stale.20260705-033828` or
- * `DixlaseDeploy.bak` next to the live directory. Those copies are complete
+ * `AcmeExample.bak` next to the live directory. Those copies are complete
  * — manifest, `database/migrations/`, `app/` — so every scan that walks
  * `glob('plugins/*', GLOB_ONLYDIR)` treats them as additional installed
  * extensions. Observed consequences:
@@ -52,8 +52,8 @@ namespace App\Support;
  *     predates a migration file made the *applied* ledger row for it look
  *     orphaned, and `--prune` would delete it.
  *   - `composer dump-autoload` reports the copies as PSR-4 violations
- *     (`Plugins\DixlaseDeploy\...` found under
- *     `plugins/DixlaseDeploy.stale.20260710-221107/`) and skips the classes.
+ *     (`Plugins\AcmeExample\...` found under
+ *     `plugins/AcmeExample.stale.20260710-221107/`) and skips the classes.
  *
  * The rule below is deliberately narrow: an installed extension's directory
  * name is also the middle segment of its PHP namespace (`Plugins\{Name}\`,

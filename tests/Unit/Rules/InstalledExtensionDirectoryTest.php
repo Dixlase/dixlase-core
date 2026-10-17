@@ -94,7 +94,7 @@ class InstalledExtensionDirectoryTest extends TestCase
     {
         return [
             ['DixlaseOnePage.stale.20260817-211837'],
-            ['DixlaseDeploy.stale.20260710-221107'],
+            ['AcmeExample.stale.20260710-221107'],
             ['DixlaseSEO.bak'],
             ['_DixlaseOld'],
             ['.DixlaseHidden'],

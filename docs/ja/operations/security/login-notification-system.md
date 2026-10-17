@@ -237,7 +237,7 @@ class AdminLoginNotificationService
 ],
 ```
 
-### プラグイン (plugins/DixlaseUsers/lang/ja/mail.php, lang/en/mail.php)
+### プラグイン (plugins/AcmeAccounts/lang/ja/mail.php, lang/en/mail.php)
 
 マイページ用の翻訳キー:
 ```php
@@ -257,13 +257,13 @@ class AdminLoginNotificationService
 ### 1. コントローラーでの実装
 
 ```php
-class DixlaseUsersMypageLoginController extends DixlaseUsersMypageController
+class AcmeAccountsMypageLoginController extends AcmeAccountsMypageController
 {
     use \App\Traits\LoginTrait;
     
     protected function getLoginNotificationServiceClass(): string
     {
-        return \Plugins\DixlaseUsers\App\Services\UserLoginNotificationService::class;
+        return \Plugins\AcmeAccounts\App\Services\UserLoginNotificationService::class;
     }
 }
 ```
@@ -400,7 +400,7 @@ echo __($translationKey, ['button_text' => $buttonText]);
 1. **翻訳ファイルの存在確認**
    ```bash
    ls -la lang/ja/mail.php
-   ls -la plugins/DixlaseUsers/lang/ja/mail.php
+   ls -la plugins/AcmeAccounts/lang/ja/mail.php
    ```
 
 2. **キャッシュクリア**
@@ -433,5 +433,4 @@ echo __($translationKey, ['button_text' => $buttonText]);
 
 - [LoginNotification.php](../../../../app/Notifications/LoginNotification.php)
 - [LoginNotificationTrait.php](../../../../app/Traits/LoginNotificationTrait.php)
-- [UserLoginNotification.php](../../../../plugins/DixlaseUsers/app/Notifications/UserLoginNotification.php)
 - [TwoFaAuthenticationTrait.php](../../../../app/Traits/TwoFa/TwoFaAuthenticationTrait.php)

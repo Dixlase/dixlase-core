@@ -16,10 +16,8 @@ storage/app/private/
 │   │   └── contact/
 │   │       ├── content.md       # Markdown (English)
 │   │       └── content.ja.md    # Markdown (Japanese)
-│   ├── dixlase-blog/            # Blog plugin
-│   │   └── {post-slug}/
-│   └── dixlase-docs/            # Docs plugin
-│       └── {doc-slug}/
+│   └── dixlase-blog/            # Blog plugin
+│       └── {post-slug}/
 ├── themes/
 │   └── {theme-slug}/            # Theme-specific content
 └── front/                       # Front page data
