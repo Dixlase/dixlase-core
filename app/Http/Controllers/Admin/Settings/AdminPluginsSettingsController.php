@@ -816,10 +816,26 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $linkage = $sidecar->read(base_path("plugins/{$pluginDir}"));
 
             // Install using command
-            Artisan::call('dls:plugin:install', array_filter([
+            $exitCode = Artisan::call('dls:plugin:install', array_filter([
                 'pluginName' => $pluginDir,
                 '--source' => $linkage['source_id'] ?? null,
             ], fn ($v) => $v !== null));
+
+            // A refused install (license, requires.dixlase / requires.php,
+            // health gate) leaves the files where they were, so keep the
+            // sidecar that links them to their source and say why.
+            if ($exitCode !== 0) {
+                $output = trim(Artisan::output());
+                Log::error('Plugin installation command failed', [
+                    'directory' => $pluginDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output,
+                ]);
+
+                return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_failed', [
+                    'error' => $output !== '' ? $output : (string) $exitCode,
+                ]));
+            }
             $sidecar->delete(base_path("plugins/{$pluginDir}"));
 
             // Retrieve installed plugin

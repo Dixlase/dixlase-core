@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Plugin;
@@ -54,6 +55,7 @@ use ZipArchive;
 class PluginUpdate extends Command
 {
     use AutoScansExtensionAfterUpdate;
+    use EnforcesExtensionRequirements;
     use BuildsExtensionAssets;
     use TakesExtensionBackup;
 
@@ -212,6 +214,10 @@ class PluginUpdate extends Command
             // else (a default-branch zipball, a mislabelled asset) is
             // refused and rolled back (security review D13).
             $this->refuseVersionMismatch(base_path("plugins/{$plugin->directory}/plugin.json"), $release->version);
+
+            // The new version's requires.dixlase / requires.php
+            // (dixlase-core#473): refused and rolled back like the above.
+            $this->refuseUnmetRequirements(base_path("plugins/{$plugin->directory}/plugin.json"), (string) ($plugin->name ?? $slug));
 
             $this->refuseBlockedUpdate('plugin', $slug);
 

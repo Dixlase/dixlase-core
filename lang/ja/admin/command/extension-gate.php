@@ -40,6 +40,12 @@ return [
     'confirmation_required' => ':name には管理画面で確認を求める健全性の問題(:level)があるため、:action しませんでした。',
     'confirmation_hint' => '`php artisan dls::kind:audit :slug` で内容を確認し、それでも進めるには --force を付けて再実行してください。',
     'forced' => '警告: --force が指定されたため、健全性の問題(:level)がある :name をそのまま進めます。',
+    'requires_unmet' => ':name は :requirement :declared を必要としますが、このサイトは :current で動いているため、:actionしませんでした。--force でも解除できません。',
+    'requires_malformed' => '注意: :name の requires.:key は「:declared」で、有効なバージョンの指定ではないため確認していません。',
+    'requirement' => [
+        'dixlase' => 'Dixlase',
+        'php' => 'PHP',
+    ],
     'level' => [
         'warning' => '軽微な問題',
         'ack' => '重要な問題',
@@ -48,5 +54,6 @@ return [
         'installed' => 'インストール',
         'enabled' => '有効化',
         'switched' => '切り替え',
+        'updated' => '更新',
     ],
 ];

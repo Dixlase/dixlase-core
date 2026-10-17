@@ -37,6 +37,7 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Theme;
@@ -55,6 +56,7 @@ use ZipArchive;
 class ThemeUpdate extends Command
 {
     use AutoScansExtensionAfterUpdate;
+    use EnforcesExtensionRequirements;
     use BuildsExtensionAssets;
     use TakesExtensionBackup;
 
@@ -209,6 +211,10 @@ class ThemeUpdate extends Command
             // else (a default-branch zipball, a mislabelled asset) is
             // refused and rolled back (security review D13).
             $this->refuseVersionMismatch(base_path("themes/{$theme->directory}/theme.json"), $release->version);
+
+            // The new version's requires.dixlase / requires.php
+            // (dixlase-core#473): refused and rolled back like the above.
+            $this->refuseUnmetRequirements(base_path("themes/{$theme->directory}/theme.json"), (string) ($theme->name ?? $slug));
 
             $this->refuseBlockedUpdate('theme', $slug);
 

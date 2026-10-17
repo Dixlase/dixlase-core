@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
@@ -58,6 +59,7 @@ use Illuminate\Support\Str;
 class PluginInstall extends Command
 {
     use BuildsExtensionAssets;
+    use EnforcesExtensionRequirements;
     use GuardsExtensionActivation;
     use PluginManagementTrait;
 
@@ -188,6 +190,15 @@ class PluginInstall extends Command
                 'License notice: %s',
                 $licenseVerdict['reason'] ?? 'License is not in the accepted-licenses table.',
             ));
+        }
+
+        // The manifest's requires.dixlase / requires.php (dixlase-core#473).
+        // Not overridable: the plugin says it will not work on this site.
+        $requirementRefusal = $this->unmetRequirementMessage(is_array($pluginData ?? null) ? $pluginData : [], $pluginName, 'installed');
+        if ($requirementRefusal !== null) {
+            $this->error($requirementRefusal);
+
+            return 1;
         }
 
         // Health / signature gate (dixlase-core#492), checked before anything
