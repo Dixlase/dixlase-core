@@ -38,33 +38,38 @@
     .media-grid {
         @apply grid gap-6;
 
-        /* モバイル: 1列 */
+        // `minmax(0, 1fr)` instead of plain `1fr` so a card with a long
+        // unbreakable filename cannot force its column wider than its
+        // share of the row — otherwise the grid overflows the main
+        // content area and the page gains a horizontal scrollbar that
+        // slides content under the fixed sidebar.
         grid-template-columns: 1fr;
 
-        /* タブレット: 2列 */
         @media (min-width: 640px) {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        /* デスクトップ: 3列 */
         @media (min-width: 1024px) {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
-        /* 大画面: 4列 */
         @media (min-width: 1280px) {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
-        /* 特大画面: 5列 */
         @media (min-width: 1536px) {
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(5, minmax(0, 1fr));
         }
     }
 
     // メディアカード (Flowbite inspired)
     .media-card {
         @apply w-full bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md;
+
+        // Pair with `minmax(0, 1fr)` on `.media-grid`: without it, the
+        // card's intrinsic min width is the longest unbreakable child
+        // (a filename), which overrides the column's shrink floor.
+        min-width: 0;
     }
 
     .media-card__preview {
@@ -90,6 +95,12 @@
 
     .media-card__title {
         @apply mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white;
+
+        // Long filenames (`Screenshot 2026-10-17 at 0.51.49.png`) have no
+        // natural break points, so without `anywhere` the browser treats
+        // the whole name as one word and pushes the card wider than its
+        // column.
+        overflow-wrap: anywhere;
 
         a {
             @apply hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200;
