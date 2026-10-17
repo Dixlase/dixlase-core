@@ -60,5 +60,5 @@ return [
 有効期限: :expires_at
 
 これは緊急復旧機能です。復旧完了後は自動的に無効化されます。
-手動で無効化するには: php artisan security:captcha-bypass disable',
+手動で無効化するには: php artisan dls:admin:captcha-bypass disable',
 ];
