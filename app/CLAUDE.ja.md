@@ -55,5 +55,5 @@
 
 ### 署名検証
 - `SignatureVerifierInterface` コントラクト経由で署名検証を行う
-- コア側スタブ: `CoreSignatureVerifier`（DixlaseDevKit 未インストール時は unsigned/pending を返す）
+- コア側スタブ: `CoreSignatureVerifier`（署名の検証モジュールが未インストールのときは unsigned/pending を返す）
 - `PluginPermissionService::getSignatureInfo()` で署名情報を取得
