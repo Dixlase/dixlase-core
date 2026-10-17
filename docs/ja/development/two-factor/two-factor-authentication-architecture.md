@@ -937,7 +937,7 @@ $attemptService->recordAttempt($user, 'email', $success);
 $service = new TwoFaRecoveryCodeService(\App\Models\MemberSetting::class);
 
 // ユーザープラグインの場合
-$service = new TwoFaRecoveryCodeService(\Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::class);
+$service = new TwoFaRecoveryCodeService(\Plugins\AcmeAccounts\App\Models\AcmeAccountsUserSetting::class);
 ```
 
 ---

@@ -33,7 +33,7 @@ class ProfileTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->markTestSkipped('DixlaseUsers プラグイン (App\Models\User) 依存');
+        $this->markTestSkipped('Depends on a plugin that provides App\Models\User');
     }
 
     public function test_profile_page_is_displayed(): void

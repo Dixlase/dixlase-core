@@ -147,8 +147,8 @@ class DeployProtectionRegistryTest extends TestCase
 
     public function test_registry_collects_tables_and_paths_from_plugin_manifest(): void
     {
-        $this->writePluginManifest('DixlaseLegal', [
-            'name' => 'DixlaseLegal',
+        $this->writePluginManifest('AcmeExample', [
+            'name' => 'AcmeExample',
             'deploy' => [
                 'protected_tables' => ['dls_plg_dixlase_legal_cookie_consents'],
             ],
@@ -162,7 +162,7 @@ class DeployProtectionRegistryTest extends TestCase
         $sources = $registry->sources();
         $this->assertCount(1, $sources);
         $this->assertInstanceOf(DeployProtectionSource::class, $sources[0]);
-        $this->assertSame('DixlaseLegal', $sources[0]->extensionName);
+        $this->assertSame('AcmeExample', $sources[0]->extensionName);
         $this->assertSame('plugin', $sources[0]->extensionType);
         $this->assertSame(['dls_plg_dixlase_legal_cookie_consents'], $sources[0]->tables);
         $this->assertSame([], $sources[0]->storagePaths);

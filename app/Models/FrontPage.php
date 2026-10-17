@@ -59,7 +59,7 @@ class FrontPage extends Model implements Revisionable
 
     /**
      * Translatable fields (consumed by core's TranslatableTrait +
-     * TranslationResolver indirection — DixlaseMultilingual binds the
+     * TranslationResolver indirection — a translation provider binds the
      * resolver to read / write per-locale rows in its polymorphic
      * translations table). When the multilingual plugin is absent the
      * trait silently falls back to the row's column value (the primary

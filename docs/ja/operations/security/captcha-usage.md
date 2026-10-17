@@ -138,8 +138,8 @@ class ContactFormRequest extends FormRequest
 - **テーマ**: `{theme-slug}.{action}` 形式
 
 **例:**
-- DixlaseUsersプラグイン: `dixlase-users.user_register`
-- DixlaseUsersプラグイン: `dixlase-users.user_profile_update`
+- AcmeAccounts プラグイン: `acme-accounts.user_register`
+- AcmeAccounts プラグイン: `acme-accounts.user_profile_update`
 - DixlaseBlogプラグイン: `dixlase-blog.comment_submit`
 
 ### コントローラーでの実装
@@ -151,19 +151,19 @@ class ContactFormRequest extends FormRequest
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Front\Register;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Front\Register;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class DixlaseUsersRegisterController extends Controller
+class AcmeAccountsRegisterController extends Controller
 {
     /**
      * CAPTCHAアクション名を返す
      */
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_register';
+        return 'acme-accounts.user_register';
     }
 
     /**
@@ -176,7 +176,7 @@ class DixlaseUsersRegisterController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::front.register.create', [
+        return view('acme-accounts::front.register.create', [
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
         ]);
@@ -189,7 +189,7 @@ class DixlaseUsersRegisterController extends Controller
 ビューでは、コントローラーから渡された`$captchaEnabled`と`$captchaWidget`を使用してCAPTCHAを表示します。
 
 ```blade
-<form method="POST" action="{{ route('dixlase-users.register.store') }}">
+<form method="POST" action="{{ route('acme-accounts.register.store') }}">
     @csrf
 
     <!-- フォームフィールド -->
@@ -221,19 +221,19 @@ class DixlaseUsersRegisterController extends Controller
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Front\Register;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Front\Register;
 
 use App\Http\Controllers\Controller;
 use App\Traits\VerifiesCaptcha;
 use Illuminate\Http\Request;
 
-class DixlaseUsersRegisterController extends Controller
+class AcmeAccountsRegisterController extends Controller
 {
     use VerifiesCaptcha;
 
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_register';
+        return 'acme-accounts.user_register';
     }
 
     public function store(Request $request)
@@ -251,7 +251,7 @@ class DixlaseUsersRegisterController extends Controller
         // 登録処理
         // ...
 
-        return redirect()->route('dixlase-users.register.complete')
+        return redirect()->route('acme-accounts.register.complete')
             ->with('success', '登録が完了しました。');
     }
 }
@@ -264,13 +264,13 @@ class DixlaseUsersRegisterController extends Controller
 ```php
 <?php
 
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Mypage\Profile;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Mypage\Profile;
 
 use App\Http\Controllers\Controller;
 use App\Traits\VerifiesCaptcha;
 use Illuminate\Http\Request;
 
-class DixlaseUsersMypageProfileController extends Controller
+class AcmeAccountsMypageProfileController extends Controller
 {
     use VerifiesCaptcha;
 
@@ -279,7 +279,7 @@ class DixlaseUsersMypageProfileController extends Controller
      */
     protected function getCaptchaAction(): string
     {
-        return 'dixlase-users.user_profile_update';
+        return 'acme-accounts.user_profile_update';
     }
 
     /**
@@ -291,7 +291,7 @@ class DixlaseUsersMypageProfileController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::mypage.profile.basic-info', [
+        return view('acme-accounts::mypage.profile.basic-info', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
@@ -308,7 +308,7 @@ class DixlaseUsersMypageProfileController extends Controller
         $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha($captchaAction);
         $captchaWidget = \App\Helpers\CaptchaHelper::renderWidget($captchaAction);
 
-        return view('dixlase-users::mypage.profile.appearance', [
+        return view('acme-accounts::mypage.profile.appearance', [
             'user' => $request->user(),
             'captchaEnabled' => $captchaEnabled,
             'captchaWidget' => $captchaWidget,
@@ -323,7 +323,7 @@ Alpine.jsを使用する保存ボタンなどでは、`x-data`スコープが必
 
 ```blade
 <div x-data="{}">
-    <form method="POST" action="{{ route('dixlase-users.profile.update') }}">
+    <form method="POST" action="{{ route('acme-accounts.profile.update') }}">
         @csrf
 
         <!-- フォームフィールド -->
@@ -366,7 +366,7 @@ Alpine.jsを使用する保存ボタンなどでは、`x-data`スコープが必
 指定したアクションでCAPTCHAを表示すべきかを判定します。
 
 ```php
-$captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('dixlase-users.user_register');
+$captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('acme-accounts.user_register');
 // true または false を返す
 ```
 
@@ -375,7 +375,7 @@ $captchaEnabled = \App\Helpers\CaptchaHelper::shouldShowCaptcha('dixlase-users.u
 CAPTCHAウィジェットのHTMLを生成します。
 
 ```php
-$captchaWidget = \App\Helpers\CaptchaHelper::renderWidget('dixlase-users.user_register');
+$captchaWidget = \App\Helpers\CaptchaHelper::renderWidget('acme-accounts.user_register');
 // HTMLコードを返す（Blade内で {!! $captchaWidget !!} として出力）
 ```
 

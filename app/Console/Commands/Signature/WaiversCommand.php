@@ -43,7 +43,8 @@ use Illuminate\Console\Command;
  * List active signature waivers (read-only, all scopes).
  *
  * Read-only diagnostic — kept in Core (available on every site). The mutating
- * dls:signature:waive / :unwaive / :remove commands live in DixlaseDevKit.
+ * dls:signature:waive / :unwaive / :remove commands live in the first-party
+ * developer tooling.
  */
 class WaiversCommand extends Command
 {

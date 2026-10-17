@@ -341,7 +341,7 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
      * The users passkeys can be registered for must implement PasskeyUser.
      *
      * Core's Member does; a plugin user model that stores passkeys has to as
-     * well (see DixlaseUsersUser).
+     * well (see a member-accounts plugin's own user model).
      */
     private function passkeyOwner(TwoFaInterface $user): PasskeyUser
     {

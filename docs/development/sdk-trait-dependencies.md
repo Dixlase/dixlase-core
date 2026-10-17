@@ -123,8 +123,6 @@ The `mergeAdminNavigation()` method was the last direct reference to `\App\Helpe
 |--------|--------|
 | DixlaseInquiry | Removed manual call (auto-load via `config/admin/navigation.php`) |
 | DixlasePages | Removed manual call (auto-load via `config/admin/navigation.php`) |
-| DixlaseDocs | Removed manual call (auto-load via `config/admin/navigation.php`) |
-| DixlaseUsers | Removed conditional fallback (auto-load via `config/admin/navigation.php`) |
 | DixlaseMenus | Removed manual call (auto-load via `config/admin/navigation.php`) |
 
 Navigation loading is now fully handled by `loadPluginConfigs()` → `mergeAdminNavigationFile()` (auto-load path).
@@ -170,7 +168,7 @@ Theme navigation auto-loading now mirrors the plugin pattern: `ThemeServiceProvi
 Audited all `App\` class imports across 13 plugins. Out of 12 target classes:
 
 - **11 already had `@api`**: `PluginHelper`, `CaptchaHelper`, `ConfigHelper`, `MemberRole`, `ContentEditorType`, `ContentStatus`, `ContentStorageType`, `AppearanceMode`, `AuthContextRegistryService`, `BaseSetting`, `Media`
-- **1 added**: `SecuritySetting` — used by DixlaseBlog and DixlaseUsers in route files. Added `@api` alongside existing `@deprecated` notice.
+- **1 added**: `SecuritySetting` — used by DixlaseBlog in route files. Added `@api` alongside existing `@deprecated` notice.
 
 All core classes referenced by plugins now carry the `@api` annotation, ensuring SDK package consumers can depend on these as stable host-application APIs.
 
@@ -193,6 +191,5 @@ Since `AuthenticationMode` is an `int`-backed enum, returning the raw `int` valu
 | `app/Contracts/TwoFaInterface.php` | Return type `\App\Enums\AuthenticationMode\|int` → `int` |
 | `app/Models/Member.php` | `getTwoFaMode()` now extracts `->value` from the Eloquent-cast enum |
 | `app/Traits/PasskeyLoginTrait.php` | Removed defensive `is_int()` check (no longer needed) |
-| `plugins/DixlaseUsers/app/Models/DixlaseUsersUser.php` | Already returned `int` — no change |
 
 All `@api` Contracts in `app/Contracts/` are now free of `\App\Enums\*`, `\App\Models\*`, and `\App\Helpers\*` inline references.

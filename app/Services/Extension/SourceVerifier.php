@@ -45,7 +45,7 @@ use App\Models\ExtensionSource;
  * Verifies the authenticity of extension sources using Ed25519 signatures.
  * Official sources are signed with the configured authority key (managed
  * by an authority/key-management plugin); this class provides the
- * verification logic as a core stub. When DixlaseDevKit is installed,
+ * verification logic as a core stub. When a verification module is installed,
  * the actual Ed25519 verification is performed; otherwise, the signature
  * status is returned as pending.
  */
@@ -74,7 +74,7 @@ class SourceVerifier
             return [
                 'verified' => false,
                 'status' => 'pending',
-                'message' => 'Signature verification module is not available. Install DixlaseDevKit to enable verification.',
+                'message' => 'Signature verification is not available on this installation.',
             ];
         }
 

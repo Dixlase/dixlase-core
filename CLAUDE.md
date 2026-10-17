@@ -16,11 +16,11 @@
 ### Comment Translation Data Maintenance
 - When you touch a file that still has Japanese comments, follow the **lazy migration workflow** so the historical Japanese is preserved as translation data while the source flips to English:
   1. `docker exec -i dixlase-php php artisan dls:comment:extract --path=path/to/file.php` — capture the current Japanese comments into the translation file as **pending entries** (`'JP text' => ''`)
-  2. `docker exec -i dixlase-php php artisan dls:comment:translate --file=plugins/DixlaseCoreDevKit/resources/comment-translations/path/to/file.php` — let Claude API translate. Each pending entry is **rotated** in place to the canonical `'EN canonical' => 'JP archive'` form and tagged `machine` (unreviewed) in `_review_status`
+  2. `docker exec -i dixlase-php php artisan dls:comment:translate --file=resources/comment-translations/ja/path/to/file.php` — let Claude API translate. Each pending entry is **rotated** in place to the canonical `'EN canonical' => 'JP archive'` form and tagged `machine` (unreviewed) in `_review_status`
   3. Replace the Japanese comments in the source with the exact **EN keys** from the dictionary (the keys, not the values — keys are the canonical English that the JA release build will reverse back to JP)
   4. Stage both the source file and the translation file in the same commit
 - Storage paths:
-  - **Core** (`app/`, `config/`, etc.): `plugins/DixlaseCoreDevKit/resources/comment-translations/`
+  - **Core** (`app/`, `config/`, etc.): `resources/comment-translations/` in the core repository, under a sub-directory per locale
   - **Plugins**: `plugins/{PluginName}/resources/comment-translations/`
 - Translation file mirrors the source path (e.g., `app/Http/Controllers/FooController.php` → `resources/comment-translations/app/Http/Controllers/FooController.php`)
 - Dictionary format (Phase 2 onwards): **English-keyed**, JP archive as value
@@ -35,14 +35,14 @@
   ];
   ```
 - Empty value (`''`) means "pending translation"; the key is JP at this stage. `dls:comment:translate` rotates each pending entry to `'EN' => 'JP'` form
-- Project-specific terminology lives in `plugins/DixlaseCoreDevKit/resources/comment-translations/_glossary.php` (JP→EN mapping) — injected into the Claude API prompt so translations stay consistent across files. Add entries when a new Dixlase-specific term emerges or AI translation drifts
+- Project-specific terminology lives in `resources/comment-translations/<locale>/_glossary.php` (JP→EN mapping) — injected into the Claude API prompt so translations stay consistent across files. Add entries when a new Dixlase-specific term emerges or AI translation drifts
 - Each translation file may carry a `_review_status` metadata block tracking per-entry review state (`untranslated` / `machine` / `reviewed` / `human`), keyed by the **EN canonical**. `dls:comment:status --filter=machine` lists entries that are auto-translated but not yet human-reviewed; batch review can happen at any cadence
 - If the translation file does not exist yet, the extract command creates it. Pre-Phase-2 dictionaries (legacy `'JP' => 'EN'` format) can be migrated in-place with the one-shot `dls:comment:rotate-keys` command (idempotent; pending entries are left untouched)
 
 ### License Header
 - All new PHP classes and Blade views must include a license header at the top of the file
-- **Core**: Use the AGPL v3 license header. Reference: `plugins/DixlaseCoreDevKit/app/Console/Commands/LicenseHeaderCommand.php` or `plugins/DixlaseDevKit/license-templates/license-agpl.txt`
-- **Plugins/Themes**: Use the license header defined by each plugin/theme. Reference: `plugins/DixlaseDevKit/license-templates/` and `plugins/DixlaseDevKit/app/Console/Commands/UpdateLicenseHeaders.php`
+- **Core**: Use the AGPL v3 license header. Copy it from any existing core PHP file; the developer tooling also carries a template and a command that applies it
+- **Plugins/Themes**: Use the license header defined by each plugin/theme. Copy it from an existing file in that extension; the developer tooling carries the templates and a command that applies them
 - PHP files use PHPDoc block format (`/** ... */`), Blade files use Blade comment format (`{{-- ... --}}`)
 
 ### Migration Editing Policy
@@ -374,8 +374,8 @@ git submodule foreach --quiet \
   - Blade files: `@api` inside the license comment block (`{{-- @api ... --}}`)
 - Without registration in `PLUGIN-API.md`, plugins/themes using the component may not be covered by the AGPL license exception
 - **`PLUGIN-API.md` is generated — do not edit it directly**
-  - Edit instead: `plugins/DixlaseCoreDevKit/resources/ai/plugin-api/template-{en,ja}.blade.php`
-  - Translation keys: `plugins/DixlaseCoreDevKit/lang/{en,ja}/plugin-api.php`
+  - Edit instead: the Plugin API template, in the repository that holds the generator
+  - Translation keys: that repository's `lang/{en,ja}/plugin-api.php`
   - Regenerate with: `php artisan dls:plugin-api:generate --lang=en` and `--lang=ja`
 - Run `dls:claude:setup` after updating `PLUGIN-API.md` to regenerate CLAUDE.md files
 

@@ -43,7 +43,7 @@ use JsonSerializable;
  * Signature verification result DTO
  *
  * Represents the Core signature verification result
- * Converted from DixlaseDevKit plugin's SignatureResult,
+ * Converted from the verification module's own result object,
  * or generated directly from stub implementation
  */
 final readonly class SignatureVerificationResult implements JsonSerializable

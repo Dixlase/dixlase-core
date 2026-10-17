@@ -61,7 +61,7 @@ use Illuminate\Console\Command;
  * only PHP comment tokens are rewritten, so user-facing string literals
  * that happen to match a dictionary key are NOT touched.
  *
- * Note: the underlying services currently live in DixlaseCoreDevKit; the
+ * Note: the underlying services currently live in a development plugin; the
  * plugin must be installed and enabled. The dictionary itself ships with
  * Core under `resources/comment-translations/{locale}/`.
  */
