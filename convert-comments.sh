@@ -67,7 +67,7 @@ Options:
   --no-plugins          Do not walk plugins/* dictionaries.
   --no-themes           Do not walk themes/* dictionaries.
   --path=<rel>[,<rel>]  Comma-separated source paths to scan within each
-                        extension (default: app,resources/views).
+                        extension (default: app,resources/views,stubs).
   --list                Print available locales and exit.
   -h, --help            Print this message.
 
@@ -117,7 +117,7 @@ DRY_RUN=false
 STRICT=false
 INCLUDE_PLUGINS=true
 INCLUDE_THEMES=true
-SCAN_PATH="app,resources/views"
+SCAN_PATH="app,resources/views,stubs"
 
 if [ $# -eq 0 ]; then
     print_usage
