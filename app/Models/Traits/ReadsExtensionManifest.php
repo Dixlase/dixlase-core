@@ -39,6 +39,8 @@ declare(strict_types=1);
 
 namespace App\Models\Traits;
 
+use Illuminate\Database\Eloquent\Collection;
+
 /**
  * Reads the version an extension declares in its manifest on disk.
  *
@@ -96,5 +98,38 @@ trait ReadsExtensionManifest
         $version = trim($decoded['version']);
 
         return $version !== '' ? $version : null;
+    }
+
+    /**
+     * The installed version: the manifest on disk, or the recorded version
+     * when the manifest cannot be read.
+     *
+     * This is the value hasUpdateAvailable() compares against, so anything
+     * shown next to an offered update should use it too.
+     */
+    public function installedVersion(): ?string
+    {
+        return $this->versionOnDisk() ?? $this->version;
+    }
+
+    /**
+     * Rows that have an update to offer.
+     *
+     * A set `available_version` alone does not mean that: it is left as it
+     * was when the files reach that version without the updater (a deploy, a
+     * manual pull), and applying an update deletes the directory before
+     * moving the release in (dixlase-core#469). Everything that lists, counts
+     * or selects updates goes through hasUpdateAvailable() via this method.
+     *
+     * @return Collection<int, static>
+     */
+    public static function pendingUpdates(): Collection
+    {
+        return static::query()
+            ->whereNotNull('available_version')
+            ->orderBy('slug')
+            ->get()
+            ->filter(fn (self $extension) => $extension->hasUpdateAvailable())
+            ->values();
     }
 }

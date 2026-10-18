@@ -57,6 +57,7 @@ import '../../admin/settings/base/js/maintenance';
 import '../../admin/settings/base/js/mode';
 import '../../admin/settings/security/js/captcha';
 import '../../admin/settings/systems/js/api';
+import '../../admin/settings/systems/js/updates';
 import '../../admin/settings/plugins/js/audit';
 import '../../admin/settings/plugins/js/two-stage-modal';
 import '../../admin/settings/plugins/js/online-plugins';
