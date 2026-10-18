@@ -468,7 +468,9 @@ class PluginAudit extends Command
         }
 
         $this->newLine();
-        $this->info("Run 'php artisan dls:plugin:update-json ".basename(dirname($pluginJsonPath))." --all' to add missing sections.");
+        // dls:plugin:update-json comes with the developer tools, not with core.
+        // Say where it comes from rather than naming a command the reader may not have.
+        $this->info("With the developer tools installed, 'php artisan dls:plugin:update-json ".basename(dirname($pluginJsonPath))." --all' adds the missing sections.");
     }
 
     /**
