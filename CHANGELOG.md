@@ -54,6 +54,19 @@ repository to be notified of changes.
   their place in the chain and the daily seal — and treats a row marked redacted with no
   recorded erasure behind it as tampering. If the erasure cannot be recorded, nothing is
   erased. Rows anonymised before this release still fail and are not backfilled (#478)
+- Installing, creating or deleting a plugin or theme no longer writes a `!plugins/<Name>/`
+  or `!themes/<Name>/` rule into core's tracked `.gitignore` or into `.git/info/exclude`.
+  Each rule re-included one extension in core's git, so `git status` listed it and
+  `git add -A` would have staged its files into core. `dls:sync-gitignore` and
+  `dls:sync-git-exclude` now only remove such rules: run either one to preview, and add
+  `--confirm` to write. The `--add-plugin` / `--add-theme` options do nothing (#626)
+
+### Plugin API — Deprecated
+- `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
+  `GitExcludeHelper::addPluginExclusion()` / `addThemeExclusion()` are deprecated and
+  do nothing; they return `true` so existing callers keep working. Stop calling them:
+  core does not re-include extension directories in git any more. The `remove*()` and
+  `syncAll()` methods now remove existing rules (#626)
 
 ## [0.1.14] — 2026-10-17
 
