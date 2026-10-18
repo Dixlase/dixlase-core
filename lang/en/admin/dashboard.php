@@ -182,6 +182,8 @@ return [
     'action_recovery_code_used' => 'Recovery Code Used',
     'action_passkey_registered' => 'Passkey Registered',
     'action_passkey_revoked' => 'Passkey Revoked',
+    'action_recovery_codes_generated' => 'Recovery Codes Issued',
+    'action_recovery_codes_revoked' => 'Recovery Codes Revoked',
     'action_device_trusted' => 'Device Trusted',
     'action_device_blocked' => 'Device Blocked',
     'action_device_removed' => 'Device Removed',

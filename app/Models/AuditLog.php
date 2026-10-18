@@ -214,6 +214,10 @@ class AuditLog extends Model
 
     public const ACTION_PASSKEY_REVOKED = 'passkey_revoked';
 
+    public const ACTION_RECOVERY_CODES_GENERATED = 'recovery_codes_generated';
+
+    public const ACTION_RECOVERY_CODES_REVOKED = 'recovery_codes_revoked';
+
     // ========================================
     // Action constants - Device related
     // ========================================
@@ -742,6 +746,7 @@ class AuditLog extends Model
             self::ACTION_EMAIL_CHANGED, self::ACTION_TWO_FA_ENABLED,
             self::ACTION_TWO_FA_DISABLED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
+            self::ACTION_RECOVERY_CODES_GENERATED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_MEMBER_CREATED, self::ACTION_MEMBER_UPDATED,
             self::ACTION_MEMBER_DELETED, self::ACTION_ROLE_CHANGED,
         ];
@@ -822,7 +827,7 @@ class AuditLog extends Model
             self::ACTION_PASSWORD_CHANGED, self::ACTION_EMAIL_CHANGED,
             self::ACTION_TWO_FA_DISABLED, self::ACTION_IP_BLOCKED,
             self::ACTION_FORCED_LOGOUT, self::ACTION_DEVICE_BLOCKED,
-            self::ACTION_MEMBER_DELETED,
+            self::ACTION_MEMBER_DELETED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
             self::ACTION_BACKUP_FAILED, self::ACTION_BACKUP_RESTORED,
@@ -832,7 +837,8 @@ class AuditLog extends Model
         $noticeActions = [
             self::ACTION_PASSKEY_AUTH_SUCCESS, self::ACTION_TWO_FA_ENABLED,
             self::ACTION_RECOVERY_CODE_USED, self::ACTION_PASSKEY_REGISTERED,
-            self::ACTION_PASSKEY_REVOKED, self::ACTION_PLUGIN_INSTALLED,
+            self::ACTION_PASSKEY_REVOKED, self::ACTION_RECOVERY_CODES_GENERATED,
+            self::ACTION_PLUGIN_INSTALLED,
             self::ACTION_PLUGIN_ENABLED, self::ACTION_PLUGIN_DISABLED,
             self::ACTION_THEME_INSTALLED, self::ACTION_THEME_ENABLED,
             self::ACTION_STEP_UP_AUTH_REQUIRED, self::ACTION_SETTINGS_UPDATED,
@@ -915,6 +921,7 @@ class AuditLog extends Model
             self::ACTION_DEVICE_BLOCKED,        // Device blocked
             self::ACTION_DEVICE_REMOVED,        // Device deleted
             self::ACTION_PASSKEY_REVOKED,       // Passkey disabled
+            self::ACTION_RECOVERY_CODES_REVOKED, // Recovery codes revoked
             self::ACTION_PLUGIN_DISABLED,       // Plugin disabled
             self::ACTION_THEME_DISABLED,        // Theme disabled
             self::ACTION_ROLE_CHANGED,          // Permission changed
@@ -928,6 +935,7 @@ class AuditLog extends Model
             self::ACTION_TWO_FA_ENABLED,           // 2FA enabled
             self::ACTION_DEVICE_TRUSTED,        // Device trusted
             self::ACTION_PASSKEY_REGISTERED,    // Passkey registered
+            self::ACTION_RECOVERY_CODES_GENERATED, // Recovery codes issued
             self::ACTION_MEMBER_CREATED,        // Member created
             self::ACTION_MEMBER_UPDATED,        // Member update
             self::ACTION_PLUGIN_ENABLED,        // Plugin activation
@@ -1017,6 +1025,7 @@ class AuditLog extends Model
             self::ACTION_TWO_FA_CODE_SENT, self::ACTION_TWO_FA_CODE_VERIFIED,
             self::ACTION_TWO_FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
+            self::ACTION_RECOVERY_CODES_GENERATED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
             self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
@@ -1068,6 +1077,7 @@ class AuditLog extends Model
             self::ACTION_TWO_FA_CODE_SENT, self::ACTION_TWO_FA_CODE_VERIFIED,
             self::ACTION_TWO_FA_CODE_FAILED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
+            self::ACTION_RECOVERY_CODES_GENERATED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_DEVICE_TRUSTED, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_DEVICE_REMOVED, self::ACTION_IP_BLOCKED,
             self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
