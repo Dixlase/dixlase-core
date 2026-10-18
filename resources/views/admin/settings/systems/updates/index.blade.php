@@ -31,9 +31,10 @@ file is governed by the AGPL terms below.
     Per-row single-item update wiring.
 
     `pendingSingleUpdate` carries the in-flight target across the row
-    button → confirm modal → mini-form submit handoff. `askSingleUpdate()`
-    is invoked by each row's "更新" button with the target's kind / id /
-    display name; it populates `pendingSingleUpdate` and opens the
+    button → confirm modal → mini-form submit handoff.
+    `askSingleUpdateFrom($el)` is invoked by each row's "更新" button and
+    reads the target's kind / id / display name from its data-update-*
+    attributes; it populates `pendingSingleUpdate` and opens the
     single-update confirm modal. The modal's confirm button then submits
     the matching hidden mini-form (one per updatable plugin / theme,
     rendered just below the core form) via the shared `submitModalForm()`
@@ -41,21 +42,13 @@ file is governed by the AGPL terms below.
     remain unchanged — the two paths reuse the same `apply` controller
     endpoint, the only difference is the size of the `plugins[]` /
     `themes[]` array it receives.
+
+    The Alpine components are registered in
+    resources/src/admin/settings/systems/js/updates.js.
 --}}
 <div class="mx-auto max-w-5xl"
-     x-data="{
-         pendingSingleUpdate: { kind: null, id: null, name: null, formId: null },
-         backupFirst: true,
-         askSingleUpdate(kind, id, name) {
-             this.pendingSingleUpdate = {
-                 kind: kind,
-                 id: id,
-                 name: name,
-                 formId: `singleUpdateForm_${kind}_${id}`,
-             };
-             openModal('confirmSingleUpdateModal');
-         },
-     }">
+     x-data="systemUpdatesPage"
+     data-single-confirm-template="{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}">
     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ __('admin/settings/systems/updates.description') }}</p>
 
     {{-- Pre-update backup recommendation banner. Sits above the
@@ -173,14 +166,14 @@ file is governed by the AGPL terms below.
           method="POST"
           action="{{ route('admin.settings.systems.updates.apply-core') }}"
           class="hidden"
-          @submit="closeModal('confirmCoreUpdateModal'); $nextTick(() => openModal('updatesInProgressModal'))">
+          @submit="showProgressAfter('confirmCoreUpdateModal')">
         @csrf
         {{-- Driven by the outer x-data's backupFirst flag, which the
              "先にバックアップを取る" checkbox inside
              confirmCoreUpdateModal flips. Sent as a literal '1' / '0'
              so the controller's nullable|in:0,1 validator accepts it
              either way. --}}
-        <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
+        <input type="hidden" name="backup_first" :value="backupFirstValue()">
     </form>
 
     {{-- Standalone core rollback form. Same nested-<form> reasoning as
@@ -192,7 +185,7 @@ file is governed by the AGPL terms below.
           method="POST"
           action="{{ route('admin.settings.systems.updates.rollback-core') }}"
           class="hidden"
-          @submit="closeModal('confirmCoreRollbackModal'); $nextTick(() => openModal('updatesInProgressModal'))">
+          @submit="showProgressAfter('confirmCoreRollbackModal')">
         @csrf
     </form>
 
@@ -209,7 +202,7 @@ file is governed by the AGPL terms below.
               class="hidden">
             @csrf
             <input type="hidden" name="plugins[]" value="{{ $plugin['id'] }}">
-            <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
+            <input type="hidden" name="backup_first" :value="backupFirstValue()">
         </form>
     @endforeach
     @foreach($themes as $theme)
@@ -219,7 +212,7 @@ file is governed by the AGPL terms below.
               class="hidden">
             @csrf
             <input type="hidden" name="themes[]" value="{{ $theme['id'] }}">
-            <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
+            <input type="hidden" name="backup_first" :value="backupFirstValue()">
         </form>
     @endforeach
 
@@ -227,18 +220,12 @@ file is governed by the AGPL terms below.
     <form method="POST"
           action="{{ route('admin.settings.systems.updates.apply') }}"
           id="systemUpdatesApplyForm"
-          x-data="{
-              selectedCount: 0,
-              applying: false,
-              recompute() {
-                  this.selectedCount = this.$root.querySelectorAll('input[type=checkbox][data-update-target]:checked').length;
-              },
-          }"
-          x-init="recompute()"
+          x-data="systemUpdatesApplyForm"
+          data-confirm-template="{{ __('admin/settings/systems/updates.confirm.message', ['count' => '%count%']) }}"
           @change="recompute()"
-          @submit="applying = true; closeModal('confirmSystemUpdatesModal'); $nextTick(() => openModal('updatesInProgressModal'))">
+          @submit="submitApply()">
         @csrf
-        <input type="hidden" name="backup_first" :value="backupFirst ? '1' : '0'">
+        <input type="hidden" name="backup_first" :value="backupFirstValue()">
 
         {{-- Core section --}}
         <section class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -252,7 +239,7 @@ file is governed by the AGPL terms below.
             </h2>
 
             @if($core['available'])
-                <div class="text-sm space-y-3" x-data="{ notesOpen: false }">
+                <div class="text-sm space-y-3" x-data="systemUpdatesReleaseNotes">
                     {{-- Top row: version comparison on the left, "コアをアップデート"
                          button pushed to the right so the layout mirrors the
                          plugin / theme rows where the "更新" button sits in
@@ -310,9 +297,9 @@ file is governed by the AGPL terms below.
                          allow_unsafe_links false). --}}
                     @if(! empty($core['release_notes']))
                         <button type="button"
-                                @click="notesOpen = !notesOpen"
+                                @click="toggleNotes()"
                                 class="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
-                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="{ 'rotate-90': notesOpen }"></i>
+                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="chevronClass()"></i>
                             <span x-show="!notesOpen">{{ __('admin/settings/systems/updates.release_notes.show') }}</span>
                             <span x-show="notesOpen" x-cloak>{{ __('admin/settings/systems/updates.release_notes.hide') }}</span>
                         </button>
@@ -352,12 +339,14 @@ file is governed by the AGPL terms below.
                             <div class="mt-3 space-y-2">
                                 <p class="text-xs text-gray-600 dark:text-gray-400">{{ __('admin/settings/systems/updates.core.cli_alternative_intro') }}</p>
                                 <div class="flex items-center gap-2"
-                                     x-data="{ copied: false, copy() { navigator.clipboard.writeText(this.$refs.cmd.textContent.trim()).then(() => { this.copied = true; setTimeout(() => this.copied = false, 2000); }); } }">
+                                     x-data="systemUpdatesCliCopy"
+                                     data-copy-label="{{ __('common.copy') }}"
+                                     data-copied-label="{{ __('common.copied') }}">
                                     <code x-ref="cmd" class="flex-1 font-mono text-xs bg-gray-900 text-gray-100 px-3 py-2 rounded select-all">{{ __('admin/settings/systems/updates.core.cli_command') }}</code>
                                     <button type="button" @click="copy()"
                                             class="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                                        <i class="fas" :class="copied ? 'fa-check text-green-500' : 'fa-copy'"></i>
-                                        <span x-text="copied ? '{{ __('common.copied') }}' : '{{ __('common.copy') }}'"></span>
+                                        <i class="fas" :class="iconClass()"></i>
+                                        <span x-text="label()"></span>
                                     </button>
                                 </div>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/updates.core.cli_followups') }}</p>
@@ -426,7 +415,8 @@ file is governed by the AGPL terms below.
                             <th class="py-2 pr-2 w-8">
                                 <input type="checkbox"
                                        class="rounded border-gray-300 dark:border-gray-600"
-                                       @change="$root.querySelectorAll('input[type=checkbox][data-update-target=plugin]').forEach(cb => cb.checked = $event.target.checked); recompute()"
+                                       data-select-all="plugin"
+                                       @change="toggleAll($event)"
                                        aria-label="{{ __('admin/settings/systems/updates.select_all') }}">
                             </th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.name') }}</th>
@@ -441,7 +431,7 @@ file is governed by the AGPL terms below.
                          Wrapping the entire foreach in a single <tbody>
                          would force a shared expansion state across rows. --}}
                     @foreach($plugins as $plugin)
-                        <tbody x-data="{ notesOpen: false }">
+                        <tbody x-data="systemUpdatesReleaseNotes">
                             <tr class="border-b border-gray-100 dark:border-gray-700">
                                 <td class="py-2 pr-2 align-top">
                                     <input type="checkbox"
@@ -480,9 +470,9 @@ file is governed by the AGPL terms below.
                                              both flows read as the same
                                              component. --}}
                                         <button type="button"
-                                                @click="notesOpen = !notesOpen"
+                                                @click="toggleNotes()"
                                                 class="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
-                                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="{ 'rotate-90': notesOpen }"></i>
+                                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="chevronClass()"></i>
                                             <span x-show="!notesOpen">{{ __('admin/settings/systems/updates.release_notes.show') }}</span>
                                             <span x-show="notesOpen" x-cloak>{{ __('admin/settings/systems/updates.release_notes.hide') }}</span>
                                         </button>
@@ -512,7 +502,7 @@ file is governed by the AGPL terms below.
                                         data-update-id="{{ $plugin['id'] }}"
                                         data-update-name="{{ $plugin['name'] }}"
                                         data-update-kind="plugin"
-                                        xClick="askSingleUpdate($el.dataset.updateKind, parseInt($el.dataset.updateId, 10), $el.dataset.updateName)"
+                                        xClick="askSingleUpdateFrom($el)"
                                     />
                                 </td>
                             </tr>
@@ -542,7 +532,8 @@ file is governed by the AGPL terms below.
                             <th class="py-2 pr-2 w-8">
                                 <input type="checkbox"
                                        class="rounded border-gray-300 dark:border-gray-600"
-                                       @change="$root.querySelectorAll('input[type=checkbox][data-update-target=theme]').forEach(cb => cb.checked = $event.target.checked); recompute()"
+                                       data-select-all="theme"
+                                       @change="toggleAll($event)"
                                        aria-label="{{ __('admin/settings/systems/updates.select_all') }}">
                             </th>
                             <th class="py-2 pr-4">{{ __('admin/settings/systems/updates.table.name') }}</th>
@@ -556,7 +547,7 @@ file is governed by the AGPL terms below.
                          Alpine scope so the release-notes expander state
                          does not leak across rows. --}}
                     @foreach($themes as $theme)
-                        <tbody x-data="{ notesOpen: false }">
+                        <tbody x-data="systemUpdatesReleaseNotes">
                             <tr class="border-b border-gray-100 dark:border-gray-700">
                                 <td class="py-2 pr-2 align-top">
                                     <input type="checkbox"
@@ -586,9 +577,9 @@ file is governed by the AGPL terms below.
                                              rationale. Same rounded / bordered
                                              panel as the core section. --}}
                                         <button type="button"
-                                                @click="notesOpen = !notesOpen"
+                                                @click="toggleNotes()"
                                                 class="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
-                                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="{ 'rotate-90': notesOpen }"></i>
+                                            <i class="fas fa-chevron-right text-[9px] transition-transform" :class="chevronClass()"></i>
                                             <span x-show="!notesOpen">{{ __('admin/settings/systems/updates.release_notes.show') }}</span>
                                             <span x-show="notesOpen" x-cloak>{{ __('admin/settings/systems/updates.release_notes.hide') }}</span>
                                         </button>
@@ -618,7 +609,7 @@ file is governed by the AGPL terms below.
                                         data-update-id="{{ $theme['id'] }}"
                                         data-update-name="{{ $theme['name'] }}"
                                         data-update-kind="theme"
-                                        xClick="askSingleUpdate($el.dataset.updateKind, parseInt($el.dataset.updateId, 10), $el.dataset.updateName)"
+                                        xClick="askSingleUpdateFrom($el)"
                                     />
                                 </td>
                             </tr>
@@ -639,7 +630,7 @@ file is governed by the AGPL terms below.
                     :disabled="$viewOnly"
                     :title="$tooltipText"
                     x-bind:disabled="selectedCount === 0"
-                    @click="if (selectedCount > 0) openModal('confirmSystemUpdatesModal')"
+                    @click="openConfirm()"
                 />
             </div>
 
@@ -653,7 +644,7 @@ file is governed by the AGPL terms below.
                 :cancel_label="__('common.cancel')"
                 form="systemUpdatesApplyForm"
             >
-                <p class="text-sm text-gray-700 dark:text-gray-300 text-center" x-text="`{{ __('admin/settings/systems/updates.confirm.message', ['count' => '%count%']) }}`.replace('%count%', selectedCount)"></p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 text-center" x-text="confirmMessage()"></p>
                 {{-- "先にバックアップを取る" toggle, bound to the outer
                      x-data's backupFirst flag. The hidden backup_first
                      input inside #systemUpdatesApplyForm is reactively
@@ -707,7 +698,7 @@ file is governed by the AGPL terms below.
             {{-- Single-item confirm modal shared by every per-row "更新"
                  button. The target's display name is interpolated from
                  the outer scope's `pendingSingleUpdate.name`, populated
-                 by askSingleUpdate() on click. The confirm button cannot
+                 by askSingleUpdateFrom() on click. The confirm button cannot
                  use the modal's built-in form="..." mode because the
                  target form is selected dynamically, so the footer slot
                  is overridden and submits `pendingSingleUpdate.formId`
@@ -723,7 +714,7 @@ file is governed by the AGPL terms below.
                 :cancel_label="__('common.cancel')"
             >
                 <p class="text-sm text-gray-700 dark:text-gray-300 text-center"
-                   x-text="`{{ __('admin/settings/systems/updates.single_confirm.message', ['name' => '%name%']) }}`.replace('%name%', pendingSingleUpdate.name || '')"></p>
+                   x-text="singleConfirmMessage()"></p>
                 {{-- Same "先にバックアップを取る" toggle as the bulk
                      modal. The single-item mini-form's hidden
                      backup_first input is bound to the same outer
