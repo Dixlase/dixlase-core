@@ -57,5 +57,5 @@
 
 ### Signature Verification
 - Verify signatures via the `SignatureVerifierInterface` contract
-- Core stub: `CoreSignatureVerifier` (returns unsigned/pending when DixlaseDevKit is not installed)
+- Core stub: `CoreSignatureVerifier` (returns unsigned/pending when no signature verification module is installed)
 - Retrieve signature info via `PluginPermissionService::getSignatureInfo()`

@@ -16,11 +16,11 @@
 ### コメント翻訳データの管理
 - まだ日本語コメントが残るファイルに触るときは、ソースを英語化しつつ歴史的日本語を翻訳データとして残す **lazy migration ワークフロー** に従う:
   1. `docker exec -i dixlase-php php artisan dls:comment:extract --path=path/to/file.php` — 現在の日本語コメントを翻訳ファイルに **pending エントリ**（`'JP text' => ''`）として取り込む
-  2. `docker exec -i dixlase-php php artisan dls:comment:translate --file=plugins/DixlaseCoreDevKit/resources/comment-translations/path/to/file.php` — Claude API で翻訳。各 pending エントリは自動的に `'EN canonical' => 'JP archive'` 形式に **rotate** され、`_review_status` で `machine`（未レビュー）にマークされる
+  2. `docker exec -i dixlase-php php artisan dls:comment:translate --file=resources/comment-translations/ja/path/to/file.php` — Claude API で翻訳。各 pending エントリは自動的に `'EN canonical' => 'JP archive'` 形式に **rotate** され、`_review_status` で `machine`（未レビュー）にマークされる
   3. ソースの日本語コメントを **辞書の EN キー**（値ではなく）に完全一致でコピペ置換する。EN キーがソースに残る canonical で、JA リリースビルドが値の JP に逆置換する基準になる
   4. ソースファイルと翻訳ファイルを同じ commit でステージする
 - 格納パス:
-  - **コア**（`app/`, `config/` 等）: `plugins/DixlaseCoreDevKit/resources/comment-translations/`
+  - **コア**（`app/`, `config/` 等）: コアのリポジトリの `resources/comment-translations/`。その下にロケールごとのサブディレクトリを置く
   - **プラグイン**: `plugins/{PluginName}/resources/comment-translations/`
 - 翻訳ファイルはソースパスをミラーする（例: `app/Http/Controllers/FooController.php` → `resources/comment-translations/app/Http/Controllers/FooController.php`）
 - 辞書フォーマット（Phase 2 以降）: **英語キー**、JP アーカイブが値
@@ -35,13 +35,13 @@
   ];
   ```
 - 値が空文字列（`''`）= pending（この時点ではキーが JP）。`dls:comment:translate` が `'EN' => 'JP'` 形式に rotate する
-- プロジェクト固有用語は `plugins/DixlaseCoreDevKit/resources/comment-translations/_glossary.php`（JP→EN マッピング）に格納する。Claude API のプロンプトに自動注入されるため、ファイル間で訳語が揺れない。Dixlase 固有用語が新たに登場したり AI 訳がブレた場合はここに追加する
+- プロジェクト固有用語は `resources/comment-translations/<locale>/_glossary.php`（JP→EN マッピング）に格納する。Claude API のプロンプトに自動注入されるため、ファイル間で訳語が揺れない。Dixlase 固有用語が新たに登場したり AI 訳がブレた場合はここに追加する
 - 各翻訳ファイルは `_review_status` メタデータブロックを持ち、エントリごとのレビュー状態（`untranslated` / `machine` / `reviewed` / `human`）を **EN canonical キー**で追跡できる。`dls:comment:status --filter=machine` で AI 翻訳されたが未レビューのエントリだけ抽出可能。レビューのまとめ実施は任意のタイミングで OK
 - 翻訳ファイルが未作成の場合、extract コマンドが新規作成する。Phase 2 以前の旧 `'JP' => 'EN'` 形式は `dls:comment:rotate-keys` 一回限りコマンドで in-place マイグレーション可能（idempotent、pending エントリは触らない）
 
 ### ライセンスヘッダー
 - 新規に作成するPHPクラスやBladeビューには、必ずファイル先頭にライセンスヘッダーを挿入する
-- **コア**: AGPL v3 ライセンスヘッダーを使用する。参照: `plugins/DixlaseCoreDevKit/app/Console/Commands/LicenseHeaderCommand.php` または `plugins/DixlaseDevKit/license-templates/license-agpl.txt`
+- **コア**: AGPL v3 ライセンスヘッダーを使用する。コアの既存の PHP ファイルから写す。開発用の道具にもテンプレートと、それを当てるコマンドがある
 - **プラグイン・テーマ**: 各プラグイン・テーマが定めたライセンスヘッダーを使用する
 - PHPファイルは PHPDoc ブロック形式（`/** ... */`）、Blade ファイルは Blade コメント形式（`{{-- ... --}}`）
 
@@ -375,8 +375,8 @@ git submodule foreach --quiet \
   - Bladeファイル: ライセンスコメントブロック内に `@api`（`{{-- @api ... --}}`）
 - `PLUGIN-API.md` に登録しないと、そのコンポーネントを使用するプラグイン・テーマがAGPLライセンス例外の対象外となる可能性がある
 - **`PLUGIN-API.md` は生成物であり、直接編集しない**
-  - 編集対象: `plugins/DixlaseCoreDevKit/resources/ai/plugin-api/template-{en,ja}.blade.php`
-  - 翻訳キー: `plugins/DixlaseCoreDevKit/lang/{en,ja}/plugin-api.php`
+  - 編集対象: 生成器を持つリポジトリ側の Plugin API のテンプレート
+  - 翻訳キー: そのリポジトリの `lang/{en,ja}/plugin-api.php`
   - 生成コマンド: `php artisan dls:plugin-api:generate --lang=en` および `--lang=ja`
 - `PLUGIN-API.md` 更新後は `dls:claude:setup` を実行して CLAUDE.md を再生成する
 
