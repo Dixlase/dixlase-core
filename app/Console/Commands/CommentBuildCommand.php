@@ -41,7 +41,8 @@ use App\Services\CommentTranslation\TranslationFileService;
 use Illuminate\Console\Command;
 
 /**
- * Apply per-locale comment translations to PHP source.
+ * Apply per-locale comment translations to PHP source and to scaffold
+ * templates (`*.stub`).
  *
  * Two output modes:
  *   - copy mode (default): write the translated source to `--output=...`,
@@ -59,7 +60,10 @@ use Illuminate\Console\Command;
  *
  * Substitution is AST-aware (`CommentBuilderService::applyToContent`):
  * only PHP comment tokens are rewritten, so user-facing string literals
- * that happen to match a dictionary key are NOT touched.
+ * that happen to match a dictionary key are NOT touched. A `*.stub`
+ * file is read as PHP when it contains a `<?php` tag, otherwise only its
+ * Blade `{{-- ... --}}` blocks are rewritten; its dictionary is the stub
+ * path plus `.php` (`stubs/foo.stub` → `stubs/foo.stub.php`).
  *
  * Note: the underlying services currently live in a development plugin; the
  * plugin must be installed and enabled. The dictionary itself ships with
@@ -73,13 +77,13 @@ class CommentBuildCommand extends Command
         {--in-place : Rewrite source files directly instead of copying to --output}
         {--reverse : Apply locale → EN direction (revert a previous in-place conversion)}
         {--output= : Output destination when not --in-place (default: dist/{locale})}
-        {--path=app,resources/views : Comma-separated source paths to scan within each extension (relative to extension root)}
+        {--path=app,resources/views,stubs : Comma-separated source paths to scan within each extension (relative to extension root)}
         {--include-plugins : Also walk plugins/*/resources/comment-translations/{locale}/}
         {--include-themes : Also walk themes/*/resources/comment-translations/{locale}/}
         {--dry-run : Compute substitutions but do not write any file}';
 
     /** @var string */
-    protected $description = 'Apply translated comments to PHP source (copy or in-place)';
+    protected $description = 'Apply translated comments to PHP source and stubs (copy or in-place)';
 
     public function handle(
         CommentBuilderService $builder,
@@ -225,7 +229,7 @@ class CommentBuildCommand extends Command
     protected function renderResult(array $stats): int
     {
         if ($stats['files'] === 0) {
-            $this->components->warn('No PHP files found to process.');
+            $this->components->warn('No PHP files found to process (.php or .stub).');
 
             return self::SUCCESS;
         }
