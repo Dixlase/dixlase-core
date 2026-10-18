@@ -60,6 +60,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   `dls:sync-gitignore` と `dls:sync-git-exclude` はこのルールを削除するだけのコマンドに
   なりました。そのまま実行すると内容を確認でき、`--confirm` を付けると書き込みます。
   `--add-plugin` / `--add-theme` は何もしません (#626)
+- メンバーのサインイン手段を取り上げる操作が監査ログに残るようになりました。強制ログアウト、
+  ロックアウトの解除、パスキー 1 件または全件の失効、リカバリコードの失効、全員の強制
+  ログアウトは監査の行を書いておらず、自分のプロフィールでのパスキーの登録とリカバリコードの
+  発行も同じでした。どれも、実行者・対象のメンバー・影響したセッションや資格情報の数を示す行を
+  1 行書くようにしました。他のメンバーに対する操作は warning として記録します。コードそのものは
+  記録しません。新しいアクション: `recovery_codes_generated`、`recovery_codes_revoked` (#475)
 
 ### Plugin API — 非推奨
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` と

@@ -39,9 +39,12 @@ namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFa\TwoFaPasskeyServiceInterface;
 use App\Contracts\TwoFaInterface;
+use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\MembersTrustedDevice;
+use App\Services\Member\MemberSecurityAudit;
 use App\Services\TwoFa\Passkeys\PasskeyCeremony;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Passkeys\Contracts\PasskeyUser;
@@ -208,6 +211,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
                 'device_name' => $name,
             ]);
 
+            $this->audit(AuditLog::ACTION_PASSKEY_REGISTERED, $user, ['passkey_id' => $passkey->getKey()]);
+
             return $passkey;
         } catch (Throwable $e) {
             Log::error('[Passkey] Registration error', [
@@ -276,6 +281,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
         if ($deleted) {
             Log::info("[Passkey] Credential deleted: User ID {$user->getId()}, Credential ID: {$credentialId}");
+
+            $this->audit(AuditLog::ACTION_PASSKEY_REVOKED, $user, ['passkey_id' => $credentialId, 'count' => $deleted]);
         }
 
         return $deleted > 0;
@@ -291,6 +298,8 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
 
         if ($deleted) {
             Log::info("[Passkey] All credentials deleted: User ID {$user->getId()}, Count: {$count}");
+
+            $this->audit(AuditLog::ACTION_PASSKEY_REVOKED, $user, ['scope' => 'all', 'count' => $deleted]);
         }
 
         return $count;
@@ -522,5 +531,17 @@ class TwoFaPasskeyService implements TwoFaPasskeyServiceInterface
         }
 
         return $count;
+    }
+
+    /**
+     * Record a change to the member's passkeys.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    private function audit(string $action, TwoFaInterface $user, array $context): void
+    {
+        if ($user instanceof Model) {
+            MemberSecurityAudit::record($action, $user, $context);
+        }
     }
 }

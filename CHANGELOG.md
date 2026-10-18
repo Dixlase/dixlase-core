@@ -60,6 +60,13 @@ repository to be notified of changes.
   `git add -A` would have staged its files into core. `dls:sync-gitignore` and
   `dls:sync-git-exclude` now only remove such rules: run either one to preview, and add
   `--confirm` to write. The `--add-plugin` / `--add-theme` options do nothing (#626)
+- Taking a sign-in method away from a member is recorded in the audit log. Forcing a member
+  out, releasing a lockout, revoking one or all passkeys, revoking recovery codes and forcing
+  every member out wrote no audit row, and neither did registering a passkey or issuing
+  recovery codes on one's own profile. Each now writes one row naming who did it, the member
+  it was done to and how many sessions or credentials it affected; a row for an operation on
+  another member is recorded as a warning. The codes themselves are never recorded. New
+  actions: `recovery_codes_generated`, `recovery_codes_revoked` (#475)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
