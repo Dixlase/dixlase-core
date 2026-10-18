@@ -60,5 +60,5 @@ Duration: :minutes minutes
 Expires at: :expires_at
 
 This is an emergency recovery feature. It will be automatically disabled after expiration.
-To manually disable: php artisan security:captcha-bypass disable',
+To manually disable: php artisan dls:admin:captcha-bypass disable',
 ];
