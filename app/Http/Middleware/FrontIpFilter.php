@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\MemberRole;
 use App\Helpers\IpAccessControlHelper;
 use App\Models\SiteSetting;
 use App\Services\Auth\SignedInMemberResolver;
@@ -61,16 +62,6 @@ class FrontIpFilter
             return $next($request);
         }
 
-        // Bypass if an admin is logged in. The resolver is asked rather
-        // than the guard: a front request opens the `sessions` row, while
-        // the admin login lives in `members_sessions` under the same
-        // cookie, so the guard sees nobody here.
-        $member = app(SignedInMemberResolver::class)->resolve();
-
-        if ($member && $member->is_admin) {
-            return $next($request);
-        }
-
         // Check if site_settings table exists
         try {
             if (! Schema::hasTable('site_settings')) {
@@ -87,8 +78,11 @@ class FrontIpFilter
 
         $userIp = $request->ip();
 
-        // Allowed IPs check
-        if (! empty($enableAllowedFrontIps)) {
+        // Allowed IPs check. An administrator signed in to the admin panel
+        // is let past the allow list, so a site closed to the public stays
+        // reachable for the people who run it; the block list below applies
+        // to everyone.
+        if (! empty($enableAllowedFrontIps) && ! $this->isSignedInAdministrator()) {
             $allowedIps = IpAccessControlHelper::parseList($allowedFrontIps);
 
             if ($allowedIps !== [] && ! IpAccessControlHelper::ipMatchesAny($userIp, $allowedIps)) {
@@ -108,6 +102,22 @@ class FrontIpFilter
         }
 
         return $next($request);
+    }
+
+    /**
+     * Whether the browser is signed in to the admin panel as ADMIN or above.
+     *
+     * The resolver is asked rather than the guard: a front request opens the
+     * `sessions` row, while the admin login lives in `members_sessions` under
+     * the same cookie, so the guard sees nobody here.
+     */
+    private function isSignedInAdministrator(): bool
+    {
+        $member = app(SignedInMemberResolver::class)->resolve();
+
+        $role = $member?->getAttribute('role');
+
+        return $role instanceof MemberRole && $role->canAccess(MemberRole::ADMIN);
     }
 
     /**

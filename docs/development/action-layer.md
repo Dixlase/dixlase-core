@@ -129,6 +129,27 @@ $page->withoutAudit(fn () => $page->update([
 ]));
 ```
 
+### What a row carries
+
+`AbstractAction::audit()` passes the actor as a model (`toAuditMorph()`) and
+the target as `ActionResult::$model`, so the row gets `actor_type` /
+`actor_id` and `target_type` / `target_id`. `actor_id` and the target pair are
+inside the hash chain; `actor_name` and `target_label` are display snapshots
+outside it.
+
+A target that is not an Eloquent model can still be named: return an
+`ActionResult` with `targetType` and `targetId` and no model, or pass
+`target_type` / `target_id` to `Audit::log()` when you override `audit()`.
+The id columns are unsigned integers, so a non-numeric id is dropped (the
+label is kept) rather than failing the insert.
+
+**Rows written before 0.1.15 have no actor or target ids.** Up to that
+release `AuditLog::log()` ignored the column-named keys `audit()` passed, so
+every action-produced row has NULL `actor_type`, `actor_id`, `target_type`
+and `target_id`, and only `actor_name` / `target_label` name who and what.
+Those rows are not backfilled: `actor_name` cannot be resolved back to an
+account reliably, and rewriting the ids would break the rows' hashes (#546).
+
 ## Plugin API surface
 
 The following Action-layer symbols are `@api` (Plugin API):

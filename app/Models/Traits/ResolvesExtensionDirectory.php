@@ -64,7 +64,7 @@ trait ResolvesExtensionDirectory
      * an uppercase acronym or an inner capital — e.g. the slug `dixlase-seo`
      * becomes `DixlaseSeo` and `dixlase-devkit` becomes `DixlaseDevkit`,
      * which on a case-sensitive filesystem do not match the actual
-     * `DixlaseSEO` / `DixlaseDevKit` directories. The result is either a
+     * `DixlaseSEO` / `AcmeExample` directories. The result is either a
      * missing directory (no extension found at all) or, on case-insensitive
      * filesystems, a wrong-case path that PHP iterators
      * (`RecursiveDirectoryIterator::__construct`) refuse to open.

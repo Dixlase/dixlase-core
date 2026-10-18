@@ -111,7 +111,7 @@ class CspComplianceScanner
     {
         // Prefer the model resolver: it honours the stored directory name,
         // which Studly/kebab conversion cannot reproduce for names such as
-        // DixlaseDevKit (slug dixlase-devkit) or DixlaseSEO
+        // a developer tooling plugin or DixlaseSEO
         $resolved = match ($baseDir) {
             'plugins' => \App\Models\Plugin::resolveDirectoryFromSlug($slug),
             'themes' => \App\Models\Theme::resolveDirectoryFromSlug($slug),

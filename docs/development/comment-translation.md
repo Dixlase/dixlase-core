@@ -122,7 +122,7 @@ Per-language glossaries are independent — `ja/_glossary.php` and a future `zh/
 
 ## Commands
 
-The pipeline has four Artisan commands. Two ship in Core (user-facing); two live in the DixlaseCoreDevKit plugin (developer-only).
+The pipeline has four Artisan commands. Two ship in Core (user-facing); two are developer-only and ship in a development plugin that is not part of the public distribution.
 
 ### `dls:comment:build` (Core)
 
@@ -164,7 +164,7 @@ php artisan dls:comment:status --filter=untranslated --limit=20
 php artisan dls:comment:status --filter=unreviewed   # alias: machine + unmarked-translated
 ```
 
-### `dls:comment:extract` (DevKit)
+### `dls:comment:extract` (developer-only)
 
 Scan PHP source for Japanese comments and add them to the dictionary as pending entries (`'JP' => ''`). Used when authoring a new locale by populating it from existing JP source — not needed in normal day-to-day work now that core source is canonical English.
 
@@ -172,7 +172,7 @@ Scan PHP source for Japanese comments and add them to the dictionary as pending 
 php artisan dls:comment:extract --path=app/Traits
 ```
 
-### `dls:comment:translate` (DevKit)
+### `dls:comment:translate` (developer-only)
 
 Send pending entries to Claude API and rotate the dictionary to `'EN' => 'JP'` form. Requires `ANTHROPIC_API_KEY` in `.env`.
 
@@ -285,7 +285,7 @@ Plugins and themes can ship their own per-locale dictionaries. The pipeline pick
 To add `zh` (Chinese) for Core:
 
 1. Create `resources/comment-translations/zh/_glossary.php` with EN keys and ZH renderings.
-2. (Optional) Use the DevKit pipeline to seed dictionaries from the canonical EN source, asking the AI for ZH translations:
+2. (Optional) Use the developer-only pipeline to seed dictionaries from the canonical EN source, asking the AI for ZH translations:
 
    ```bash
    # The translate command currently expects JP-keyed pending entries; for
@@ -331,7 +331,7 @@ Either way, the canonical commit history stays in English and the locale flip is
 
 ## Architecture Notes
 
-- **Service classes** live in `plugins/DixlaseCoreDevKit/app/Services/CommentTranslation/` (DevKit must be installed for the pipeline to function):
+- **Service classes** live in the development plugin that provides the pipeline, which has to be installed for it to function:
   - `TranslationFileService` — read/write/merge dictionaries; locale state via `setLocale()` / `getLocale()`.
   - `CommentBuilderService` — apply substitutions via `applyToContent()` (token-AST aware) or `applyExtension()` (per-extension walker).
   - `ClaudeTranslationService` — Claude API client for `dls:comment:translate`.

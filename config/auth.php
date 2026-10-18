@@ -144,7 +144,7 @@ return [
     |     ]);
     |
     | Core previously carried a `user` guard, a `users` provider pointing at
-    | Plugins\DixlaseUsers\App\Models\DixlaseUsersUser, and a `users` broker
+    | a member-accounts plugin's own user model, and a `users` broker
     | keyed to that plugin's table. Nothing in Core resolved any of them, and
     | the model reference broke static analysis whenever the plugin was not
     | checked out. Registering from the plugin keeps the coupling one-way.

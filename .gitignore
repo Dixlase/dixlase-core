@@ -60,10 +60,10 @@ AGENTS.md
 PLUGIN-API.md
 
 # Localized JA reference files (generated; primary repo content is English).
-# Templates inside .claude/** are kept as sources for the generators in
-# DixlaseCoreDevKit (governance, readme, plugin-api). plugins/ and themes/
-# are individual repos and not tracked by Core, so they carry no exception
-# here.
+# Templates inside .claude/** are kept as sources for the generators that
+# produce the governance, readme and plugin-api documents. plugins/ and
+# themes/ are individual repos and not tracked by Core, so they carry no
+# exception here.
 #
 # Exceptions tracked in both languages:
 #  - Legal documents (Copyright Policy, Contributor License Agreements) —

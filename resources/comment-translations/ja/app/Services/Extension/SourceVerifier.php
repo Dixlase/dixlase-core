@@ -7,7 +7,7 @@ return [
     'Verifies the authenticity of extension sources using Ed25519 signatures.' => 'Ed25519 署名を使って拡張機能ソースの真正性を検証します。',
     'Official sources are signed with the configured authority key (managed' => '公式ソースは設定された authority key (authority / 鍵管理プラグインが管理)',
     'by an authority/key-management plugin); this class provides the' => 'で署名されています。このクラスはコアスタブとして検証ロジックを',
-    'verification logic as a core stub. When DixlaseDevKit is installed,' => '提供します。DixlaseDevKit がインストールされている場合は、',
+    'verification logic as a core stub. When a verification module is installed,' => '提供します。検証モジュールがインストールされている場合は、',
     'the actual Ed25519 verification is performed; otherwise, the signature' => '実際の Ed25519 検証が実行されます。インストールされていない場合は、',
     'status is returned as pending.' => '署名ステータスは pending として返されます。',
 
@@ -22,7 +22,7 @@ return [
         'Verifies the authenticity of extension sources using Ed25519 signatures.' => 'human',
         'Official sources are signed with the configured authority key (managed' => 'human',
         'by an authority/key-management plugin); this class provides the' => 'human',
-        'verification logic as a core stub. When DixlaseDevKit is installed,' => 'human',
+        'verification logic as a core stub. When a verification module is installed,' => 'human',
         'the actual Ed25519 verification is performed; otherwise, the signature' => 'human',
         'status is returned as pending.' => 'human',
         'Looks up the public key by the configured key ID. Currently uses' => 'human',

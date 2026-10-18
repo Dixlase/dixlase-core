@@ -83,7 +83,7 @@ class ExtensionDirectoriesTest extends TestCase
     {
         return [
             ['DixlaseOnePage.stale.20260705-033828'],
-            ['DixlaseDeploy.bak'],
+            ['AcmeExample.bak'],
             ['DixlaseMenus.old'],
             ['.DixlaseHidden'],
             ['_DixlaseSetAside'],

@@ -60,7 +60,7 @@ namespace App\Services\Plugin\Scanning;
  *
  * CoreMigrator already neutralises the call at runtime, so a detection
  * here is a hygiene finding rather than an outage: it marks an extension
- * that still carries the pattern the DevKit generator stubs used to emit.
+ * that still carries the pattern the generator stubs used to emit.
  */
 class MigrationDetectionPattern extends DetectionPattern
 {

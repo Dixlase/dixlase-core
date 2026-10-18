@@ -280,7 +280,7 @@ class PluginLint extends Command
             'permission_undeclared_minor', 'permission_undeclared_major' => __('console/commands/plugin_lint.auto_update_permissions'),
             'permission_unused' => __('console/commands/plugin_lint.align_permissions_with_state'),
             'signature_unsigned' => __('console/commands/plugin_lint.set_security_preset_development'),
-            'signature_pending_verification' => __('console/commands/plugin_lint.sign_with_dixlase_signer'),
+            'signature_pending_verification' => __('console/commands/plugin_lint.sign_to_reach_full_score'),
             'csp_inline_js_required' => __('console/commands/plugin_lint.add_csp_nonce_or_separate_js'),
             'csp_inline_css_required' => __('console/commands/plugin_lint.move_inline_styles_to_css'),
             'missing_license' => 'Add a `license` field in SPDX form (e.g. "GPL-3.0-or-later", "MIT").',

@@ -441,9 +441,10 @@ class AuditLog extends Model
         // Generate request_id if not present
         $requestId = $data['request_id'] ?? $request->header('X-Request-ID') ?? (string) Str::uuid();
 
-        // Process actor
-        $actorType = null;
-        $actorId = null;
+        // Process actor. A model in `actor` wins; the column-named keys are the
+        // fallback for callers whose actor or target is not an Eloquent model.
+        $actorType = $data['actor_type'] ?? null;
+        $actorId = self::morphId($data['actor_id'] ?? null);
         $actorName = $data['actor_name'] ?? null;
 
         if (isset($data['actor']) && $data['actor'] instanceof Model) {
@@ -453,8 +454,8 @@ class AuditLog extends Model
         }
 
         // Process target
-        $targetType = null;
-        $targetId = null;
+        $targetType = $data['target_type'] ?? null;
+        $targetId = self::morphId($data['target_id'] ?? null);
         $targetLabel = $data['target_label'] ?? null;
 
         if (isset($data['target']) && $data['target'] instanceof Model) {
@@ -487,6 +488,26 @@ class AuditLog extends Model
             'context' => $data['context'] ?? null,
             'schema_version' => 1,
         ]);
+    }
+
+    /**
+     * Normalise an `actor_id` / `target_id` passed without a model.
+     *
+     * Both columns are unsigned integers. A non-numeric id would make the
+     * insert fail and lose the whole row, so it is dropped instead; the
+     * label still names the subject.
+     */
+    private static function morphId(mixed $id): ?int
+    {
+        if (is_int($id)) {
+            return $id;
+        }
+
+        if (is_string($id) && ctype_digit($id)) {
+            return (int) $id;
+        }
+
+        return null;
     }
 
     /**

@@ -27,14 +27,14 @@ use App\Helpers\ConfigHelper;
 use App\Helpers\LocaleHelper;
 
 /**
- * @api Registered by DixlaseMultilingual against `core:site-tagline`.
+ * @api Registered by a translation provider against `core:site-tagline`.
  *
  * Primary-locale value source for the core `site_tagline` singleton
  * translatable type.
  *
  * `site_tagline` is a single site-wide setting (see
  * {@see ConfigHelper::getSiteTagline()}) that appears in the document
- * `<title>` on the site root. DixlaseMultilingual registers this
+ * `<title>` on the site root. A translation provider registers this
  * provider against `core:site-tagline` (singleton cardinality) so that
  * per-locale translations can be authored in the central translation
  * editor while the primary-locale value remains sourced from
@@ -46,7 +46,7 @@ use App\Helpers\LocaleHelper;
  * Mirrors the plugin-side pattern used by
  * `Plugins\DixlaseInquiry\App\Multilingual\InquirySettingsProvider`,
  * but lives in core because `site_tagline` is a core setting and the
- * registration comes from DixlaseMultilingual's
+ * registration comes from the translation provider's
  * `registerCoreTranslatableTypes()` rather than a plugin manifest.
  */
 class SiteTaglineProvider implements TranslatableContentProvider

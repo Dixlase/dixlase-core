@@ -788,19 +788,19 @@ public function verifyRecoveryCode(Request $request)
 ### ユーザープラグインでの実装例
 
 ```php
-namespace Plugins\DixlaseUsers\App\Http\Controllers\Auth;
+namespace Plugins\AcmeAccounts\App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Traits\TwoFa\TwoFaAuthenticationTrait;
 
-class DixlaseUsersTwoFactorController extends Controller
+class AcmeAccountsTwoFactorController extends Controller
 {
     use TwoFaAuthenticationTrait;
     
     protected function getSettingModelClass(): string
     {
         // ユーザープラグインの設定モデルを使用
-        return \Plugins\DixlaseUsers\App\Models\DixlaseUsersUserSetting::class;
+        return \Plugins\AcmeAccounts\App\Models\AcmeAccountsUserSetting::class;
     }
     
     protected function getTwoFaService()
@@ -836,30 +836,30 @@ class DixlaseUsersTwoFactorController extends Controller
 **ルート定義（プラグイン内）:**
 
 ```php
-// plugins/DixlaseUsers/routes/web.php
+// plugins/AcmeAccounts/routes/web.php
 
 Route::middleware('guest:dixlase_users_user')->prefix('user')->name('users-plugin.')->group(function () {
     Route::prefix('two-fa')->name('two-fa.')->group(function () {
         // メール認証
-        Route::get('/email', [DixlaseUsersTwoFactorController::class, 'showEmailChallenge'])
+        Route::get('/email', [AcmeAccountsTwoFactorController::class, 'showEmailChallenge'])
             ->name('email.show');
-        Route::post('/email/verify', [DixlaseUsersTwoFactorController::class, 'verifyEmail'])
+        Route::post('/email/verify', [AcmeAccountsTwoFactorController::class, 'verifyEmail'])
             ->name('email.verify');
-        Route::post('/email/resend', [DixlaseUsersTwoFactorController::class, 'resendEmail'])
+        Route::post('/email/resend', [AcmeAccountsTwoFactorController::class, 'resendEmail'])
             ->name('email.resend');
         
         // Passkey認証
-        Route::get('/passkey', [DixlaseUsersTwoFactorController::class, 'showPasskeyChallenge'])
+        Route::get('/passkey', [AcmeAccountsTwoFactorController::class, 'showPasskeyChallenge'])
             ->name('passkey.show');
-        Route::post('/passkey/challenge', [DixlaseUsersTwoFactorController::class, 'getPasskeyChallenge'])
+        Route::post('/passkey/challenge', [AcmeAccountsTwoFactorController::class, 'getPasskeyChallenge'])
             ->name('passkey.challenge');
-        Route::post('/passkey/verify', [DixlaseUsersTwoFactorController::class, 'verifyPasskey'])
+        Route::post('/passkey/verify', [AcmeAccountsTwoFactorController::class, 'verifyPasskey'])
             ->name('passkey.verify');
         
         // 回復コード認証
-        Route::get('/recovery', [DixlaseUsersTwoFactorController::class, 'showRecoveryCodeChallenge'])
+        Route::get('/recovery', [AcmeAccountsTwoFactorController::class, 'showRecoveryCodeChallenge'])
             ->name('recovery.show');
-        Route::post('/recovery/verify', [DixlaseUsersTwoFactorController::class, 'verifyRecoveryCode'])
+        Route::post('/recovery/verify', [AcmeAccountsTwoFactorController::class, 'verifyRecoveryCode'])
             ->name('recovery.verify');
     });
 });
