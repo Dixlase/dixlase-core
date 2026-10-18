@@ -45,8 +45,11 @@ use Tests\TestCase;
  *
  * Commands were renamed into the `dls:` namespace, but several translated
  * hints still told the user to run the old name (`plugin:delete`,
- * `theme:delete`, ...), which fails with "command not found". This test
- * reads the language files only; it writes nothing.
+ * `theme:delete`, ...), which fails with "command not found". A hint can
+ * also name a `dls:` command that core does not have at all: either one
+ * that was removed (`dls:theme:disable`) or one that only exists when the
+ * developer tools are installed. This test reads the language files only;
+ * it writes nothing.
  */
 class CommandHintPrefixTest extends TestCase
 {
@@ -83,6 +86,43 @@ class CommandHintPrefixTest extends TestCase
         }
 
         $this->assertSame([], $failures, "These hints name a command without its dls: prefix:\n  ".implode("\n  ", $failures));
+    }
+
+    public function test_no_hint_names_a_command_core_does_not_have(): void
+    {
+        // Only core's own commands count. A hint in core's language files
+        // must work on a plain install, so it may not name a command that
+        // an extension registers -- the audit commands say "with the
+        // developer tools installed" in their own output instead.
+        $core = [];
+        foreach (Artisan::all() as $name => $command) {
+            if (str_starts_with($command::class, 'App\\')) {
+                $core[$name] = true;
+            }
+        }
+        $this->assertArrayHasKey('dls:theme:switch', $core, 'Expected core commands to be discovered');
+
+        $failures = [];
+
+        foreach (['en', 'ja'] as $locale) {
+            foreach (File::allFiles(lang_path($locale)) as $file) {
+                if ($file->getExtension() !== 'php') {
+                    continue;
+                }
+
+                preg_match_all(self::HINT_PATTERN, $file->getContents(), $matches);
+
+                foreach (array_unique($matches[1]) as $name) {
+                    if (! str_starts_with($name, 'dls:') || isset($core[$name])) {
+                        continue;
+                    }
+
+                    $failures[] = "{$locale}/{$file->getRelativePathname()}: `{$name}` is not a core command";
+                }
+            }
+        }
+
+        $this->assertSame([], $failures, "These hints name a command core does not register:\n  ".implode("\n  ", $failures));
     }
 
     public function test_plugin_uninstall_prints_no_debug_lines(): void
