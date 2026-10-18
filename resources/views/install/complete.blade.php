@@ -119,19 +119,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          does not centre a block-level child -- each button sat flush against
          the left edge of its own caption, so the longer the URL, the further
          left the button went. --}}
-    <div class="flex flex-col items-center justify-center mt-6 space-y-3">
-        <form method="POST" action="{{ route('install.finalize') }}">
+    <div class="flex flex-col items-center justify-center mt-6 space-y-3" x-data="installFinalizeButtons">
+        <form method="POST" action="{{ route('install.finalize') }}" @submit="submit($event)">
             @csrf
             <input type="hidden" name="redirect_to" value="{{ $adminLoginUrl }}">
-            <button type="submit" class="block mx-auto w-auto min-w-[14rem] bg-blue-600 text-white py-2 px-4 rounded-lg text-center hover:bg-blue-700 transition">
+            <button type="submit" :disabled="submitting" class="block mx-auto w-auto min-w-[14rem] bg-blue-600 text-white py-2 px-4 rounded-lg text-center hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed">
                 {{ __('install/complete.go_to_admin') }}
             </button>
         </form>
 
-        <form method="POST" action="{{ route('install.finalize') }}">
+        <form method="POST" action="{{ route('install.finalize') }}" @submit="submit($event)">
             @csrf
             <input type="hidden" name="redirect_to" value="{{ $appUrl }}">
-            <button type="submit" class="block mx-auto w-auto min-w-[14rem] border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            <button type="submit" :disabled="submitting" class="block mx-auto w-auto min-w-[14rem] border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-60 disabled:cursor-not-allowed">
                 {{ __('install/complete.go_to_site') }}
             </button>
         </form>
