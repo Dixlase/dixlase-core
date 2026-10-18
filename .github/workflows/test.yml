@@ -69,7 +69,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -205,7 +205,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -268,10 +268,13 @@ jobs:
           echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
 
       # EXTRA_SUITES_TIER* is written to $GITHUB_ENV by the fetch step, from
-      # the rows of the INTEGRATION_EXTENSIONS variable that carry that tier
+      # the rows of the INTEGRATION_EXTENSIONS secret that carry that tier
       # (dixlase-core#619). The suite names stay out of this file, and the
       # fetch step masks them, so they do not reach the public run log
-      # either. Empty when the variable is absent, which is a fork's case.
+      # either. The source has to be a secret for that to hold: a step's
+      # `env:` map is logged before its script runs, so masking from inside
+      # the script cannot cover it (dixlase-core#655).
+      # Empty when the secret is absent, which is a fork's case.
       - name: Run Plugin Tests (Tier 1 - Well Tested)
         run: |
           php artisan test --testsuite="DixlaseInquiry,DixlaseSEO${EXTRA_SUITES_TIER1:+,$EXTRA_SUITES_TIER1}"
@@ -404,7 +407,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -489,7 +492,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -557,7 +560,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
