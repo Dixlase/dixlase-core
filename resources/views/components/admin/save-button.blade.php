@@ -49,6 +49,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'onclick' => null,                       // Custom onclick function (optional)
     'back_url' => null,                      // Back button URL (optional)
     'back_label' => __('common.back'),       // Back button text
+    'guard' => true,                         // Ask before leaving the form with unsaved changes
 ])
 
 {{-- When the CheckMenuAccess middleware has shared menuEditable=false
@@ -65,8 +66,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @php
     $viewOnly = ! ($menuEditable ?? true);
     $tooltipText = $viewOnly ? __('common.view_only_action_disabled') : '';
+    // The form this button saves is watched for unsaved changes
+    // (resources/src/admin/js/unsaved-changes-guard.js). A page that came
+    // back with validation errors holds input that was never saved.
+    $guardForm = $guard && $form && ! $viewOnly ? $form : null;
+    $startsDirty = $guardForm !== null && isset($errors) && $errors->any();
 @endphp
-<div class="flex justify-between items-center">
+<div class="flex justify-between items-center"
+    @if ($guardForm) data-unsaved-changes-form="{{ $guardForm }}" @endif
+    @if ($startsDirty) data-unsaved-changes-dirty="1" @endif
+>
 
     @if($back_url)
         <!-- {{ __('common.back') }} -->
