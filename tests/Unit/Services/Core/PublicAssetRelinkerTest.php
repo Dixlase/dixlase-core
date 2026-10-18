@@ -48,6 +48,8 @@ class PublicAssetRelinkerTest extends TestCase
         mkdir($this->workDir.'/themes/DixlaseOnePage/resources/assets', 0755, true);
         mkdir($this->workDir.'/public/assets/themes', 0755, true);
         file_put_contents($this->workDir.'/themes/DixlaseOnePage/resources/assets/style.css', 'theme css');
+        // A real directory with no manifest.json is moved aside under storage/
+        $this->app->useStoragePath($this->workDir.'/storage');
     }
 
     protected function tearDown(): void
