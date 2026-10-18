@@ -265,9 +265,9 @@ jobs:
               mkdir -p storage/framework/{views,cache/data,sessions} storage/logs bootstrap/cache
 
               # 3-b. Remove leftovers of the old DixlaseAuthority plugin.
-              # It was renamed to DixlasePublicKeys and dropped from core's
-              # submodules; a copy left under the old name would declare the
-              # same classes twice. authority is not deployed by this workflow.
+              # It was renamed and dropped from core's submodules; a copy
+              # left under the old name would declare the same classes
+              # twice. authority is not deployed by this workflow.
               case "$SITE" in
                 brand|docs|demo)
                   if [ -e plugins/DixlaseAuthority ]; then
