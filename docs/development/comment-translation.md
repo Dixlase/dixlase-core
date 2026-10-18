@@ -54,6 +54,21 @@ Conventions:
 - **Files named `_glossary.php` (underscore-prefixed) are metadata, not per-source dictionaries.** They are skipped by the file walker. Reserve underscore-prefixed names for future metadata kinds (e.g. `_changelog.php`).
 - **Locale directory names follow ISO 639-1 codes** (`ja`, `zh`, `ko`) so they can serve as the `--locale=` argument unchanged.
 
+### Which source files are read
+
+`dls:comment:build` walks `app`, `resources/views` and `stubs` in each extension by default (`--path=` overrides the list) and reads two kinds of file:
+
+| Source | Dictionary | Comments rewritten |
+|---|---|---|
+| `*.php` | same path (`app/Foo.php` → `ja/app/Foo.php`) | PHP comment tokens |
+| `*.blade.php` | same path | Blade `{{-- ... --}}` blocks |
+| `*.stub` containing `<?php` | path plus `.php` (`stubs/foo.stub` → `ja/stubs/foo.stub.php`) | PHP comment tokens |
+| any other `*.stub` | path plus `.php` | Blade `{{-- ... --}}` blocks |
+
+A stub is a scaffold template that an extension renders into new code. Whether it is PHP is decided by its content, not by its name: a stub with a `<?php` tag is tokenised as PHP, and every other stub (a Blade view, JSON, Markdown, ...) has only its `{{-- ... --}}` blocks rewritten, so a Markdown `#` heading or a URL's `//` is never mistaken for a comment. A stub with neither kind of comment is copied unchanged. Template placeholders such as `{{ class }}` are left as they are unless a dictionary entry contains them. A PHP fragment stub without a `<?php` tag gets no PHP comments translated.
+
+`dls:comment:status` counts a stub dictionary like any other dictionary file.
+
 ---
 
 ## Dictionary Format
