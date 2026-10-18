@@ -182,6 +182,8 @@ return [
     'action_recovery_code_used' => '回復コード使用',
     'action_passkey_registered' => 'パスキー登録',
     'action_passkey_revoked' => 'パスキー削除',
+    'action_recovery_codes_generated' => '回復コード発行',
+    'action_recovery_codes_revoked' => '回復コード失効',
     'action_device_trusted' => 'デバイス信頼',
     'action_device_blocked' => 'デバイスブロック',
     'action_device_removed' => 'デバイス削除',
