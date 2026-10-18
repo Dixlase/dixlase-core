@@ -40,6 +40,12 @@ return [
     'confirmation_required' => ':name has health issues the admin panel asks you to confirm (:level), so it was not :action.',
     'confirmation_hint' => 'Review them with `php artisan dls::kind:audit :slug`, then re-run with --force to proceed anyway.',
     'forced' => 'WARNING: proceeding with :name despite its health issues (:level) because --force was passed.',
+    'requires_unmet' => ':name needs :requirement :declared, but this site runs :current, so it was not :action. --force does not override this.',
+    'requires_malformed' => 'Notice: :name declares requires.:key as ":declared", which is not a valid version constraint, so it was not checked.',
+    'requirement' => [
+        'dixlase' => 'Dixlase',
+        'php' => 'PHP',
+    ],
     'level' => [
         'warning' => 'minor issues',
         'ack' => 'significant issues',
@@ -48,5 +54,6 @@ return [
         'installed' => 'installed',
         'enabled' => 'enabled',
         'switched' => 'made the active theme',
+        'updated' => 'updated',
     ],
 ];

@@ -38,7 +38,9 @@ namespace App\Services\Extension;
 use App\DTO\Extension\CompatibilityResult;
 use App\Enums\ExtensionCompatibilityStatus;
 use App\Extension\ExtensionApi;
+use App\Support\CoreVersion;
 use Composer\Semver\Semver;
+use Composer\Semver\VersionParser;
 use Throwable;
 
 /**
@@ -49,6 +51,10 @@ use Throwable;
  * ServiceProvider::register() phase (before the container is fully
  * wired). Manifest-shape agnostic — same logic for plugin.json and
  * theme.json because both share the requires.dixlase_api path.
+ *
+ * checkRequirements() covers the other two keys of the same block,
+ * requires.dixlase (the core release) and requires.php, which install
+ * and update enforce (dixlase-core#473).
  */
 final class ExtensionCompatibilityChecker
 {
@@ -95,6 +101,72 @@ final class ExtensionCompatibilityChecker
             coreVersion: $coreVersion,
             message: 'Compatible',
         );
+    }
+
+    /**
+     * Check requires.dixlase against the running core and requires.php
+     * against the running PHP.
+     *
+     * Returns only the requirements that are not met, or that cannot be
+     * read: a missing key is not checked. A core or PHP version that is not
+     * a valid semver string (a dry-run build, a distribution suffix) is
+     * skipped rather than reported, so the extension is not blamed for a
+     * version it cannot control.
+     *
+     * @param  array<string, mixed>  $manifest  Decoded plugin.json or theme.json contents.
+     * @param  string|null  $coreVersion  Defaults to CoreVersion::current().
+     * @param  string|null  $phpVersion  Defaults to the running PHP as major.minor.release.
+     * @return list<array{requirement: 'dixlase'|'php', declared: string, current: string, status: ExtensionCompatibilityStatus}>
+     */
+    public function checkRequirements(array $manifest, ?string $coreVersion = null, ?string $phpVersion = null): array
+    {
+        $requires = is_array($manifest['requires'] ?? null) ? $manifest['requires'] : [];
+        $current = [
+            'dixlase' => $coreVersion ?? CoreVersion::current(),
+            'php' => $phpVersion ?? sprintf('%d.%d.%d', PHP_MAJOR_VERSION, PHP_MINOR_VERSION, PHP_RELEASE_VERSION),
+        ];
+
+        $problems = [];
+        foreach ($current as $requirement => $version) {
+            $declared = $requires[$requirement] ?? null;
+            if (! is_string($declared) || trim($declared) === '') {
+                continue;
+            }
+
+            $status = $this->evaluate($version, $declared);
+            if ($status === null || $status === ExtensionCompatibilityStatus::Compatible) {
+                continue;
+            }
+
+            $problems[] = [
+                'requirement' => $requirement,
+                'declared' => $declared,
+                'current' => $version,
+                'status' => $status,
+            ];
+        }
+
+        return $problems;
+    }
+
+    /**
+     * Null when the running version itself cannot be parsed.
+     */
+    private function evaluate(string $version, string $constraint): ?ExtensionCompatibilityStatus
+    {
+        try {
+            (new VersionParser())->normalize($version);
+        } catch (Throwable) {
+            return null;
+        }
+
+        try {
+            return Semver::satisfies($version, $constraint)
+                ? ExtensionCompatibilityStatus::Compatible
+                : ExtensionCompatibilityStatus::Incompatible;
+        } catch (Throwable) {
+            return ExtensionCompatibilityStatus::MalformedConstraint;
+        }
     }
 
     /**

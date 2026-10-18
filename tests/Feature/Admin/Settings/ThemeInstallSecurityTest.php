@@ -156,7 +156,12 @@ class ThemeInstallSecurityTest extends TestCase
         $response = $this->actingAs($this->admin, 'member')
             ->post(route('admin.settings.themes.install'), ['directory' => 'TestTheme']);
 
-        $response->assertSessionHas('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
+        // The command ran (the scan let it through); its output is shown as the reason
+        $response->assertSessionHas('error');
+        $this->assertStringStartsWith(
+            __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason'),
+            (string) $response->getSession()->get('error'),
+        );
     }
 
     public function test_install_is_not_scanned_in_development_mode(): void

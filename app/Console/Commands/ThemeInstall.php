@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\ExtensionSource;
 use App\Models\Theme;
@@ -52,6 +53,7 @@ use Illuminate\Support\Str;
 class ThemeInstall extends Command
 {
     use BuildsExtensionAssets;
+    use EnforcesExtensionRequirements;
 
     /**
      * The name and signature of the console command.
@@ -198,6 +200,15 @@ class ThemeInstall extends Command
                 $web = $themeData['url'] ?? $themeData['homepage'] ?? $themeData['web'] ?? null;
                 $version = $themeData['version'] ?? '1.0.0';
             }
+        }
+
+        // The manifest's requires.dixlase / requires.php (dixlase-core#473).
+        // Not overridable: the theme says it will not work on this site.
+        $requirementRefusal = $this->unmetRequirementMessage(is_array($themeData ?? null) ? $themeData : [], $themeName, 'installed');
+        if ($requirementRefusal !== null) {
+            $this->error($requirementRefusal);
+
+            return Command::FAILURE;
         }
 
         // 2. Fallback to composer.json

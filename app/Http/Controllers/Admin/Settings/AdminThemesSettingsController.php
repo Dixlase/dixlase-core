@@ -650,18 +650,22 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 '--no-interaction' => true,
                 '--source' => $linkage['source_id'] ?? null,
             ], fn ($v) => $v !== null));
-            $sidecar->delete(base_path("themes/{$themeDir}"));
 
+            // A refused install leaves the files where they were, so keep
+            // the sidecar that links them to their source and say why.
             if ($exitCode !== 0) {
-                $output = Artisan::output();
+                $output = trim((string) Artisan::output());
                 Log::error('Theme installation command failed', [
                     'directory' => $themeDir,
                     'exit_code' => $exitCode,
                     'output' => $output,
                 ]);
 
-                return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
+                return redirect()->back()->with('error', $output !== ''
+                    ? __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason').$output
+                    : __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
             }
+            $sidecar->delete(base_path("themes/{$themeDir}"));
 
             // Get installed themes and perform audit and notification
             $theme = Theme::where('directory', $themeDir)->first();
