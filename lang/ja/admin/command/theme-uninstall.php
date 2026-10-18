@@ -44,5 +44,5 @@ return [
     'cancelled' => 'アンインストールはキャンセルされました。',
     'uninstalled' => 'テーマをアンインストールしました: :themeName',
     'files_preserved' => 'テーマのファイルとディレクトリは保持されました。',
-    'delete_hint' => 'ファイルを削除するには `php artisan theme:delete <directory>` コマンドを実行してください。',
+    'delete_hint' => 'ファイルを削除するには `php artisan dls:theme:delete <directory>` コマンドを実行してください。',
 ];

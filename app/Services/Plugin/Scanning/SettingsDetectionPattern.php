@@ -41,6 +41,11 @@ namespace App\Services\Plugin\Scanning;
  * Detection patterns for settings reading
  *
  * Detects settings.read_core and settings.write_own
+ *
+ * settings.write_own means writing the plugin's settings into core's
+ * settings store (SiteSetting / SecuritySetting). A plugin's own settings
+ * table is database.own_tables, so writes through its own model are not
+ * matched here.
  */
 class SettingsDetectionPattern extends DetectionPattern
 {

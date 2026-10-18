@@ -44,5 +44,5 @@ return [
     'cancelled' => 'Uninstallation cancelled.',
     'uninstalled' => 'Uninstalled theme: :themeName',
     'files_preserved' => 'Theme files and directory have been preserved.',
-    'delete_hint' => 'To delete the files, run `php artisan theme:delete <directory>` command.',
+    'delete_hint' => 'To delete the files, run `php artisan dls:theme:delete <directory>` command.',
 ];
