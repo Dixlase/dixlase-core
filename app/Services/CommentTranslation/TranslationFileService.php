@@ -117,7 +117,25 @@ class TranslationFileService
     {
         $relativePath = $this->normalizeSourcePath($sourceFile);
 
-        return $this->storagePath.'/'.$relativePath;
+        return $this->storagePath.'/'.self::dictionaryPathFor($relativePath);
+    }
+
+    /**
+     * Map a source path to the path of its dictionary, relative to a
+     * dictionary root.
+     *
+     * A PHP source keeps its own name (`app/Foo.php` → `app/Foo.php`). A
+     * scaffold template keeps its name and gains `.php`
+     * (`stubs/routes.web.stub` → `stubs/routes.web.stub.php`), because
+     * every dictionary is a PHP file that returns an array.
+     */
+    public static function dictionaryPathFor(string $relativeSourcePath): string
+    {
+        if (str_ends_with($relativeSourcePath, '.php')) {
+            return $relativeSourcePath;
+        }
+
+        return $relativeSourcePath.'.php';
     }
 
     /**
@@ -378,7 +396,7 @@ class TranslationFileService
     }
 
     /**
-     * ソースパスを正規化（プロジェクトルートからの相対パスに変換）
+     * Normalize a source path (convert it to a path relative to the project root).
      */
     protected function normalizeSourcePath(string $sourceFile): string
     {

@@ -147,7 +147,7 @@ class Theme extends Model
      */
     public function hasUpdateAvailable(): bool
     {
-        $installed = $this->versionOnDisk() ?? $this->version;
+        $installed = $this->installedVersion();
 
         return $this->available_version !== null
             && version_compare($this->available_version, $installed, '>');

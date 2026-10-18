@@ -38,7 +38,7 @@ Risk scoring evaluates the declared permissions in `plugin.json` / `theme.json`.
 | `storage.own_directory`          | 0     | Own storage directory         |
 | `storage.temp_files`             | 0     | Temporary files               |
 | `settings.read_core`             | 0     | Read core settings            |
-| `settings.write_own`             | 0     | Write own settings            |
+| `settings.write_own`             | 0     | Write settings to core's store|
 | `members.read`                   | 0     | Read member data              |
 | `mail.send`                      | 0     | Send individual emails        |
 | `content.read_other_plugins`     | 0     | Read other plugin content     |
@@ -84,7 +84,7 @@ Themes use a different set of permissions with different scores.
 | `storage.own_directory`     | 0     | Own storage directory         |
 | `storage.temp_files`        | 0     | Temporary files               |
 | `settings.read_core`        | 0     | Read core settings            |
-| `settings.write_own`        | 0     | Write own settings            |
+| `settings.write_own`        | 0     | Write settings to core's store|
 | `assets.custom_css`         | 0     | Custom CSS                    |
 | `assets.custom_js`          | 0     | Custom JS                     |
 | `system.register_shortcodes`| 0     | Register shortcodes           |

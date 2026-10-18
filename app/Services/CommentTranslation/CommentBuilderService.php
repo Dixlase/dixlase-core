@@ -42,7 +42,8 @@ use Illuminate\Support\Facades\File;
 /**
  * @api
  *
- * Apply per-locale comment translations to PHP source files.
+ * Apply per-locale comment translations to PHP source files and to
+ * scaffold templates (`*.stub`).
  *
  * Two output modes:
  *   - copy mode (legacy `dist/en` build): read source, write to a separate
@@ -61,12 +62,29 @@ use Illuminate\Support\Facades\File;
  * text are NOT touched, so user-facing strings that happen to match a
  * dictionary key remain intact.
  *
+ * Which comments are rewritten depends on the file:
+ *   - `*.php`: PHP comment tokens.
+ *   - `*.blade.php`: Blade `{{-- ... --}}` blocks.
+ *   - `*.stub` that contains a `<?php` tag: PHP comment tokens, as for
+ *     `*.php`.
+ *   - any other `*.stub` (Blade, JSON, Markdown, ... templates): Blade
+ *     `{{-- ... --}}` blocks. A template without such blocks is copied
+ *     unchanged. Template placeholders (`{{ name }}`) are never touched
+ *     unless a dictionary entry itself contains them.
+ *
+ * A stub's dictionary is its path plus `.php`
+ * (`stubs/foo.stub` → `<dict root>/stubs/foo.stub.php`); see
+ * TranslationFileService::dictionaryPathFor().
+ *
  * Dictionary contract:
  *   - Translated entry: `'EN canonical' => 'JP archive'`
  *   - Pending entry:    `'JP text' => ''`  (skipped during apply)
  */
 class CommentBuilderService
 {
+    /** Source file extensions the directory walkers apply dictionaries to. */
+    public const SOURCE_EXTENSIONS = ['php', 'stub'];
+
     public function __construct(
         protected TranslationFileService $translationFileService,
     ) {}
@@ -89,9 +107,7 @@ class CommentBuilderService
         bool $dryRun = false,
     ): array {
         $original = File::get($sourceFile);
-        [$content, $count] = str_ends_with($sourceFile, '.blade.php')
-            ? $this->applyToBladeContent($original, $translations, $reverse)
-            : $this->applyToContent($original, $translations, $reverse);
+        [$content, $count] = $this->applyToSource($sourceFile, $original, $translations, $reverse);
 
         $stats = [
             'translated' => $count,
@@ -116,6 +132,51 @@ class CommentBuilderService
         File::put($target, $content);
 
         return $stats;
+    }
+
+    /**
+     * Apply dictionary substitutions to the content of a source file,
+     * choosing the comment syntax from the file's name (and, for a stub,
+     * from whether it contains a `<?php` tag).
+     *
+     * @param  array<string, string>  $translations
+     * @return array{0: string, 1: int} [new content, substitution count]
+     */
+    public function applyToSource(string $sourceFile, string $content, array $translations, bool $reverse = false): array
+    {
+        return $this->usesBladeComments($sourceFile, $content)
+            ? $this->applyToBladeContent($content, $translations, $reverse)
+            : $this->applyToContent($content, $translations, $reverse);
+    }
+
+    /**
+     * Whether the build should treat the file as a source file.
+     */
+    public static function isSourceFile(string $path): bool
+    {
+        return in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), self::SOURCE_EXTENSIONS, true);
+    }
+
+    /**
+     * Whether a file's comments are Blade `{{-- ... --}}` blocks rather
+     * than PHP comment tokens.
+     *
+     * A stub without a `<?php` tag is a template for something other
+     * than a PHP class (a Blade view, JSON, Markdown, ...). Reading it
+     * as PHP would turn text such as a Markdown `#` heading or a URL's
+     * `//` into a "comment", so only Blade comment blocks are rewritten.
+     */
+    protected function usesBladeComments(string $sourceFile, string $content): bool
+    {
+        if (str_ends_with($sourceFile, '.blade.php')) {
+            return true;
+        }
+
+        if (str_ends_with($sourceFile, '.stub')) {
+            return stripos($content, '<?php') === false;
+        }
+
+        return false;
     }
 
     /**
@@ -291,9 +352,10 @@ class CommentBuilderService
     /**
      * Apply translations across a single extension (core, plugin, or theme).
      *
-     * Source files are walked under `$sourceRoot/$scanRelativePath` and
-     * matched against translation files under `$dictRoot/<same relative
-     * path>`. Dict file paths are computed locally (not via the
+     * Source files (`*.php`, `*.stub`) are walked under
+     * `$sourceRoot/$scanRelativePath` and matched against translation
+     * files under `$dictRoot/<same relative path>` (a stub's dictionary
+     * carries an extra `.php`). Dict file paths are computed locally (not via the
      * TranslationFileService instance) so the same builder can serve
      * core, plugins, and themes from one invocation.
      *
@@ -322,12 +384,12 @@ class CommentBuilderService
         $dictRootClean = rtrim($dictRoot, '/');
 
         $files = collect(File::allFiles($scanRoot))
-            ->filter(fn ($file) => $file->getExtension() === 'php');
+            ->filter(fn ($file) => self::isSourceFile($file->getPathname()));
 
         foreach ($files as $file) {
             $sourceFile = $file->getPathname();
             $relativeFromExtension = ltrim(substr($sourceFile, strlen($sourceRootClean)), '/');
-            $dictFile = $dictRootClean.'/'.$relativeFromExtension;
+            $dictFile = $dictRootClean.'/'.TranslationFileService::dictionaryPathFor($relativeFromExtension);
 
             $outputFile = null;
             if ($outputRoot !== null) {
@@ -397,7 +459,7 @@ class CommentBuilderService
         }
 
         $files = collect(File::allFiles($sourcePath))
-            ->filter(fn ($file) => $file->getExtension() === 'php');
+            ->filter(fn ($file) => self::isSourceFile($file->getPathname()));
 
         foreach ($files as $file) {
             $sourceFile = $file->getPathname();
