@@ -221,6 +221,7 @@ class AuditLogIntegrityCommand extends Command
                 [__('admin/command/audit.integrity.total'), $result['total']],
                 [__('admin/command/audit.integrity.valid'), $result['valid']],
                 [__('admin/command/audit.integrity.invalid'), $result['invalid']],
+                [__('admin/command/audit.integrity.redacted'), $result['redacted'] ?? 0],
             ]
         );
 

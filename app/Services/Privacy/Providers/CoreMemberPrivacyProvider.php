@@ -42,6 +42,7 @@ use App\DTO\PluginPrivacy\UserDataDeletionDTO;
 use App\DTO\PluginPrivacy\UserDataExportDTO;
 use App\Enums\PluginPrivacy\DeletionMode;
 use App\Models\Member;
+use App\Services\Privacy\AuditRedactionScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -59,8 +60,9 @@ use Illuminate\Support\Str;
  *                  in foreign-key-safe order, then delete the members
  *                  row. Audit-trail tables (audit_logs, security_events)
  *                  are NEVER deleted; their PII fields are anonymized in
- *                  place to preserve the hash chain and aggregate
- *                  reporting.
+ *                  place to keep the rows' place in the hash chain and
+ *                  aggregate reporting. A redacted audit row is marked
+ *                  so verification can tell it from tampering.
  *   - SoftDelete : Set members.deleted_at; leave related child rows in
  *                  place. Audit-trail PII is anonymized.
  *   - Anonymize  : Keep every row; replace identifying fields with
@@ -229,10 +231,16 @@ class CoreMemberPrivacyProvider implements PrivacyDataProviderInterface
     }
 
     /**
-     * Always anonymize PII in audit_logs (regardless of mode) so the
-     * append-only audit chain is preserved while the subject becomes
-     * unidentifiable. When $siteId is supplied, only rows on that site
-     * are touched.
+     * Always redact PII in audit_logs (regardless of mode). Rows are kept,
+     * so the chain keeps its length and every row's place in it.
+     *
+     * `ip_address` is cleared rather than replaced: it is one of the fields
+     * the per-row hash covers, so the row's own hash stops verifying either
+     * way, and a keyed digest of an address would still link the rows and
+     * could be reversed by whoever holds the key. Each row is stamped with
+     * `redacted_at` and the id of the running erasure, so verification can
+     * report it as redacted instead of tampered (#478). When $siteId is
+     * supplied, only rows on that site are touched.
      */
     private function anonymizeAuditLogs(int $userId, ?int $siteId): int
     {
@@ -245,16 +253,20 @@ class CoreMemberPrivacyProvider implements PrivacyDataProviderInterface
         }
 
         $rows = $query->get(['id', 'ip_address', 'user_agent', 'actor_name', 'target_label']);
+        $redactionId = AuditRedactionScope::currentId();
+        $redactedAt = Carbon::now();
         $count = 0;
 
         foreach ($rows as $row) {
             DB::table('audit_logs')
                 ->where('id', $row->id)
                 ->update([
-                    'ip_address' => $this->hashOrNull((string) ($row->ip_address ?? '')),
+                    'ip_address' => null,
                     'user_agent' => $this->hashOrNull((string) ($row->user_agent ?? '')),
                     'actor_name' => $this->hashOrNull((string) ($row->actor_name ?? '')),
                     'target_label' => $this->hashOrNull((string) ($row->target_label ?? '')),
+                    'redacted_at' => $redactedAt,
+                    'redaction_id' => $redactionId,
                 ]);
             $count++;
         }
