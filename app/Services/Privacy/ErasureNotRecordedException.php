@@ -3,8 +3,10 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2026 exc-D inc.
+ * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
+ *
+ * @api Stable API available for plugins/themes
  *
  * Dixlase is dual-licensed. You may use this file under either:
  *
@@ -33,17 +35,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-return [
-    'description' => 'Disable a theme',
-    'theme_name_prompt' => 'The name of the theme to disable',
-    'no_enabled_themes' => 'No enabled themes found.',
-    'theme_not_found' => 'Theme \':themeName\' not found.',
-    'not_installed' => 'Theme \':themeName\' is not installed.',
-    'already_disabled' => 'Theme \':themeName\' is already disabled.',
-    'disabled' => 'Disabled theme: :themeName',
-    'list_headers' => [
-        'Name',
-        'Slug',
-    ],
-    'disable_help' => 'To disable a theme, run: php artisan dls:theme:disable <theme-name>',
-];
+declare(strict_types=1);
+
+namespace App\Services\Privacy;
+
+use RuntimeException;
+
+/**
+ * An erasure run whose own audit row could not be written.
+ *
+ * UserPrivacyEraser throws it inside the run's transaction, so the
+ * providers' writes are rolled back with it: an erasure is either recorded
+ * or not done at all (#478).
+ */
+class ErasureNotRecordedException extends RuntimeException {}

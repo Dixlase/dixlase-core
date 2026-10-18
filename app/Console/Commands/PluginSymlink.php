@@ -223,10 +223,15 @@ class PluginSymlink extends Command
         // Replaces whatever occupies the slot, including a real directory
         // left by a core update whose payload carried the dereferenced
         // assets. See PublicAssetRelinker.
+        $notices = [];
         PublicAssetRelinker::ensureLink(
             base_path("plugins/{$pluginDirName}/resources/assets"),
             public_path("assets/plugins/{$pluginDirName}"),
+            $notices,
         );
+        foreach ($notices as $notice) {
+            $this->warn($notice);
+        }
     }
 
     /**

@@ -61,6 +61,7 @@ return [
         'total' => 'Total',
         'valid' => 'Valid',
         'invalid' => 'Invalid',
+        'redacted' => 'Redacted (recorded erasure)',
         'total_logs' => 'Total Logs',
         'with_hash' => 'With Hash Chain',
         'without_hash' => 'Without Hash Chain',

@@ -130,6 +130,7 @@ class AuditLogIntegrityService
             'total' => $logs->count(),
             'valid' => 0,
             'invalid' => 0,
+            'redacted' => 0,
             'errors' => [],
             'first_id' => $logs->first()?->id,
             'last_id' => $logs->last()?->id,
@@ -137,13 +138,25 @@ class AuditLogIntegrityService
 
         $previousHash = null;
         $previousSequence = 0;
+        $erasures = [];
 
         foreach ($logs as $log) {
             $isValid = true;
             $errors = [];
+            $isRedacted = false;
 
-            // Hash verification
-            if (! $log->verifyHash()) {
+            // Hash verification. A row redacted by a recorded erasure no
+            // longer matches its own hash, so only its place in the chain
+            // is checked below: the next row's previous_hash and the daily
+            // seal still pin its record_hash.
+            if ($log->isRedacted()) {
+                if ($this->isRecordedRedaction($log, $erasures)) {
+                    $isRedacted = true;
+                } else {
+                    $isValid = false;
+                    $errors[] = 'redaction_unrecorded';
+                }
+            } elseif (! $log->verifyHash()) {
                 $isValid = false;
                 $errors[] = 'hash_mismatch';
             }
@@ -164,7 +177,9 @@ class AuditLogIntegrityService
                 $errors[] = 'invalid_genesis';
             }
 
-            if ($isValid) {
+            if ($isValid && $isRedacted) {
+                $result['redacted']++;
+            } elseif ($isValid) {
                 $result['valid']++;
             } else {
                 $result['invalid']++;
@@ -176,7 +191,11 @@ class AuditLogIntegrityService
 
             // Save verification result
             if ($updateStatus) {
-                $log->markAsVerified($isValid);
+                if ($isValid && $isRedacted) {
+                    $log->markAsRedacted();
+                } else {
+                    $log->markAsVerified($isValid);
+                }
             }
 
             $previousHash = $log->record_hash;
@@ -186,6 +205,38 @@ class AuditLogIntegrityService
         $result['is_valid'] = $result['invalid'] === 0;
 
         return $result;
+    }
+
+    /**
+     * Whether a redacted row is explained by a recorded erasure.
+     *
+     * The erasure's own audit row must exist, carry the row's redaction id
+     * as its request_id, name the row's actor as its subject and come after
+     * the row. A row marked redacted without one is treated as tampered.
+     *
+     * @param  array<string, AuditLog|null>  $erasures  Lookups already made, keyed by redaction id
+     */
+    protected function isRecordedRedaction(AuditLog $log, array &$erasures): bool
+    {
+        $redactionId = $log->redaction_id;
+
+        if ($redactionId === null || $redactionId === '') {
+            return false;
+        }
+
+        if (! array_key_exists($redactionId, $erasures)) {
+            $erasures[$redactionId] = AuditLog::where('action', AuditLog::ACTION_PRIVACY_DATA_ERASED)
+                ->where('request_id', $redactionId)
+                ->orderBy('id')
+                ->first();
+        }
+
+        $erasure = $erasures[$redactionId];
+
+        return $erasure !== null
+            && $erasure->id > $log->id
+            && $erasure->target_type === $log->actor_type
+            && (int) $erasure->target_id === (int) $log->actor_id;
     }
 
     /**

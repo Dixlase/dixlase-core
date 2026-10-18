@@ -131,15 +131,12 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             }
         }
 
-        $plugins = Plugin::query()
-            ->whereNotNull('available_version')
-            ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason', 'release_url', 'release_notes'])
+        $plugins = Plugin::pendingUpdates()
             ->map(fn (Plugin $p) => [
                 'id' => $p->id,
                 'slug' => $p->slug,
                 'name' => $p->name,
-                'currentVersion' => $p->version,
+                'currentVersion' => $p->installedVersion(),
                 'availableVersion' => $p->available_version,
                 'directory' => $p->directory,
                 'preselected' => $target['type'] === 'plugin' && $target['slug'] === $p->slug,
@@ -152,15 +149,12 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             ->values()
             ->all();
 
-        $themes = Theme::query()
-            ->whereNotNull('available_version')
-            ->orderBy('slug')
-            ->get(['id', 'slug', 'name', 'version', 'available_version', 'directory', 'update_failed_at', 'update_failure_reason', 'release_url', 'release_notes'])
+        $themes = Theme::pendingUpdates()
             ->map(fn (Theme $t) => [
                 'id' => $t->id,
                 'slug' => $t->slug,
                 'name' => $t->name,
-                'currentVersion' => $t->version,
+                'currentVersion' => $t->installedVersion(),
                 'availableVersion' => $t->available_version,
                 'directory' => $t->directory,
                 'preselected' => $target['type'] === 'theme' && $target['slug'] === $t->slug,

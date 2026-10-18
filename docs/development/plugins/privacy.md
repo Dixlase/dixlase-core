@@ -122,7 +122,7 @@ The contract defines three modes via `DeletionMode`:
 
 | Mode | Strategy |
 |---|---|
-| `HardDelete` | Physically remove rows. Audit-trail rows (e.g. `audit_logs`, `security_events`) should be **anonymized in place** rather than deleted, so the append-only chain stays intact. |
+| `HardDelete` | Physically remove rows. Audit-trail rows (e.g. `audit_logs`, `security_events`) should be **anonymized in place** rather than deleted, so the trail keeps its rows. Core's own `audit_logs` rows are redacted and recorded by core; see `docs/operations/maintenance/audit-log-integrity.md`. |
 | `SoftDelete` | Mark the parent row's `deleted_at`. Keep child rows so a future undelete can re-associate them. Tables without soft-delete support can fall back to `HardDelete` and report the limitation in `errors[]`. |
 | `Anonymize` | Keep every row. Replace identifying fields (email, IP, user agent, name, phone) with HMAC-SHA256 of `app.key`-derived salt. The result is irreversible: even with the same `app.key`, you cannot recover the original input. |
 

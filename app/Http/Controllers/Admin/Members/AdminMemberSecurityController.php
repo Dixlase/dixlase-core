@@ -37,8 +37,10 @@ namespace App\Http\Controllers\Admin\Members;
 
 use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\AuditLog;
 use App\Models\Member;
 use App\Services\Member\MemberHierarchyGuard;
+use App\Services\Member\MemberSecurityAudit;
 use App\Traits\ManagesAccountTrait;
 use App\Traits\ManagesTwoFaTrait;
 use Illuminate\Http\Request;
@@ -174,7 +176,14 @@ class AdminMemberSecurityController extends AdminLoggedInController
             ->delete();
 
         // Also invalidate remember-me cookies, which survive session deletion.
+        $members = (clone $targets)->count();
         (clone $targets)->update(['remember_token' => null]);
+
+        MemberSecurityAudit::record(AuditLog::ACTION_FORCED_LOGOUT, null, [
+            'scope' => 'all',
+            'sessions' => $deletedCount,
+            'members' => $members,
+        ]);
 
         return redirect()->route('admin.members.index')
             ->with('success', __('admin/members/force_logout_all_success', ['count' => $deletedCount]));

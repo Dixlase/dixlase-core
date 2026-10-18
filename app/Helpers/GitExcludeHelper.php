@@ -39,127 +39,86 @@ namespace App\Helpers;
 
 use App\Console\Commands\SyncGitExclude;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 /**
  * .git/info/exclude file management helper
  *
- * This helper is a wrapper for the SyncGitExclude command.
- * Used for calls from the admin panel or for simple use within programs.
+ * Older versions of core wrote a `!plugins/<Name>` or `!themes/<Name>`
+ * rule into .git/info/exclude for every installed extension, which made core's git
+ * track extension directories that it ignores on purpose. Core no longer
+ * writes them. The add methods are kept as no-ops so that existing callers
+ * keep working; the remove and sync methods clean up rules that are still
+ * there.
  *
  * @see \App\Console\Commands\SyncGitExclude
  */
 class GitExcludeHelper
 {
     /**
-     * Add exclusion rule for plugin
+     * Formerly added a re-include rule for a plugin; now does nothing
      *
-     * @param  string  $pluginName  Plugin name (e.g., DixlaseMenus)
-     * @return bool Whether it succeeded
+     * @deprecated Core no longer re-includes extension directories in git.
+     *             Kept so that existing callers keep working; it will be
+     *             removed in a later release.
+     *
+     * @param  string  $pluginName  Plugin directory name
+     * @return bool Always true
      */
     public static function addPluginExclusion(string $pluginName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-git-exclude', [
-                '--add-plugin' => $pluginName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to add plugin exclusion: '.$e->getMessage());
-
-            return false;
-        }
+        return true;
     }
 
     /**
-     * Remove exclusion rule for plugin
+     * Remove the re-include rule for a plugin, if there is one
      *
-     * @param  string  $pluginName  Plugin name
+     * @param  string  $pluginName  Plugin directory name
      * @return bool Whether it succeeded
      */
     public static function removePluginExclusion(string $pluginName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-git-exclude', [
-                '--remove-plugin' => $pluginName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to remove plugin exclusion: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run(['--remove-plugin' => $pluginName]);
     }
 
     /**
-     * Add exclusion rule for theme
+     * Formerly added a re-include rule for a theme; now does nothing
      *
-     * @param  string  $themeName  Theme name
-     * @return bool Whether it succeeded
+     * @deprecated Core no longer re-includes extension directories in git.
+     *             Kept so that existing callers keep working; it will be
+     *             removed in a later release.
+     *
+     * @param  string  $themeName  Theme directory name
+     * @return bool Always true
      */
     public static function addThemeExclusion(string $themeName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-git-exclude', [
-                '--add-theme' => $themeName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to add theme exclusion: '.$e->getMessage());
-
-            return false;
-        }
+        return true;
     }
 
     /**
-     * Remove exclusion rule for theme
+     * Remove the re-include rule for a theme, if there is one
      *
-     * @param  string  $themeName  Theme name
+     * @param  string  $themeName  Theme directory name
      * @return bool Whether it succeeded
      */
     public static function removeThemeExclusion(string $themeName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-git-exclude', [
-                '--remove-theme' => $themeName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to remove theme exclusion: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run(['--remove-theme' => $themeName]);
     }
 
     /**
-     * Sync exclusion rules for all plugins and themes
+     * Remove every plugin and theme re-include rule
      *
      * @return bool Whether it succeeded
      */
     public static function syncAll(): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-git-exclude', [
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to sync git exclude: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run([]);
     }
 
     /**
-     * Check if exclusion rule for plugin exists
+     * Check if plugin exclusion rule exists
      *
      * @param  string  $pluginName  Plugin name
      */
@@ -169,12 +128,29 @@ class GitExcludeHelper
     }
 
     /**
-     * Check if exclusion rule for theme exists
+     * Check if theme exclusion rule exists
      *
      * @param  string  $themeName  Theme name
      */
     public static function hasThemeExclusion(string $themeName): bool
     {
         return SyncGitExclude::hasThemeExclusion($themeName);
+    }
+
+    /**
+     * Run the cleanup command and write its result
+     *
+     * @param  array<string, string>  $options  Command options
+     * @return bool Whether it succeeded
+     */
+    private static function run(array $options): bool
+    {
+        try {
+            return Artisan::call('dls:sync-git-exclude', $options + ['--confirm' => true]) === 0;
+        } catch (\Exception $e) {
+            Log::error('Failed to clean up .git/info/exclude: '.$e->getMessage());
+
+            return false;
+        }
     }
 }

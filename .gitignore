@@ -114,6 +114,9 @@ custom/*
 # Themes: DixlaseOnePage is a vendor-managed directory expanded into
 #   themes/DixlaseOnePage/ via composer/installers, so Core does not track
 #   it (migrated Submodule -> Composer dependency in b451bc75).
+# Do not add !plugins/<Name>/ or !themes/<Name>/ lines here: each one
+#   re-includes an extension in Core's git. Older versions wrote them on
+#   install; `php artisan dls:sync-gitignore --confirm` removes them.
 plugins/*
 themes/*
 

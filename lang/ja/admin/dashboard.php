@@ -182,6 +182,8 @@ return [
     'action_recovery_code_used' => '回復コード使用',
     'action_passkey_registered' => 'パスキー登録',
     'action_passkey_revoked' => 'パスキー削除',
+    'action_recovery_codes_generated' => '回復コード発行',
+    'action_recovery_codes_revoked' => '回復コード失効',
     'action_device_trusted' => 'デバイス信頼',
     'action_device_blocked' => 'デバイスブロック',
     'action_device_removed' => 'デバイス削除',
@@ -220,6 +222,7 @@ return [
     'action_api_key_created' => 'API キー作成',
     'action_api_key_revoked' => 'API キー失効',
     'action_api_key_regenerated' => 'API キー再生成',
+    'action_privacy_data_erased' => '個人データの消去',
 
     // ステータスラベル
     'status_ok' => 'OK',

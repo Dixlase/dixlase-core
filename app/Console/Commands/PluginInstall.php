@@ -40,8 +40,6 @@ use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
@@ -291,10 +289,7 @@ class PluginInstall extends Command
         // plugins: the plugin's controllers would not resolve (routes
         // 500 with "Class ... does not exist") and the class_exists()
         // seeder check below would silently skip its DatabaseSeeder.
-        // Same call ThemeInstall makes; also keeps .git/info/exclude and
-        // .gitignore in step like the admin path does.
-        GitExcludeHelper::addPluginExclusion($pluginName);
-        GitIgnoreHelper::addPluginExclusion($pluginName);
+        // Same call ThemeInstall makes.
         // Installing is the point where the plugin's autoload.files may run.
         ComposerLocalManifest::clearPendingInstall($pluginPath);
         if (ComposerLocalHelper::syncAutoload()) {

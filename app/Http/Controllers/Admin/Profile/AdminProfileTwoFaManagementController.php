@@ -126,15 +126,8 @@ class AdminProfileTwoFaManagementController extends AdminLoggedInController
         $twoFaPasskeyService = new TwoFaPasskeyService();
 
         try {
-            // Retrieve and delete all Passkeys
-            $credentials = $twoFaPasskeyService->getCredentials($member);
-            $deletedCount = 0;
-
-            foreach ($credentials as $credential) {
-                if ($twoFaPasskeyService->revokeCredential($member, $credential->id)) {
-                    $deletedCount++;
-                }
-            }
+            // One call, so the audit trail gets one row for the whole revocation
+            $deletedCount = $twoFaPasskeyService->revokeAllCredentials($member);
 
             if ($deletedCount === 0) {
                 return response()->json([
