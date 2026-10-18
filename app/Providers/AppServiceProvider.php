@@ -84,6 +84,7 @@ use App\Settings\ApiSettingDefinitions;
 use App\Settings\BackupSettingDefinitions;
 use App\Settings\CoreSettingDefinitions;
 use App\Settings\SecuritySettingDefinitions;
+use App\Support\ExtensionManagementCommands;
 use App\Support\HttpsEnforcement;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
@@ -495,9 +496,6 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check if plugin management command is running
-     */
-    /**
      * Commands that open, close, or inspect the core-update maintenance
      * window themselves. The boot-time self-heal must stay out of their
      * way: `down`/`up` are the operator acting deliberately, the update
@@ -518,38 +516,12 @@ class AppServiceProvider extends ServiceProvider
         ], true);
     }
 
+    /**
+     * Whether a command that manages an installed extension is running.
+     * Those commands run without the installed plugins loaded.
+     */
     private function isPluginManagementCommand(): bool
     {
-        // Check command line arguments
-        $argv = $_SERVER['argv'] ?? [];
-
-        // Check if it's a plugin management command
-        if (count($argv) >= 2) {
-            $pluginCommands = [
-                'plugin:install',
-                'plugin:uninstall',
-                'plugin:enable',
-                'plugin:disable',
-            ];
-
-            return in_array($argv[1], $pluginCommands);
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the plugin name to uninstall
-     */
-    private function getUninstallingPluginName(): ?string
-    {
-        $argv = $_SERVER['argv'] ?? [];
-
-        // Format: artisan plugin:uninstall PluginName
-        if (count($argv) >= 3 && $argv[1] === 'plugin:uninstall') {
-            return $argv[2];
-        }
-
-        return null;
+        return ExtensionManagementCommands::isRunning();
     }
 }

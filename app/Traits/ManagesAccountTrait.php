@@ -37,7 +37,9 @@
 
 namespace App\Traits;
 
+use App\Models\AuditLog;
 use App\Services\MailServerValidatorService;
+use App\Services\Member\MemberSecurityAudit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -125,9 +127,10 @@ trait ManagesAccountTrait
         $isMember = $model instanceof \App\Models\Member;
         $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
         $idColumn = $isMember ? 'member_id' : 'user_id';
+        $sessions = 0;
 
         if (DB::getSchemaBuilder()->hasTable($sessionTable)) {
-            DB::table($sessionTable)
+            $sessions = DB::table($sessionTable)
                 ->where($idColumn, $model->id)
                 ->delete();
         }
@@ -136,6 +139,8 @@ trait ManagesAccountTrait
         // the guard re-authenticates from it on the next request. Clearing the
         // stored token makes every outstanding cookie fail.
         $model->forceFill(['remember_token' => null])->saveQuietly();
+
+        MemberSecurityAudit::record(AuditLog::ACTION_FORCED_LOGOUT, $model, ['sessions' => $sessions]);
 
         return redirect()->route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id])
             ->with('success', __($successMessageKey));
@@ -160,11 +165,16 @@ trait ManagesAccountTrait
         string $successMessageKey,
         string $redirectRouteName
     ) {
-        $twoFaAttemptModelClass::where($modelIdColumn, $model->id)->delete();
+        $twoFaAttempts = $twoFaAttemptModelClass::where($modelIdColumn, $model->id)->delete();
         // Delete only failed attempt records (keep successful records for statistics)
-        $loginAttemptModelClass::where('identifier', $model->email)
+        $loginAttempts = $loginAttemptModelClass::where('identifier', $model->email)
             ->where('successful', false)
             ->delete();
+
+        MemberSecurityAudit::record(AuditLog::ACTION_LOCKOUT_RELEASED, $model, [
+            'two_fa_attempts' => $twoFaAttempts,
+            'login_attempts' => $loginAttempts,
+        ]);
 
         return redirect()->route($redirectRouteName, [$this->getModelRouteParameterName() => $model->id])
             ->with('success', __($successMessageKey));

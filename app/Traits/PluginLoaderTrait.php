@@ -39,6 +39,7 @@ namespace App\Traits;
 
 use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Contracts\Repositories\PluginRepositoryInterface;
+use App\Support\ExtensionManagementCommands;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
@@ -71,16 +72,9 @@ trait PluginLoaderTrait
      */
     public function loadEnabledPlugins()
     {
-        // Check directly from command line arguments
-        $pluginManagementFlag = $this->getUninstallingPluginFromArgs();
-
-        // Skip plugin loader during plugin management command execution
-        if ($pluginManagementFlag === 'PLUGIN_MANAGEMENT_COMMAND') {
-            return;
-        }
-
-        // Also skip during app:uninstall command execution
-        if (isset($_SERVER['argv']) && in_array('app:uninstall', $_SERVER['argv'])) {
+        // Skip the plugin loader while an extension is being managed.
+        // Otherwise a plugin that fails at boot takes down the command that disables it.
+        if (ExtensionManagementCommands::isRunning()) {
             return;
         }
 
@@ -104,29 +98,6 @@ trait PluginLoaderTrait
                 $this->app->register($providerClass);
             }
         }
-    }
-
-    /**
-     * Get plugin management target from command line arguments
-     */
-    private function getUninstallingPluginFromArgs(): ?string
-    {
-        $argv = $_SERVER['argv'] ?? [];
-
-        // Skip plugin loader for plugin management commands
-        if (count($argv) >= 2) {
-            $pluginCommands = [
-                'plugin:install',
-                'plugin:uninstall',
-                'plugin:enable',
-                'plugin:disable',
-            ];
-            if (in_array($argv[1], $pluginCommands)) {
-                return 'PLUGIN_MANAGEMENT_COMMAND';
-            }
-        }
-
-        return null;
     }
 
     /**
