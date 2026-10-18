@@ -656,7 +656,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             // A refused install leaves the files where they were, so keep
             // the sidecar that links them to their source and say why.
             if ($exitCode !== 0) {
-                $output = trim(Artisan::output());
+                $output = trim((string) Artisan::output());
                 Log::error('Theme installation command failed', [
                     'directory' => $themeDir,
                     'exit_code' => $exitCode,

@@ -825,7 +825,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // health gate) leaves the files where they were, so keep the
             // sidecar that links them to their source and say why.
             if ($exitCode !== 0) {
-                $output = trim(Artisan::output());
+                $output = trim((string) Artisan::output());
                 Log::error('Plugin installation command failed', [
                     'directory' => $pluginDir,
                     'exit_code' => $exitCode,

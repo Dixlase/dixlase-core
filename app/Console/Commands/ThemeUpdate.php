@@ -56,8 +56,8 @@ use ZipArchive;
 class ThemeUpdate extends Command
 {
     use AutoScansExtensionAfterUpdate;
-    use EnforcesExtensionRequirements;
     use BuildsExtensionAssets;
+    use EnforcesExtensionRequirements;
     use TakesExtensionBackup;
 
     protected $signature = 'dls:theme:update
