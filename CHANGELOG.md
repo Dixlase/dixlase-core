@@ -45,6 +45,15 @@ repository to be notified of changes.
   bypass never fired and an administrator off the list was refused like any visitor. It now
   lets a member signed in to the admin panel as ADMIN or SUPER_ADMIN past the allow list. The
   block list is no longer bypassed: it applies to everyone, administrators included (#588)
+- Erasing a member's personal data no longer makes their audit rows fail verification. The
+  erasure rewrote `ip_address`, which the record hash covers, so every chained row of that
+  member was reported as tampered after a routine privacy request, and the erasure left no
+  row of its own to explain it. The erasure now clears the address instead of hashing it,
+  writes a `privacy_data_erased` row naming the operator and the subject by id, and marks
+  each row it changed. Verification reports those rows as redacted — still checked for
+  their place in the chain and the daily seal — and treats a row marked redacted with no
+  recorded erasure behind it as tampering. If the erasure cannot be recorded, nothing is
+  erased. Rows anonymised before this release still fail and are not backfilled (#478)
 
 ## [0.1.14] — 2026-10-17
 
