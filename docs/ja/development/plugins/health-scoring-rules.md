@@ -38,7 +38,7 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | `storage.own_directory`           | 0      | 専用ディレクトリ               |
 | `storage.temp_files`              | 0      | 一時ファイル                   |
 | `settings.read_core`              | 0      | コア設定の読み取り             |
-| `settings.write_own`              | 0      | 自己設定の書き込み             |
+| `settings.write_own`              | 0      | コアの設定の保存先への書き込み|
 | `members.read`                    | 0      | メンバーデータの読み取り        |
 | `mail.send`                       | 0      | 個別メールの送信               |
 | `content.read_other_plugins`      | 0      | 他プラグインのコンテンツ読取    |
@@ -84,7 +84,7 @@ Dixlase がプラグイン・テーマの安全性を評価する2つのスコ�
 | `storage.own_directory`     | 0      | 専用ディレクトリ               |
 | `storage.temp_files`        | 0      | 一時ファイル                   |
 | `settings.read_core`        | 0      | コア設定の読み取り             |
-| `settings.write_own`        | 0      | 自己設定の書き込み             |
+| `settings.write_own`        | 0      | コアの設定の保存先への書き込み|
 | `assets.custom_css`         | 0      | カスタムCSS                   |
 | `assets.custom_js`          | 0      | カスタムJS                    |
 | `system.register_shortcodes`| 0      | ショートコードの登録            |

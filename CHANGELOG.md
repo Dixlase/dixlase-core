@@ -40,6 +40,11 @@ repository to be notified of changes.
   hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
   plugin whose target is not an Eloquent model is not dropped the same way. Rows written
   before this release are not backfilled (#546)
+- An administrator signed in to the admin panel is let past the front IP allow list.
+  `FrontIpFilter` tested `$member->is_admin`, which `Member` does not have, so the
+  bypass never fired and an administrator off the list was refused like any visitor. It now
+  lets a member signed in to the admin panel as ADMIN or SUPER_ADMIN past the allow list. The
+  block list is no longer bypassed: it applies to everyone, administrators included (#588)
 
 ## [0.1.14] — 2026-10-17
 

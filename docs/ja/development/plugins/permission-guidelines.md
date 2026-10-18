@@ -346,7 +346,7 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 | `storage` | `public_uploads` | bool | 公開アップロード領域へのアクセス |
 | `storage` | `temp_files` | bool | 一時ファイルの使用 |
 | `settings` | `read_core` | bool | コア設定の読み取り |
-| `settings` | `write_own` | bool | プラグイン設定の書き込み |
+| `settings` | `write_own` | bool | プラグインの設定を、コアの設定の保存先（`SiteSetting` / `SecuritySetting`）に書き込む |
 | `members` | `read` | bool | メンバー情報の読み取り |
 | `members` | `write` | bool | メンバー情報の書き込み |
 | `members` | `create` | bool | メンバーの作成 |
@@ -362,6 +362,8 @@ Dixlaseのプラグイン・テーマ権限基盤は、拡張機能の**健全�
 | `system` | `modify_routes` | bool | ルートの変更 |
 | - | `_optional` | array | スキャナーヒント: 未検出でもペナルティなし |
 | - | `_notes` | object | 権限使用理由の説明（`ja`/`en` バイリンガル） |
+
+`settings.write_own` が表すのは設定の保存先であり、プラグインが設定を持つかどうかではありません。設定を自身のテーブル（独自のモデルを持つ `plg_*_settings` テーブル）に置くプラグインは、そのテーブルを `database.own_tables` で宣言し、`settings.write_own` は `false` のままにします。スキャナーは `settings.write_own` を `SiteSetting` と `SecuritySetting` を通した書き込みからしか検出しないため、自身のテーブルへの書き込みを理由に宣言すると「使われていない」と報告されます。
 
 ### 実行時に権限が果たす役割
 
@@ -557,7 +559,7 @@ permissions のカテゴリ別構造に対応するスキャン対象:
 | `storage.public_uploads` | public ディスクへの書き込み | 公開アップロード領域 |
 | `storage.temp_files` | temp ファイル操作 | 一時ファイル |
 | `settings.read_core` | config() でコア設定を読む | コア設定の読み取り |
-| `settings.write_own` | プラグイン設定の保存 | プラグイン設定の書き込み |
+| `settings.write_own` | `SiteSetting` / `SecuritySetting` の `set`・`setValue`・`update`・`create` | コアの設定の保存先へのプラグイン設定の書き込み |
 | `members.read/write/create/delete` | Member モデルの操作 | メンバー関連操作 |
 | `mail.send` | Mail facade, Mailable | メール送信 |
 | `mail.bulk_send` | バッチメール, キュー | 一括メール送信 |
