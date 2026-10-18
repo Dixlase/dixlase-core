@@ -50,7 +50,7 @@ use Illuminate\Support\Facades\Artisan;
 class SourceUpdate extends Command
 {
     protected $signature = 'dls:source:update
-                            {--all : Update every extension that has an available_version}
+                            {--all : Update every extension that has a newer version available}
                             {--type=both : Limit to plugin / theme / both}
                             {--force : Skip per-extension confirmation}';
 
@@ -75,11 +75,11 @@ class SourceUpdate extends Command
 
         $pluginSlugs = $type === 'theme'
             ? []
-            : Plugin::query()->whereNotNull('available_version')->pluck('slug')->all();
+            : Plugin::pendingUpdates()->pluck('slug')->all();
 
         $themeSlugs = $type === 'plugin'
             ? []
-            : Theme::query()->whereNotNull('available_version')->pluck('slug')->all();
+            : Theme::pendingUpdates()->pluck('slug')->all();
 
         if (empty($pluginSlugs) && empty($themeSlugs)) {
             $this->info('No updates pending. Run dls:source:check to refresh available versions first.');
