@@ -123,7 +123,6 @@ Dixlase はミニマルなコアを出荷し、以下の公式プラグインを
 
 - Plugin API — プラグイン / テーマ API の境界定義(準備中)
 - ソースコメントのロケール切替 — `convert-comments.sh` によるコメント言語の切り替え(準備中)
-- MCP サーバー (Laravel Boost) — VSCode / Cursor 向け AI 開発支援(準備中)
 
 ---
 
@@ -176,6 +175,54 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 ### ソースコードの提供(AGPL §13)
 
 Dixlase CMS をサーバーで運用し、ネットワーク経由でユーザーに提供する場合、AGPL §13 により、実行中のバージョンのソースコードをユーザーが取得できる必要があります。管理画面フッターの「Source」リンクがユーザーからアクセス可能であることをご確認ください。公開 URL は環境変数 `DIXLASE_SOURCE_URL` で指定できます。
+
+---
+
+## 🙏 謝辞
+
+Dixlase は、優れたオープンソースとサービスの土台の上に成り立っています。オープンソースの開発者とコミュニティに支えられて成り立つプロジェクトとして、感謝を込めてご紹介します。
+
+**Framework & Core**
+
+| プロジェクト | Dixlase にとっての役割 |
+| --- | --- |
+| [Laravel](https://laravel.com/) | PHP のモダンな Web フレームワーク。Dixlase のアプリケーションコア。 |
+| [Symfony](https://symfony.com/) | PHP の再利用可能コンポーネント群。Laravel は HttpFoundation・Console・Routing など多数の Symfony コンポーネントを土台にしています。 |
+| [Alpine.js](https://alpinejs.dev/) | 軽量で宣言的な JavaScript フレームワーク。フロントエンドの即応性を支えます。 |
+| [Tailwind CSS](https://tailwindcss.com/) | ユーティリティファーストの CSS フレームワーク。一貫性ある UI の土台。 |
+
+**Auth & Security**
+
+| プロジェクト | Dixlase にとっての役割 |
+| --- | --- |
+| [Laravel Fortify](https://laravel.com/docs/fortify) | Laravel 公式の認証スカフォールド。ログイン・登録・2 要素認証の土台。 |
+| [Laravel Passkeys](https://github.com/laravel/passkeys) | Laravel 公式のパスキー(WebAuthn)対応パッケージ。パスワードレス認証を支えます。 |
+| [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | プライバシーに配慮した非対話型 CAPTCHA。標準提供のドライバー。 |
+| [Google reCAPTCHA](https://www.google.com/recaptcha/about/) | v2 / v3 / Enterprise を切り替えられる、もうひとつの CAPTCHA の選択肢。 |
+
+**UI & Content**
+
+| プロジェクト | Dixlase にとっての役割 |
+| --- | --- |
+| [Font Awesome](https://fontawesome.com/) | 管理画面と公式テーマで使用しているアイコンセット。 |
+| [Bunny Fonts](https://fonts.bunny.net/) | プライバシー配慮型のフォント配信。Figtree の読み込みに利用。 |
+| [marked](https://marked.js.org/) | 高速・軽量な Markdown パーサ。コンテンツの Markdown 描画に利用。 |
+| [highlight.js](https://highlightjs.org/) | コードブロックのシンタックスハイライト。 |
+| [SortableJS](https://sortablejs.github.io/Sortable/) | ドラッグ&ドロップによる並べ替え。手で順序を編集するところで利用。 |
+
+**Build & Toolchain**
+
+| プロジェクト | Dixlase にとっての役割 |
+| --- | --- |
+| [Composer](https://getcomposer.org/) | PHP パッケージマネージャ。 |
+| [Node.js](https://nodejs.org/) | JavaScript ランタイム。 |
+| [npm](https://www.npmjs.com/) | JavaScript パッケージマネージャ。 |
+| [Vite](https://vite.dev/) | フロントエンドのビルドツール。 |
+| [Docker](https://www.docker.com/) | コンテナ実行環境。 |
+
+これらに加え、Dixlase は数多くのライブラリとツールに支えられています。すべての貢献者の皆さまへ、深く感謝いたします。
+
+記載されている会社名・製品名・サービス名およびロゴは、各社の商標または登録商標です。掲載は各プロジェクトへの謝意を示すものであり、提携・推奨関係を示すものではありません。
 
 ---
 
