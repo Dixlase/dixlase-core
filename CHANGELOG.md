@@ -67,6 +67,14 @@ repository to be notified of changes.
   it was done to and how many sessions or credentials it affected; a row for an operation on
   another member is recorded as a warning. The codes themselves are never recorded. New
   actions: `recovery_codes_generated`, `recovery_codes_revoked` (#475)
+- The integrity documentation and screens no longer claim more than the code does. The
+  file-integrity scan never covered `public/build/`, and the documentation now lists what it
+  does not scan; the scan confirmation names its scope instead of "all core files". The
+  baseline command is `dls:integrity:generate-baseline --force`, the tampering example calls
+  `sendAdminNotification()`, and `INTEGRITY_SCAN_STARTED` / `INTEGRITY_SCAN_COMPLETED` are
+  marked as not dispatched. The audit-log overview describes an unkeyed hash chain per row and
+  a keyed daily seal per day — detection, not a guarantee. Japanese text calls the seal
+  「日次封印」 throughout, where it said 署名 before (#543)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
