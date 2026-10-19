@@ -82,6 +82,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   判断と理由は監査ログ整合性の文書にあります。使われていなかった `AuditLog::logWithHashChain()`
   は削除しました。ロック用テーブルを作るため `php artisan migrate` を実行してください。実行する
   までは、これまでどおりチェーンに入らないまま書き込まれます (#629)
+- セッションの Cookie（と `XSRF-TOKEN` の Cookie）に、HTTPS のリクエストではすべて `Secure` を
+  付けるようになりました。信頼したプロキシ経由のリクエストも含みます。`SESSION_SECURE_COOKIE`
+  も `FORCE_SSL` も設定していないと `config/session.php` が明示的な `false` を使っていたため、
+  HTTPS のインストールでもどちらの Cookie にも属性が付いていませんでした。未設定のときは
+  リクエストに従うようになり、平文の HTTP では変わりません。`FORCE_SSL=true` と明示した
+  `SESSION_SECURE_COOKIE` はこれまでどおりです。`SECURITY.md` に「セッションの Cookie」の節を
+  加え、管理画面のセッションに `SameSite=Strict` を付けない理由も書きました (#673)
 
 ### Plugin API — 非推奨
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` と
