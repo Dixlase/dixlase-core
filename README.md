@@ -18,8 +18,8 @@ For Japanese, see [README.ja.md](./README.ja.md).
 Two-factor auth via passkeys / email codes, IP restrictions, login notifications, and role-based permissions out of the box.
 - **Plugin-based Architecture**  
 A minimal core; features are added as plugins, and much of the core itself runs on the same plugin API.
-- **On-Premise Ready**  
-Your data on your server: shared hosting, VPS, or dedicated — wherever you like.
+- **Self-Hosted**  
+Your server, your data: shared hosting, a VPS, a dedicated server, or your own on-premise hardware — wherever you like.
 - **Detailed Audit Logs**  
 Every admin action recorded in a structured form for operational transparency and accountability.
 - **Site Health Check**  
