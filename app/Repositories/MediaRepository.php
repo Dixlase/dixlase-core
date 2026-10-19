@@ -38,6 +38,7 @@ namespace App\Repositories;
 use App\Contracts\Repositories\MediaRepositoryInterface;
 use App\Models\Media;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -47,6 +48,21 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class MediaRepository implements MediaRepositoryInterface
 {
+    /**
+     * MIME types the "document" type filter stands for.
+     *
+     * The other filter values (image, video, audio) are MIME prefixes, but
+     * no document MIME type starts with "document". These are the types of
+     * the extensions MediaSecurityService files under "document"
+     * (pdf, doc, docx, txt).
+     */
+    private const DOCUMENT_MIME_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+    ];
+
     /**
      * {@inheritDoc}
      */
@@ -100,7 +116,7 @@ class MediaRepository implements MediaRepositoryInterface
 
         // Type filter
         if (! empty($filters['type'])) {
-            $query->where('type', 'like', $filters['type'].'%');
+            $this->applyTypeFilter($query, $filters['type']);
         }
 
         // Uploader filter
@@ -205,9 +221,10 @@ class MediaRepository implements MediaRepositoryInterface
      */
     public function filterByType(string $type, array $relations = ['member']): Collection
     {
-        return Media::with($relations)
-            ->where('type', 'like', $type.'%')
-            ->get();
+        $query = Media::with($relations);
+        $this->applyTypeFilter($query, $type);
+
+        return $query->get();
     }
 
     /**
@@ -264,7 +281,7 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         if (! empty($filters['type'])) {
-            $query->where('type', 'like', $filters['type'].'%');
+            $this->applyTypeFilter($query, $filters['type']);
         }
 
         if (! empty($filters['uploaded_by'])) {
@@ -272,5 +289,22 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $query->count();
+    }
+
+    /**
+     * Narrow a query to one media type: a MIME prefix such as "image", or
+     * "document" for the document MIME types.
+     *
+     * @param  Builder<Media>  $query
+     */
+    private function applyTypeFilter(Builder $query, string $type): void
+    {
+        if ($type === 'document') {
+            $query->whereIn('type', self::DOCUMENT_MIME_TYPES);
+
+            return;
+        }
+
+        $query->where('type', 'like', $type.'%');
     }
 }
