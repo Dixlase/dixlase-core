@@ -72,7 +72,6 @@ storage/app/dixlase/security/core_hashes.json
 | `resources/` | ビュー、言語ファイル、アセット |
 | `database/migrations/` | データベースマイグレーション |
 | `public/index.php` | エントリポイント |
-| `public/build/` | ビルド済みアセット（JS/CSS） |
 | `artisan` | Artisanコマンドラインツール |
 | `composer.json` | 依存関係定義 |
 | `composer.lock` | 依存関係ロックファイル |
@@ -85,8 +84,19 @@ storage/app/dixlase/security/core_hashes.json
 - **routes/**: ルーティングの改ざん防止
 - **resources/**: UIテンプレートの保護
 - **database/migrations/**: スキーマ定義の保護
-- **public/build/**: 本番用アセットの改ざん検知（重要）
 - **composer.json/lock**: 依存関係の不正変更検知
+
+### 検査しないもの
+
+検査範囲は上の一覧がすべてです。それ以外はベースラインと照合しません。たとえば:
+
+- `public/build/` — サイトが配信するビルド済みの JS/CSS。`public/` 配下で検査するのは
+  `public/index.php` だけです
+- `lang/`・`plugins/`・`themes/`・`vendor/`
+- `custom/` と、下の除外リストにあるパス
+
+そのため、ビルド済みアセットが書き換えられても、このスキャンでは報告されません。必要な場合は、
+それらのファイルを別の手段で確認してください。
 
 ## 除外ディレクトリ・パターン
 
@@ -184,8 +194,8 @@ php artisan dls:integrity:scan
 # スケジュール実行
 php artisan dls:integrity:scan --scheduled
 
-# ベースライン再生成
-php artisan dls:integrity:regenerate-baseline
+# ベースラインを再生成（既存のベースラインを上書き）
+php artisan dls:integrity:generate-baseline --force
 ```
 
 ## そのほかの定期セキュリティ確認
@@ -301,12 +311,15 @@ chown -R www-data:www-data storage/app/dixlase/security
 - **コントローラー**: `app/Http/Controllers/Admin/Settings/Security/AdminSecurityIntegrityController.php`
 - **モデル**: `app/Models/FileIntegrityAudit.php`
 - **ビュー**: `resources/views/admin/settings/security/integrity.blade.php`
-- **コマンド**: `app/Console/Commands/FileIntegrity/`
+- **コマンド**: `app/Console/Commands/IntegrityScan.php`、`app/Console/Commands/IntegrityGenerateBaseline.php`
 - **ベースライン**: `storage/app/dixlase/security/core_hashes.json`
 - **定期確認と管理画面のバナー**: `app/Services/Security/ScheduledSecurityCheckMonitor.php`, `app/Console/Commands/ExtensionsRescan.php`
 
 ## 更新履歴
 
+- **2026-10-19**: 検査範囲を訂正
+  - `public/build` は検査していないので、検査対象の一覧から外し、「検査しないもの」を追加
+  - ベースラインのコマンドは `dls:integrity:generate-baseline --force`
 - **2026-02-10**: 初版作成
   - 対象ディレクトリに `resources`, `database/migrations`, `public/build` を追加
   - 除外パターンに `custom`, `public/uploads`, `public/storage`, `public/hot`, `*.log` を追加

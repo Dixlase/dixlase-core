@@ -110,6 +110,11 @@ This document defines the Events API for Dixlase. Events provide extension point
 | Integrity scan completed | `INTEGRITY_SCAN_COMPLETED` | `['scope' => string, 'status' => string, 'changes' => array]` |
 | Security alert | `SECURITY_ALERT` | `['type' => string, 'details' => array]` |
 
+> **Not dispatched yet.** `INTEGRITY_SCAN_STARTED` and `INTEGRITY_SCAN_COMPLETED` are
+> reserved names: the constants exist, but no scan fires them, so a listener registered
+> for either one is never called. To act on a scan result, read the latest
+> `FileIntegrityAudit` record instead.
+
 ### 2.9 AuditLogCreated event (frozen DTO payload)
 
 `App\Events\AuditLogCreated` is fired after every audit log record is created. Unlike the events listed above (which carry positional argument arrays), this event delivers a frozen, typed payload object — `App\DTO\Audit\AuditLogPayload` — so SIEM exporters and external integrations can rely on a stable contract.

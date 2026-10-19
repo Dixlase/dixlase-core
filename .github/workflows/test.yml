@@ -289,9 +289,19 @@ jobs:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
 
+      # Tier 3 holds no publicly distributed extension, so every suite it
+      # runs comes from EXTRA_SUITES_TIER3. Naming one literally is what
+      # broke this step: PHPUnit validates every suite on the command line
+      # before running any of them, so a name whose directory is absent ends
+      # the step with exit 2 and nothing executes (dixlase-core#658). An
+      # empty tier is a fork's case, and has nothing to run.
       - name: Run Plugin Tests (Tier 3 - Minimal)
         run: |
-          php artisan test --testsuite="DixlaseAi,DixlaseAuthority${EXTRA_SUITES_TIER3:+,$EXTRA_SUITES_TIER3}"
+          if [ -z "${EXTRA_SUITES_TIER3:-}" ]; then
+            echo "No tier 3 integration suite is registered, so there is nothing to run"
+            exit 0
+          fi
+          php artisan test --testsuite="$EXTRA_SUITES_TIER3"
         continue-on-error: true
         env:
           DB_CONNECTION: mysql
