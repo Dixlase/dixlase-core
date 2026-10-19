@@ -12,10 +12,17 @@
 #      distributes publicly. Tracked, readable, and all a fork needs.
 #   2. $INTEGRATION_EXTENSIONS — rows for extensions that are not
 #      distributed publicly, held in a repository or organisation
-#      variable. A public repository should not name software its readers
+#      secret. A public repository should not name software its readers
 #      cannot obtain (dixlase-core#619), and a fork has no token to clone
 #      them with anyway, so the rows live outside the tree and are merged
 #      at run time.
+#
+#      It has to be a secret, not a variable. GitHub writes a step's
+#      `env:` map into the log before the step's script starts, so the
+#      `::add-mask::` calls below cannot cover a value that arrives that
+#      way — a variable is printed in full in the public run log, which
+#      is what dixlase-core#655 was. A secret is masked by GitHub
+#      everywhere, that header included. Do not move it back.
 #
 # Row format is the same for both: <directory>\t<clone-url>\t<tier>\t<flags>
 # Tier (1-3) picks which plugin-test step runs the extension's suite;
@@ -162,7 +169,7 @@ echo "=== $cloned cloned, $skipped already present, $failed failed ==="
 # misconfigured variable or a total clone failure, and "no tests found" is
 # a passing exit code — so say so here instead of going green on nothing.
 if [ -n "$extra_rows" ] && [ -z "$suites_1$suites_2$suites_3" ]; then
-    echo "::error::INTEGRATION_EXTENSIONS is set, but no extension from it produced a test suite. Check the variable's rows and the clone credentials."
+    echo "::error::INTEGRATION_EXTENSIONS is set, but no extension from it produced a test suite. Check the secret's rows and the clone credentials."
     exit 1
 fi
 

@@ -243,11 +243,57 @@ class CheckInstallationReady
         } else {
             // Prevent access to installation screen when already installed
             if ($request->is('install') || $request->is('install/*')) {
-                return redirect('/')->with('message', __('http/middleware/check_installation_ready.app_already_installed'));
+                return redirect($this->alreadyInstalledRedirectTarget($request))
+                    ->with('message', __('http/middleware/check_installation_ready.app_already_installed'));
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Where to send an /install request that arrives after installation.
+     *
+     * A double click on the completion screen sends finalize twice, and the
+     * browser follows only the response to the second request. The first one
+     * has already written INSTALLED=true, so without this the second lands on
+     * the front page instead of the destination the operator chose. A repeated
+     * finalize therefore follows its own `redirect_to` — the value comes from
+     * the client, so nothing is disclosed — as long as it stays on this host.
+     * Everything else goes to the front page.
+     */
+    private function alreadyInstalledRedirectTarget(Request $request): string
+    {
+        if (! $request->isMethod('POST') || ! $request->is('install/finalize')) {
+            return '/';
+        }
+
+        $target = $request->input('redirect_to');
+
+        return is_string($target) && $this->isSameHostUrl($request, $target) ? $target : '/';
+    }
+
+    /**
+     * True for an http(s) URL on the request's host, or a path on it.
+     * Protocol-relative (`//host`) and backslash forms are refused, since
+     * browsers resolve them to another host.
+     */
+    private function isSameHostUrl(Request $request, string $target): bool
+    {
+        if ($target === '' || str_contains($target, '\\')) {
+            return false;
+        }
+
+        if (str_starts_with($target, '/')) {
+            return ! str_starts_with($target, '//');
+        }
+
+        $parts = parse_url($target);
+
+        return is_array($parts)
+            && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
+            && isset($parts['host'])
+            && strcasecmp($parts['host'], $request->getHost()) === 0;
     }
 
     /**
