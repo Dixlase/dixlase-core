@@ -309,6 +309,15 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:members.index')
                     ->name('send-verification-email');
 
+                // Active sessions (#674)
+                Route::get('/sessions', [Members\AdminMemberSessionController::class, 'index'])
+                    ->middleware('check.menu.access:members.index')
+                    ->name('sessions');
+                Route::post('/sessions/{member}/{session}/revoke', [Members\AdminMemberSessionController::class, 'revoke'])
+                    ->middleware('check.menu.edit:members.index')
+                    ->where('session', '[0-9a-f]{32}')
+                    ->name('sessions.revoke');
+
                 // Permission settings
                 Route::get('/roles', [Members\AdminMemberRolesController::class, 'index'])
                     ->middleware('check.menu.access:members.roles')
@@ -660,6 +669,9 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::delete('/api/revoke-key/{id}', [Systems\AdminSystemApiController::class, 'revokeKey'])
                     ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.revoke-key');
+                Route::delete('/api/revoke-all', [Systems\AdminSystemApiController::class, 'revokeAllKeys'])
+                    ->middleware('check.menu.edit:settings.systems.api')
+                    ->name('api.revoke-all');
                 Route::post('/api/regenerate-key/{id}', [Systems\AdminSystemApiController::class, 'regenerateKey'])
                     ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.regenerate-key');

@@ -110,16 +110,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section class="mt-8 transition-opacity" :class="{ 'opacity-50 pointer-events-none': apiEnabled !== '1' }">
         <div class="flex items-center justify-between mb-4">
             <h2 class="mb-0">{{ __('admin/settings/systems/api.api_keys') }}</h2>
-            <x-form-button
-                type="button"
-                variant="primary"
-                icon="fas fa-plus"
-                :label="__('admin/settings/systems/api.create_key')"
-                :disabled="$viewOnly"
-                :title="$tooltipText"
-                @click="openModal('createKeyModal')"
-                xDisabled="apiEnabled !== '1'"
-            />
+            <div class="flex items-center gap-2">
+                @if($apiKeys->isNotEmpty())
+                    <x-form-button
+                        type="button"
+                        variant="danger"
+                        icon="fas fa-ban"
+                        :label="__('admin/settings/systems/api.revoke_all')"
+                        :disabled="$viewOnly"
+                        :title="$tooltipText"
+                        @click="openModal('revokeAllModal')"
+                    />
+                @endif
+                <x-form-button
+                    type="button"
+                    variant="primary"
+                    icon="fas fa-plus"
+                    :label="__('admin/settings/systems/api.create_key')"
+                    :disabled="$viewOnly"
+                    :title="$tooltipText"
+                    @click="openModal('createKeyModal')"
+                    xDisabled="apiEnabled !== '1'"
+                />
+            </div>
         </div>
 
         @if($apiKeys->isEmpty())
@@ -271,6 +284,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             form="revoke-form-{{ $key->id }}"
         />
     @endforeach
+
+    {{-- Revoke every key of this site (#674) --}}
+    @if($apiKeys->isNotEmpty())
+        <form id="revoke-all-form" action="{{ route('admin.settings.systems.api.revoke-all') }}" method="POST" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+        <x-ui-modal
+            id="revokeAllModal"
+            :title="__('admin/settings/systems/api.revoke_all')"
+            :message="__('admin/settings/systems/api.revoke_all_confirm', ['count' => $apiKeys->count()])"
+            icon-type="danger"
+            :confirm_label="__('admin/settings/systems/api.revoke_all')"
+            :cancel_label="__('common.cancel')"
+            form="revoke-all-form"
+        />
+    @endif
 
 </div>
 @endsection
