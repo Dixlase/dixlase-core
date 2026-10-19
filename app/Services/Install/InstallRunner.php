@@ -135,6 +135,19 @@ class InstallRunner
         string $mailPassword = '',
         ?callable $progress = null
     ): void {
+        // SQLite ignores credentials; carrying them into .env would only
+        // describe a server that is not there.
+        if (($data['db_connection'] ?? null) === 'sqlite') {
+            $dbPassword = '';
+        }
+
+        // Point the connection at the chosen database before anything
+        // queries it. The integrity gate below already reads the signature
+        // waiver table, and until now it did so through whatever the
+        // template .env named (DB_HOST=127.0.0.1), not the database the
+        // operator chose.
+        $this->applyDatabaseConfig($data, $dbPassword);
+
         // Core integrity gate: block installation only when the signature is
         // INVALID (manifest present but signature fails = tampering). Unsigned
         // dev builds and modified-but-authentic releases are allowed through.
@@ -142,12 +155,6 @@ class InstallRunner
             Log::channel('install')->error('Install blocked: core integrity is INVALID (signature verification failed).');
 
             throw new CoreIntegrityBlockedException();
-        }
-
-        // SQLite ignores credentials; carrying them into .env would only
-        // describe a server that is not there.
-        if (($data['db_connection'] ?? null) === 'sqlite') {
-            $dbPassword = '';
         }
 
         // Get force_ssl value
@@ -226,26 +233,8 @@ class InstallRunner
 
         // Artisan::call('config:clear') only deletes the cached config
         // file on disk — it does NOT refresh $app['config'] in the
-        // current request. Artisan::call sub-kernels (migrate:fresh,
-        // db:seed) re-read .env on their own, but anything that runs
-        // directly in this controller (initializeDatabase below) would
-        // otherwise keep using the boot-time DB_CONNECTION. Force the
-        // in-memory config to match the freshly-written .env so every
-        // subsequent in-request DB call targets the chosen driver.
-        $newDriver = $data['db_connection'];
-        config([
-            'database.default' => $newDriver,
-            "database.connections.{$newDriver}.database" => $data['db_database'],
-        ]);
-        if ($newDriver !== 'sqlite') {
-            config([
-                "database.connections.{$newDriver}.host" => $data['db_host'],
-                "database.connections.{$newDriver}.port" => $data['db_port'],
-                "database.connections.{$newDriver}.username" => $data['db_username'],
-                "database.connections.{$newDriver}.password" => $dbPassword,
-            ]);
-        }
-        DB::purge();
+        // current request, so the settings applied at the top of run()
+        // stay in effect for every in-request DB call below.
 
         $this->report($progress, 'migrate');
 
@@ -444,6 +433,34 @@ class InstallRunner
     }
 
     /**
+     * Make the in-memory database config match the chosen settings.
+     *
+     * Artisan::call sub-kernels (migrate:fresh, db:seed) re-read .env on
+     * their own, but anything that runs directly in this process keeps the
+     * boot-time connection unless the config is changed here and the
+     * connection purged.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function applyDatabaseConfig(array $data, string $dbPassword): void
+    {
+        $driver = $data['db_connection'];
+        config([
+            'database.default' => $driver,
+            "database.connections.{$driver}.database" => $data['db_database'],
+        ]);
+        if ($driver !== 'sqlite') {
+            config([
+                "database.connections.{$driver}.host" => $data['db_host'],
+                "database.connections.{$driver}.port" => $data['db_port'],
+                "database.connections.{$driver}.username" => $data['db_username'],
+                "database.connections.{$driver}.password" => $dbPassword,
+            ]);
+        }
+        DB::purge();
+    }
+
+    /**
      * Hand a step name to the caller's progress callback, if it gave one.
      *
      * @param  (callable(string): void)|null  $progress
@@ -464,9 +481,18 @@ class InstallRunner
 
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_site_settings_update'));
 
+        // The caller decides the install locale (the wizard seeds it from the
+        // session, dls:install from --locale). Guard against a code that
+        // config/language.php does not list so the primary_locale column and
+        // the admin member never hold an unsupported value.
+        $installLocale = $data['app_locale'] ?? 'ja';
+        if (! array_key_exists($installLocale, config('language.languages', []))) {
+            $installLocale = (string) config('language.default', 'en');
+        }
+
         $baseSettings = [
             'app_name' => $data['site_name'],
-            'locale' => $data['app_locale'] ?? 'ja',
+            'locale' => $installLocale,
             'display_timezone' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'mail_mailer' => $data['mail_mailer'] ?? 'smtp',
             'mail_host' => $data['mail_host'] ?? 'localhost',
@@ -509,6 +535,17 @@ class InstallRunner
             ->whereKey(app(SiteContextInterface::class)->currentSiteId())
             ->update(['name' => $data['site_name']]);
         Log::channel('install')->info('initializeDatabase - sites.name: '.$data['site_name']);
+
+        // Same for the canonical Site.primary_locale column. SitesSeeder wrote
+        // config('app.locale') there, which at seed time is still the
+        // pre-install .env value (the in-memory config is not re-read after the
+        // .env is written), so a ja install was left with primary_locale='en'
+        // and an English public front page. The site_settings 'locale' row
+        // written above stays as the legacy shadow.
+        Site::query()
+            ->whereKey(app(SiteContextInterface::class)->currentSiteId())
+            ->update(['primary_locale' => $installLocale]);
+        Log::channel('install')->info('initializeDatabase - sites.primary_locale: '.$installLocale);
 
         // Admin panel URL (admin_url is Global scope so goes to global_settings)
         $resolver->set('admin_url', $data['admin_url']);
@@ -556,9 +593,6 @@ class InstallRunner
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_admin_processing'));
         $admin = DB::table('members')->where('email', $data['admin_email'])->first();
 
-        // The caller decides the locale; the wizard seeds it from the
-        // session before handing the settings over.
-        $installLocale = $data['app_locale'] ?? 'ja';
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_language_setting').$installLocale);
 
         if ($admin) {

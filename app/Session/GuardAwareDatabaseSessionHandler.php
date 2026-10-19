@@ -35,6 +35,7 @@
 
 namespace App\Session;
 
+use Illuminate\Database\Connection;
 use Illuminate\Session\DatabaseSessionHandler;
 
 class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
@@ -66,6 +67,13 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
      * @var string|null
      */
     protected static $resolvedAdminUrl = null;
+
+    /**
+     * Whether members_sessions has started_at (in-process cache)
+     *
+     * @var bool|null
+     */
+    protected static $hasStartedAt = null;
 
     /**
      * Register table configuration per guard
@@ -360,14 +368,42 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
      */
     protected function performInsert($sessionId, $payload)
     {
+        // The admin session list shows when each session started (#674).
+        // Only on insert: the update below, taken when the row already
+        // exists, must not move it.
+        $started = $this->getTable() === 'members_sessions' && $this->hasStartedAtColumn()
+            ? ['started_at' => $this->currentTime()]
+            : [];
+
         try {
             return $this->getQuery()->insert(array_merge(
                 ['id' => $sessionId],
-                $payload
+                $payload,
+                $started
             ));
         } catch (\Exception $e) {
             $this->performUpdate($sessionId, $payload);
         }
+    }
+
+    /**
+     * Whether members_sessions has the started_at column yet.
+     *
+     * Checked once per process: until the migration has run, the insert
+     * must not name the column.
+     */
+    protected function hasStartedAtColumn(): bool
+    {
+        return static::$hasStartedAt ??= $this->connection instanceof Connection
+            && $this->connection->getSchemaBuilder()->hasColumn('members_sessions', 'started_at');
+    }
+
+    /**
+     * Forget the cached started_at check (for tests and migrations).
+     */
+    public static function forgetStartedAtColumn(): void
+    {
+        static::$hasStartedAt = null;
     }
 
     /**

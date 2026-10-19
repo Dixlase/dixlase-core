@@ -79,6 +79,8 @@ return [
     'regenerate' => '再生成',
     'regenerate_confirm' => 'このAPIキーを再生成しますか？現在のキーは無効になります。',
     'revoke_confirm' => 'このAPIキーを削除しますか？この操作は取り消せません。',
+    'revoke_all' => 'すべてのキーを削除',
+    'revoke_all_confirm' => 'このサイトのAPIキー :count 件をすべて削除しますか？それらを使う連携はすぐに動かなくなります。この操作は取り消せません。',
     'key_details' => 'APIキー詳細',
 
     // 成功メッセージ
@@ -87,5 +89,6 @@ return [
     'key_generated_warning_detail' => 'このキーを安全な場所に保存してください。ページを離れると二度と表示できません。',
     'key_regenerated' => 'APIキーを再生成しました。',
     'key_revoked' => 'APIキーを削除しました。',
+    'keys_revoked_all' => 'APIキーを :count 件削除しました。',
     'copied_to_clipboard' => 'クリップボードにコピーしました。',
 ];
