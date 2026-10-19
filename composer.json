@@ -1,7 +1,7 @@
 {
     "name": "dixlase/dixlase-core",
     "type": "project",
-    "description": "Dixlase — plugin-driven Laravel CMS.",
+    "description": "Dixlase — a security-hardened, plugin-driven open-source CMS from Japan.",
     "keywords": [
         "dixlase",
         "cms",

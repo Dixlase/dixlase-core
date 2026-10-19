@@ -2,7 +2,7 @@
 
 For Japanese, see [README.ja.md](./README.ja.md).
 
-**Dixlase** is a Laravel-based open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
+**Dixlase** is an open-source CMS from Japan, developed by [exc-D inc.](https://exc-d.com)
 - Defense hardened in the core, expression free through plugins and themes  
   Security, tamper detection, permissions, and signature verification are the core's responsibility, leaving content creation and editing maximally free. Because the core handles security, operators and creators can focus on producing, editing, and running content — across corporate sites, internal deployments, client projects, and personal sites alike.
 - A minimal core, maximal extensibility through plugins  
@@ -44,6 +44,8 @@ See the [official site](https://dixlase.org/) for the live demo.
 ---
 
 ## 📦 Setup
+
+Dixlase runs on PHP 8.3 or newer and is built on Laravel 13.
 
 Pick the method that matches your environment:
 
