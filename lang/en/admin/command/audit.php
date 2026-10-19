@@ -74,7 +74,7 @@ return [
         'sealed_logs' => 'Sealed Logs',
         'check' => 'Check',
         'result' => 'Result',
-        'signature' => 'Signature',
+        'signature' => 'Seal HMAC',
         'log_count' => 'Log Count',
         'final_hash' => 'Final Hash',
         'chain' => 'Chain',

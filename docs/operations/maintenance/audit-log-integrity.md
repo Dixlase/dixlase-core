@@ -2,7 +2,12 @@
 
 ## Overview
 
-Dixlase's audit logs achieve tamper resistance using hash chain technology similar to blockchain. Each log record contains the hash of the previous record, guaranteeing integrity through chaining.
+Dixlase layers two mechanisms over the audit log to **detect** tampering. They do not prevent it, and they do not guarantee anything.
+
+- **A hash chain per row (unkeyed).** Each row carries a SHA-256 (`record_hash`) over 13 fields and the previous row's hash. No key is involved, so a row that is rewritten and re-hashed still forms a consistent chain on its own.
+- **A daily seal per day (keyed).** For each completed day, an HMAC-SHA256 is recorded over the day's count, first and last row and last row's hash. The key is `AUDIT_LOG_SECRET`, or `APP_KEY` when that is unset. A recomputed chain no longer matches the seal unless the key is known as well.
+
+Both live in the same database as the audit log. A new row is unprotected until the hourly `audit:integrity build` links it into the chain. Seals are created automatically every day and verification runs daily on the schedule; the full pass that re-hashes every row is run by hand. See "Security Considerations" for what this can and cannot prove.
 
 ## How It Works
 
@@ -49,7 +54,7 @@ $hash = hash('sha256', $data);
 
 ## Daily Seal
 
-Logs are "sealed" each day to guarantee the integrity of the entire day's logs.
+Each completed day is pinned by a daily seal. Deleting or inserting a row, or rewriting the end of a day, is detected because the day no longer matches its seal.
 
 ### Daily Seal Table
 
@@ -60,8 +65,8 @@ Logs are "sealed" each day to guarantee the integrity of the entire day's logs.
 | `last_log_id` | Last log ID of the day |
 | `log_count` | Number of log entries |
 | `final_hash` | Hash of the final log entry |
-| `daily_signature` | HMAC-SHA256 signature |
-| `key_version` | Signing key version |
+| `daily_signature` | The seal's HMAC-SHA256 |
+| `key_version` | Seal key version |
 
 ## Commands
 
@@ -93,7 +98,7 @@ php artisan audit:integrity verify --date=2025-12-20
 
 What the standard pass covers:
 
-- **Every daily seal, O(1) per day.** The HMAC signature is recomputed and the row
+- **Every daily seal, O(1) per day.** The seal's HMAC is recomputed and the row
   count and final hash are compared. This catches deleted or inserted rows, a
   rewritten tail and a tampered seal row, for every retained day.
 - **The chain from the last verified record onward, O(rows).** Records that were
@@ -210,10 +215,10 @@ $tamperedLogs = AuditLog::tampered()->get();
 
 foreach ($tamperedLogs as $log) {
     // Send alert
-    SystemNotificationService::send(
+    app(SystemNotificationService::class)->sendAdminNotification(
         'Audit Log Tampering Detected',
         "Log ID {$log->id} has been tampered with.",
-        'critical'
+        ['audit_log_id' => $log->id]
     );
 }
 ```
@@ -275,7 +280,7 @@ periodically (see "Verifying Integrity").
 
 ### Security Considerations
 
-1. **Protect the signing key**: Seals are signed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals signed with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
+1. **Protect the seal key**: Seals are keyed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals made with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
 2. **Regular verification**: Run `audit:integrity verify` on a documented cadence and `verify --all` periodically (see "Verifying Integrity")
 3. **Alert configuration**: Configure the notification e-mail and the mail server so that a failed daily verification is mailed as well as shown as a banner
 4. **Backups**: Include the daily seal table in your backups
