@@ -38,6 +38,7 @@ namespace App\Http\Controllers\Install;
 use App\Models\CoreVersionHistory;
 use App\Services\Install\InstallFinalizer;
 use App\Support\Install\FinalizePendingMarker;
+use App\Support\Install\FinalizeRedirectTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -214,6 +215,8 @@ class InstallCompleteController extends BaseInstallController
 
         if ($redirectTo) {
             // If redirect destination is specified
+            // The value comes from the client: follow it only on this host.
+            $redirectTo = FinalizeRedirectTarget::for($request);
             Log::channel('install')->info('finalize: Executing redirect', ['url' => $redirectTo]);
 
             return redirect($redirectTo)->with('message', __('http/controllers/install/install_complete_controller.install_completed'));
