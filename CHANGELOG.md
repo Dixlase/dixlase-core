@@ -75,6 +75,14 @@ repository to be notified of changes.
   marked as not dispatched. The audit-log overview describes an unkeyed hash chain per row and
   a keyed daily seal per day — detection, not a guarantee. Japanese text calls the seal
   「日次封印」 throughout, where it said 署名 before (#543)
+- An audit row is linked into the hash chain when it is written, instead of up to an hour
+  later by `audit:integrity build`. Until then a row could be changed or removed before the
+  chain covered it, and the chain built afterwards vouched for whatever it said. Writers are
+  serialised by a one-row lock table, so concurrent requests produce one chain in id order;
+  a row that cannot be linked is still written and `build` links it. The per-row hash stays
+  unkeyed for now; the decision and its reasons are in the audit-log integrity document. The
+  unused `AuditLog::logWithHashChain()` is removed. Run `php artisan migrate` to create the
+  lock table; until then rows are written unchained as before (#629)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and

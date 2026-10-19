@@ -36,6 +36,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\Install\FinalizePendingMarker;
+use App\Support\Install\FinalizeRedirectTarget;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -259,8 +260,8 @@ class CheckInstallationReady
      * has already written INSTALLED=true, so without this the second lands on
      * the front page instead of the destination the operator chose. A repeated
      * finalize therefore follows its own `redirect_to` — the value comes from
-     * the client, so nothing is disclosed — as long as it stays on this host.
-     * Everything else goes to the front page.
+     * the client, so nothing is disclosed — as long as it stays on this host
+     * (FinalizeRedirectTarget). Everything else goes to the front page.
      */
     private function alreadyInstalledRedirectTarget(Request $request): string
     {
@@ -268,32 +269,7 @@ class CheckInstallationReady
             return '/';
         }
 
-        $target = $request->input('redirect_to');
-
-        return is_string($target) && $this->isSameHostUrl($request, $target) ? $target : '/';
-    }
-
-    /**
-     * True for an http(s) URL on the request's host, or a path on it.
-     * Protocol-relative (`//host`) and backslash forms are refused, since
-     * browsers resolve them to another host.
-     */
-    private function isSameHostUrl(Request $request, string $target): bool
-    {
-        if ($target === '' || str_contains($target, '\\')) {
-            return false;
-        }
-
-        if (str_starts_with($target, '/')) {
-            return ! str_starts_with($target, '//');
-        }
-
-        $parts = parse_url($target);
-
-        return is_array($parts)
-            && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
-            && isset($parts['host'])
-            && strcasecmp($parts['host'], $request->getHost()) === 0;
+        return FinalizeRedirectTarget::for($request);
     }
 
     /**
