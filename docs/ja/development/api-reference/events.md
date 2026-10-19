@@ -110,6 +110,11 @@
 | 整合性スキャン完了 | `INTEGRITY_SCAN_COMPLETED` | `['scope' => string, 'status' => string, 'changes' => array]` |
 | セキュリティアラート | `SECURITY_ALERT` | `['type' => string, 'details' => array]` |
 
+> **まだ発火しません。** `INTEGRITY_SCAN_STARTED` と `INTEGRITY_SCAN_COMPLETED` は予約済みの
+> 名前です。定数はありますが、スキャンはどちらも発火しないので、これらに登録したリスナーは
+> 呼ばれません。スキャン結果に応じて処理したい場合は、最新の `FileIntegrityAudit` レコードを
+> 読んでください。
+
 ### 2.9 AuditLogCreated イベント（凍結 DTO ペイロード）
 
 `App\Events\AuditLogCreated` はあらゆる監査ログレコード作成後に発火する。上記のイベント（位置引数の配列を運ぶ）と異なり、本イベントは凍結された型付きペイロードオブジェクト `App\DTO\Audit\AuditLogPayload` を運ぶ。これにより SIEM エクスポーターや外部連携が安定した契約に依存できる。
