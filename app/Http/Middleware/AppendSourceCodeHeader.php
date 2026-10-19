@@ -42,7 +42,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Middleware to notify source code location in response for AGPL §13 compliance
  *
- * Adds a URL where the source code of the running Dixlase CMS instance can be obtained
+ * Adds a URL where the source code of the running Dixlase instance can be obtained
  * to the response via the `X-Source-Code` header. When running a modified version,
  * override the source location with `DIXLASE_SOURCE_URL`
  */

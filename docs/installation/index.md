@@ -1,5 +1,5 @@
 # Installation Guide
-This guide walks you through installing Dixlase CMS on your server. Choose the method that best fits your environment.
+This guide walks you through installing Dixlase on your server. Choose the method that best fits your environment.
 
 ## Prerequisites
 

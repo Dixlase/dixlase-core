@@ -1,4 +1,4 @@
-# Dixlase CMS
+# Dixlase
 
 <!-- DIXLASE_RULES_START -->
 
