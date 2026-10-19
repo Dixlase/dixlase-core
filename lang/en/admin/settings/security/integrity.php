@@ -50,7 +50,7 @@ return [
     'baseline_regeneration_failed' => 'Failed to regenerate baseline.',
     'latest_scan' => 'Latest Scan Result',
     'run_scan' => 'Run Scan',
-    'scan_confirm' => 'Do you want to run the file integrity scan? All core files will be checked.',
+    'scan_confirm' => 'Run the file integrity scan? Core files in app, bootstrap, config, routes, resources and database/migrations, plus public/index.php, artisan and composer.json/lock, are compared with the baseline. vendor, plugins, themes, custom and built assets (public/build) are not checked.',
     'scan_date' => 'Scan Date',
     'files_scanned' => 'Files Scanned',
     'status' => 'Status',

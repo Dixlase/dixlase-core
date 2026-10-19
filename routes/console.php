@@ -82,8 +82,9 @@ Schedule::command('dls:integrity:scan --scheduled')
 
 // Audit log hash chain (runs hourly)
 //
-// Links pending audit log entries into the hash chain. Entries stay unprotected
-// until they are chained, so this interval is the tamper-detection blind spot.
+// Rows are linked into the hash chain when they are written. This links the
+// ones that could not be: rows written before the chain lock table existed,
+// a backlog longer than one write catches up on, or a failed link.
 Schedule::command('audit:integrity build')
     ->hourly()
     ->withoutOverlapping()

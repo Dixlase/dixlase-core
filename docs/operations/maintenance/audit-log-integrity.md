@@ -2,7 +2,50 @@
 
 ## Overview
 
-Dixlase's audit logs achieve tamper resistance using hash chain technology similar to blockchain. Each log record contains the hash of the previous record, guaranteeing integrity through chaining.
+Dixlase layers two mechanisms over the audit log to **detect** tampering. They do not prevent it, and they do not guarantee anything.
+
+- **A hash chain per row (unkeyed).** Each row carries a SHA-256 (`record_hash`) over 13 fields and the previous row's hash. No key is involved, so a row that is rewritten and re-hashed still forms a consistent chain on its own.
+- **A daily seal per day (keyed).** For each completed day, an HMAC-SHA256 is recorded over the day's count, first and last row and last row's hash. The key is `AUDIT_LOG_SECRET`, or `APP_KEY` when that is unset. A recomputed chain no longer matches the seal unless the key is known as well.
+
+Both live in the same database as the audit log. A row is linked into the chain in the same transaction that writes it (see "When a Row Is Linked"). Seals are created automatically every day and verification runs daily on the schedule; the full pass that re-hashes every row is run by hand. See "Security Considerations" for what this can and cannot prove.
+
+## When a Row Is Linked (Design Decisions)
+
+Recorded for #629.
+
+**A row is linked when it is written.** `AuditLog::log()` inserts the row and links
+it after the current chain head in one transaction. Writers are serialised by a
+one-row lock table (`audit_log_chain_lock`): each writer updates that row first, so
+the next writer waits until the transaction ends. The insert happens under the lock
+as well, because verification walks the chain in id order and a writer that is still
+waiting has not taken an id yet.
+
+- Rows still waiting from before the upgrade, or from a failed link, are linked first,
+  oldest first, up to 100 per write. With a longer backlog the new row waits too, and
+  `audit:integrity build` links them all in order.
+- If linking fails, the row is still written, unchained, and the hourly
+  `audit:integrity build` links it. An audit row is never dropped to keep the chain
+  tidy.
+- A row that has an id below the chain head and is still unchained cannot be linked
+  without breaking the order. It is left unchained, and `build` reports it as
+  remaining.
+- The cost is one extra update and two locking reads per audited operation, and
+  audited operations queue on the lock. When the caller already holds a transaction,
+  the lock is held until that transaction ends.
+
+The alternatives were a shorter batch interval, which keeps a window, and linking only
+high-severity rows on write, which leaves two paths that must agree.
+
+**The per-row hash is not keyed, for now.** Keying it means an HMAC with a dedicated
+chain secret, a key version on each row and verification that accepts previous keys.
+That rotation design does not exist yet for the seal either, and keying without it
+would make the first key change look like tampering. A consistent rewrite of the chain
+is detected by the keyed daily seal, for completed days. Keying the chain is tracked
+in #665.
+
+**What this claims.** The chain and the seal detect changes made **in the database**.
+Code running inside the application process can write rows through the same path and
+reads the same key, so a full compromise of the application is out of scope.
 
 ## How It Works
 
@@ -49,7 +92,7 @@ $hash = hash('sha256', $data);
 
 ## Daily Seal
 
-Logs are "sealed" each day to guarantee the integrity of the entire day's logs.
+Each completed day is pinned by a daily seal. Deleting or inserting a row, or rewriting the end of a day, is detected because the day no longer matches its seal.
 
 ### Daily Seal Table
 
@@ -60,8 +103,8 @@ Logs are "sealed" each day to guarantee the integrity of the entire day's logs.
 | `last_log_id` | Last log ID of the day |
 | `log_count` | Number of log entries |
 | `final_hash` | Hash of the final log entry |
-| `daily_signature` | HMAC-SHA256 signature |
-| `key_version` | Signing key version |
+| `daily_signature` | The seal's HMAC-SHA256 |
+| `key_version` | Seal key version |
 
 ## Commands
 
@@ -93,7 +136,7 @@ php artisan audit:integrity verify --date=2025-12-20
 
 What the standard pass covers:
 
-- **Every daily seal, O(1) per day.** The HMAC signature is recomputed and the row
+- **Every daily seal, O(1) per day.** The seal's HMAC is recomputed and the row
   count and final hash are compared. This catches deleted or inserted rows, a
   rewritten tail and a tampered seal row, for every retained day.
 - **The chain from the last verified record onward, O(rows).** Records that were
@@ -210,10 +253,10 @@ $tamperedLogs = AuditLog::tampered()->get();
 
 foreach ($tamperedLogs as $log) {
     // Send alert
-    SystemNotificationService::send(
+    app(SystemNotificationService::class)->sendAdminNotification(
         'Audit Log Tampering Detected',
         "Log ID {$log->id} has been tampered with.",
-        'critical'
+        ['audit_log_id' => $log->id]
     );
 }
 ```
@@ -228,7 +271,7 @@ item derived from `AuditLogIntegrityService::getHealth()`:
 | State | Badge | Meaning |
 |-------|-------|---------|
 | Tampered | Critical | A record or a daily seal failed verification |
-| Chain stalled | Warning | Entries have waited more than 2 hours to be chained — the hourly `audit:integrity build` is not running |
+| Chain stalled | Warning | Entries have waited more than 2 hours to be chained — linking on write failed for them and the hourly `audit:integrity build` is not running |
 | Seal overdue | Warning | The most recent completed day with entries has no seal after 04:30 the next day — the daily `audit:integrity seal` is not running |
 | Verification stale | Recommended | An entry chained more than 30 days ago has never been verified, or the oldest verification is older than 30 days (an incremental pass does not refresh old rows — run `verify --all`). Entries chained since the last pass are expected to be unverified and do not count |
 | OK | OK | Chain and seals are up to date (day one shows OK: seals only exist for completed days) |
@@ -254,12 +297,12 @@ from cron):
 
 | Task | Schedule |
 |------|----------|
-| `audit:integrity build` | hourly |
+| `audit:integrity build` | hourly (links rows that could not be linked on write) |
 | `audit:integrity seal` | daily at 03:30 (after the 03:00 file-integrity scan) |
 | `audit:integrity verify` | daily at 03:45 (after the seal) |
 
-The chain is also built once when the web installer completes, so install-time
-events are protected before the first hourly run.
+Rows are linked as they are written. The chain is also built once when the web
+installer completes, which links anything written before the lock table existed.
 
 Generation is always on and has no switch: a record cannot be protected
 retroactively, so protection must not depend on someone remembering to run it.
@@ -275,7 +318,7 @@ periodically (see "Verifying Integrity").
 
 ### Security Considerations
 
-1. **Protect the signing key**: Seals are signed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals signed with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
+1. **Protect the seal key**: Seals are keyed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals made with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
 2. **Regular verification**: Run `audit:integrity verify` on a documented cadence and `verify --all` periodically (see "Verifying Integrity")
 3. **Alert configuration**: Configure the notification e-mail and the mail server so that a failed daily verification is mailed as well as shown as a banner
 4. **Backups**: Include the daily seal table in your backups
@@ -341,7 +384,7 @@ erasure changed them.
 
 - ON/OFF and frequency settings for the scheduled verification (verification only — generation stays always-on)
 - "Verify now" button in the admin panel (queued; a synchronous chain pass grows with the row count)
-- Chaining inline on write, removing the up-to-one-hour blind spot of the hourly batch
+- A keyed per-row chain (HMAC with a dedicated secret and key rotation)
 - Real-time tampering detection
 - External timestamping service integration
 - Log export/import with signatures

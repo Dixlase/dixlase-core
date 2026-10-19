@@ -35,6 +35,8 @@
 
 namespace App\Services\Extension;
 
+use App\Helpers\PluginHelper;
+
 /**
  * Whether a downloaded but not yet installed plugin or theme is older than
  * the latest release on the source it came from.
@@ -65,7 +67,7 @@ class ExtensionDownloadFreshness
         }
 
         try {
-            $linkage = $this->sidecar->read(base_path(($kind === 'theme' ? 'themes/' : 'plugins/').$directory));
+            $linkage = $this->sidecar->read($this->extensionDirectory($kind, $directory));
             if ($linkage === null) {
                 return null;
             }
@@ -98,5 +100,23 @@ class ExtensionDownloadFreshness
         }
 
         return (int) $sidecar['source_id'] === (int) $linkage['source_id'] ? $newer : null;
+    }
+
+    /**
+     * Absolute directory of the download. The roots come from
+     * `config('plugins.plugins_directory')` / `config('themes.theme_directory')`,
+     * as the uninstall steps that write the sidecar back resolve them.
+     *
+     * @param  'plugin'|'theme'  $kind
+     */
+    private function extensionDirectory(string $kind, string $directory): string
+    {
+        if ($kind === 'plugin') {
+            return PluginHelper::getPluginPath($directory);
+        }
+
+        $root = trim((string) config('themes.theme_directory', 'themes'), '/');
+
+        return base_path(($root !== '' ? $root : 'themes')."/{$directory}");
     }
 }

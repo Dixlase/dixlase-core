@@ -77,7 +77,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -140,7 +140,7 @@ jobs:
       - name: Register the document generators
         run: |
           if [ -z "${DOC_GENERATOR_PROVIDER:-}" ]; then
-            echo "::error::DOC_GENERATOR_PROVIDER is empty. The INTEGRATION_EXTENSIONS variable needs a row flagged doc-generators, and the fetch step has to run before this one."
+            echo "::error::DOC_GENERATOR_PROVIDER is empty. The INTEGRATION_EXTENSIONS secret needs a row flagged doc-generators, and the fetch step has to run before this one."
             exit 1
           fi
           php -r '$f="bootstrap/providers.php"; $p=getenv("DOC_GENERATOR_PROVIDER"); $a=require $f; if(!in_array($p,$a,true)){$a[]=$p;} file_put_contents($f,"<?php".PHP_EOL.PHP_EOL."return ".var_export($a,true).";".PHP_EOL);'

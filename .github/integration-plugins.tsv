@@ -12,7 +12,7 @@
 # This file lists only the extensions this repository distributes
 # publicly. Core is integration-tested against more than these, and the
 # rows for the rest are held in the INTEGRATION_EXTENSIONS repository (or
-# organisation) variable, which the fetch script merges with this file at
+# organisation) secret, which the fetch script merges with this file at
 # run time. The reason is dixlase-core#619: a public repository should not
 # publish the names and the directory layout of software its readers
 # cannot obtain, and the files that define how the project is built and
@@ -40,7 +40,7 @@
 #      arguments (well-tested / moderate / minimal).
 #
 # Adding one that is not distributed publicly: append a row to the
-# INTEGRATION_EXTENSIONS variable instead, with its tier. The fetch
+# INTEGRATION_EXTENSIONS secret instead, with its tier. The fetch
 # script registers the testsuite and places it in the tier for you —
 # nothing is added to this file or to phpunit.xml.
 #

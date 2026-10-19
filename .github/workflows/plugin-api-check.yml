@@ -44,7 +44,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
-          INTEGRATION_EXTENSIONS: ${{ vars.INTEGRATION_EXTENSIONS }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential

@@ -63,7 +63,23 @@ return [
     'Check wildcard pattern' => 'ワイルドカードパターンをチェック',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    'Where to send an /install request that arrives after installation.' => 'インストール後に届いた /install へのリクエストをどこへ送るか。',
+    'A double click on the completion screen sends finalize twice, and the' => '完了画面でダブルクリックすると finalize が2回送られ、',
+    'browser follows only the response to the second request. The first one' => 'ブラウザは2回目のリクエストの応答にだけ従う。1回目は',
+    'has already written INSTALLED=true, so without this the second lands on' => 'すでに INSTALLED=true を書いているので、これが無いと2回目は',
+    'the front page instead of the destination the operator chose. A repeated' => '操作した人が選んだ行き先ではなくフロントページに着く。そこで繰り返された',
+    'finalize therefore follows its own `redirect_to` — the value comes from' => 'finalize は自分の `redirect_to` に従う（値はクライアントから来たものなので',
+    'the client, so nothing is disclosed — as long as it stays on this host' => '何も明かさない）。ただしこのホストの中に留まる場合に限る',
+    '(FinalizeRedirectTarget). Everything else goes to the front page.' => '（FinalizeRedirectTarget）。それ以外はすべてフロントページへ送る。',
     '_review_status' => [
+        'Where to send an /install request that arrives after installation.' => 'machine',
+        'A double click on the completion screen sends finalize twice, and the' => 'machine',
+        'browser follows only the response to the second request. The first one' => 'machine',
+        'has already written INSTALLED=true, so without this the second lands on' => 'machine',
+        'the front page instead of the destination the operator chose. A repeated' => 'machine',
+        'finalize therefore follows its own `redirect_to` — the value comes from' => 'machine',
+        'the client, so nothing is disclosed — as long as it stays on this host' => 'machine',
+        '(FinalizeRedirectTarget). Everything else goes to the front page.' => 'machine',
         'Paths excluded from installation check' => 'machine',
         'CSP violation report endpoint' => 'machine',
         'MCP/Windsurf development tools' => 'machine',

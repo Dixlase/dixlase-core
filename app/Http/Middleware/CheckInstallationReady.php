@@ -36,6 +36,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\Install\FinalizePendingMarker;
+use App\Support\Install\FinalizeRedirectTarget;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -243,11 +244,32 @@ class CheckInstallationReady
         } else {
             // Prevent access to installation screen when already installed
             if ($request->is('install') || $request->is('install/*')) {
-                return redirect('/')->with('message', __('http/middleware/check_installation_ready.app_already_installed'));
+                return redirect($this->alreadyInstalledRedirectTarget($request))
+                    ->with('message', __('http/middleware/check_installation_ready.app_already_installed'));
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Where to send an /install request that arrives after installation.
+     *
+     * A double click on the completion screen sends finalize twice, and the
+     * browser follows only the response to the second request. The first one
+     * has already written INSTALLED=true, so without this the second lands on
+     * the front page instead of the destination the operator chose. A repeated
+     * finalize therefore follows its own `redirect_to` — the value comes from
+     * the client, so nothing is disclosed — as long as it stays on this host
+     * (FinalizeRedirectTarget). Everything else goes to the front page.
+     */
+    private function alreadyInstalledRedirectTarget(Request $request): string
+    {
+        if (! $request->isMethod('POST') || ! $request->is('install/finalize')) {
+            return '/';
+        }
+
+        return FinalizeRedirectTarget::for($request);
     }
 
     /**
