@@ -59,6 +59,15 @@ repository to be notified of changes.
   baseline, and the command reports each one as current, upstream changed, upstream missing
   or no baseline, exiting non-zero for the middle two (#482)
 
+### Added
+- Plugin API: extensions can declare which state-changing admin routes become
+  read-only while a site runs in restricted (demo) mode. A new
+  `ReadonlyRouteProviderInterface` (tagged on `plugin.capabilities`) contributes
+  the blocked route names, and core's read-only route guard aggregates every
+  provider, falling back to its built-in list while none is registered. The
+  guard is centralised behind the `ReadonlyRoutes` facade so the demo middleware
+  and the admin read-only cues share one source of truth (#691)
+
 ### Fixed
 - An audit row written through an action records who did it and to what. `AbstractAction`
   passed the actor and the target under the column names, which `AuditLog::log()` ignored,

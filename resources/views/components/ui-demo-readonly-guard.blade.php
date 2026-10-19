@@ -34,21 +34,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 {{--
 Demo read-only guard.
 
-When DIXLASE_DEMO_MODE is on, DemoGuard blocks the POST for a set of
-destructive / lockout-prone admin routes. Without a visual cue those forms
-still look editable and only fail on submit. This component makes that
+When DIXLASE_DEMO_MODE is on, the read-only route guard blocks the POST for a
+set of destructive / lockout-prone admin routes. Without a visual cue those
+forms still look editable and only fail on submit. This component makes that
 explicit: it disables the controls of any <form> whose action targets a
 blocked route and prepends a "view-only in the demo" notice, so visitors can
-see the setting is locked. Super admins bypass DemoGuard, so their forms stay
+see the setting is locked. Super admins bypass the guard, so their forms stay
 live and this component renders nothing for them. The blocklist is read from
-DemoGuard so this stays in lock-step with the actual server-side enforcement.
+the same guard so this stays in lock-step with the actual server-side
+enforcement.
 --}}
 @php
-    $demoUser = auth()->user();
-    $demoIsSuperAdmin = $demoUser
-        && $demoUser->role instanceof \App\Enums\MemberRole
-        && $demoUser->role === \App\Enums\MemberRole::SUPER_ADMIN;
-    $demoReadonlyActive = config('dixlase.demo_mode') && $demoUser && ! $demoIsSuperAdmin;
+    $demoReadonlyActive = \App\Facades\ReadonlyRoutes::appliesTo(auth()->user());
 
     // Resolve each blocked route name to its concrete URI (the admin prefix is
     // already baked in at registration time). "*.*" entries expand to every
@@ -56,7 +53,7 @@ DemoGuard so this stays in lock-step with the actual server-side enforcement.
     $demoBlockedUris = [];
     if ($demoReadonlyActive) {
         $byName = \Illuminate\Support\Facades\Route::getRoutes()->getRoutesByName();
-        foreach (\App\Http\Middleware\DemoGuard::blockedRouteNames() as $entry) {
+        foreach (\App\Facades\ReadonlyRoutes::routeNames() as $entry) {
             $names = [];
             if (\Illuminate\Support\Str::endsWith($entry, '.*')) {
                 $prefix = substr($entry, 0, -2);

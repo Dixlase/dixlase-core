@@ -155,6 +155,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
 | `App\Contracts\PluginIntegration\PrivacyDataProviderInterface` | Contract that a plugin (or core subsystem) implements to declare which |
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider contract |
+| `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` | Contract for extensions that declare which state-changing routes a site |
 | `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 | `App\Contracts\PluginIntegration\TranslationUiProviderInterface` | Contract for plugins that provide a translation editor for content records |
 

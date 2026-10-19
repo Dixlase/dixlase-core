@@ -260,6 +260,12 @@ class AppServiceProvider extends ServiceProvider
             [\App\Services\Privacy\Providers\CoreMemberPrivacyProvider::class],
             \App\Services\Plugin\PluginServiceResolver::CAPABILITY_TAG,
         );
+
+        // The read-only route guard memoises the aggregated list per request,
+        // so bind it as a singleton. Extensions contribute route names via
+        // ReadonlyRouteProviderInterface tagged on the capability tag above;
+        // the guard falls back to its built-in list while none is registered.
+        $this->app->singleton(\App\Services\Admin\ReadonlyRouteGuard::class);
     }
 
     /**
