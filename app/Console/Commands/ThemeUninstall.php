@@ -36,6 +36,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Theme;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -65,7 +66,7 @@ class ThemeUninstall extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(ExtensionSourceSidecar $sidecar)
     {
         $themeName = $this->argument('themeName');
 
@@ -137,6 +138,16 @@ class ThemeUninstall extends Command
 
         // Delete theme from database
         $theme->delete();
+
+        // The row held the source linkage while the theme was installed.
+        // Hand it back to the files that stay on disk, as a download leaves
+        // it, so a stale copy is still flagged and a reinstall keeps its
+        // update source (#485).
+        $manifestPath = $theme->manifestPath();
+        if ($manifestPath !== null) {
+            $sidecar->restoreFromRow(dirname($manifestPath), $theme);
+        }
+
         $this->info(__('admin/command/theme-uninstall.uninstalled', ['themeName' => $theme->name]));
         $this->info(__('admin/command/theme-uninstall.files_preserved'));
         $this->info(__('admin/command/theme-uninstall.delete_hint'));
