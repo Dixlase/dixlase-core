@@ -135,6 +135,19 @@ class InstallRunner
         string $mailPassword = '',
         ?callable $progress = null
     ): void {
+        // SQLite ignores credentials; carrying them into .env would only
+        // describe a server that is not there.
+        if (($data['db_connection'] ?? null) === 'sqlite') {
+            $dbPassword = '';
+        }
+
+        // Point the connection at the chosen database before anything
+        // queries it. The integrity gate below already reads the signature
+        // waiver table, and until now it did so through whatever the
+        // template .env named (DB_HOST=127.0.0.1), not the database the
+        // operator chose.
+        $this->applyDatabaseConfig($data, $dbPassword);
+
         // Core integrity gate: block installation only when the signature is
         // INVALID (manifest present but signature fails = tampering). Unsigned
         // dev builds and modified-but-authentic releases are allowed through.
@@ -142,12 +155,6 @@ class InstallRunner
             Log::channel('install')->error('Install blocked: core integrity is INVALID (signature verification failed).');
 
             throw new CoreIntegrityBlockedException();
-        }
-
-        // SQLite ignores credentials; carrying them into .env would only
-        // describe a server that is not there.
-        if (($data['db_connection'] ?? null) === 'sqlite') {
-            $dbPassword = '';
         }
 
         // Get force_ssl value
@@ -226,26 +233,8 @@ class InstallRunner
 
         // Artisan::call('config:clear') only deletes the cached config
         // file on disk — it does NOT refresh $app['config'] in the
-        // current request. Artisan::call sub-kernels (migrate:fresh,
-        // db:seed) re-read .env on their own, but anything that runs
-        // directly in this controller (initializeDatabase below) would
-        // otherwise keep using the boot-time DB_CONNECTION. Force the
-        // in-memory config to match the freshly-written .env so every
-        // subsequent in-request DB call targets the chosen driver.
-        $newDriver = $data['db_connection'];
-        config([
-            'database.default' => $newDriver,
-            "database.connections.{$newDriver}.database" => $data['db_database'],
-        ]);
-        if ($newDriver !== 'sqlite') {
-            config([
-                "database.connections.{$newDriver}.host" => $data['db_host'],
-                "database.connections.{$newDriver}.port" => $data['db_port'],
-                "database.connections.{$newDriver}.username" => $data['db_username'],
-                "database.connections.{$newDriver}.password" => $dbPassword,
-            ]);
-        }
-        DB::purge();
+        // current request, so the settings applied at the top of run()
+        // stay in effect for every in-request DB call below.
 
         $this->report($progress, 'migrate');
 
@@ -441,6 +430,34 @@ class InstallRunner
                 'command' => ComposerLocalHelper::RECOVERY_COMMAND,
             ]));
         }
+    }
+
+    /**
+     * Make the in-memory database config match the chosen settings.
+     *
+     * Artisan::call sub-kernels (migrate:fresh, db:seed) re-read .env on
+     * their own, but anything that runs directly in this process keeps the
+     * boot-time connection unless the config is changed here and the
+     * connection purged.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function applyDatabaseConfig(array $data, string $dbPassword): void
+    {
+        $driver = $data['db_connection'];
+        config([
+            'database.default' => $driver,
+            "database.connections.{$driver}.database" => $data['db_database'],
+        ]);
+        if ($driver !== 'sqlite') {
+            config([
+                "database.connections.{$driver}.host" => $data['db_host'],
+                "database.connections.{$driver}.port" => $data['db_port'],
+                "database.connections.{$driver}.username" => $data['db_username'],
+                "database.connections.{$driver}.password" => $dbPassword,
+            ]);
+        }
+        DB::purge();
     }
 
     /**
