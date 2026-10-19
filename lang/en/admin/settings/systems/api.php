@@ -80,6 +80,8 @@ return [
     'regenerate' => 'Regenerate',
     'regenerate_confirm' => 'Are you sure you want to regenerate this API key? The current key will be invalidated.',
     'revoke_confirm' => 'Are you sure you want to delete this API key? This action cannot be undone.',
+    'revoke_all' => 'Delete All Keys',
+    'revoke_all_confirm' => 'Delete all :count API keys of this site? Every integration that uses them stops working immediately. This action cannot be undone.',
     'key_details' => 'API Key Details',
 
     // Success Messages
@@ -88,5 +90,6 @@ return [
     'key_generated_warning_detail' => 'Please save this key in a secure location. You will not be able to see it again after leaving this page.',
     'key_regenerated' => 'API key has been regenerated.',
     'key_revoked' => 'API key has been deleted.',
+    'keys_revoked_all' => ':count API keys have been deleted.',
     'copied_to_clipboard' => 'Copied to clipboard.',
 ];

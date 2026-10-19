@@ -52,6 +52,7 @@ use App\Http\Requests\Admin\Settings\Members\AdminSettingsMemberStoreRequest;
 use App\Models\Member;
 use App\Services\MailServerValidatorService;
 use App\Services\Member\MemberHierarchyGuard;
+use App\Services\Member\MemberSessionService;
 use App\Services\TwoFa\TwoFaStatusService;
 
 class AdminMemberFormController extends AdminLoggedInController
@@ -209,6 +210,15 @@ class AdminMemberFormController extends AdminLoggedInController
             $blockReasons[] = 'email_not_verified';
         }
         $this->viewParams['twoFaEnableBlockReasons'] = $blockReasons;
+
+        // Active sessions (#674). Only for a member the viewer may manage:
+        // the list shows where someone is signed in from.
+        $sessions = app(MemberSessionService::class);
+        $this->viewParams['memberSessionsAvailable'] = $sessions->isAvailable();
+        $this->viewParams['memberSessions'] = $this->viewParams['memberSessionsAvailable']
+            && MemberHierarchyGuard::rank($member) <= MemberHierarchyGuard::rank(AdminHelper::getMember())
+                ? $sessions->forMember($member, request()->session()->getId())
+                : null;
 
         return view('admin.members.edit', $this->viewParams);
     }
