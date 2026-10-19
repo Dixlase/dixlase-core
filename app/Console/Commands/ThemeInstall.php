@@ -259,11 +259,12 @@ class ThemeInstall extends Command
         // official-vendor package. See PluginInstall for the plugin
         // twin of this block.
         $sourceId = $this->option('source') !== null ? (int) $this->option('source') : null;
+        $download = $sidecar->read($themeDir);
         $linkage = app(ExtensionSourceManager::class)->resolveInstallLinkage(
             $slug,
             'theme',
             $sourceId,
-            $sidecar->read($themeDir),
+            $download,
             $packageName,
             $composerName,
         );
@@ -271,7 +272,8 @@ class ThemeInstall extends Command
         // A download older than its source's latest release is still
         // installed (the operator may want exactly this version), but not
         // silently (dixlase-core#456).
-        $newer = app(ExtensionDownloadFreshness::class)->newerRelease('theme', $themeDirName, $slug, $version);
+        $freshness = app(ExtensionDownloadFreshness::class);
+        $newer = $freshness->newerRelease('theme', $themeDirName, $slug, $version);
         if ($newer !== null) {
             $this->warn(__('admin/command/theme-install.stale_download', [
                 'latest' => $newer,
@@ -297,6 +299,9 @@ class ThemeInstall extends Command
             'source_repo' => $linkage['source_repo'] ?? null,
             'installed_from_url' => $linkage['installed_from_url'] ?? null,
             'installation_method' => $linkage['installation_method'] ?? null,
+            // Shows the update badge now rather than after the next update
+            // check (#486); see PluginInstall.
+            'available_version' => $freshness->availableVersionToRecord($newer, $download, $linkage),
             'installed_at' => now(),
         ]);
         $sidecar->delete($themeDir);

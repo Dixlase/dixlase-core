@@ -77,6 +77,28 @@ class StaleDownloadWarningTest extends TestCase
         $this->assertNull($this->freshness(['source_id' => 7], null, $sources)->newerRelease('plugin', 'DixlasePages', 'dixlase-pages', '0.1.0'));
     }
 
+    public function test_an_install_records_the_newer_release_for_the_source_it_links_to(): void
+    {
+        $freshness = $this->freshness(null, null);
+
+        $this->assertSame('0.1.2', $freshness->availableVersionToRecord('0.1.2', ['source_id' => 7], ['source_id' => 7]));
+        $this->assertSame('0.1.2', $freshness->availableVersionToRecord('0.1.2', ['source_id' => '7'], ['source_id' => 7]));
+    }
+
+    public function test_an_install_records_nothing_without_a_newer_release_from_the_linked_source(): void
+    {
+        $freshness = $this->freshness(null, null);
+
+        // The download is current.
+        $this->assertNull($freshness->availableVersionToRecord(null, ['source_id' => 7], ['source_id' => 7]));
+        // --source linked the row to a different source than the one asked.
+        $this->assertNull($freshness->availableVersionToRecord('0.1.2', ['source_id' => 7], ['source_id' => 9]));
+        // The row is left unlinked, which the update check never badges.
+        $this->assertNull($freshness->availableVersionToRecord('0.1.2', ['source_id' => 7], null));
+        // No sidecar, so newerRelease() asked no source.
+        $this->assertNull($freshness->availableVersionToRecord('0.1.2', null, ['source_id' => 7]));
+    }
+
     public function test_the_latest_release_lookup_is_cached(): void
     {
         Cache::flush();
@@ -102,7 +124,11 @@ class StaleDownloadWarningTest extends TestCase
             $this->assertStringContainsString("['stale_latest_version'] = \$freshness->newerRelease(", File::get(app_path("Http/Controllers/Admin/Settings/{$controller}.php")), $controller);
         }
         foreach (['PluginInstall', 'ThemeInstall'] as $command) {
-            $this->assertStringContainsString('ExtensionDownloadFreshness::class)->newerRelease(', File::get(app_path("Console/Commands/{$command}.php")), $command);
+            $source = File::get(app_path("Console/Commands/{$command}.php"));
+            $this->assertStringContainsString('$freshness = app(ExtensionDownloadFreshness::class);', $source, $command);
+            $this->assertStringContainsString('$freshness->newerRelease(', $source, $command);
+            // The same lookup seeds the installed row's update badge (#486).
+            $this->assertStringContainsString('$freshness->availableVersionToRecord($newer, $download, $linkage)', $source, $command);
         }
         $this->assertStringContainsString("'staleLatestVersion' => \$isModel ? null", File::get(app_path('Presenters/Admin/ExtensionCardPresenter.php')));
         $this->assertStringContainsString('data-stale-notice=', File::get(resource_path('views/admin/settings/plugins/partials/uninstalled-actions.blade.php')));
