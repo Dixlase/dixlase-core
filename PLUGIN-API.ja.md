@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-10-17
+**最終更新日:** 2026-10-19
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -155,6 +155,7 @@ Dixlase CMS と**このドキュメントに記載されたインターフェー
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
 | `App\Contracts\PluginIntegration\PrivacyDataProviderInterface` | Contract that a plugin (or core subsystem) implements to declare which |
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider contract |
+| `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` | Contract for extensions that declare which state-changing routes a site |
 | `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 | `App\Contracts\PluginIntegration\TranslationUiProviderInterface` | Contract for plugins that provide a translation editor for content records |
 
