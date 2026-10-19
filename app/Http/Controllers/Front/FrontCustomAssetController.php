@@ -85,7 +85,9 @@ class FrontCustomAssetController extends Controller
      */
     private function resolveContent(string $type): ?string
     {
-        $frontPage = FrontPage::findByType('main_content');
+        // Locale-aware so the custom JS/CSS comes from the same row the
+        // front page HTML is rendered from (see FrontPage::findForFrontend).
+        $frontPage = FrontPage::findForFrontend('main_content');
 
         if (! $frontPage) {
             return null;
