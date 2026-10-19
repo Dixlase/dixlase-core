@@ -49,16 +49,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             variant="primary"
             icon="fas fa-plus"
         />
-        
-        <x-form-button
-            type="button"
-            :label="__('admin/members/index.force_logout_all')"
-            variant="warning"
-            icon="fas fa-sign-out-alt"
-            :disabled="$viewOnly"
-            :title="$tooltipText"
-            @click="openModal('forceLogoutAllModal')"
-        />
+
+        <div class="flex items-center gap-2">
+            <x-form-button
+                type="link"
+                :href="route('admin.members.sessions')"
+                :label="__('admin/members/sessions.view_all')"
+                variant="secondary"
+                icon="fas fa-desktop"
+            />
+
+            <x-form-button
+                type="button"
+                :label="__('admin/members/index.force_logout_all')"
+                variant="warning"
+                icon="fas fa-sign-out-alt"
+                :disabled="$viewOnly"
+                :title="$tooltipText"
+                @click="openModal('forceLogoutAllModal')"
+            />
+        </div>
     </div>
 
 

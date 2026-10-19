@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Actions\Api\GenerateApiKeyAction;
 use App\Actions\Api\RegenerateApiKeyAction;
+use App\Actions\Api\RevokeAllApiKeysAction;
 use App\Actions\Api\RevokeApiKeyAction;
 use App\Actors\MemberActor;
 use App\Contracts\Repositories\ApiSettingRepositoryInterface;
@@ -202,6 +203,19 @@ class AdminSystemApiController extends AdminLoggedInController
 
         return redirect()->route('admin.settings.systems.api')
             ->with('success', __('admin/settings/systems/api.key_revoked'));
+    }
+
+    /**
+     * Delete every API key of this site (#674)
+     */
+    public function revokeAllKeys()
+    {
+        $actor = new MemberActor(AdminHelper::getMember());
+
+        $result = (new RevokeAllApiKeysAction())->execute($actor, []);
+
+        return redirect()->route('admin.settings.systems.api')
+            ->with('success', __('admin/settings/systems/api.keys_revoked_all', ['count' => $result->metadata['count']]));
     }
 
     /**

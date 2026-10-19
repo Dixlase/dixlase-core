@@ -32,6 +32,19 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 追加
+- 管理者が、メンバーの有効な管理画面のセッション（端末、IP アドレス、開始時刻、最終利用時刻）を、
+  メンバーの編集画面と、メンバー管理の下のサイト全体の「有効なセッション」画面で一覧し、1 つずつ
+  終了できるようになりました。セッションを終了すると、メンバーの「ログイン状態を保持する」の
+  トークンも消すので、その端末はすぐにログインし直せません。`session_destroyed` として記録します。
+  画面ではセッションを ID ではなく鍵付きハッシュで示します。`started_at` 列を足すため
+  `php artisan migrate` を実行してください。実行するまでは開始時刻が「不明」と表示されます (#674)
+- API の設定画面の「すべてのキーを削除」で、サイトの API キーを一度に削除できます。各キーを ID と
+  名前で示す `api_keys_revoked_all` の監査の行を 1 つ書きます。ほかのサイトと共有する
+  ネットワークキーには触れません (#674)
+- `SECURITY.md` に「失効」の節を加えました。各操作で何が取り消されるかと、セッションと API キーは
+  キャッシュを通らず、すべてのインスタンスで次のリクエストから拒まれることを書いています (#674)
+
 ### 修正
 - Action を通して書かれた監査行に、誰が・何に対して行ったかが入るようになりました。
   `AbstractAction` はアクターと対象を列名のキーで渡していましたが、`AuditLog::log()` は
@@ -82,6 +95,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
   判断と理由は監査ログ整合性の文書にあります。使われていなかった `AuditLog::logWithHashChain()`
   は削除しました。ロック用テーブルを作るため `php artisan migrate` を実行してください。実行する
   までは、これまでどおりチェーンに入らないまま書き込まれます (#629)
+- セッションの Cookie（と `XSRF-TOKEN` の Cookie）に、HTTPS のリクエストではすべて `Secure` を
+  付けるようになりました。信頼したプロキシ経由のリクエストも含みます。`SESSION_SECURE_COOKIE`
+  も `FORCE_SSL` も設定していないと `config/session.php` が明示的な `false` を使っていたため、
+  HTTPS のインストールでもどちらの Cookie にも属性が付いていませんでした。未設定のときは
+  リクエストに従うようになり、平文の HTTP では変わりません。`FORCE_SSL=true` と明示した
+  `SESSION_SECURE_COOKIE` はこれまでどおりです。`SECURITY.md` に「セッションの Cookie」の節を
+  加え、管理画面のセッションに `SameSite=Strict` を付けない理由も書きました (#673)
 
 ### Plugin API — 非推奨
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` と

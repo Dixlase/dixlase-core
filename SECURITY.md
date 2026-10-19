@@ -258,6 +258,41 @@ Move only one step at a time. Verify on a real browser (not curl) at every step.
 
 HSTS is only emitted on responses Dixlase recognises as HTTPS. When deployed behind a TLS-terminating proxy that forwards HTTP to Dixlase, `TRUSTED_PROXIES` must include the proxy so `X-Forwarded-Proto` is honoured (see "Reverse-proxy / IAP deployment" above). Otherwise Dixlase sees HTTP and skips the header even when the user-facing connection is HTTPS.
 
+## Session cookie
+
+| Attribute | Default | Set with |
+|---|---|---|
+| `Secure` | Follows the request: set on every HTTPS request (including one forwarded by a trusted proxy), not set on plain HTTP. Always set when `FORCE_SSL=true` | `SESSION_SECURE_COOKIE` (an explicit value wins over both) |
+| `HttpOnly` | On | `SESSION_HTTP_ONLY` |
+| `SameSite` | `Lax` | `SESSION_SAME_SITE` |
+| Lifetime | Ends after `SESSION_LIFETIME` minutes without a request (120); kept when the browser closes | `SESSION_LIFETIME`, `SESSION_EXPIRE_ON_CLOSE` |
+
+The `XSRF-TOKEN` cookie follows the same `Secure` rule. A forwarded scheme counts only from a proxy listed in `TRUSTED_PROXIES` (see "Reverse-proxy / IAP deployment").
+
+### The admin session shares the cookie
+
+The admin panel and the front site use **one** session cookie. The server keeps the two sessions apart, but the browser sees a single cookie, so any attribute chosen for the admin applies to the front as well. That decides the two stricter options:
+
+- **`SameSite=Strict` is not the default.** A browser does not send a `Strict` cookie on the first request after following a link from another site, so a signed-in member who opens the site from an email or a search result would arrive signed out. An operator who accepts that can set `SESSION_SAME_SITE=strict`.
+- **Ending the session when the browser closes is not the default.** Browsers that restore the previous session keep such cookies anyway, so the guarantee is weak; the idle lifetime is the control. An operator can set `SESSION_EXPIRE_ON_CLOSE=true`.
+
+Both can be revisited if the admin panel gets a cookie of its own. Against a stolen admin session, the planned control is re-authentication before sensitive operations (#675).
+
+## Revocation
+
+What an administrator can take away, and how fast it takes effect:
+
+| Action | Where | Effect |
+|---|---|---|
+| End one session | Member Management → *Active sessions*, or a member's edit page | Deletes that session and clears the member's remember-me token, so the device cannot sign straight back in. The member's other sessions stay signed in, but their remember-me cookies stop working |
+| Force logout of a member | A member's edit page | Deletes every session of that member and clears their remember-me token |
+| Force logout of all members | Member Management | The same for every member at or below your role, except yourself |
+| Delete one API key / all API keys | Global Settings → System → API Management | Deletes the key rows of this site. Network keys (shared by several sites, created with `dls:api:create-network-key`) are not touched; there is no screen or command to delete them yet |
+
+**It takes effect on the next request, on every instance.** Admin sessions are stored in the database on an installed site (the session driver is set per request, whatever `SESSION_DRIVER` says), and API keys are looked up in the database on every request. Neither goes through a cache, so there is no grace period: any instance that shares the database refuses a revoked session or key at once. A browser that is mid-request finishes that request.
+
+Each action writes an audit row: `session_destroyed`, `forced_logout`, `api_key_revoked` or `api_keys_revoked_all`. Rows name sessions by a keyed hash and keys by id and name — never by the session id or key material.
+
 ## Scope
 
 ### In Scope

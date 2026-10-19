@@ -32,6 +32,21 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Added
+- Administrators can list members' active admin sessions — device, IP address, when the
+  session started and when it was last used — on a member's edit page and on a site-wide
+  *Active sessions* page under Member Management, and end one session at a time. Ending a
+  session also clears the member's remember-me token, so the device cannot sign straight back
+  in; it is recorded as `session_destroyed`. Sessions are never identified by their id in the
+  page, only by a keyed hash. Run `php artisan migrate` to add the `started_at` column; until
+  then the start time shows as unknown (#674)
+- *Delete All Keys* on the API settings screen deletes every API key of the site in one step,
+  recorded as one `api_keys_revoked_all` audit row naming each key by id and name. Network keys
+  shared with other sites are not touched (#674)
+- `SECURITY.md` gains a "Revocation" section: what each action takes away, and that sessions
+  and API keys are refused on the next request on every instance, with no cache in between
+  (#674)
+
 ### Fixed
 - An audit row written through an action records who did it and to what. `AbstractAction`
   passed the actor and the target under the column names, which `AuditLog::log()` ignored,
@@ -83,6 +98,13 @@ repository to be notified of changes.
   unkeyed for now; the decision and its reasons are in the audit-log integrity document. The
   unused `AuditLog::logWithHashChain()` is removed. Run `php artisan migrate` to create the
   lock table; until then rows are written unchained as before (#629)
+- The session cookie (and the `XSRF-TOKEN` cookie) is marked `Secure` on every HTTPS
+  request, including one forwarded by a trusted proxy. When neither `SESSION_SECURE_COOKIE`
+  nor `FORCE_SSL` was set, `config/session.php` fell back to an explicit `false`, so an HTTPS
+  install sent both cookies without the flag. Unset, the flag now follows the request, and
+  plain HTTP is unchanged; `FORCE_SSL=true` and an explicit `SESSION_SECURE_COOKIE` work as
+  before. `SECURITY.md` gains a "Session cookie" section, including why the admin session is
+  not given `SameSite=Strict` (#673)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
