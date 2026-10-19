@@ -79,4 +79,24 @@ class ExtensionDownloadFreshness
             ? $latest
             : null;
     }
+
+    /**
+     * The `available_version` an install should record, so the update badge
+     * shows straight away instead of after the next update check
+     * (dixlase-core#486). It is the newer release newerRelease() already
+     * found, and only when the installed row is linked to the source that
+     * answered: the update check clears the badge for an extension it cannot
+     * update, so a row linked elsewhere, or not at all, starts without one.
+     *
+     * @param  ?array<string, mixed>  $sidecar  The download sidecar newerRelease() read
+     * @param  ?array<string, mixed>  $linkage  The linkage the install records on the row
+     */
+    public function availableVersionToRecord(?string $newer, ?array $sidecar, ?array $linkage): ?string
+    {
+        if ($newer === null || ! isset($sidecar['source_id'], $linkage['source_id'])) {
+            return null;
+        }
+
+        return (int) $sidecar['source_id'] === (int) $linkage['source_id'] ? $newer : null;
+    }
 }
