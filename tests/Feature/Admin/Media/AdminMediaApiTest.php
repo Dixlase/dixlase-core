@@ -36,7 +36,8 @@ use Tests\TestCase;
 /**
  * The JSON list behind the media selector modal (x-media.selector). The
  * modal asks for one page at a time, so every item has to be reachable
- * through ?page=.
+ * through ?page=, and its search box and type filter send ?search= and
+ * ?type=.
  */
 class AdminMediaApiTest extends TestCase
 {
@@ -108,6 +109,85 @@ class AdminMediaApiTest extends TestCase
             ->getJson(route('admin.media.api'))
             ->assertOk()
             ->assertJsonPath('media.data.0.url', asset('storage/media/photo-1.jpg'));
+    }
+
+    public function test_search_narrows_the_list_by_name(): void
+    {
+        $this->makeFile('harbour-sunset.jpg', 'image/jpeg');
+        $this->makeFile('harbour-map.pdf', 'application/pdf');
+        $this->makeFile('team-photo.png', 'image/png');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api', ['search' => 'harbour']))
+            ->assertOk()
+            ->assertJsonPath('media.total', 2);
+
+        $this->assertEqualsCanonicalizing(
+            ['harbour-sunset.jpg', 'harbour-map.pdf'],
+            array_column($response->json('media.data'), 'name'),
+        );
+    }
+
+    public function test_type_narrows_the_list_by_mime_prefix(): void
+    {
+        $this->makeFile('a.jpg', 'image/jpeg');
+        $this->makeFile('b.png', 'image/png');
+        $this->makeFile('c.mp4', 'video/mp4');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api', ['type' => 'image']))
+            ->assertOk()
+            ->assertJsonPath('media.total', 2);
+
+        $this->assertEqualsCanonicalizing(['a.jpg', 'b.png'], array_column($response->json('media.data'), 'name'));
+    }
+
+    public function test_document_type_matches_document_mime_types(): void
+    {
+        $this->makeFile('report.pdf', 'application/pdf');
+        $this->makeFile('letter.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $this->makeFile('old-letter.doc', 'application/msword');
+        $this->makeFile('notes.txt', 'text/plain');
+        $this->makeFile('photo.jpg', 'image/jpeg');
+        $this->makeFile('bundle.zip', 'application/zip');
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api', ['type' => 'document']))
+            ->assertOk()
+            ->assertJsonPath('media.total', 4);
+
+        $this->assertEqualsCanonicalizing(
+            ['report.pdf', 'letter.docx', 'old-letter.doc', 'notes.txt'],
+            array_column($response->json('media.data'), 'name'),
+        );
+    }
+
+    public function test_search_and_type_combine_and_page_within_the_result(): void
+    {
+        for ($i = 1; $i <= 3; $i++) {
+            $this->makeFile("harbour-{$i}.jpg", 'image/jpeg');
+        }
+        $this->makeFile('harbour-plan.pdf', 'application/pdf');
+        $this->makeFile('market.jpg', 'image/jpeg');
+
+        $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api', ['search' => 'harbour', 'type' => 'image', 'per_page' => 2, 'page' => 2]))
+            ->assertOk()
+            ->assertJsonPath('media.total', 3)
+            ->assertJsonPath('media.last_page', 2)
+            ->assertJsonCount(1, 'media.data');
+    }
+
+    private function makeFile(string $name, string $mime): void
+    {
+        Media::create([
+            'site_id' => 1,
+            'name' => $name,
+            'path' => $name,
+            'type' => $mime,
+            'file_size' => 1024,
+            'uploaded_by' => $this->admin->id,
+        ]);
     }
 
     /**

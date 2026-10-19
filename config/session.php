@@ -202,9 +202,15 @@ return [
     | to the server if the browser has a HTTPS connection. This will keep
     | the cookie from being sent to you when it can't be done securely.
     |
+    | Left unset (null), the flag follows the request: the cookie is marked
+    | Secure on every response to an HTTPS request, including one forwarded
+    | by a trusted proxy, and left unmarked on plain HTTP so local installs
+    | keep working. FORCE_SSL=true pins it on; an explicit
+    | SESSION_SECURE_COOKIE wins over both (#673).
+    |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE', env('FORCE_SSL', false)),
+    'secure' => env('SESSION_SECURE_COOKIE', env('FORCE_SSL') ? true : null),
 
     /*
     |--------------------------------------------------------------------------

@@ -257,6 +257,26 @@ HSTS_PRELOAD=false
 
 HSTS は Dixlase が HTTPS と認識したレスポンスに対してのみ送出されます。TLS を終端して HTTP で Dixlase に転送するプロキシ配下では、`TRUSTED_PROXIES` に当該プロキシを含めて `X-Forwarded-Proto` が信頼されるようにする必要があります(上記「リバースプロキシ / IAP デプロイ」を参照)。これがないと、ユーザー側が HTTPS でも Dixlase は HTTP として扱い HSTS ヘッダーをスキップします。
 
+## セッションの Cookie
+
+| 属性 | 既定 | 設定 |
+|---|---|---|
+| `Secure` | リクエストに従う: HTTPS のリクエスト（信頼したプロキシ経由を含む）では付け、平文の HTTP では付けない。`FORCE_SSL=true` のときは常に付ける | `SESSION_SECURE_COOKIE`（明示した値がどちらよりも優先） |
+| `HttpOnly` | 有効 | `SESSION_HTTP_ONLY` |
+| `SameSite` | `Lax` | `SESSION_SAME_SITE` |
+| 寿命 | リクエストが無いまま `SESSION_LIFETIME` 分（120）で終わる。ブラウザを閉じても残る | `SESSION_LIFETIME`、`SESSION_EXPIRE_ON_CLOSE` |
+
+`XSRF-TOKEN` の Cookie も同じ `Secure` の規則に従います。転送されたスキームを信じるのは、`TRUSTED_PROXIES` に載せたプロキシからのものだけです（「リバースプロキシ / IAP デプロイ」を参照）。
+
+### 管理画面のセッションは Cookie を共有する
+
+管理画面と公開側は**1 つ**のセッションの Cookie を使います。サーバーは 2 つのセッションを分けて持ちますが、ブラウザから見ると Cookie は 1 つなので、管理画面のために選んだ属性は公開側にも掛かります。より厳しい 2 つの選択肢は、これで決まります。
+
+- **`SameSite=Strict` を既定にしない。** 他のサイトのリンクからたどった最初のリクエストでは、ブラウザは `Strict` の Cookie を送りません。そのため、サインイン中のメンバーがメールや検索結果からサイトを開くと、サインインしていない状態で着きます。それでよい運用者は `SESSION_SAME_SITE=strict` を設定できます。
+- **ブラウザを閉じたらセッションを終える設定を既定にしない。** 前回のセッションを復元するブラウザはこの Cookie も残すので、保証として弱く、操作の無い時間の上限が実際の制御です。運用者は `SESSION_EXPIRE_ON_CLOSE=true` を設定できます。
+
+管理画面が自分の Cookie を持つようになったら、どちらも見直せます。盗まれた管理画面のセッションへの対策としては、重い操作の前の再認証を予定しています（#675）。
+
 ## スコープ
 
 ### 対象範囲内
