@@ -127,4 +127,24 @@ class CanonicalSiteNameTest extends TestCase
             'The installer must write the operator site name to Site::name, not only to .env and the settings tables.'
         );
     }
+
+    /**
+     * The installer also writes the operator's chosen locale to the canonical
+     * Site::primary_locale column, which drives the guest front-end locale.
+     * Pinned at the source level for the same reason as the name sync above:
+     * initializeDatabase() runs a full installation and cannot be invoked here.
+     */
+    public function test_the_installer_writes_the_canonical_primary_locale(): void
+    {
+        $source = file_get_contents(
+            base_path('app/Services/Install/InstallRunner.php')
+        );
+
+        $this->assertStringContainsString(
+            "->update(['primary_locale' => \$installLocale])",
+            $source,
+            'The installer must sync the chosen locale to Site::primary_locale, not only to .env and the settings tables, '
+            .'or a non-English install renders an English front-end.'
+        );
+    }
 }
