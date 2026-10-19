@@ -113,6 +113,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
 | `App\Contracts\Extension\ProvidesSettingsDefaultsInterface` | Opt-in contract for extensions that own a `name` / `value` settings |
 | `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | File integrity check service contract |
+| `App\Contracts\I18n\LocaleUrlRouting` | Tells whether front URLs on this site carry a leading locale segment. |
 | `App\Contracts\I18n\LocalizedUrlProvider` | Exposes alternate-language URLs for the current request. |
 | `App\Contracts\I18n\MissingTranslationHandler` | Decides what to do when a route exists but no translation is available |
 | `App\Contracts\LegalPage\LegalPageServiceInterface` | Contract for legal page registry service |

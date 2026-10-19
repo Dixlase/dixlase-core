@@ -39,6 +39,9 @@ use App\Enums\OperationRiskLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 /**
@@ -114,6 +117,23 @@ class AuditLog extends Model
 
     // previous_hash for the first record
     public const GENESIS_HASH = 'genesis';
+
+    /**
+     * Unchained rows linked by one write before its own row. When more are
+     * waiting, the new row is left unchained too and `audit:integrity build`
+     * links them all in order.
+     */
+    public const CHAIN_CATCH_UP_LIMIT = 100;
+
+    /**
+     * Table whose single row serialises writers of the hash chain
+     */
+    public const CHAIN_LOCK_TABLE = 'audit_log_chain_lock';
+
+    /**
+     * Whether the chain lock table exists, checked once per process
+     */
+    private static ?bool $chainLockAvailable = null;
 
     // ========================================
     // Severity constants
@@ -482,7 +502,7 @@ class AuditLog extends Model
             $targetLabel = $targetLabel ?? $data['target']->display_name ?? $data['target']->account_name ?? $data['target']->name ?? $data['target']->title ?? null;
         }
 
-        return self::create([
+        return self::createChained([
             'occurred_at' => $data['occurred_at'] ?? now(),
             'severity' => $data['severity'] ?? self::SEVERITY_INFO,
             'outcome' => $data['outcome'] ?? self::OUTCOME_SUCCESS,
@@ -1137,25 +1157,173 @@ class AuditLog extends Model
 
     /**
      * Set up hash chain and save record
+     *
+     * Links this row after the last chained row below it, under the chain
+     * lock. Rows written through log() are already chained; this is for a
+     * row created some other way.
      */
     public function saveWithHashChain(): bool
     {
-        // Get previous record
-        $previousLog = self::where('id', '<', $this->id)
-            ->whereNotNull('record_hash')
+        return DB::transaction(function () {
+            self::acquireChainLock();
+
+            $previousLog = self::where('id', '<', $this->id)
+                ->whereNotNull('record_hash')
+                ->orderBy('id', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            return $this->linkAfter($previousLog);
+        });
+    }
+
+    /**
+     * Insert a row and link it into the hash chain in one transaction.
+     *
+     * The chain is verified in id order, so the insert itself happens under
+     * the chain lock: a writer that is still waiting for the lock has not
+     * taken an id yet. Older unchained rows are linked first. When linking
+     * fails the row is still written, unchained, and `audit:integrity build`
+     * links it later; an audit row is never dropped to keep the chain tidy.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    protected static function createChained(array $attributes): self
+    {
+        if (! self::chainLockAvailable()) {
+            return self::create($attributes);
+        }
+
+        try {
+            return DB::transaction(function () use ($attributes) {
+                self::acquireChainLock();
+
+                ['head' => $head, 'complete' => $complete] = self::linkPendingLocked(self::CHAIN_CATCH_UP_LIMIT);
+
+                $log = self::create($attributes);
+
+                if ($complete) {
+                    // Hash what was stored, not the in-memory values: the
+                    // context and timestamps must read back exactly as
+                    // verification will read them.
+                    $log->refresh();
+                    $log->linkAfter($head);
+                }
+
+                return $log;
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Audit log row could not be linked into the hash chain on write; audit:integrity build will link it', [
+                'action' => $attributes['action'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return self::create($attributes);
+        }
+    }
+
+    /**
+     * Link waiting rows into the chain, oldest first, under the chain lock.
+     *
+     * Only rows above the current chain head are linked, so the chain stays
+     * in id order. A row below the head cannot be placed without breaking
+     * the chain and is left unchained; `build` reports it as remaining.
+     *
+     * @return array{head: self|null, linked: int, complete: bool}
+     */
+    public static function linkPending(int $limit = 1000): array
+    {
+        return DB::transaction(function () use ($limit) {
+            self::acquireChainLock();
+
+            return self::linkPendingLocked($limit);
+        });
+    }
+
+    /**
+     * @return array{head: self|null, linked: int, complete: bool}
+     */
+    private static function linkPendingLocked(int $limit): array
+    {
+        // Locking reads: they see rows committed by the writer that held
+        // the lock before us, even inside an older transaction snapshot.
+        $head = self::whereNotNull('record_hash')
             ->orderBy('id', 'desc')
+            ->lockForUpdate()
             ->first();
 
-        // Set previous_hash
-        $this->previous_hash = $previousLog?->record_hash ?? self::GENESIS_HASH;
+        $pending = self::whereNull('record_hash')
+            ->where('id', '>', $head->id ?? 0)
+            ->orderBy('id')
+            ->limit($limit + 1)
+            ->lockForUpdate()
+            ->get();
 
-        // Set chain_sequence
-        $this->chain_sequence = $previousLog ? ($previousLog->chain_sequence + 1) : 1;
+        $linked = 0;
 
-        // Calculate record_hash
+        foreach ($pending->take($limit) as $log) {
+            $log->linkAfter($head);
+            $head = $log;
+            $linked++;
+        }
+
+        return [
+            'head' => $head,
+            'linked' => $linked,
+            'complete' => $pending->count() <= $limit,
+        ];
+    }
+
+    /**
+     * Take the chain lock for the rest of the current transaction.
+     *
+     * An update rather than a locking read, so SQLite takes its write lock
+     * here as well. The counter always changes, so the update reports the
+     * row even where the driver counts only changed rows.
+     */
+    private static function acquireChainLock(): void
+    {
+        // Before the migration has run there is nothing to lock; the hourly
+        // build then links rows the way it did before, one process at a time.
+        if (! self::chainLockAvailable()) {
+            return;
+        }
+
+        $locked = DB::table(self::CHAIN_LOCK_TABLE)->where('id', 1)->increment('generation');
+
+        if ($locked === 0) {
+            DB::table(self::CHAIN_LOCK_TABLE)->insertOrIgnore(['id' => 1, 'generation' => 0]);
+            DB::table(self::CHAIN_LOCK_TABLE)->where('id', 1)->increment('generation');
+        }
+    }
+
+    /**
+     * Whether the chain lock table exists yet.
+     *
+     * Before its migration has run, rows are written unchained, as they
+     * were before linking moved to the write path.
+     */
+    private static function chainLockAvailable(): bool
+    {
+        return self::$chainLockAvailable ??= Schema::hasTable(self::CHAIN_LOCK_TABLE);
+    }
+
+    /**
+     * Forget whether the chain lock table exists (after migrating in tests).
+     */
+    public static function forgetChainLockAvailability(): void
+    {
+        self::$chainLockAvailable = null;
+    }
+
+    /**
+     * Link this row after the given chain head and save it.
+     */
+    private function linkAfter(?self $previous): bool
+    {
+        $this->previous_hash = $previous?->record_hash ?? self::GENESIS_HASH;
+        $this->chain_sequence = $previous ? ($previous->chain_sequence + 1) : 1;
         $this->record_hash = $this->calculateHash($this->previous_hash);
-
-        // Set hash_algorithm
         $this->hash_algorithm = self::HASH_ALGORITHM;
 
         return $this->save();
@@ -1316,16 +1484,5 @@ class AuditLog extends Model
         return (int) self::whereNotNull('chain_sequence')
             ->orderBy('id', 'desc')
             ->value('chain_sequence') ?? 0;
-    }
-
-    /**
-     * Record log with hash chain
-     */
-    public static function logWithHashChain(array $data): self
-    {
-        $log = self::log($data);
-        $log->saveWithHashChain();
-
-        return $log;
     }
 }

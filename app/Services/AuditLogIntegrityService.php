@@ -246,30 +246,14 @@ class AuditLogIntegrityService
      */
     public function buildChainForDate(\Carbon\Carbon $date): array
     {
-        $logs = AuditLog::whereDate('occurred_at', $date)
-            ->whereNull('record_hash')
-            ->orderBy('id')
-            ->get();
-
-        $processed = 0;
-        $errors = [];
-
-        foreach ($logs as $log) {
-            try {
-                $log->saveWithHashChain();
-                $processed++;
-            } catch (\Exception $e) {
-                $errors[] = [
-                    'id' => $log->id,
-                    'error' => $e->getMessage(),
-                ];
-            }
-        }
+        // The chain is kept in id order, so a day cannot be linked on its
+        // own: everything waiting is linked, which includes that day.
+        $result = $this->buildPendingChains(1_000_000);
 
         return [
             'date' => $date->format('Y-m-d'),
-            'processed' => $processed,
-            'errors' => $errors,
+            'processed' => $result['processed'],
+            'errors' => $result['errors'],
         ];
     }
 
@@ -281,24 +265,16 @@ class AuditLogIntegrityService
      */
     public function buildPendingChains(int $limit = 1000): array
     {
-        $logs = AuditLog::whereNull('record_hash')
-            ->orderBy('id')
-            ->limit($limit)
-            ->get();
-
         $processed = 0;
         $errors = [];
 
-        foreach ($logs as $log) {
-            try {
-                $log->saveWithHashChain();
-                $processed++;
-            } catch (\Exception $e) {
-                $errors[] = [
-                    'id' => $log->id,
-                    'error' => $e->getMessage(),
-                ];
-            }
+        try {
+            $processed = AuditLog::linkPending($limit)['linked'];
+        } catch (\Exception $e) {
+            $errors[] = [
+                'id' => null,
+                'error' => $e->getMessage(),
+            ];
         }
 
         $remaining = AuditLog::whereNull('record_hash')->count();

@@ -37,6 +37,7 @@
 
 namespace App\Helpers;
 
+use App\Contracts\I18n\LocaleUrlRouting;
 use App\Contracts\Site\SiteContextInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as RequestFacade;
@@ -251,6 +252,25 @@ class LocaleHelper
         $fallback = config('app.fallback_locale', self::$defaultLocale);
 
         return self::isSupported((string) $fallback) ? (string) $fallback : self::$defaultLocale;
+    }
+
+    /**
+     * Whether front URLs on this site carry a leading locale segment.
+     *
+     * Plugins that build their own front URLs ask this before putting a
+     * locale code in front of them. The answer comes from the extension
+     * that implements locale routing, through the LocaleUrlRouting
+     * contract; with no such extension installed it is false.
+     */
+    public static function localeUrlRoutingEnabled(): bool
+    {
+        if (! app()->bound(LocaleUrlRouting::class)) {
+            return false;
+        }
+
+        $routing = app(LocaleUrlRouting::class);
+
+        return $routing instanceof LocaleUrlRouting && $routing->isEnabled();
     }
 
     /**

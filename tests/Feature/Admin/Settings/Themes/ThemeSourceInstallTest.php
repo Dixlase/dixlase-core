@@ -126,16 +126,35 @@ class ThemeSourceInstallTest extends TestCase
         $response->assertJsonStructure(['success', 'themes']);
     }
 
-    public function test_available_from_source_returns_empty_when_no_sources(): void
+    public function test_available_from_source_returns_empty_when_the_default_source_offers_nothing(): void
     {
+        // No ExtensionSource row exists here, but the endpoint does not
+        // answer "no sources": getEnabledSources() seeds the config
+        // presets first, so the official GitHub source is created and
+        // then queried. That request used to leave the runner, and the
+        // assertion held only while GitHub's anonymous rate limit --
+        // counted per IP, and shared with every other GitHub-hosted
+        // runner -- still had budget (dixlase-core#680).
+        //
+        // preventStrayRequests() only takes effect while faking is
+        // active, so the fake below is what keeps the request in, and
+        // the guard is what reports any other URL this path starts
+        // asking for.
+        Http::preventStrayRequests();
+        Http::fake([
+            'api.github.com/*' => Http::response([], 200),
+        ]);
+
         $response = $this->actingAs($this->admin, 'member')
             ->getJson(route('admin.settings.themes.available-from-source'));
 
         $response->assertOk();
-        $response->assertJson([
-            'success' => true,
-            'themes' => [],
-        ]);
+        $response->assertJson(['success' => true]);
+        // assertJson treats an expected [] as a subset, which every list
+        // satisfies, so the emptiness is asserted by count instead.
+        $response->assertJsonCount(0, 'themes');
+        $this->assertSame(1, ExtensionSource::query()->ofType('github')->count());
+        Http::assertSentCount(1);
     }
 
     public function test_download_from_source_validates_slug(): void
