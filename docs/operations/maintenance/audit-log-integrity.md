@@ -7,7 +7,45 @@ Dixlase layers two mechanisms over the audit log to **detect** tampering. They d
 - **A hash chain per row (unkeyed).** Each row carries a SHA-256 (`record_hash`) over 13 fields and the previous row's hash. No key is involved, so a row that is rewritten and re-hashed still forms a consistent chain on its own.
 - **A daily seal per day (keyed).** For each completed day, an HMAC-SHA256 is recorded over the day's count, first and last row and last row's hash. The key is `AUDIT_LOG_SECRET`, or `APP_KEY` when that is unset. A recomputed chain no longer matches the seal unless the key is known as well.
 
-Both live in the same database as the audit log. A new row is unprotected until the hourly `audit:integrity build` links it into the chain. Seals are created automatically every day and verification runs daily on the schedule; the full pass that re-hashes every row is run by hand. See "Security Considerations" for what this can and cannot prove.
+Both live in the same database as the audit log. A row is linked into the chain in the same transaction that writes it (see "When a Row Is Linked"). Seals are created automatically every day and verification runs daily on the schedule; the full pass that re-hashes every row is run by hand. See "Security Considerations" for what this can and cannot prove.
+
+## When a Row Is Linked (Design Decisions)
+
+Recorded for #629.
+
+**A row is linked when it is written.** `AuditLog::log()` inserts the row and links
+it after the current chain head in one transaction. Writers are serialised by a
+one-row lock table (`audit_log_chain_lock`): each writer updates that row first, so
+the next writer waits until the transaction ends. The insert happens under the lock
+as well, because verification walks the chain in id order and a writer that is still
+waiting has not taken an id yet.
+
+- Rows still waiting from before the upgrade, or from a failed link, are linked first,
+  oldest first, up to 100 per write. With a longer backlog the new row waits too, and
+  `audit:integrity build` links them all in order.
+- If linking fails, the row is still written, unchained, and the hourly
+  `audit:integrity build` links it. An audit row is never dropped to keep the chain
+  tidy.
+- A row that has an id below the chain head and is still unchained cannot be linked
+  without breaking the order. It is left unchained, and `build` reports it as
+  remaining.
+- The cost is one extra update and two locking reads per audited operation, and
+  audited operations queue on the lock. When the caller already holds a transaction,
+  the lock is held until that transaction ends.
+
+The alternatives were a shorter batch interval, which keeps a window, and linking only
+high-severity rows on write, which leaves two paths that must agree.
+
+**The per-row hash is not keyed, for now.** Keying it means an HMAC with a dedicated
+chain secret, a key version on each row and verification that accepts previous keys.
+That rotation design does not exist yet for the seal either, and keying without it
+would make the first key change look like tampering. A consistent rewrite of the chain
+is detected by the keyed daily seal, for completed days. Keying the chain is tracked
+in #665.
+
+**What this claims.** The chain and the seal detect changes made **in the database**.
+Code running inside the application process can write rows through the same path and
+reads the same key, so a full compromise of the application is out of scope.
 
 ## How It Works
 
@@ -233,7 +271,7 @@ item derived from `AuditLogIntegrityService::getHealth()`:
 | State | Badge | Meaning |
 |-------|-------|---------|
 | Tampered | Critical | A record or a daily seal failed verification |
-| Chain stalled | Warning | Entries have waited more than 2 hours to be chained — the hourly `audit:integrity build` is not running |
+| Chain stalled | Warning | Entries have waited more than 2 hours to be chained — linking on write failed for them and the hourly `audit:integrity build` is not running |
 | Seal overdue | Warning | The most recent completed day with entries has no seal after 04:30 the next day — the daily `audit:integrity seal` is not running |
 | Verification stale | Recommended | An entry chained more than 30 days ago has never been verified, or the oldest verification is older than 30 days (an incremental pass does not refresh old rows — run `verify --all`). Entries chained since the last pass are expected to be unverified and do not count |
 | OK | OK | Chain and seals are up to date (day one shows OK: seals only exist for completed days) |
@@ -259,12 +297,12 @@ from cron):
 
 | Task | Schedule |
 |------|----------|
-| `audit:integrity build` | hourly |
+| `audit:integrity build` | hourly (links rows that could not be linked on write) |
 | `audit:integrity seal` | daily at 03:30 (after the 03:00 file-integrity scan) |
 | `audit:integrity verify` | daily at 03:45 (after the seal) |
 
-The chain is also built once when the web installer completes, so install-time
-events are protected before the first hourly run.
+Rows are linked as they are written. The chain is also built once when the web
+installer completes, which links anything written before the lock table existed.
 
 Generation is always on and has no switch: a record cannot be protected
 retroactively, so protection must not depend on someone remembering to run it.
@@ -346,7 +384,7 @@ erasure changed them.
 
 - ON/OFF and frequency settings for the scheduled verification (verification only — generation stays always-on)
 - "Verify now" button in the admin panel (queued; a synchronous chain pass grows with the row count)
-- Chaining inline on write, removing the up-to-one-hour blind spot of the hourly batch
+- A keyed per-row chain (HMAC with a dedicated secret and key rotation)
 - Real-time tampering detection
 - External timestamping service integration
 - Log export/import with signatures
