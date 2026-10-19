@@ -72,7 +72,6 @@ The following directories and files are subject to integrity checks:
 | `resources/` | Views, language files, assets |
 | `database/migrations/` | Database migrations |
 | `public/index.php` | Entry point |
-| `public/build/` | Built assets (JS/CSS) |
 | `artisan` | Artisan command-line tool |
 | `composer.json` | Dependency definitions |
 | `composer.lock` | Dependency lock file |
@@ -85,8 +84,20 @@ The following directories and files are subject to integrity checks:
 - **routes/**: Prevent route tampering
 - **resources/**: Protect UI templates
 - **database/migrations/**: Protect schema definitions
-- **public/build/**: Detect tampering with production assets (important)
 - **composer.json/lock**: Detect unauthorized dependency changes
+
+### Not Scanned
+
+The list above is the whole scope. Anything outside it is not compared with the
+baseline, including:
+
+- `public/build/` — the built JS/CSS the site serves. Of `public/`, only
+  `public/index.php` is scanned
+- `lang/`, `plugins/`, `themes/` and `vendor/`
+- `custom/` and the other paths in the exclusion list below
+
+A change to a built asset is therefore not reported by this scan. If you need
+that, check those files with your own tooling.
 
 ## Excluded Directories and Patterns
 
@@ -184,8 +195,8 @@ php artisan dls:integrity:scan
 # Scheduled execution
 php artisan dls:integrity:scan --scheduled
 
-# Regenerate baseline
-php artisan dls:integrity:regenerate-baseline
+# Regenerate the baseline (overwrites the existing one)
+php artisan dls:integrity:generate-baseline --force
 ```
 
 ## Other Scheduled Security Checks
@@ -304,12 +315,15 @@ chown -R www-data:www-data storage/app/dixlase/security
 - **Controller**: `app/Http/Controllers/Admin/Settings/Security/AdminSecurityIntegrityController.php`
 - **Model**: `app/Models/FileIntegrityAudit.php`
 - **View**: `resources/views/admin/settings/security/integrity.blade.php`
-- **Commands**: `app/Console/Commands/FileIntegrity/`
+- **Commands**: `app/Console/Commands/IntegrityScan.php`, `app/Console/Commands/IntegrityGenerateBaseline.php`
 - **Baseline**: `storage/app/dixlase/security/core_hashes.json`
 - **Scheduled checks and admin banners**: `app/Services/Security/ScheduledSecurityCheckMonitor.php`, `app/Console/Commands/ExtensionsRescan.php`
 
 ## Changelog
 
+- **2026-10-19**: Corrected the scope
+  - `public/build` is not scanned; removed it from the scanned list and added "Not Scanned"
+  - The baseline command is `dls:integrity:generate-baseline --force`
 - **2026-02-10**: Initial version
   - Added `resources`, `database/migrations`, and `public/build` to scanned directories
   - Added `custom`, `public/uploads`, `public/storage`, `public/hot`, and `*.log` to exclusion patterns

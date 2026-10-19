@@ -12,7 +12,7 @@
 # This file lists only the extensions this repository distributes
 # publicly. Core is integration-tested against more than these, and the
 # rows for the rest are held in the INTEGRATION_EXTENSIONS repository (or
-# organisation) variable, which the fetch script merges with this file at
+# organisation) secret, which the fetch script merges with this file at
 # run time. The reason is dixlase-core#619: a public repository should not
 # publish the names and the directory layout of software its readers
 # cannot obtain, and the files that define how the project is built and
@@ -40,7 +40,7 @@
 #      arguments (well-tested / moderate / minimal).
 #
 # Adding one that is not distributed publicly: append a row to the
-# INTEGRATION_EXTENSIONS variable instead, with its tier. The fetch
+# INTEGRATION_EXTENSIONS secret instead, with its tier. The fetch
 # script registers the testsuite and places it in the tier for you —
 # nothing is added to this file or to phpunit.xml.
 #
@@ -48,6 +48,13 @@
 #   1. Delete its row here.
 #   2. Drop the matching testsuite from phpunit.xml and the --testsuite=
 #      string in test.yml.
+#
+# A testsuite named literally in test.yml has to resolve to a directory
+# that is always on disk. PHPUnit validates every suite on the command
+# line before it runs any of them, so one absent directory ends the step
+# with exit 2 and nothing executes at all — invisibly, where the step is
+# continue-on-error (dixlase-core#658). Tier 3 therefore names none, and
+# runs EXTRA_SUITES_TIER3 alone.
 DixlaseInquiry	https://github.com/Dixlase/plugin-dixlase-inquiry.git
 DixlaseSEO	https://github.com/Dixlase/plugin-dixlase-seo.git
 DixlaseMenus	https://github.com/Dixlase/plugin-dixlase-menus.git
