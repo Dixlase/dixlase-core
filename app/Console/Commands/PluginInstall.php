@@ -220,11 +220,12 @@ class PluginInstall extends Command
         // sidecar is read here and removed once the row is written so a
         // failed install can still be retried with it.
         $sourceId = $this->option('source') !== null ? (int) $this->option('source') : null;
+        $download = $sidecar->read($pluginPath);
         $linkage = app(ExtensionSourceManager::class)->resolveInstallLinkage(
             $slug,
             'plugin',
             $sourceId,
-            $sidecar->read($pluginPath),
+            $download,
             $packageName,
             $composerName,
         );
@@ -232,7 +233,8 @@ class PluginInstall extends Command
         // A download older than its source's latest release is still
         // installed (the operator may want exactly this version), but not
         // silently (dixlase-core#456).
-        $newer = app(ExtensionDownloadFreshness::class)->newerRelease('plugin', $pluginName, $slug, $version);
+        $freshness = app(ExtensionDownloadFreshness::class);
+        $newer = $freshness->newerRelease('plugin', $pluginName, $slug, $version);
         if ($newer !== null) {
             $this->warn(__('admin/command/plugin-install.stale_download', [
                 'latest' => $newer,
@@ -240,6 +242,12 @@ class PluginInstall extends Command
                 'version' => $version,
             ]));
         }
+
+        // The newer release is already known, so the installed card shows
+        // its update badge now rather than after the next update check
+        // (#486). Left out when there is none, so a reinstall over an
+        // existing row keeps what the last check recorded.
+        $availableVersion = $freshness->availableVersionToRecord($newer, $download, $linkage);
 
         // Register in database. The query builder's updateOrInsert() writes
         // no timestamps, which left created_at NULL on every installed
@@ -268,7 +276,7 @@ class PluginInstall extends Command
                 'installation_method' => $linkage['installation_method'] ?? null,
                 'installed_at' => now(),
                 'updated_at' => now(),
-            ]
+            ] + ($availableVersion !== null ? ['available_version' => $availableVersion] : [])
         );
 
         $sidecar->delete($pluginPath);
