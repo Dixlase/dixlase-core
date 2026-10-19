@@ -158,7 +158,7 @@ with the full PR-based contribution guide.
 
 ## 📜 License
 
-Dixlase CMS is distributed under a **dual license**:
+Dixlase is distributed under a **dual license**:
 
 - **Open Source License**: [GNU Affero General Public License v3](./LICENSE) with the Dixlase Plugin and Theme Exception (see [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS)).
 - **Commercial License**: A separate commercial license is planned for use cases where AGPL v3 compliance is not feasible (e.g., distributing modified versions in closed-source SaaS). **It is not yet available** — only a draft of the eventual terms is present in [LICENSE-COMMERCIAL](./LICENSE-COMMERCIAL). For availability timing or other questions, contact **info@dixlase.org**.
@@ -169,11 +169,11 @@ A short overview of how these files fit together is in [NOTICE](./NOTICE) ([日�
 
 The documentation is also available under CC BY 4.0 (code examples under CC0 1.0), and the AI assistant instruction files (`CLAUDE.md` and similar) under CC0 1.0 — see Part 2 of [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS).
 
-Plugins and themes that interact with Dixlase CMS exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS) for the full terms.
+Plugins and themes that interact with Dixlase exclusively through the [Plugin API](./PLUGIN-API.md) are not considered derivative works and may be distributed under **any license of your choice, including proprietary licenses**. See [LICENSE-EXCEPTIONS](./LICENSE-EXCEPTIONS) for the full terms.
 
 ### Source Code Availability (AGPL §13)
 
-If you run Dixlase CMS on a server and make it accessible to users over a network, AGPL §13 requires that users be able to obtain the source code of your running version. Ensure that the "Source" link in your admin footer (or equivalent) is accessible to users. The URL advertised there is configurable via the `DIXLASE_SOURCE_URL` environment variable.
+If you run Dixlase on a server and make it accessible to users over a network, AGPL §13 requires that users be able to obtain the source code of your running version. Ensure that the "Source" link in your admin footer (or equivalent) is accessible to users. The URL advertised there is configurable via the `DIXLASE_SOURCE_URL` environment variable.
 
 ---
 
