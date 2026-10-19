@@ -30,6 +30,8 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [Unreleased]
+
 ## [0.1.16] — 2026-10-20
 
 ### 修正
@@ -909,5 +911,5 @@ PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照し�
   プラグインは代わりに `App\Contracts\Plugin\SignatureVerifierInterface` に依存して
   ください。
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.16...HEAD
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0

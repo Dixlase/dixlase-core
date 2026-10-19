@@ -30,6 +30,8 @@ repository to be notified of changes.
 
 ---
 
+## [Unreleased]
+
 ## [0.1.16] — 2026-10-20
 
 ### Fixed
@@ -991,5 +993,5 @@ Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` ve
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.16...HEAD
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0
