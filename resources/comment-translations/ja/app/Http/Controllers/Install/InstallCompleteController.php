@@ -38,7 +38,9 @@ return [
     'Wrap in double quotes (escape internal double quotes)' => 'ダブルクォートで囲む（内部のダブルクォートはエスケープ）',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    'The value comes from the client: follow it only on this host.' => '値はクライアントから来たものなので、このホストの中でだけ従う。',
     '_review_status' => [
+        'The value comes from the client: follow it only on this host.' => 'machine',
         'Install - Completion screen' => 'machine',
         'Display completion screen' => 'machine',
         'Clear redirect loop prevention flag' => 'machine',
