@@ -33,6 +33,15 @@
         <!-- On a machine that has them, "Plugins" below    -->
         <!-- already covers every extension present, so     -->
         <!-- nothing has to be added here to run them.      -->
+        <!--                                                -->
+        <!-- Every suite named here has to resolve to a     -->
+        <!-- directory that is always present. PHPUnit      -->
+        <!-- validates each suite named on the command line -->
+        <!-- before it runs any of them, so one absent      -->
+        <!-- directory ends the run with exit 2 and nothing -->
+        <!-- executes (dixlase-core#658). An extension that -->
+        <!-- is not always on disk belongs in the run-time  -->
+        <!-- rows, not here.                                -->
         <!-- ============================================ -->
         <testsuite name="DixlaseInquiry">
             <directory>plugins/DixlaseInquiry/tests</directory>
@@ -45,15 +54,6 @@
         </testsuite>
         <testsuite name="DixlasePages">
             <directory>plugins/DixlasePages/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseAi">
-            <directory>plugins/DixlaseAi/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseAuthority">
-            <directory>plugins/DixlaseAuthority/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseRedirects">
-            <directory>plugins/DixlaseRedirects/tests</directory>
         </testsuite>
         <!-- Every extension present, in one suite -->
         <!-- Usage: php artisan test testsuite=Plugins   -->
