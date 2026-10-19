@@ -378,6 +378,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </form>
 @endif
 
+@if(isset($member) && $member->exists && isset($memberSessionsAvailable) && (! $memberSessionsAvailable || $memberSessions !== null))
+    {{-- Active sessions (#674); outside the form above, since each row posts its own --}}
+    <section class="mt-8">
+        <h2>{{ __('admin/members/sessions.section_title') }}</h2>
+        @if($memberSessionsAvailable)
+            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/sessions.description') }}</p>
+            @include('admin.members.partials.sessions-table', [
+                'sessions' => $memberSessions,
+                'showMember' => false,
+                'viewOnly' => ! ($menuEditable ?? true),
+            ])
+        @else
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('admin/members/sessions.unavailable') }}</p>
+        @endif
+    </section>
+@endif
+
 @if(isset($member) && $member->exists)
     <!-- 管理操作セクション -->
     <x-admin.danger-zone

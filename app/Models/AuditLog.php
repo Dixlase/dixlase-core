@@ -388,6 +388,8 @@ class AuditLog extends Model
 
     public const ACTION_API_KEY_REGENERATED = 'api_key_regenerated';
 
+    public const ACTION_API_KEYS_REVOKED_ALL = 'api_keys_revoked_all';
+
     // ========================================
     // Action constants - Privacy related
     // ========================================
@@ -846,7 +848,8 @@ class AuditLog extends Model
             self::ACTION_PASSKEY_AUTH_FAILED, self::ACTION_NEW_DEVICE_LOGIN,
             self::ACTION_PASSWORD_CHANGED, self::ACTION_EMAIL_CHANGED,
             self::ACTION_TWO_FA_DISABLED, self::ACTION_IP_BLOCKED,
-            self::ACTION_FORCED_LOGOUT, self::ACTION_DEVICE_BLOCKED,
+            self::ACTION_FORCED_LOGOUT, self::ACTION_SESSION_DESTROYED,
+            self::ACTION_API_KEYS_REVOKED_ALL, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_MEMBER_DELETED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
@@ -930,6 +933,7 @@ class AuditLog extends Model
             self::ACTION_API_KEY_CREATED,       // API key created
             self::ACTION_API_KEY_REVOKED,       // API key revoked
             self::ACTION_API_KEY_REGENERATED,   // API key regenerated
+            self::ACTION_API_KEYS_REVOKED_ALL,  // Every API key of the site revoked
             self::ACTION_PRIVACY_DATA_ERASED,   // Personal data erased
         ];
 
@@ -937,6 +941,7 @@ class AuditLog extends Model
         $highActions = [
             self::ACTION_MEMBER_DELETED,        // Member deletion
             self::ACTION_FORCED_LOGOUT,         // Force logout
+            self::ACTION_SESSION_DESTROYED,     // One session revoked by an administrator
             self::ACTION_TWO_FA_DISABLED,          // 2FA disabled
             self::ACTION_DEVICE_BLOCKED,        // Device blocked
             self::ACTION_DEVICE_REMOVED,        // Device deleted
