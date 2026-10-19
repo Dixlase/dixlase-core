@@ -30,6 +30,28 @@ repository to be notified of changes.
 
 ---
 
+## [0.1.16] — 2026-10-20
+
+### Fixed
+- A site installed in a language other than English serves its front end in that
+  language. The installer synced `Site.name` but not `Site.primary_locale`, and the
+  seeder set the locale from `config('app.locale')`, which at seed time still holds the
+  pre-install `.env` value. So `dls_sites.primary_locale` stayed `en` and a guest saw
+  English while the admin panel and the stored content were in the chosen language. The
+  installer is the authority for this column, as it already is for the name, and both the
+  web wizard and `dls:install` go through the same path (#684)
+
+### Plugin API — Added
+- `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` (`@api`) and the
+  `ReadonlyRoutes` facade. An extension declares which state-changing admin routes become
+  read-only while a site runs in restricted (demo) mode by returning their route names and
+  tagging itself on `plugin.capabilities`. Core aggregates every registered provider and
+  falls back to its built-in list while none is registered, so nothing changes for a site
+  that registers none. The demo middleware and the admin read-only cues now read one source
+  of truth instead of a middleware constant and static calls (#691)
+
+---
+
 ## [0.1.15] — 2026-10-20
 
 ### Added
@@ -58,15 +80,6 @@ repository to be notified of changes.
   therefore stores the upstream SHA-256 of each override in `custom/.overrides.json` as the
   baseline, and the command reports each one as current, upstream changed, upstream missing
   or no baseline, exiting non-zero for the middle two (#482)
-
-### Added
-- Plugin API: extensions can declare which state-changing admin routes become
-  read-only while a site runs in restricted (demo) mode. A new
-  `ReadonlyRouteProviderInterface` (tagged on `plugin.capabilities`) contributes
-  the blocked route names, and core's read-only route guard aggregates every
-  provider, falling back to its built-in list while none is registered. The
-  guard is centralised behind the `ReadonlyRoutes` facade so the demo middleware
-  and the admin read-only cues share one source of truth (#691)
 
 ### Fixed
 - An audit row written through an action records who did it and to what. `AbstractAction`
