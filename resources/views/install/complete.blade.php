@@ -119,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
          does not centre a block-level child -- each button sat flush against
          the left edge of its own caption, so the longer the URL, the further
          left the button went. --}}
-    <div class="flex flex-col items-center justify-center mt-6 space-y-3" x-data="installFinalizeButtons">
+    <div class="flex flex-col items-center justify-center mt-6 space-y-5" x-data="installFinalizeButtons">
         <form method="POST" action="{{ route('install.finalize') }}" @submit="submit($event)">
             @csrf
             <input type="hidden" name="redirect_to" value="{{ $adminLoginUrl }}">
