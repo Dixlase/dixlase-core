@@ -83,6 +83,13 @@ repository to be notified of changes.
   unkeyed for now; the decision and its reasons are in the audit-log integrity document. The
   unused `AuditLog::logWithHashChain()` is removed. Run `php artisan migrate` to create the
   lock table; until then rows are written unchained as before (#629)
+- The session cookie (and the `XSRF-TOKEN` cookie) is marked `Secure` on every HTTPS
+  request, including one forwarded by a trusted proxy. When neither `SESSION_SECURE_COOKIE`
+  nor `FORCE_SSL` was set, `config/session.php` fell back to an explicit `false`, so an HTTPS
+  install sent both cookies without the flag. Unset, the flag now follows the request, and
+  plain HTTP is unchanged; `FORCE_SSL=true` and an explicit `SESSION_SECURE_COOKIE` work as
+  before. `SECURITY.md` gains a "Session cookie" section, including why the admin session is
+  not given `SameSite=Strict` (#673)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
