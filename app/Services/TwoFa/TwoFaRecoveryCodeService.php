@@ -38,7 +38,10 @@
 namespace App\Services\TwoFa;
 
 use App\Contracts\TwoFaInterface;
+use App\Models\AuditLog;
+use App\Services\Member\MemberSecurityAudit;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -63,6 +66,7 @@ class TwoFaRecoveryCodeService
         $count = max(1, min(5, $count)); // Limit to range of 1-5
 
         // Invalidate all existing recovery codes
+        $replaced = $user->twoFaRecoveryCodes()->where('disabled', false)->count();
         $user->twoFaRecoveryCodes()->update(['disabled' => true]);
 
         $codes = [];
@@ -82,6 +86,8 @@ class TwoFaRecoveryCodeService
             'user_id' => $user->getId(),
             'count' => $count,
         ]);
+
+        $this->audit(AuditLog::ACTION_RECOVERY_CODES_GENERATED, $user, ['count' => $count, 'replaced' => $replaced]);
 
         return $codes;
     }
@@ -225,6 +231,23 @@ class TwoFaRecoveryCodeService
             'count' => $count,
         ]);
 
+        if ($count > 0) {
+            $this->audit(AuditLog::ACTION_RECOVERY_CODES_REVOKED, $user, ['count' => $count]);
+        }
+
         return $count;
+    }
+
+    /**
+     * Record a change to the member's recovery codes. The codes themselves
+     * never go into the row.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    private function audit(string $action, TwoFaInterface $user, array $context): void
+    {
+        if ($user instanceof Model) {
+            MemberSecurityAudit::record($action, $user, $context);
+        }
     }
 }

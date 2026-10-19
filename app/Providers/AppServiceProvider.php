@@ -84,6 +84,7 @@ use App\Settings\ApiSettingDefinitions;
 use App\Settings\BackupSettingDefinitions;
 use App\Settings\CoreSettingDefinitions;
 use App\Settings\SecuritySettingDefinitions;
+use App\Support\ExtensionManagementCommands;
 use App\Support\HttpsEnforcement;
 use App\Traits\CustomFilesLoaderTrait;
 use App\Traits\PluginLoaderTrait;
@@ -162,15 +163,15 @@ class AppServiceProvider extends ServiceProvider
         // plugin may rebind it to add per-page or localised overrides.
         $this->app->bind(PageTitleBuilderInterface::class, PageTitleBuilder::class);
 
-        // Bind signature verification service (can be overridden by DixlaseDevKit plugin)
+        // Bind signature verification service (a verification module can override this binding)
         $this->app->bind(SignatureVerifierInterface::class, CoreSignatureVerifier::class);
 
         // Bind the Core integrity manifest builder (shared by the verifier and
-        // the first-party DixlaseSigner sign-core command).
+        // the first-party sign-core command).
         $this->app->bind(CoreManifestBuilderInterface::class, CoreManifestBuilder::class);
 
         // Bind the signature waiver/removal manager (used by Core + the
-        // first-party DixlaseDevKit dls:signature:* commands).
+        // first-party dls:signature:* commands).
         $this->app->bind(SignatureWaiverServiceInterface::class, SignatureWaiverService::class);
 
         // Bind license verification service. Ships as a no-op stub in v0.1.0;
@@ -180,7 +181,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Runtime-data protection registry — aggregates the `deploy`
         // section of every installed plugin.json / theme.json so deploy
-        // tools (DixlaseDeploy today, others in the future) can query a
+        // tools can query a
         // single source of truth for tables and storage paths that must
         // never be overwritten by cross-environment sync. Singleton so
         // the plugins/themes tree walk happens at most once per request.
@@ -495,9 +496,6 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Check if plugin management command is running
-     */
-    /**
      * Commands that open, close, or inspect the core-update maintenance
      * window themselves. The boot-time self-heal must stay out of their
      * way: `down`/`up` are the operator acting deliberately, the update
@@ -518,38 +516,12 @@ class AppServiceProvider extends ServiceProvider
         ], true);
     }
 
+    /**
+     * Whether a command that manages an installed extension is running.
+     * Those commands run without the installed plugins loaded.
+     */
     private function isPluginManagementCommand(): bool
     {
-        // Check command line arguments
-        $argv = $_SERVER['argv'] ?? [];
-
-        // Check if it's a plugin management command
-        if (count($argv) >= 2) {
-            $pluginCommands = [
-                'plugin:install',
-                'plugin:uninstall',
-                'plugin:enable',
-                'plugin:disable',
-            ];
-
-            return in_array($argv[1], $pluginCommands);
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the plugin name to uninstall
-     */
-    private function getUninstallingPluginName(): ?string
-    {
-        $argv = $_SERVER['argv'] ?? [];
-
-        // Format: artisan plugin:uninstall PluginName
-        if (count($argv) >= 3 && $argv[1] === 'plugin:uninstall') {
-            return $argv[2];
-        }
-
-        return null;
+        return ExtensionManagementCommands::isRunning();
     }
 }

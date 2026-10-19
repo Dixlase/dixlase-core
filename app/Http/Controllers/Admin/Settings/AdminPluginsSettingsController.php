@@ -40,8 +40,6 @@ use App\Enums\PluginEnableAction;
 use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\AdminPluginDeleteRequest;
 use App\Http\Requests\Admin\Settings\AdminPluginInstallRequest;
@@ -816,10 +814,26 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $linkage = $sidecar->read(base_path("plugins/{$pluginDir}"));
 
             // Install using command
-            Artisan::call('dls:plugin:install', array_filter([
+            $exitCode = Artisan::call('dls:plugin:install', array_filter([
                 'pluginName' => $pluginDir,
                 '--source' => $linkage['source_id'] ?? null,
             ], fn ($v) => $v !== null));
+
+            // A refused install (license, requires.dixlase / requires.php,
+            // health gate) leaves the files where they were, so keep the
+            // sidecar that links them to their source and say why.
+            if ($exitCode !== 0) {
+                $output = trim((string) Artisan::output());
+                Log::error('Plugin installation command failed', [
+                    'directory' => $pluginDir,
+                    'exit_code' => $exitCode,
+                    'output' => $output,
+                ]);
+
+                return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_failed', [
+                    'error' => $output !== '' ? $output : (string) $exitCode,
+                ]));
+            }
             $sidecar->delete(base_path("plugins/{$pluginDir}"));
 
             // Retrieve installed plugin
@@ -1745,9 +1759,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 ComposerLocalManifest::markPendingInstall($destinationPath);
             }
 
-            // Update Git exclusion rules and composer.local.json
-            GitExcludeHelper::addPluginExclusion($pluginDir);
-            GitIgnoreHelper::addPluginExclusion($pluginDir);
+            // Update composer.local.json
             ComposerLocalHelper::syncAutoload();
 
             // The audit runs at install time, in the two-stage modal (scan → confirm).

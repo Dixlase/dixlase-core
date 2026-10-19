@@ -20,20 +20,29 @@
             <file>tests/Unit/Traits/CustomFilesLoaderTraitTest.php</file>
         </testsuite>
         <!-- ============================================ -->
-        <!-- プラグインテストスイート（個別）              -->
+        <!-- Per-extension suites                           -->
+        <!--                                                -->
+        <!-- Only the extensions this repository            -->
+        <!-- distributes publicly are named here. The rest  -->
+        <!-- are added to the runner's copy of this file by -->
+        <!-- .github/scripts/fetch-integration-plugins.sh,  -->
+        <!-- from a repository variable (dixlase-core#619),  -->
+        <!-- so a reader is not shown the names and the      -->
+        <!-- directory layout of software they cannot get.  -->
+        <!--                                                -->
+        <!-- On a machine that has them, "Plugins" below    -->
+        <!-- already covers every extension present, so     -->
+        <!-- nothing has to be added here to run them.      -->
+        <!--                                                -->
+        <!-- Every suite named here has to resolve to a     -->
+        <!-- directory that is always present. PHPUnit      -->
+        <!-- validates each suite named on the command line -->
+        <!-- before it runs any of them, so one absent      -->
+        <!-- directory ends the run with exit 2 and nothing -->
+        <!-- executes (dixlase-core#658). An extension that -->
+        <!-- is not always on disk belongs in the run-time  -->
+        <!-- rows, not here.                                -->
         <!-- ============================================ -->
-        <testsuite name="DixlaseOfficialDocs">
-            <directory>plugins/DixlaseOfficialDocs/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseDevKit">
-            <directory>plugins/DixlaseDevKit/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseCoreDevKit">
-            <directory>plugins/DixlaseCoreDevKit/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseLegal">
-            <directory>plugins/DixlaseLegal/tests</directory>
-        </testsuite>
         <testsuite name="DixlaseInquiry">
             <directory>plugins/DixlaseInquiry/tests</directory>
         </testsuite>
@@ -49,26 +58,8 @@
         <testsuite name="DixlaseBlog">
             <directory>plugins/DixlaseBlog/tests</directory>
         </testsuite>
-        <testsuite name="DixlaseAi">
-            <directory>plugins/DixlaseAi/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseUsers">
-            <directory>plugins/DixlaseUsers/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseAuthority">
-            <directory>plugins/DixlaseAuthority/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseRedirects">
-            <directory>plugins/DixlaseRedirects/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseSigner">
-            <directory>plugins/DixlaseSigner/tests</directory>
-        </testsuite>
-        <testsuite name="DixlaseMultilingual">
-            <directory>plugins/DixlaseMultilingual/tests</directory>
-        </testsuite>
-        <!-- プラグインテストスイート（一括実行用） -->
-        <!-- Usage: php artisan test testsuite=Plugins    -->
+        <!-- Every extension present, in one suite -->
+        <!-- Usage: php artisan test testsuite=Plugins   -->
         <testsuite name="Plugins">
             <directory>plugins/*/tests</directory>
         </testsuite>

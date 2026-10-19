@@ -32,6 +32,57 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Fixed
+- An audit row written through an action records who did it and to what. `AbstractAction`
+  passed the actor and the target under the column names, which `AuditLog::log()` ignored,
+  so every action-produced row had NULL `actor_type`, `actor_id`, `target_type` and
+  `target_id`; only the display name was kept, and the actor's identity was missing from the
+  hash chain. `AuditLog::log()` now also takes those four keys when no model is given, so a
+  plugin whose target is not an Eloquent model is not dropped the same way. Rows written
+  before this release are not backfilled (#546)
+- An administrator signed in to the admin panel is let past the front IP allow list.
+  `FrontIpFilter` tested `$member->is_admin`, which `Member` does not have, so the
+  bypass never fired and an administrator off the list was refused like any visitor. It now
+  lets a member signed in to the admin panel as ADMIN or SUPER_ADMIN past the allow list. The
+  block list is no longer bypassed: it applies to everyone, administrators included (#588)
+- Erasing a member's personal data no longer makes their audit rows fail verification. The
+  erasure rewrote `ip_address`, which the record hash covers, so every chained row of that
+  member was reported as tampered after a routine privacy request, and the erasure left no
+  row of its own to explain it. The erasure now clears the address instead of hashing it,
+  writes a `privacy_data_erased` row naming the operator and the subject by id, and marks
+  each row it changed. Verification reports those rows as redacted — still checked for
+  their place in the chain and the daily seal — and treats a row marked redacted with no
+  recorded erasure behind it as tampering. If the erasure cannot be recorded, nothing is
+  erased. Rows anonymised before this release still fail and are not backfilled (#478)
+- Installing, creating or deleting a plugin or theme no longer writes a `!plugins/<Name>/`
+  or `!themes/<Name>/` rule into core's tracked `.gitignore` or into `.git/info/exclude`.
+  Each rule re-included one extension in core's git, so `git status` listed it and
+  `git add -A` would have staged its files into core. `dls:sync-gitignore` and
+  `dls:sync-git-exclude` now only remove such rules: run either one to preview, and add
+  `--confirm` to write. The `--add-plugin` / `--add-theme` options do nothing (#626)
+- Taking a sign-in method away from a member is recorded in the audit log. Forcing a member
+  out, releasing a lockout, revoking one or all passkeys, revoking recovery codes and forcing
+  every member out wrote no audit row, and neither did registering a passkey or issuing
+  recovery codes on one's own profile. Each now writes one row naming who did it, the member
+  it was done to and how many sessions or credentials it affected; a row for an operation on
+  another member is recorded as a warning. The codes themselves are never recorded. New
+  actions: `recovery_codes_generated`, `recovery_codes_revoked` (#475)
+- The integrity documentation and screens no longer claim more than the code does. The
+  file-integrity scan never covered `public/build/`, and the documentation now lists what it
+  does not scan; the scan confirmation names its scope instead of "all core files". The
+  baseline command is `dls:integrity:generate-baseline --force`, the tampering example calls
+  `sendAdminNotification()`, and `INTEGRITY_SCAN_STARTED` / `INTEGRITY_SCAN_COMPLETED` are
+  marked as not dispatched. The audit-log overview describes an unkeyed hash chain per row and
+  a keyed daily seal per day — detection, not a guarantee. Japanese text calls the seal
+  「日次封印」 throughout, where it said 署名 before (#543)
+
+### Plugin API — Deprecated
+- `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
+  `GitExcludeHelper::addPluginExclusion()` / `addThemeExclusion()` are deprecated and
+  do nothing; they return `true` so existing callers keep working. Stop calling them:
+  core does not re-include extension directories in git any more. The `remove*()` and
+  `syncAll()` methods now remove existing rules (#626)
+
 ## [0.1.14] — 2026-10-17
 
 ### Plugin API — Added

@@ -142,6 +142,38 @@ are tracked in the dedicated `dls_plugin_migrations` /
 `dls_theme_migrations` ledgers. Placing files under
 `custom/plugins/{Plugin}/database/migrations/` will not do anything.
 
+## Keeping overrides in step with upstream
+
+An override replaces its upstream view **wholesale**. When core, a theme
+or a plugin later adds a control to that view, a site that overrides it
+does not get the control, and nothing errors. `dls:custom:diff` tells you
+when that has happened:
+
+```bash
+php artisan dls:custom:diff            # report every override
+php artisan dls:custom:diff --record   # record the current upstream as the baseline
+php artisan dls:custom:diff --json     # the same report, for scripts
+```
+
+- **Record a baseline** after placing or reviewing an override. `--record`
+  stores the hash of each override's upstream file in
+  `custom/.overrides.json`.
+- The report then says, per override, whether upstream is **current**,
+  has **changed** since the baseline, or **no longer exists** (the
+  override is then not used at all). An override without a baseline is
+  listed as such, and one that is identical to upstream is flagged as
+  redundant.
+- The command exits non-zero when an upstream file changed or
+  disappeared, so it can run after a core, theme or plugin update or as a
+  deploy check. For a changed file it prints the `diff -u` to run; carry
+  the change over, then record again.
+- Only **view** overrides are compared: core `admin/`, `components/` and
+  `layouts/`, theme views and plugin views. Config and lang files are
+  merged over upstream rather than replacing it, and PHP overrides are
+  subclasses, so those are listed as not compared. A theme override is
+  compared even when that theme is not the enabled one, although only the
+  enabled theme's overrides are loaded.
+
 ## License considerations
 
 `custom/` keeps signatures intact, but it does **not** create a

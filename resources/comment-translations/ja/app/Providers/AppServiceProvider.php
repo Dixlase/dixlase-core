@@ -10,7 +10,7 @@ return [
     'Bind file hash verification service' => 'ファイルハッシュ検証サービスをバインド',
     'Bind mail sending service' => 'メール送信サービスをバインド',
     'Bind log output service' => 'ログ出力サービスをバインド',
-    'Bind signature verification service (can be overridden by DixlaseDevKit plugin)' => '署名検証サービスをバインド（DixlaseDevKit プラグインが上書き可能）',
+    'Bind signature verification service (a verification module can override this binding)' => '署名検証サービスをバインド（検証モジュールがこの束縛を上書きできる）',
     'Register route slug registry as singleton' => 'ルートスラッグレジストリをシングルトンとして登録',
     'Register CSP Nonce Generator as singleton (use same nonce value per request)' => 'CSP Nonce Generatorをシングルトンとして登録（リクエストごとに同じnonce値を使用）',
     'Register legal page registry service as singleton' => '法務ページレジストリサービスをシングルトンとして登録',
@@ -56,10 +56,7 @@ return [
     'Load plugins' => 'プラグインのロード',
     'Load custom files' => 'カスタムファイルのロード',
     'Reorganize settings to apply plugin navigation configuration' => 'プラグインのナビゲーション設定を適用するため、設定の再配置を実行',
-    'Check if plugin management command is running' => 'プラグイン管理コマンドが実行中かをチェック',
     'Check command line arguments' => 'コマンドライン引数をチェック',
-    'Check if it\'s a plugin management command' => 'プラグイン管理コマンドかをチェック',
-    'Get the plugin name to uninstall' => 'アンインストール対象のプラグイン名を取得',
     'Format: artisan plugin:uninstall PluginName' => 'artisan plugin:uninstall PluginName の形式',
 
     // I18n MissingTranslationHandler default binding
@@ -70,7 +67,11 @@ return [
     'to change the behaviour.' => '挙動を変更できます。',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    'Whether a command that manages an installed extension is running.' => 'インストール済みの拡張機能を操作するコマンドが実行中かどうか。',
+    'Those commands run without the installed plugins loaded.' => 'これらのコマンドは、インストール済みのプラグインを読み込まずに実行される。',
     '_review_status' => [
+        'Whether a command that manages an installed extension is running.' => 'machine',
+        'Those commands run without the installed plugins loaded.' => 'machine',
         'Register plugin permission service as singleton' => 'machine',
         'Pattern detection registry (distributed with all default patterns registered)' => 'machine',
         'Bind backup service (can be overridden by backup plugin)' => 'machine',
@@ -80,7 +81,7 @@ return [
         'Bind file hash verification service' => 'machine',
         'Bind mail sending service' => 'machine',
         'Bind log output service' => 'machine',
-        'Bind signature verification service (can be overridden by DixlaseDevKit plugin)' => 'machine',
+        'Bind signature verification service (a verification module can override this binding)' => 'machine',
         'Register route slug registry as singleton' => 'machine',
         'Register CSP Nonce Generator as singleton (use same nonce value per request)' => 'machine',
         'Register legal page registry service as singleton' => 'machine',
@@ -126,10 +127,7 @@ return [
         'Load plugins' => 'machine',
         'Load custom files' => 'machine',
         'Reorganize settings to apply plugin navigation configuration' => 'machine',
-        'Check if plugin management command is running' => 'machine',
         'Check command line arguments' => 'machine',
-        'Check if it\'s a plugin management command' => 'machine',
-        'Get the plugin name to uninstall' => 'machine',
         'Format: artisan plugin:uninstall PluginName' => 'machine',
         'Default I18n missing-translation policy: 302 redirect to the' => 'human',
         'site\'s primary locale. Any multilingual plugin (first-party,' => 'human',

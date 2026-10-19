@@ -39,10 +39,10 @@ return [
     'theme_not_found' => 'テーマ \':themeName\' はデータベースに見つかりませんでした。',
     'not_installed' => 'テーマ \':themeName\' はインストールされていません。',
     'cannot_uninstall_enabled' => '有効なテーマ \':themeName\' をアンインストールできません。',
-    'disable_first' => 'アンインストールする前に、まず `dls:theme:disable` コマンドでテーマを無効化してください。',
+    'disable_first' => 'アンインストールする前に、`dls:theme:switch` コマンドで別のテーマに切り替えてください。',
     'confirmation' => '本当にテーマ \':themeName\' をアンインストールしますか?',
     'cancelled' => 'アンインストールはキャンセルされました。',
     'uninstalled' => 'テーマをアンインストールしました: :themeName',
     'files_preserved' => 'テーマのファイルとディレクトリは保持されました。',
-    'delete_hint' => 'ファイルを削除するには `php artisan theme:delete <directory>` コマンドを実行してください。',
+    'delete_hint' => 'ファイルを削除するには `php artisan dls:theme:delete <directory>` コマンドを実行してください。',
 ];

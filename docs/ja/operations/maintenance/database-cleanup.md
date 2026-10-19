@@ -180,18 +180,18 @@ return [
 
 **例:**
 ```php
-'name' => 'dixlase-users::admin/settings/systems/database.login_attempts.name',
-'description' => 'dixlase-users::admin/settings/systems/database.login_attempts.description',
+'name' => 'acme-accounts::admin/settings/systems/database.login_attempts.name',
+'description' => 'acme-accounts::admin/settings/systems/database.login_attempts.description',
 ```
 
 **プラグインスラッグの確認方法:**
 - プラグインディレクトリ名をケバブケース（小文字+ハイフン）に変換
-- 例: `DixlaseUsers` → `dixlase-users`
+- 例: `AcmeAccounts` → `acme-accounts`
 
-## 実装例: DixlaseUsersプラグイン
+## 実装例: AcmeAccounts プラグイン
 
 ### 設定ファイル
-`plugins/DixlaseUsers/config/admin/database-cleanup.php`
+`plugins/AcmeAccounts/config/admin/database-cleanup.php`
 
 ```php
 <?php
@@ -201,8 +201,8 @@ return [
         'table' => 'plg_dixlase_users_login_attempts',
         'date_column' => 'created_at',
         'default_days' => 30,
-        'name' => 'dixlase-users::admin/settings/systems/database.login_attempts.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.login_attempts.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.login_attempts.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.login_attempts.description',
         'enabled' => true,
     ],
 
@@ -210,8 +210,8 @@ return [
         'table' => 'plg_dixlase_users_sessions',
         'date_column' => 'last_activity',
         'default_days' => 7,
-        'name' => 'dixlase-users::admin/settings/systems/database.sessions.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.sessions.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.sessions.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.sessions.description',
         'enabled' => true,
         'date_column_type' => 'timestamp',
     ],
@@ -220,8 +220,8 @@ return [
         'table' => 'plg_dixlase_users_trusted_devices',
         'date_column' => 'last_used_at',
         'default_days' => 90,
-        'name' => 'dixlase-users::admin/settings/systems/database.trusted_devices.name',
-        'description' => 'dixlase-users::admin/settings/systems/database.trusted_devices.description',
+        'name' => 'acme-accounts::admin/settings/systems/database.trusted_devices.name',
+        'description' => 'acme-accounts::admin/settings/systems/database.trusted_devices.description',
         'enabled' => true,
         'additional_conditions' => 'unused',
     ],
@@ -229,7 +229,7 @@ return [
 ```
 
 ### 翻訳ファイル（日本語）
-`plugins/DixlaseUsers/lang/ja/admin/settings/systems/database.php`
+`plugins/AcmeAccounts/lang/ja/admin/settings/systems/database.php`
 
 ```php
 <?php

@@ -3,8 +3,10 @@
 /**
  * This file is part of Dixlase.
  *
- * Copyright (C) 2026 exc-D inc.
+ * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
+ *
+ * @api Stable API available for plugins/themes
  *
  * Dixlase is dual-licensed. You may use this file under either:
  *
@@ -33,17 +35,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-return [
-    'description' => 'テーマを無効化します',
-    'theme_name_prompt' => '無効化するテーマ名',
-    'no_enabled_themes' => '有効なテーマが見つかりませんでした。',
-    'theme_not_found' => 'テーマ \':themeName\' が見つかりません。',
-    'not_installed' => 'テーマ \':themeName\' はインストールされていません。',
-    'already_disabled' => 'テーマ \':themeName\' は既に無効化されています。',
-    'disabled' => 'テーマを無効化しました: :themeName',
-    'list_headers' => [
-        '名前',
-        'スラッグ',
-    ],
-    'disable_help' => 'テーマを無効化するには、次のコマンドを実行してください: php artisan dls:theme:disable <theme-name>',
-];
+declare(strict_types=1);
+
+namespace App\Services\Privacy;
+
+/**
+ * The erasure run that is currently redacting audit rows.
+ *
+ * The provider contract carries no erasure id, so UserPrivacyEraser binds
+ * one of these in the container for the length of a run, and the core
+ * provider stamps it on every audit row it redacts. The same id is the
+ * `request_id` of the erasure's own audit row, which is how verification
+ * tells a recorded redaction from an unexplained edit (#478).
+ *
+ * Nothing is bound outside a run. A provider called directly redacts rows
+ * with no id, and verification reports those rows as unrecorded.
+ */
+final readonly class AuditRedactionScope
+{
+    public function __construct(public string $id) {}
+
+    /**
+     * The id of the running erasure, or null outside one.
+     */
+    public static function currentId(): ?string
+    {
+        return app()->bound(self::class) ? app(self::class)->id : null;
+    }
+}

@@ -43,6 +43,65 @@ abstract class TestCase extends BaseTestCase
     protected static bool $migratingPlugins = false;
 
     /**
+     * Memoised result of extensionFactoryNamespaces(). The set of installed
+     * extensions does not change inside a test run, and the lookup runs in
+     * every setUp().
+     *
+     * @var list<string>|null
+     */
+    private static ?array $extensionFactoryNamespaces = null;
+
+    /**
+     * Namespaces searched for a model factory before core's own.
+     *
+     * `config('testing.factory_extensions')` pins the order when it decides
+     * something; empty means every extension that ships a factory directory,
+     * sorted by directory name. Core names no extension either way, because
+     * this repository is public and some extensions are not distributed
+     * (dixlase-core#619).
+     *
+     * @return list<string>
+     */
+    private static function extensionFactoryNamespaces(): array
+    {
+        if (self::$extensionFactoryNamespaces !== null) {
+            return self::$extensionFactoryNamespaces;
+        }
+
+        $configured = config('testing.factory_extensions');
+        $directories = is_array($configured) && $configured !== []
+            ? array_values(array_filter(array_map('strval', $configured)))
+            : self::discoverFactoryExtensions();
+
+        return self::$extensionFactoryNamespaces = array_map(
+            static fn (string $directory): string => 'Plugins\\'.$directory.'\\Database\\Factories\\',
+            $directories
+        );
+    }
+
+    /**
+     * Extension directories that ship a factory directory, sorted.
+     *
+     * Read-only: it looks at plugins/ and writes nothing. The sort is what
+     * makes the result independent of the order the filesystem happens to
+     * return.
+     *
+     * @return list<string>
+     */
+    private static function discoverFactoryExtensions(): array
+    {
+        $directories = [];
+
+        foreach (glob(base_path('plugins/*/database/factories'), GLOB_ONLYDIR) ?: [] as $path) {
+            $directories[] = basename(dirname($path, 2));
+        }
+
+        sort($directories);
+
+        return array_values(array_unique($directories));
+    }
+
+    /**
      * Drivers that hold real data and must never be migrate:fresh'd by a
      * test run. RefreshDatabase (used by the vast majority of suites)
      * runs `migrate:fresh` on the active connection — if a test process
@@ -67,16 +126,13 @@ abstract class TestCase extends BaseTestCase
         Factory::guessFactoryNamesUsing(function (string $modelName) {
             $basename = class_basename($modelName);
 
-            // Check DixlaseCoreDevKit factories first (core model factories for testing)
-            $coreDevFactory = 'Plugins\\DixlaseCoreDevKit\\Database\\Factories\\'.$basename.'Factory';
-            if (class_exists($coreDevFactory)) {
-                return $coreDevFactory;
-            }
-
-            // Check DixlaseDevKit factories
-            $devKitFactory = 'Plugins\\DixlaseDevKit\\Database\\Factories\\'.$basename.'Factory';
-            if (class_exists($devKitFactory)) {
-                return $devKitFactory;
+            // An extension may ship a factory for a core model, and it takes
+            // precedence over core's own when the extension is installed.
+            foreach (self::extensionFactoryNamespaces() as $namespace) {
+                $candidate = $namespace.$basename.'Factory';
+                if (class_exists($candidate)) {
+                    return $candidate;
+                }
             }
 
             return 'Database\\Factories\\'.$basename.'Factory';

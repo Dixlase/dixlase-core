@@ -44,6 +44,7 @@ jobs:
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -87,19 +88,21 @@ jobs:
           php artisan key:generate
 
       - name: Scan each plugin for non-@api core imports
-        # dls:plugin:check-api is provided by DixlaseDevKit. It scans `use App\*`
-        # statements in the target plugin and verifies the referenced class
-        # carries the @api PHPDoc tag.
+        # dls:plugin:check-api comes from the first-party developer tooling.
+        # It scans `use App\*` statements in the target extension and verifies
+        # the referenced class carries the @api PHPDoc tag.
         #
-        # DevKit and CoreDevKit are excluded because they intentionally reach
-        # into core internals as development tooling.
+        # API_SCAN_EXCLUDE is written to $GITHUB_ENV by the fetch step, from
+        # the INTEGRATION_EXTENSIONS rows flagged `no-api-scan`
+        # (dixlase-core#619). Development tooling belongs there: it reaches
+        # into core internals on purpose, so the boundary does not apply.
         run: |
           VIOLATIONS=()
           for plugin_dir in plugins/Dixlase*/; do
             [ -d "$plugin_dir" ] || continue
             plugin=$(basename "$plugin_dir")
-            case "$plugin" in
-              DixlaseDevKit|DixlaseCoreDevKit)
+            case " ${API_SCAN_EXCLUDE:-} " in
+              *" $plugin "*)
                 echo "::group::Skipping $plugin (development tooling)"
                 echo "::endgroup::"
                 continue

@@ -1,43 +1,62 @@
-# Plugins integration-tested in CI by Dixlase Core.
+# Extensions that Dixlase Core integration-tests in CI.
 #
 # Format: <directory-name>\t<git-url>
 # Comments start with '#' and are skipped.
 #
-# Each plugin listed here is shallow-cloned into plugins/<dir-name>/ by
+# Each extension listed here is shallow-cloned into plugins/<dir-name>/ by
 # .github/scripts/fetch-integration-plugins.sh at the start of every CI
-# run that needs the bundled plugins (test.yml's plugin-tests / migration /
-# migration-lint / comment-translation-status, plugin-api-check.yml).
+# run that needs the bundled extensions (test.yml's plugin-tests /
+# migration / migration-lint / comment-translation-status,
+# plugin-api-check.yml, generated-docs-drift.yml).
 #
-# This file replaced the per-plugin entries that used to live in
+# This file lists only the extensions this repository distributes
+# publicly. Core is integration-tested against more than these, and the
+# rows for the rest are held in the INTEGRATION_EXTENSIONS repository (or
+# organisation) secret, which the fetch script merges with this file at
+# run time. The reason is dixlase-core#619: a public repository should not
+# publish the names and the directory layout of software its readers
+# cannot obtain, and the files that define how the project is built and
+# tested are the last place that should do it by accident. A fork has no
+# token to clone them with either, so it gets exactly this list.
+#
+# That variable's rows carry two extra columns the fetch script reads —
+# a test tier and a flag field. Its own header documents them.
+#
+# This file replaced the per-extension entries that used to live in
 # .gitmodules. The motivation was that `git clone` of dixlase-core
 # unavoidably creates an empty placeholder directory for every gitlink
 # in the tree, even when --no-recurse-submodules is passed — so a plain
-# clone left plugins/ littered with 9 empty directories. The fix is to
-# keep the integration plugin list outside git's submodule machinery:
-# fresh clones leave plugins/ empty, the install wizard / dls:plugin:install
-# fetch real plugins on demand for operators, and this TSV is the
+# clone left plugins/ littered with empty directories. The fix is to
+# keep the integration list outside git's submodule machinery: fresh
+# clones leave plugins/ empty, the install wizard / dls:plugin:install
+# fetch real extensions on demand for operators, and this TSV is the
 # canonical list for CI to clone for integration testing.
 #
-# Adding a new plugin:
+# Adding a publicly distributed extension:
 #   1. Append a row here.
-#   2. If the plugin ships PHPUnit tests, register its testsuite in
-#      phpunit.xml so test.yml's plugin-tests job picks it up.
-#   3. Place it in the appropriate tier in test.yml's --testsuite=
+#   2. If it ships PHPUnit tests, register its testsuite in phpunit.xml
+#      so test.yml's plugin-tests job can select it.
+#   3. Name it in the appropriate tier of test.yml's --testsuite=
 #      arguments (well-tested / moderate / minimal).
 #
-# Removing a plugin:
+# Adding one that is not distributed publicly: append a row to the
+# INTEGRATION_EXTENSIONS secret instead, with its tier. The fetch
+# script registers the testsuite and places it in the tier for you —
+# nothing is added to this file or to phpunit.xml.
+#
+# Removing a publicly distributed extension:
 #   1. Delete its row here.
 #   2. Drop the matching testsuite from phpunit.xml and the --testsuite=
 #      string in test.yml.
-DixlaseLegal	https://github.com/Dixlase/plugin-dixlase-legal.git
+#
+# A testsuite named literally in test.yml has to resolve to a directory
+# that is always on disk. PHPUnit validates every suite on the command
+# line before it runs any of them, so one absent directory ends the step
+# with exit 2 and nothing executes at all — invisibly, where the step is
+# continue-on-error (dixlase-core#658). Tier 3 therefore names none, and
+# runs EXTRA_SUITES_TIER3 alone.
 DixlaseInquiry	https://github.com/Dixlase/plugin-dixlase-inquiry.git
 DixlaseSEO	https://github.com/Dixlase/plugin-dixlase-seo.git
-DixlaseCoreDevKit	https://github.com/Dixlase/plugin-dixlase-core-devkit.git
-DixlaseOfficialDocs	https://github.com/Dixlase/plugin-dixlase-official-docs.git
 DixlaseMenus	https://github.com/Dixlase/plugin-dixlase-menus.git
 DixlasePages	https://github.com/Dixlase/plugin-dixlase-pages.git
 DixlaseBlog	https://github.com/Dixlase/plugin-dixlase-blog.git
-DixlaseDevKit	https://github.com/Dixlase/plugin-dixlase-devkit.git
-DixlaseUsers	https://github.com/Dixlase/plugin-dixlase-users.git
-DixlaseSigner	https://github.com/Dixlase/plugin-dixlase-signer.git
-DixlaseMultilingual	https://github.com/Dixlase/plugin-dixlase-multilingual.git

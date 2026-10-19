@@ -219,10 +219,15 @@ class ThemeSymlink extends Command
         // a core update whose payload carried the dereferenced assets used
         // to leave one there, and the old `! File::exists($link)` guard
         // then skipped the repair silently. See PublicAssetRelinker.
+        $notices = [];
         PublicAssetRelinker::ensureLink(
             base_path("themes/{$themeDirName}/resources/assets"),
             public_path("assets/themes/{$themeDirName}"),
+            $notices,
         );
+        foreach ($notices as $notice) {
+            $this->warn($notice);
+        }
     }
 
     /**

@@ -39,123 +39,82 @@ namespace App\Helpers;
 
 use App\Console\Commands\SyncGitIgnore;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 /**
  * .gitignore file management helper
  *
- * This helper is a wrapper for the SyncGitIgnore command
- * Used for calls from the admin panel or simple usage within programs
+ * Older versions of core wrote a `!plugins/<Name>/` or `!themes/<Name>/`
+ * rule into .gitignore for every installed extension, which made core's git
+ * track extension directories that it ignores on purpose. Core no longer
+ * writes them. The add methods are kept as no-ops so that existing callers
+ * keep working; the remove and sync methods clean up rules that are still
+ * there.
  *
  * @see \App\Console\Commands\SyncGitIgnore
  */
 class GitIgnoreHelper
 {
     /**
-     * Add plugin exclusion rule (!plugins/PluginName/)
+     * Formerly added a re-include rule for a plugin; now does nothing
      *
-     * @param  string  $pluginName  Plugin name (e.g., DixlaseBackup)
-     * @return bool Whether it succeeded
+     * @deprecated Core no longer re-includes extension directories in git.
+     *             Kept so that existing callers keep working; it will be
+     *             removed in a later release.
+     *
+     * @param  string  $pluginName  Plugin directory name
+     * @return bool Always true
      */
     public static function addPluginExclusion(string $pluginName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-gitignore', [
-                '--add-plugin' => $pluginName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to add plugin exclusion to .gitignore: '.$e->getMessage());
-
-            return false;
-        }
+        return true;
     }
 
     /**
-     * Remove plugin exclusion rule
+     * Remove the re-include rule for a plugin, if there is one
      *
-     * @param  string  $pluginName  Plugin name
+     * @param  string  $pluginName  Plugin directory name
      * @return bool Whether it succeeded
      */
     public static function removePluginExclusion(string $pluginName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-gitignore', [
-                '--remove-plugin' => $pluginName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to remove plugin exclusion from .gitignore: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run(['--remove-plugin' => $pluginName]);
     }
 
     /**
-     * Add theme exclusion rule (!themes/ThemeName/)
+     * Formerly added a re-include rule for a theme; now does nothing
      *
-     * @param  string  $themeName  Theme name
-     * @return bool Whether it succeeded
+     * @deprecated Core no longer re-includes extension directories in git.
+     *             Kept so that existing callers keep working; it will be
+     *             removed in a later release.
+     *
+     * @param  string  $themeName  Theme directory name
+     * @return bool Always true
      */
     public static function addThemeExclusion(string $themeName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-gitignore', [
-                '--add-theme' => $themeName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to add theme exclusion to .gitignore: '.$e->getMessage());
-
-            return false;
-        }
+        return true;
     }
 
     /**
-     * Remove theme exclusion rule
+     * Remove the re-include rule for a theme, if there is one
      *
-     * @param  string  $themeName  Theme name
+     * @param  string  $themeName  Theme directory name
      * @return bool Whether it succeeded
      */
     public static function removeThemeExclusion(string $themeName): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-gitignore', [
-                '--remove-theme' => $themeName,
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to remove theme exclusion from .gitignore: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run(['--remove-theme' => $themeName]);
     }
 
     /**
-     * Sync all plugin and theme exclusion rules
+     * Remove every plugin and theme re-include rule
      *
      * @return bool Whether it succeeded
      */
     public static function syncAll(): bool
     {
-        try {
-            $exitCode = Artisan::call('dls:sync-gitignore', [
-                '--force' => true,
-            ]);
-
-            return $exitCode === 0;
-        } catch (\Exception $e) {
-            \Log::error('Failed to sync gitignore: '.$e->getMessage());
-
-            return false;
-        }
+        return self::run([]);
     }
 
     /**
@@ -176,5 +135,22 @@ class GitIgnoreHelper
     public static function hasThemeExclusion(string $themeName): bool
     {
         return SyncGitIgnore::hasThemeExclusion($themeName);
+    }
+
+    /**
+     * Run the cleanup command and write its result
+     *
+     * @param  array<string, string>  $options  Command options
+     * @return bool Whether it succeeded
+     */
+    private static function run(array $options): bool
+    {
+        try {
+            return Artisan::call('dls:sync-gitignore', $options + ['--confirm' => true]) === 0;
+        } catch (\Exception $e) {
+            Log::error('Failed to clean up .gitignore: '.$e->getMessage());
+
+            return false;
+        }
     }
 }

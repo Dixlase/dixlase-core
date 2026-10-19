@@ -36,11 +36,10 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
+use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
@@ -58,6 +57,7 @@ use Illuminate\Support\Str;
 class PluginInstall extends Command
 {
     use BuildsExtensionAssets;
+    use EnforcesExtensionRequirements;
     use GuardsExtensionActivation;
     use PluginManagementTrait;
 
@@ -190,6 +190,15 @@ class PluginInstall extends Command
             ));
         }
 
+        // The manifest's requires.dixlase / requires.php (dixlase-core#473).
+        // Not overridable: the plugin says it will not work on this site.
+        $requirementRefusal = $this->unmetRequirementMessage(is_array($pluginData ?? null) ? $pluginData : [], $pluginName, 'installed');
+        if ($requirementRefusal !== null) {
+            $this->error($requirementRefusal);
+
+            return 1;
+        }
+
         // Health / signature gate (dixlase-core#492), checked before anything
         // is written or any of the plugin's code (migrations, seeders, npm)
         // runs. The admin panel refuses to install a Blocked plugin under a
@@ -280,10 +289,7 @@ class PluginInstall extends Command
         // plugins: the plugin's controllers would not resolve (routes
         // 500 with "Class ... does not exist") and the class_exists()
         // seeder check below would silently skip its DatabaseSeeder.
-        // Same call ThemeInstall makes; also keeps .git/info/exclude and
-        // .gitignore in step like the admin path does.
-        GitExcludeHelper::addPluginExclusion($pluginName);
-        GitIgnoreHelper::addPluginExclusion($pluginName);
+        // Same call ThemeInstall makes.
         // Installing is the point where the plugin's autoload.files may run.
         ComposerLocalManifest::clearPendingInstall($pluginPath);
         if (ComposerLocalHelper::syncAutoload()) {

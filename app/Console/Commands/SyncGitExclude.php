@@ -35,558 +35,88 @@
 
 namespace App\Console\Commands;
 
-use App\Support\ExtensionDirectories;
+use App\Console\Traits\CleansExtensionReincludeRules;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 
+/**
+ * Removes the `!plugins/<Name>` and `!themes/<Name>` rules that older
+ * versions of core wrote into .git/info/exclude for every installed extension.
+ *
+ * Core ignores `plugins/*` and `themes/*` on purpose, and each of those
+ * rules re-included one extension directory in core's git. Installing,
+ * creating or deleting an extension no longer touches .git/info/exclude;
+ * run this once to clean up a checkout that still carries the rules:
+ *
+ *     php artisan dls:sync-git-exclude            # preview
+ *     php artisan dls:sync-git-exclude --confirm  # write
+ */
 class SyncGitExclude extends Command
 {
+    use CleansExtensionReincludeRules;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:sync-git-exclude 
-                            {--dry-run : Show what would be changed without making changes}
-                            {--plugins-only : Only sync plugin exclusions}
-                            {--themes-only : Only sync theme exclusions}
-                            {--force : Apply changes without confirmation}
-                            {--add-plugin= : Add a single plugin exclusion}
-                            {--remove-plugin= : Remove a single plugin exclusion}
-                            {--add-theme= : Add a single theme exclusion}
-                            {--remove-theme= : Remove a single theme exclusion}';
+    protected $signature = 'dls:sync-git-exclude
+                            {--confirm : Write the cleaned file (default is a dry-run preview)}
+                            {--force : Same as --confirm, kept for older callers}
+                            {--dry-run : Preview only (the default); wins over --confirm}
+                            {--plugins-only : Only remove !plugins/ rules}
+                            {--themes-only : Only remove !themes/ rules}
+                            {--remove-plugin= : Only remove the rule for this plugin directory}
+                            {--remove-theme= : Only remove the rule for this theme directory}
+                            {--add-plugin= : Deprecated, does nothing}
+                            {--add-theme= : Deprecated, does nothing}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Sync .git/info/exclude with plugin and theme directories';
+    protected $description = 'Remove the !plugins/ and !themes/ re-include rules older versions added to .git/info/exclude';
 
     /**
-     * Path to .git/info/exclude file
+     * Path to the .git/info/exclude file
      */
-    protected function getExcludeFilePath(): string
+    protected function rulesFilePath(): string
     {
         return base_path('.git/info/exclude');
     }
 
     /**
-     * Whether .git/info/exclude can be written.
-     *
-     * On deployments that keep .git owned by the host user — e.g. the Docker
-     * installer chowns the app tree to www-data but excludes .git so
-     * host-side `git` keeps working — the app process cannot write
-     * .git/info/exclude. That is an expected condition, not an error: the
-     * .gitignore fallback (GitIgnoreHelper) covers the same extension
-     * exclusion hygiene.
+     * Name of the file as shown to the operator
      */
-    protected function isExcludeWritable(): bool
+    protected function rulesFileLabel(): string
     {
-        $path = $this->getExcludeFilePath();
-
-        if (File::exists($path)) {
-            return is_writable($path);
-        }
-
-        // The file would be created; the nearest existing ancestor dir must
-        // be writable for that to succeed.
-        $dir = dirname($path);
-        while (! File::exists($dir)) {
-            $dir = dirname($dir);
-        }
-
-        return is_writable($dir);
+        return '.git/info/exclude';
     }
 
     /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        // Error if .git directory does not exist
-        if (! File::exists(base_path('.git'))) {
-            $this->error(__('admin/command/git-sync.git_not_found'));
-
-            return self::FAILURE;
-        }
-
-        // Skip quietly when .git/info/exclude is not writable. This is normal
-        // on deployments that keep .git owned by the host user (so host-side
-        // git still works); the .gitignore fallback covers the same exclusion
-        // hygiene. Return SUCCESS and log at info level so an extension
-        // install/update/delete does not log an ERROR — which would fire a
-        // system-error notification — over a non-critical, expected write.
-        if (! $this->isExcludeWritable()) {
-            $this->warn(__('admin/command/git-sync.exclude_not_writable'));
-            Log::info('Skipped .git/info/exclude sync: not writable (host-owned .git); .gitignore fallback covers exclusion.');
-
-            return self::SUCCESS;
-        }
-
-        // Single operation mode
-        if ($this->option('add-plugin')) {
-            return $this->addPluginExclusion($this->option('add-plugin')) ? self::SUCCESS : self::FAILURE;
-        }
-        if ($this->option('remove-plugin')) {
-            return $this->removePluginExclusion($this->option('remove-plugin')) ? self::SUCCESS : self::FAILURE;
-        }
-        if ($this->option('add-theme')) {
-            return $this->addThemeExclusion($this->option('add-theme')) ? self::SUCCESS : self::FAILURE;
-        }
-        if ($this->option('remove-theme')) {
-            return $this->removeThemeExclusion($this->option('remove-theme')) ? self::SUCCESS : self::FAILURE;
-        }
-
-        // Sync mode
-        return $this->syncAll();
-    }
-
-    /**
-     * Sync all plugins and themes
-     */
-    protected function syncAll(): int
-    {
-        $excludePath = $this->getExcludeFilePath();
-        $dryRun = $this->option('dry-run');
-        $pluginsOnly = $this->option('plugins-only');
-        $themesOnly = $this->option('themes-only');
-        $force = $this->option('force');
-
-        $this->info(__('admin/command/git-sync.scanning'));
-        $this->newLine();
-
-        // Get current contents of .git/info/exclude
-        $currentContent = File::exists($excludePath) ? File::get($excludePath) : '';
-
-        // Extract currently registered plugins and themes
-        $currentPlugins = [];
-        $currentThemes = [];
-
-        if ($currentContent) {
-            preg_match_all('/!plugins\/([^\s\/]+)/', $currentContent, $matches);
-            $currentPlugins = $matches[1] ?? [];
-
-            preg_match_all('/!themes\/([^\s\/]+)/', $currentContent, $matches);
-            $currentThemes = $matches[1] ?? [];
-        }
-
-        // Detect actual directories
-        $actualPlugins = $this->detectDirectories(base_path('plugins'));
-        // DixlaseOnePage is placed in themes/ by composer/installers as the
-        // bundled theme, and .gitignore excludes it outright, so Core must not
-        // propose a negation entry that would start tracking it.
-        $actualThemes = $this->detectDirectories(base_path('themes'), ['DixlaseOnePage']);
-
-        // Calculate differences
-        $pluginsToAdd = array_diff($actualPlugins, $currentPlugins);
-        $pluginsToRemove = array_diff($currentPlugins, $actualPlugins);
-        $themesToAdd = array_diff($actualThemes, $currentThemes);
-        $themesToRemove = array_diff($currentThemes, $actualThemes);
-
-        // Display current state
-        $this->displayCurrentState($currentPlugins, $currentThemes, $actualPlugins, $actualThemes);
-
-        // Display changes
-        $hasPluginChanges = ! empty($pluginsToAdd) || ! empty($pluginsToRemove);
-        $hasThemeChanges = ! empty($themesToAdd) || ! empty($themesToRemove);
-
-        if (! $themesOnly && $hasPluginChanges) {
-            $this->displayChanges('Plugins', $pluginsToAdd, $pluginsToRemove);
-        }
-
-        if (! $pluginsOnly && $hasThemeChanges) {
-            $this->displayChanges('Themes', $themesToAdd, $themesToRemove);
-        }
-
-        // If there are no changes
-        if ((! $hasPluginChanges || $themesOnly) && (! $hasThemeChanges || $pluginsOnly)) {
-            $this->info(__('admin/command/git-sync.exclude_in_sync'));
-
-            return self::SUCCESS;
-        }
-
-        // Exit if dry run
-        if ($dryRun) {
-            $this->newLine();
-            $this->warn(__('admin/command/git-sync.dry_run'));
-
-            return self::SUCCESS;
-        }
-
-        // Confirmation
-        if (! $force && ! $this->confirm(__('admin/command/git-sync.confirm_apply'), true)) {
-            $this->info(__('admin/command/git-sync.cancelled'));
-
-            return self::SUCCESS;
-        }
-
-        // Apply changes
-        $this->applyChanges(
-            $excludePath,
-            $currentContent,
-            $pluginsOnly ? [] : $themesToAdd,
-            $pluginsOnly ? [] : $themesToRemove,
-            $themesOnly ? [] : $pluginsToAdd,
-            $themesOnly ? [] : $pluginsToRemove
-        );
-
-        $this->newLine();
-        $this->info(__('admin/command/git-sync.exclude_synced'));
-
-        return self::SUCCESS;
-    }
-
-    /**
-     * Add plugin exclusion rule
-     */
-    public function addPluginExclusion(string $pluginName): bool
-    {
-        try {
-            $excludePath = $this->getExcludeFilePath();
-
-            // Create .git/info/exclude file if it does not exist
-            if (! File::exists($excludePath)) {
-                $directory = dirname($excludePath);
-                if (! File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                File::put($excludePath, "# Git exclude rules\n");
-            }
-
-            $content = File::get($excludePath);
-            $pluginPath = "!plugins/{$pluginName}";
-
-            // Skip if already added
-            if (str_contains($content, $pluginPath)) {
-                $this->info(__('admin/command/git-sync.already_exists', ['path' => $pluginPath]));
-
-                return true;
-            }
-
-            // Find plugin section
-            $lines = explode("\n", $content);
-            $this->addToSection($lines, 'Plugin', 'plugins', [$pluginName]);
-
-            $content = implode("\n", $lines);
-            File::put($excludePath, $content);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
-            Log::error('Failed to add plugin exclusion: '.$e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * Remove plugin exclusion rule
-     */
-    public function removePluginExclusion(string $pluginName): bool
-    {
-        try {
-            $excludePath = $this->getExcludeFilePath();
-
-            if (! File::exists($excludePath)) {
-                return true;
-            }
-
-            $content = File::get($excludePath);
-            $pluginPath = "!plugins/{$pluginName}";
-
-            $lines = explode("\n", $content);
-            $filteredLines = array_filter($lines, fn ($line) => trim($line) !== $pluginPath);
-
-            $content = implode("\n", array_values($filteredLines));
-            File::put($excludePath, $content);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
-            Log::error('Failed to remove plugin exclusion: '.$e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * Add theme exclusion rules
-     */
-    public function addThemeExclusion(string $themeName): bool
-    {
-        try {
-            $excludePath = $this->getExcludeFilePath();
-
-            if (! File::exists($excludePath)) {
-                $directory = dirname($excludePath);
-                if (! File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                File::put($excludePath, "# Git exclude rules\n");
-            }
-
-            $content = File::get($excludePath);
-            $themePath = "!themes/{$themeName}";
-
-            if (str_contains($content, $themePath)) {
-                $this->info(__('admin/command/git-sync.already_exists', ['path' => $themePath]));
-
-                return true;
-            }
-
-            $lines = explode("\n", $content);
-            $this->addToSection($lines, 'Theme', 'themes', [$themeName]);
-
-            $content = implode("\n", $lines);
-            File::put($excludePath, $content);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
-            Log::error('Failed to add theme exclusion: '.$e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * Remove theme exclusion rules
-     */
-    public function removeThemeExclusion(string $themeName): bool
-    {
-        try {
-            $excludePath = $this->getExcludeFilePath();
-
-            if (! File::exists($excludePath)) {
-                return true;
-            }
-
-            $content = File::get($excludePath);
-            $themePath = "!themes/{$themeName}";
-
-            $lines = explode("\n", $content);
-            $filteredLines = array_filter($lines, fn ($line) => trim($line) !== $themePath);
-
-            $content = implode("\n", array_values($filteredLines));
-            File::put($excludePath, $content);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->error(__('admin/command/git-sync.failed', ['error' => $e->getMessage()]));
-            Log::error('Failed to remove theme exclusion: '.$e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * Detect directories
-     */
-    protected function detectDirectories(string $path, array $exclude = []): array
-    {
-        if (! File::exists($path)) {
-            return [];
-        }
-
-        $directories = File::directories($path);
-        $names = [];
-
-        foreach ($directories as $directory) {
-            $name = basename($directory);
-
-            // A move-aside copy left by an update (Foo.stale.<timestamp>,
-            // Foo.bak) is not an installed extension. Proposing a negation
-            // entry for one would make Core's git start tracking the copy's
-            // whole tree -- source, database/migrations/ and all -- inside the
-            // Core repository, which is precisely what the negation list exists
-            // to avoid doing to plugin and theme trees.
-            if (! ExtensionDirectories::isInstalledName($name)) {
-                continue;
-            }
-
-            if (! in_array($name, $exclude)) {
-                $names[] = $name;
-            }
-        }
-
-        sort($names);
-
-        return $names;
-    }
-
-    /**
-     * Display current state
-     */
-    protected function displayCurrentState(array $currentPlugins, array $currentThemes, array $actualPlugins, array $actualThemes): void
-    {
-        $this->table(
-            ['Type', 'In .git/info/exclude', 'In Directory'],
-            [
-                ['Plugins', count($currentPlugins), count($actualPlugins)],
-                ['Themes', count($currentThemes), count($actualThemes)],
-            ]
-        );
-        $this->newLine();
-
-        if (! empty($actualPlugins)) {
-            $this->info(__('admin/command/git-sync.plugins_found'));
-            foreach ($actualPlugins as $plugin) {
-                $status = in_array($plugin, $currentPlugins) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
-                $this->line("  {$status} {$plugin}");
-            }
-            $this->newLine();
-        }
-
-        if (! empty($actualThemes)) {
-            $this->info(__('admin/command/git-sync.themes_found'));
-            foreach ($actualThemes as $theme) {
-                $status = in_array($theme, $currentThemes) ? '<fg=green>✓</>' : '<fg=yellow>○</>';
-                $this->line("  {$status} {$theme}");
-            }
-            $this->newLine();
-        }
-    }
-
-    /**
-     * Display changes
-     */
-    protected function displayChanges(string $type, array $toAdd, array $toRemove): void
-    {
-        if (! empty($toAdd)) {
-            $this->info("{$type} ".__('admin/command/git-sync.to_add'));
-            foreach ($toAdd as $name) {
-                $typeLower = strtolower($type);
-                $this->line("  <fg=green>+ !{$typeLower}/{$name}</>");
-            }
-        }
-
-        if (! empty($toRemove)) {
-            $this->warn("{$type} ".__('admin/command/git-sync.to_remove'));
-            foreach ($toRemove as $name) {
-                $typeLower = strtolower($type);
-                $this->line("  <fg=red>- !{$typeLower}/{$name}</>");
-            }
-        }
-
-        if (! empty($toAdd) || ! empty($toRemove)) {
-            $this->newLine();
-        }
-    }
-
-    /**
-     * Apply changes
-     */
-    protected function applyChanges(
-        string $excludePath,
-        string $currentContent,
-        array $themesToAdd,
-        array $themesToRemove,
-        array $pluginsToAdd,
-        array $pluginsToRemove
-    ): void {
-        $lines = explode("\n", $currentContent);
-
-        // Deletion process
-        foreach ($pluginsToRemove as $plugin) {
-            $lines = array_filter($lines, fn ($line) => trim($line) !== "!plugins/{$plugin}");
-        }
-        foreach ($themesToRemove as $theme) {
-            $lines = array_filter($lines, fn ($line) => trim($line) !== "!themes/{$theme}");
-        }
-
-        $lines = array_values($lines);
-
-        // Find and add to plugin section
-        if (! empty($pluginsToAdd)) {
-            $this->addToSection($lines, 'Plugin', 'plugins', $pluginsToAdd);
-        }
-
-        // Find and add to theme section
-        if (! empty($themesToAdd)) {
-            $this->addToSection($lines, 'Theme', 'themes', $themesToAdd);
-        }
-
-        // Write to file
-        $content = implode("\n", $lines);
-
-        // Create directory if it doesn't exist
-        $directory = dirname($excludePath);
-        if (! File::exists($directory)) {
-            File::makeDirectory($directory, 0755, true);
-        }
-
-        File::put($excludePath, $content);
-    }
-
-    /**
-     * Add to section
-     */
-    protected function addToSection(array &$lines, string $sectionName, string $type, array $toAdd): void
-    {
-        $sectionStart = "# === {$sectionName} exclusions (auto-managed) ===";
-        $sectionEnd = "# === End {$type} exclusions ===";
-
-        $startIndex = -1;
-        $endIndex = -1;
-
-        foreach ($lines as $index => $line) {
-            if (str_contains($line, $sectionStart)) {
-                $startIndex = $index;
-            } elseif (str_contains($line, $sectionEnd)) {
-                $endIndex = $index;
-                break;
-            }
-        }
-
-        // Create section if it doesn't exist
-        if ($startIndex === -1) {
-            $lines[] = '';
-            $lines[] = $sectionStart;
-            $lines[] = '# Do not edit this section manually';
-            foreach ($toAdd as $name) {
-                $lines[] = "!{$type}/{$name}";
-            }
-            $lines[] = $sectionEnd;
-        } else {
-            // Add within section
-            $insertIndex = ($endIndex !== -1) ? $endIndex : count($lines);
-            foreach (array_reverse($toAdd) as $name) {
-                array_splice($lines, $insertIndex, 0, ["!{$type}/{$name}"]);
-            }
-        }
-    }
-
-    /**
-     * Check if plugin exclusion rules exist
+     * Check if plugin exclusion rule exists
      */
     public static function hasPluginExclusion(string $pluginName): bool
     {
-        $excludePath = base_path('.git/info/exclude');
-
-        if (! File::exists($excludePath)) {
-            return false;
-        }
-
-        $content = File::get($excludePath);
-
-        return str_contains($content, "!plugins/{$pluginName}");
+        return self::fileContains("!plugins/{$pluginName}");
     }
 
     /**
-     * Check if theme exclusion rules exist
+     * Check if theme exclusion rule exists
      */
     public static function hasThemeExclusion(string $themeName): bool
     {
-        $excludePath = base_path('.git/info/exclude');
+        return self::fileContains("!themes/{$themeName}");
+    }
 
-        if (! File::exists($excludePath)) {
-            return false;
-        }
+    /**
+     * Whether the .git/info/exclude file contains the given text
+     */
+    private static function fileContains(string $needle): bool
+    {
+        $path = base_path('.git/info/exclude');
 
-        $content = File::get($excludePath);
-
-        return str_contains($content, "!themes/{$themeName}");
+        return File::exists($path) && str_contains(File::get($path), $needle);
     }
 }

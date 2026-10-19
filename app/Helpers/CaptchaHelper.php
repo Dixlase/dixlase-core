@@ -266,7 +266,7 @@ class CaptchaHelper
         }
 
         // A branch for 'user_login' / 'user_register' / 'user_password_reset'
-        // used to sit here, reading those keys out of the DixlaseUsers plugin's
+        // used to sit here, reading those keys out of a member-accounts plugin's
         // settings model behind a class_exists() gate. Those form names appear
         // nowhere else in Core, and the gate meant the branch fell through to
         // the same `return false` below whenever the plugin was absent.

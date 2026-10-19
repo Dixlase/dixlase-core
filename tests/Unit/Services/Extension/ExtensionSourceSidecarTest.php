@@ -115,4 +115,40 @@ class ExtensionSourceSidecarTest extends TestCase
         $this->assertFileExists($this->dir.'/'.ExtensionSourceSidecar::FILENAME);
         $this->assertSame(1, $this->sidecar->read($this->dir)['source_id']);
     }
+
+    public function test_restore_from_row_writes_the_rows_linkage_back(): void
+    {
+        $row = (object) [
+            'name' => 'AcmeExample',
+            'source_id' => '7',
+            'source_repo' => 'plugin-acme-example',
+            'installation_method' => 'github',
+            'installed_from_url' => 'https://github.com/Acme/plugin-acme-example',
+        ];
+
+        $this->sidecar->restoreFromRow($this->dir, $row);
+
+        $this->assertSame([
+            'source_id' => 7,
+            'source_repo' => 'plugin-acme-example',
+            'installation_method' => 'github',
+            'installed_from_url' => 'https://github.com/Acme/plugin-acme-example',
+        ], $this->sidecar->read($this->dir));
+    }
+
+    public function test_restore_from_row_skips_a_row_without_a_source(): void
+    {
+        $this->sidecar->restoreFromRow($this->dir, (object) ['source_id' => null, 'installation_method' => null]);
+
+        $this->assertFileDoesNotExist($this->dir.'/'.ExtensionSourceSidecar::FILENAME);
+    }
+
+    public function test_restore_from_row_does_not_create_a_missing_directory(): void
+    {
+        $gone = $this->dir.'/deleted';
+
+        $this->sidecar->restoreFromRow($gone, (object) ['source_id' => 7]);
+
+        $this->assertDirectoryDoesNotExist($gone);
+    }
 }

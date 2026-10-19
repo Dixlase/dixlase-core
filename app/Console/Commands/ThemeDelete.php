@@ -36,8 +36,6 @@
 namespace App\Console\Commands;
 
 use App\Helpers\ComposerLocalHelper;
-use App\Helpers\GitExcludeHelper;
-use App\Helpers\GitIgnoreHelper;
 use App\Models\Theme;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -154,16 +152,6 @@ class ThemeDelete extends Command
         if ($theme) {
             $theme->delete();
             $this->info(__('admin/command/theme-delete.database_removed', ['themeName' => $theme->name]));
-        }
-
-        // Remove theme exclusion rule from .git/info/exclude
-        if (GitExcludeHelper::removeThemeExclusion($themeDirectory)) {
-            $this->info(__('console/commands/theme_delete.theme_removed_from_git_info_exclude', ['themeDirectory' => $themeDirectory]));
-        }
-
-        // Remove theme exclusion rule from .gitignore
-        if (GitIgnoreHelper::removeThemeExclusion($themeDirectory)) {
-            $this->info(__('console/commands/theme_delete.theme_removed_from_gitignore', ['themeDirectory' => $themeDirectory]));
         }
 
         // Update composer.local.json

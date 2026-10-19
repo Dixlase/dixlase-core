@@ -26,7 +26,7 @@ Implementations are the engine behind GDPR / personal-information-protection wor
 Operator → Admin UI → Aggregator (Exporter / Eraser)
                           │
                           ├── Provider A (your plugin)
-                          ├── Provider B (DixlaseUsers)
+                          ├── Provider B (AcmeAccounts)
                           └── Provider C (CoreMember)
 ```
 
@@ -99,7 +99,7 @@ Three patterns to handle:
 ### Pattern A: fully site-scoped provider
 Every table you query has a `site_id` column. Filter by `$siteId` when supplied. When `$siteId` is `null`, include all sites.
 
-### Pattern B: fully non-site-scoped provider (DixlaseUsers pattern)
+### Pattern B: fully non-site-scoped provider (AcmeAccounts pattern)
 Your tables have no `site_id`. When `$siteId !== null`, return an empty DTO with a warning:
 
 ```php
@@ -122,7 +122,7 @@ The contract defines three modes via `DeletionMode`:
 
 | Mode | Strategy |
 |---|---|
-| `HardDelete` | Physically remove rows. Audit-trail rows (e.g. `audit_logs`, `security_events`) should be **anonymized in place** rather than deleted, so the append-only chain stays intact. |
+| `HardDelete` | Physically remove rows. Audit-trail rows (e.g. `audit_logs`, `security_events`) should be **anonymized in place** rather than deleted, so the trail keeps its rows. Core's own `audit_logs` rows are redacted and recorded by core; see `docs/operations/maintenance/audit-log-integrity.md`. |
 | `SoftDelete` | Mark the parent row's `deleted_at`. Keep child rows so a future undelete can re-associate them. Tables without soft-delete support can fall back to `HardDelete` and report the limitation in `errors[]`. |
 | `Anonymize` | Keep every row. Replace identifying fields (email, IP, user agent, name, phone) with HMAC-SHA256 of `app.key`-derived salt. The result is irreversible: even with the same `app.key`, you cannot recover the original input. |
 
@@ -252,6 +252,6 @@ The page is intentionally a stub. Plugins can layer their own UI on top of the s
 
 - Contract: `app/Contracts/PluginIntegration/PrivacyDataProviderInterface.php`
 - Reference impl: `app/Services/Privacy/Providers/CoreMemberPrivacyProvider.php`
-- Plugin example: `plugins/DixlaseUsers/app/Privacy/DixlaseUsersPrivacyProvider.php`
+- Plugin example: `plugins/AcmeAccounts/app/Privacy/AcmeAccountsPrivacyProvider.php`
 - Aggregators: `app/Services/Privacy/UserPrivacyExporter.php`, `UserPrivacyEraser.php`
-- Tests: `tests/Feature/PluginPrivacy/`, `plugins/DixlaseUsers/tests/Feature/Privacy/`
+- Tests: `tests/Feature/PluginPrivacy/`, `plugins/AcmeAccounts/tests/Feature/Privacy/`

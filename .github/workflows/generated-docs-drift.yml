@@ -4,7 +4,8 @@ name: Generated Docs Drift Check
 # Generated Docs Drift Check
 #
 # NOTICE, LICENSE-EXCEPTIONS, LICENSE-COMMERCIAL, README and PLUGIN-API.md
-# are generated from templates in DixlaseCoreDevKit, but they are also the
+# are generated from templates that live in the repository holding the
+# document generators, but they are also the
 # documents people edit directly — LICENSE-EXCEPTIONS is synced from an
 # external legal-materials repository, README gets rewritten by hand.
 #
@@ -61,20 +62,22 @@ jobs:
     name: Regenerate and compare
     runs-on: ubuntu-latest
     # The generators (dls:license:generate, dls:readme:generate,
-    # dls:plugin-api:generate) live in DixlaseCoreDevKit, which is private.
-    # A Dependabot run cannot clone it, so there is nothing to regenerate.
+    # dls:plugin-api:generate) are not distributed publicly. A Dependabot run
+    # cannot clone the extension that carries them, so there is nothing to
+    # regenerate.
     if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # DixlaseCoreDevKit provides dls:license:generate, dls:readme:generate
-      # and dls:plugin-api:generate, so the generators have to be on disk
-      # before artisan can see them.
+      # The extension flagged `doc-generators` provides dls:license:generate,
+      # dls:readme:generate and dls:plugin-api:generate, so it has to be on
+      # disk before artisan can see them.
       - name: Fetch integration plugins
         env:
           SUBMODULE_PAT: ${{ secrets.SUBMODULE_PAT }}
+          INTEGRATION_EXTENSIONS: ${{ secrets.INTEGRATION_EXTENSIONS }}
         run: |
           # A Dependabot run receives no repository secrets, so the PAT is
           # empty there. Configuring the rewrite with an empty credential
@@ -117,8 +120,8 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      # The dls:license/readme/plugin-api:generate commands live in
-      # DixlaseCoreDevKit's ServiceProvider. Going through PluginServiceProvider's
+      # The dls:license/readme/plugin-api:generate commands live in that
+      # extension's ServiceProvider. Going through PluginServiceProvider's
       # normal enable path requires INSTALLED=true AND a database (it refreshes
       # the enabled-plugins cache from the DB) — neither is present here, and a
       # database would drop CoreDevKit from the cache anyway. Instead register
@@ -127,10 +130,21 @@ jobs:
       # so the generators become available without a database or an installed
       # app. bootstrap/providers.php is not one of the compared documents, so
       # this ephemeral edit does not affect the drift result.
-      - name: Register DixlaseCoreDevKit's document generators
+      #
+      # DOC_GENERATOR_PROVIDER is written to $GITHUB_ENV by the fetch step,
+      # from the INTEGRATION_EXTENSIONS row flagged `doc-generators`
+      # (dixlase-core#619), and the fetch step masks the name. Reading it
+      # from the environment keeps the class out of this file and out of the
+      # run log, which is public on a public repository. Nothing is printed
+      # back from providers.php for the same reason.
+      - name: Register the document generators
         run: |
-          php -r '$f="bootstrap/providers.php"; $a=require $f; $p="Plugins\\DixlaseCoreDevKit\\App\\Providers\\DixlaseCoreDevKitServiceProvider"; if(!in_array($p,$a,true)){$a[]=$p;} file_put_contents($f,"<?php".PHP_EOL.PHP_EOL."return ".var_export($a,true).";".PHP_EOL);'
-          tail -3 bootstrap/providers.php
+          if [ -z "${DOC_GENERATOR_PROVIDER:-}" ]; then
+            echo "::error::DOC_GENERATOR_PROVIDER is empty. The INTEGRATION_EXTENSIONS secret needs a row flagged doc-generators, and the fetch step has to run before this one."
+            exit 1
+          fi
+          php -r '$f="bootstrap/providers.php"; $p=getenv("DOC_GENERATOR_PROVIDER"); $a=require $f; if(!in_array($p,$a,true)){$a[]=$p;} file_put_contents($f,"<?php".PHP_EOL.PHP_EOL."return ".var_export($a,true).";".PHP_EOL);'
+          echo "Registered the document generators' service provider."
 
       - name: Regenerate the generated documents
         run: |
@@ -173,9 +187,10 @@ jobs:
 
           echo "::error::Generated documents differ from their templates."
           echo
-          echo "A document was edited without carrying the change back into its"
-          echo "template in plugins/DixlaseCoreDevKit/resources/, or a template"
-          echo "was changed without regenerating. Read the diff to see which."
+          echo "A document was edited without carrying the change back into"
+          echo "its template in the repository that holds the generators, or"
+          echo "a template was changed without regenerating. Read the diff to"
+          echo "see which."
           echo
           echo "  - Document is right, template is stale -> back-port the text"
           echo "    into resources/license/<lang>/*.txt, resources/readme/"

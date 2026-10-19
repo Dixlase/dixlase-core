@@ -702,6 +702,9 @@ class CoreRollback extends Command
         try {
             $relinked = (new PublicAssetRelinker())->relink();
             $this->line("Relinked public assets (themes: {$relinked['themes']}, plugins: {$relinked['plugins']}).");
+            foreach ($relinked['notices'] as $notice) {
+                $this->warn('WARNING: '.$notice);
+            }
         } catch (\Throwable $e) {
             $this->warn('Public asset relink failed ('.$e->getMessage().'); if the front page renders unstyled, run `php artisan dls:theme:symlink create --all` and `php artisan dls:plugin:symlink create --all`.');
         }

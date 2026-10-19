@@ -85,8 +85,8 @@ class PluginLifecycleTest extends TestCase
             'Legal' => [[
                 'name' => 'Dixlase Legal',
                 'slug' => 'dixlase-legal',
-                'directory' => 'DixlaseLegal',
-                'namespace' => 'Plugins\\DixlaseLegal',
+                'directory' => 'AcmeExample',
+                'namespace' => 'Plugins\\AcmeExample',
             ]],
             'Inquiry' => [[
                 'name' => 'Dixlase Inquiry',
@@ -97,8 +97,8 @@ class PluginLifecycleTest extends TestCase
             'OfficialDocs' => [[
                 'name' => 'Dixlase Official Docs',
                 'slug' => 'dixlase-official-docs',
-                'directory' => 'DixlaseOfficialDocs',
-                'namespace' => 'Plugins\\DixlaseOfficialDocs',
+                'directory' => 'AcmeDocs',
+                'namespace' => 'Plugins\\AcmeDocs',
             ]],
         ];
     }

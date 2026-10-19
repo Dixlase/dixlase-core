@@ -35,7 +35,11 @@ return [
     'Display fix suggestions' => '修正提案を表示',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
+    'dls:plugin:update-json comes with the developer tools, not with core.' => 'dls:plugin:update-json は core ではなく開発者ツールに入っている。',
+    'Say where it comes from rather than naming a command the reader may not have.' => '読み手が持っていないかもしれないコマンド名を挙げるのではなく、どこから来るものかを書く。',
     '_review_status' => [
+        'dls:plugin:update-json comes with the developer tools, not with core.' => 'machine',
+        'Say where it comes from rather than naming a command the reader may not have.' => 'machine',
         'Plugin permission audit command' => 'machine',
         'Analyzes plugin code and compares permissions declared in plugin.json with' => 'machine',
         'features actually being used' => 'machine',

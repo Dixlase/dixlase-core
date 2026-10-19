@@ -54,6 +54,21 @@ Conventions:
 - **Files named `_glossary.php` (underscore-prefixed) are metadata, not per-source dictionaries.** They are skipped by the file walker. Reserve underscore-prefixed names for future metadata kinds (e.g. `_changelog.php`).
 - **Locale directory names follow ISO 639-1 codes** (`ja`, `zh`, `ko`) so they can serve as the `--locale=` argument unchanged.
 
+### Which source files are read
+
+`dls:comment:build` walks `app`, `resources/views` and `stubs` in each extension by default (`--path=` overrides the list) and reads two kinds of file:
+
+| Source | Dictionary | Comments rewritten |
+|---|---|---|
+| `*.php` | same path (`app/Foo.php` → `ja/app/Foo.php`) | PHP comment tokens |
+| `*.blade.php` | same path | Blade `{{-- ... --}}` blocks |
+| `*.stub` containing `<?php` | path plus `.php` (`stubs/foo.stub` → `ja/stubs/foo.stub.php`) | PHP comment tokens |
+| any other `*.stub` | path plus `.php` | Blade `{{-- ... --}}` blocks |
+
+A stub is a scaffold template that an extension renders into new code. Whether it is PHP is decided by its content, not by its name: a stub with a `<?php` tag is tokenised as PHP, and every other stub (a Blade view, JSON, Markdown, ...) has only its `{{-- ... --}}` blocks rewritten, so a Markdown `#` heading or a URL's `//` is never mistaken for a comment. A stub with neither kind of comment is copied unchanged. Template placeholders such as `{{ class }}` are left as they are unless a dictionary entry contains them. A PHP fragment stub without a `<?php` tag gets no PHP comments translated.
+
+`dls:comment:status` counts a stub dictionary like any other dictionary file.
+
 ---
 
 ## Dictionary Format
@@ -122,7 +137,7 @@ Per-language glossaries are independent — `ja/_glossary.php` and a future `zh/
 
 ## Commands
 
-The pipeline has four Artisan commands. Two ship in Core (user-facing); two live in the DixlaseCoreDevKit plugin (developer-only).
+The pipeline has four Artisan commands. Two ship in Core (user-facing); two are developer-only and ship in a development plugin that is not part of the public distribution.
 
 ### `dls:comment:build` (Core)
 
@@ -164,7 +179,7 @@ php artisan dls:comment:status --filter=untranslated --limit=20
 php artisan dls:comment:status --filter=unreviewed   # alias: machine + unmarked-translated
 ```
 
-### `dls:comment:extract` (DevKit)
+### `dls:comment:extract` (developer-only)
 
 Scan PHP source for Japanese comments and add them to the dictionary as pending entries (`'JP' => ''`). Used when authoring a new locale by populating it from existing JP source — not needed in normal day-to-day work now that core source is canonical English.
 
@@ -172,7 +187,7 @@ Scan PHP source for Japanese comments and add them to the dictionary as pending 
 php artisan dls:comment:extract --path=app/Traits
 ```
 
-### `dls:comment:translate` (DevKit)
+### `dls:comment:translate` (developer-only)
 
 Send pending entries to Claude API and rotate the dictionary to `'EN' => 'JP'` form. Requires `ANTHROPIC_API_KEY` in `.env`.
 
@@ -285,7 +300,7 @@ Plugins and themes can ship their own per-locale dictionaries. The pipeline pick
 To add `zh` (Chinese) for Core:
 
 1. Create `resources/comment-translations/zh/_glossary.php` with EN keys and ZH renderings.
-2. (Optional) Use the DevKit pipeline to seed dictionaries from the canonical EN source, asking the AI for ZH translations:
+2. (Optional) Use the developer-only pipeline to seed dictionaries from the canonical EN source, asking the AI for ZH translations:
 
    ```bash
    # The translate command currently expects JP-keyed pending entries; for
@@ -331,7 +346,7 @@ Either way, the canonical commit history stays in English and the locale flip is
 
 ## Architecture Notes
 
-- **Service classes** live in `plugins/DixlaseCoreDevKit/app/Services/CommentTranslation/` (DevKit must be installed for the pipeline to function):
+- **Service classes** live in the development plugin that provides the pipeline, which has to be installed for it to function:
   - `TranslationFileService` — read/write/merge dictionaries; locale state via `setLocale()` / `getLocale()`.
   - `CommentBuilderService` — apply substitutions via `applyToContent()` (token-AST aware) or `applyExtension()` (per-extension walker).
   - `ClaudeTranslationService` — Claude API client for `dls:comment:translate`.

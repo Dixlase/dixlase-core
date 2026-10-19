@@ -54,6 +54,21 @@ resources/comment-translations/ja/
 - **アンダースコアで始まるファイル名（`_glossary.php` など）はメタデータであり、辞書ではありません**。ファイルウォーカーがスキップします。将来のメタデータ種別（例: `_changelog.php`）でも同じ規約を使います。
 - **言語ディレクトリ名は ISO 639-1 コード**（`ja`, `zh`, `ko`）に従います。`--locale=` 引数にそのまま渡せます。
 
+### 読み込むソースファイル
+
+`dls:comment:build` は既定で各拡張の `app`・`resources/views`・`stubs` を走査し（`--path=` で一覧を変えられます）、次の 2 種類のファイルを読みます。
+
+| ソース | 辞書 | 書き換えるコメント |
+|---|---|---|
+| `*.php` | 同じパス（`app/Foo.php` → `ja/app/Foo.php`） | PHP のコメントトークン |
+| `*.blade.php` | 同じパス | Blade の `{{-- ... --}}` ブロック |
+| `<?php` を含む `*.stub` | パスに `.php` を足したもの（`stubs/foo.stub` → `ja/stubs/foo.stub.php`） | PHP のコメントトークン |
+| それ以外の `*.stub` | パスに `.php` を足したもの | Blade の `{{-- ... --}}` ブロック |
+
+stub は、拡張が新しいコードに書き出す scaffold のテンプレートです。PHP かどうかは名前ではなく中身で決めます。`<?php` タグを含む stub は PHP としてトークン化し、それ以外の stub（Blade のビュー、JSON、Markdown など）は `{{-- ... --}}` ブロックだけを書き換えます。そのため Markdown の `#` 見出しや URL の `//` をコメントと取り違えることはありません。どちらのコメントも持たない stub はそのままコピーします。`{{ class }}` のようなテンプレートのプレースホルダーは、辞書の項目がそれを含まない限り変わりません。`<?php` タグを持たない PHP の断片の stub では、PHP のコメントは翻訳されません。
+
+`dls:comment:status` は stub の辞書もほかの辞書ファイルと同じように数えます。
+
 ---
 
 ## 辞書の書式
@@ -122,7 +137,7 @@ glossary はスリムに保つこと: Dixlase 固有用語、または AI のデ
 
 ## コマンド
 
-パイプラインは Artisan コマンド 4 つで構成。コアに 2 つ（ユーザー向け）、DixlaseCoreDevKit プラグインに 2 つ（開発者向け）:
+パイプラインは Artisan コマンド 4 つで構成。コアに 2 つ（ユーザー向け）、公開して配布していない開発用プラグインに 2 つ（開発者向け）:
 
 ### `dls:comment:build`（コア）
 
@@ -164,7 +179,7 @@ php artisan dls:comment:status --filter=untranslated --limit=20
 php artisan dls:comment:status --filter=unreviewed   # alias: machine + 状態未設定の翻訳済み
 ```
 
-### `dls:comment:extract`（DevKit）
+### `dls:comment:extract`（開発者向け）
 
 PHP ソースから日本語コメントをスキャンして辞書に pending エントリ（`'JP' => ''`）として追加。新しい言語を作るときに既存 JP ソースから種を播くのに使います。コアソースは既に正本英語化されているので、日常運用では不要。
 
@@ -172,7 +187,7 @@ PHP ソースから日本語コメントをスキャンして辞書に pending �
 php artisan dls:comment:extract --path=app/Traits
 ```
 
-### `dls:comment:translate`（DevKit）
+### `dls:comment:translate`（開発者向け）
 
 pending エントリを Claude API に送信し、辞書を `'EN' => 'JP'` 形式にローテーション。`.env` に `ANTHROPIC_API_KEY` が必要。
 
@@ -285,7 +300,7 @@ Windows 用の `convert-comments.bat` も同梱されています。
 コアに `zh`（中国語）を追加する例:
 
 1. `resources/comment-translations/zh/_glossary.php` を作成。EN キーに対する ZH の訳語。
-2. （任意）DevKit パイプラインで正本 EN ソースから辞書を播種し、AI に ZH 翻訳を依頼:
+2. （任意）開発者向けのパイプラインで正本 EN ソースから辞書を播種し、AI に ZH 翻訳を依頼:
 
    ```bash
    # translate コマンドは現状 JP-keyed pending エントリを前提としているため、
@@ -331,7 +346,7 @@ Dixlase Core のリリースは **英語ソースコメントのみ** で出荷�
 
 ## アーキテクチャメモ
 
-- **サービスクラス** は `plugins/DixlaseCoreDevKit/app/Services/CommentTranslation/` に存在します（パイプラインが動くには DevKit のインストールが必要）:
+- **サービスクラス** は、このパイプラインを提供する開発用プラグインに存在します（動かすにはそのプラグインのインストールが必要）:
   - `TranslationFileService` — 辞書の読み書き / マージ。`setLocale()` / `getLocale()` で言語状態を制御。
   - `CommentBuilderService` — 置換実行。`applyToContent()`（token-AST 認識）または `applyExtension()`（拡張機能単位のウォーカー）。
   - `ClaudeTranslationService` — `dls:comment:translate` で使う Claude API クライアント。

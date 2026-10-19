@@ -26,7 +26,7 @@ GDPR / 個人情報保護法における「ユーザーごとの全データエ�
 運用者 → 管理画面 → 集約器 (Exporter / Eraser)
                        │
                        ├── Provider A (あなたのプラグイン)
-                       ├── Provider B (DixlaseUsers)
+                       ├── Provider B (AcmeAccounts)
                        └── Provider C (CoreMember)
 ```
 
@@ -99,7 +99,7 @@ public function register(): void
 ### パターン A: 完全サイトスコープ Provider
 すべての対象テーブルが `site_id` 列を持つ。`$siteId` 指定時はそれで絞り、`null` 時は全サイト含めます。
 
-### パターン B: 完全非サイトスコープ Provider（DixlaseUsers パターン）
+### パターン B: 完全非サイトスコープ Provider（AcmeAccounts パターン）
 対象テーブルに `site_id` 列がない。`$siteId !== null` のときは空 DTO + warning を返します:
 
 ```php
@@ -122,7 +122,7 @@ Contract では `DeletionMode` で 3 つのモードを定義しています:
 
 | モード | 戦略 |
 |---|---|
-| `HardDelete` | 行を物理削除。監査ログ系（`audit_logs`, `security_events`）は **行は残し PII のみ匿名化** すること（追加専用ハッシュチェーンを保つため）。 |
+| `HardDelete` | 行を物理削除。監査ログ系（`audit_logs`, `security_events`）は **行は残し PII のみ匿名化** すること（証跡の行を残すため）。コアの `audit_logs` の行はコアが匿名化して記録する。`docs/ja/operations/maintenance/audit-log-integrity.md` を参照。 |
 | `SoftDelete` | 親行の `deleted_at` をセット。子行は復元のために残します。soft-delete 非対応のテーブルは `HardDelete` にフォールバックし、その制約を `errors[]` に記録します。 |
 | `Anonymize` | 全行を残し、識別フィールド（メール、IP、UA、氏名、電話）を `app.key` 由来の salt による HMAC-SHA256 で置換します。元値は復元不能（同じ `app.key` でも復号できません）。 |
 
@@ -252,6 +252,6 @@ class YourPluginPrivacyProvider implements PrivacyDataProviderInterface
 
 - Contract: `app/Contracts/PluginIntegration/PrivacyDataProviderInterface.php`
 - 参考実装: `app/Services/Privacy/Providers/CoreMemberPrivacyProvider.php`
-- プラグイン実装例: `plugins/DixlaseUsers/app/Privacy/DixlaseUsersPrivacyProvider.php`
+- プラグイン実装例: `plugins/AcmeAccounts/app/Privacy/AcmeAccountsPrivacyProvider.php`
 - 集約器: `app/Services/Privacy/UserPrivacyExporter.php`, `UserPrivacyEraser.php`
-- テスト: `tests/Feature/PluginPrivacy/`, `plugins/DixlaseUsers/tests/Feature/Privacy/`
+- テスト: `tests/Feature/PluginPrivacy/`, `plugins/AcmeAccounts/tests/Feature/Privacy/`

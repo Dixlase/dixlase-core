@@ -646,9 +646,9 @@ class DashboardPresenter
         $themesInstalled = Theme::query()->installed()->count();
         $themesEnabled = Theme::query()->installed()->get()->filter(fn (Theme $t) => $t->isEnabled())->count();
 
-        // Number of available updates (records with available_version set)
-        $pluginUpdatesAvailable = Plugin::query()->whereNotNull('available_version')->count();
-        $themeUpdatesAvailable = Theme::query()->whereNotNull('available_version')->count();
+        // Number of available updates, compared against the installed version
+        $pluginUpdatesAvailable = Plugin::pendingUpdates()->count();
+        $themeUpdatesAvailable = Theme::pendingUpdates()->count();
 
         // Core update — singleton row, only count when available_version is
         // actually newer than the installed core.

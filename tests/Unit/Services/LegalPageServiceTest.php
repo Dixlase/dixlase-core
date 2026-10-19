@@ -71,7 +71,7 @@ class LegalPageServiceTest extends TestCase
         parent::setUp();
 
         // Explicitly set page types because the core admin.legal config is
-        // populated by the DixlaseLegal plugin in production but not in unit tests.
+        // populated by a legal-pages plugin in production but not in unit tests.
         config(['admin.legal' => $this->testPageTypes]);
 
         $this->repository = Mockery::mock(SiteSettingRepositoryInterface::class);

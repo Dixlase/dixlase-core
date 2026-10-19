@@ -36,7 +36,9 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Helpers\PluginHelper;
 use App\Providers\PluginServiceProvider;
+use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\PluginAutoloadState;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
@@ -79,15 +81,13 @@ class PluginUninstall extends Command
             // Set flag in both environment variable and config
             putenv("PLUGIN_UNINSTALLING={$pluginName}");
             config(['app.plugin_uninstalling' => $pluginName]);
-            $this->info("DEBUG: Early flag set for plugin: {$pluginName}");
-            $this->info('DEBUG: ENV variable: '.getenv('PLUGIN_UNINSTALLING'));
         }
     }
 
     /**
      * Execute the console command.
      */
-    public function handle(PluginAutoloadState $autoloadState)
+    public function handle(PluginAutoloadState $autoloadState, ExtensionSourceSidecar $sidecar)
     {
         $pluginName = $this->argument('pluginName');
         $plugin = DB::table('plugins')->where('name', $pluginName)->first();
@@ -150,6 +150,12 @@ class PluginUninstall extends Command
         // Delete plugin from database
         DB::table('plugins')->where('name', $pluginName)->delete();
         $this->info(__('admin/command/plugin-uninstall.database_removed', ['pluginName' => $pluginName]));
+
+        // The row held the source linkage while the plugin was installed.
+        // Hand it back to the files that stay on disk, as a download leaves
+        // it, so a stale copy is still flagged and a reinstall keeps its
+        // update source (#485).
+        $sidecar->restoreFromRow(PluginHelper::getPluginPath($plugin->directory), $plugin);
 
         // Note: Updating composer.local.json and .git/info/exclude
         // is done during plugin deletion (plugin:delete), so not needed here

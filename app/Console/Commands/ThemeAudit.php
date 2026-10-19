@@ -358,6 +358,8 @@ class ThemeAudit extends Command
         }
 
         $this->newLine();
-        $this->info("Run 'php artisan dls:theme:update-json ".basename(dirname($themeJsonPath))." --all' to add missing sections.");
+        // dls:theme:update-json comes with the developer tools, not with core.
+        // Say where it comes from rather than naming a command the reader may not have.
+        $this->info("With the developer tools installed, 'php artisan dls:theme:update-json ".basename(dirname($themeJsonPath))." --all' adds the missing sections.");
     }
 }

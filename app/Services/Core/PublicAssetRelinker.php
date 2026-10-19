@@ -42,6 +42,7 @@ use App\Models\Theme;
 use App\Support\RelativeSymlink;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -70,10 +71,14 @@ class PublicAssetRelinker
      * A single failed link never aborts the run: callers invoke this as a
      * repair step in the middle of an update or a rollback.
      *
-     * @return array{storage: bool, themes: int, plugins: int} links in place afterwards
+     * `notices` lists every real directory that was kept or moved aside
+     * instead of being replaced silently; callers print them as warnings.
+     *
+     * @return array{storage: bool, themes: int, plugins: int, notices: list<string>} links in place afterwards
      */
     public function relink(): array
     {
+        $notices = [];
         $result = [
             'storage' => $this->ensureStorageLink(),
             'themes' => 0,
@@ -81,16 +86,18 @@ class PublicAssetRelinker
         ];
 
         foreach ($this->themeDirectories() as $directory) {
-            if (self::ensureLink(base_path("themes/{$directory}/resources/assets"), public_path("assets/themes/{$directory}"))) {
+            if (self::ensureLink(base_path("themes/{$directory}/resources/assets"), public_path("assets/themes/{$directory}"), $notices)) {
                 $result['themes']++;
             }
         }
 
         foreach ($this->pluginDirectories() as $directory) {
-            if (self::ensureLink(base_path("plugins/{$directory}/resources/assets"), public_path("assets/plugins/{$directory}"))) {
+            if (self::ensureLink(base_path("plugins/{$directory}/resources/assets"), public_path("assets/plugins/{$directory}"), $notices)) {
                 $result['plugins']++;
             }
         }
+
+        $result['notices'] = $notices;
 
         return $result;
     }
@@ -105,9 +112,14 @@ class PublicAssetRelinker
      * dereferenced release payload was never repaired. A dangling link is
      * replaced too, since `symlink()` would otherwise fail with EEXIST.
      *
+     * A real directory is not deleted on trust, though (dixlase-core#479):
+     * `is_dir($target)` only says the target exists, not that it holds the
+     * build the page asks for. See replaceRealDirectory().
+     *
+     * @param  list<string>|null  $notices  receives a line for each real directory kept or moved aside
      * @return bool whether a link to `$target` is in place afterwards
      */
-    public static function ensureLink(string $target, string $link): bool
+    public static function ensureLink(string $target, string $link, ?array &$notices = null): bool
     {
         if (! is_dir($target)) {
             // Nothing to serve (extension without a resources/assets tree).
@@ -120,7 +132,9 @@ class PublicAssetRelinker
 
         if (self::occupied($link)) {
             if (is_dir($link) && ! is_link($link)) {
-                File::deleteDirectory($link);
+                if (! self::replaceRealDirectory($link, $target, $notices)) {
+                    return false;
+                }
             } else {
                 @unlink($link);
             }
@@ -129,6 +143,121 @@ class PublicAssetRelinker
         File::ensureDirectoryExists(dirname($link));
 
         return RelativeSymlink::create($target, $link);
+    }
+
+    /**
+     * Clear a real directory out of the link's slot without losing assets.
+     *
+     * - Its manifest.json lists files the target does not have: the
+     *   directory is the only copy of the build the page asks for, so it is
+     *   kept and the link is not made.
+     * - Every listed file exists under the target: the link serves the same
+     *   build, so the directory is removed, as before.
+     * - No readable manifest.json: there is nothing to compare, so the
+     *   directory is moved aside under storage/ rather than deleted.
+     *
+     * @param  list<string>|null  $notices
+     * @return bool whether the slot is free afterwards
+     */
+    protected static function replaceRealDirectory(string $directory, string $target, ?array &$notices): bool
+    {
+        $files = self::manifestFiles($directory);
+
+        if ($files === null) {
+            $aside = self::moveAside($directory);
+            if ($aside === null) {
+                self::notice($notices, "Kept {$directory}: it is a real directory with no manifest.json to compare against {$target}, and it could not be moved aside. The link was not made.");
+
+                return false;
+            }
+            self::notice($notices, "Moved {$directory} to {$aside}: it was a real directory with no manifest.json to compare against {$target}. Delete the copy once the front end is confirmed.");
+
+            return true;
+        }
+
+        $missing = array_values(array_filter($files, fn (string $file) => ! is_file($target.'/'.$file)));
+        if ($missing !== []) {
+            self::notice($notices, sprintf(
+                'Kept %s: its manifest.json lists %d file(s) that %s does not have (%s), so linking would break the pages that load them. Rebuild the assets under %s, then run the symlink command again.',
+                $directory,
+                count($missing),
+                $target,
+                implode(', ', array_slice($missing, 0, 5)).(count($missing) > 5 ? ', ...' : ''),
+                $target,
+            ));
+
+            return false;
+        }
+
+        File::deleteDirectory($directory);
+
+        return true;
+    }
+
+    /**
+     * Files a Vite manifest.json at the top of `$directory` refers to, or
+     * null when there is none or it cannot be read.
+     *
+     * @return list<string>|null
+     */
+    protected static function manifestFiles(string $directory): ?array
+    {
+        $path = $directory.'/manifest.json';
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $manifest = json_decode((string) @file_get_contents($path), true);
+        if (! is_array($manifest)) {
+            return null;
+        }
+
+        $files = [];
+        foreach ($manifest as $chunk) {
+            if (! is_array($chunk)) {
+                continue;
+            }
+            foreach (['file', 'css', 'assets'] as $key) {
+                foreach ((array) ($chunk[$key] ?? []) as $file) {
+                    if (is_string($file) && $file !== '') {
+                        $files[] = ltrim($file, '/');
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($files));
+    }
+
+    /**
+     * Move `$directory` under storage/app/private/public-asset-relink/, out of
+     * every path the extension scanners and autoload generator read.
+     *
+     * @return string|null the new location, or null when the move failed
+     */
+    protected static function moveAside(string $directory): ?string
+    {
+        $destination = storage_path('app/private/public-asset-relink/'.date('Ymd-His').'/'.basename(dirname($directory)).'/'.basename($directory));
+
+        try {
+            File::ensureDirectoryExists(dirname($destination));
+
+            return File::moveDirectory($directory, $destination) ? $destination : null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @param  list<string>|null  $notices
+     */
+    protected static function notice(?array &$notices, string $message): void
+    {
+        Log::warning('PublicAssetRelinker: '.$message);
+
+        if ($notices !== null) {
+            $notices[] = $message;
+        }
     }
 
     /**

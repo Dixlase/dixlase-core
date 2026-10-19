@@ -43,7 +43,7 @@ use App\DTO\Plugin\SignatureVerificationResult;
  * Signature verification contract
  *
  * Provides signature verification abstraction on the Core side.
- * When the DixlaseDevKit plugin is installed, performs Ed25519-based
+ * When a signature verification module is installed, performs Ed25519-based
  * verification; when not installed, the stub implementation returns unsigned.
  */
 interface SignatureVerifierInterface
@@ -59,7 +59,7 @@ interface SignatureVerifierInterface
     /**
      * Whether signature verification is available
      *
-     * Returns false when the DixlaseDevKit plugin is not installed.
+     * Returns false when no signature verification module is installed.
      */
     public function isAvailable(): bool;
 }

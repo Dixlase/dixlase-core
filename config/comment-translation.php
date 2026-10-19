@@ -44,10 +44,10 @@ return [
     | pipeline: `dls:comment:build` and `dls:comment:status`, plus the
     | services they depend on (TranslationFileService, CommentBuilderService).
     |
-    | These live in Core rather than in DixlaseCoreDevKit because the
+    | These live in Core rather than in the development plugin because the
     | user-facing commands must keep working in a release checkout, where
     | development plugins are not present. The authoring half of the pipeline
-    | (`dls:comment:extract` / `dls:comment:translate`) stays in CoreDevKit
+    | (`dls:comment:extract` / `dls:comment:translate`) stays in that plugin
     | and keeps its own settings under `core-dev.comment_translation`.
     |
     */

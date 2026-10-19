@@ -100,7 +100,6 @@ return [
     'theme_audit_failed_continue_install' => 'Theme audit failed, but installation will continue: :slug',
     'theme_audit_json_parse_failed' => 'Failed to parse theme audit JSON: :slug',
     'theme_audit_started' => 'Theme audit started: :slug',
-    'theme_git_exclusion_rule_added' => 'Theme Git exclusion rule added',
     'theme_symlink_creation_completed' => 'Theme symbolic link creation completed',
     'theme_symlink_creation_started' => 'Theme symbolic link creation started',
     'update_env_file_completed' => 'Update .env file completed',

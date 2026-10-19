@@ -42,18 +42,18 @@ use Illuminate\Support\Collection;
 /**
  * Signature waiver / removal manager (plugin | theme | core).
  *
- * The contract first-party developer tooling (e.g. DixlaseDevKit's
+ * The contract first-party developer tooling (e.g. the signing
  * dls:signature:* commands) uses to manage signature trust state, so those
  * commands can live outside Core while the data, the read-side overlay, and
  * the audit-log emission stay in Core.
  *
  * NOTE: intentionally NOT tagged @api yet — the only external consumer is the
- * first-party DixlaseDevKit (not subject to the AGPL exception). Add @api and
+ * first-party developer tooling (not subject to the AGPL exception). Add @api and
  * register in PLUGIN-API.md if a third-party plugin/theme ever needs it.
  */
 interface SignatureWaiverServiceInterface
 {
-    // Scope constants re-exported from the model so consumers (e.g. DixlaseDevKit
+    // Scope constants re-exported from the model so consumers (e.g. the
     // commands) can reference them via this contract without touching core models.
     public const SCOPE_PLUGIN = SignatureWaiver::SCOPE_PLUGIN;
 

@@ -104,7 +104,7 @@ class AdminNavigationManager implements AdminNavigationManagerInterface
         // otherwise a second plugin's ordered insert would overwrite the
         // existing section and drop the first plugin's children — which is
         // exactly what happens when two plugins share a top-level section
-        // (e.g. DixlaseCookie's settings + DixlaseLegal's consent log under
+        // (e.g. DixlaseCookie's settings + another plugin's consent log under
         // a shared "cookie" section).
         if (is_array($existingValue)) {
             if (isset($value['children']) && is_array($value['children'])) {

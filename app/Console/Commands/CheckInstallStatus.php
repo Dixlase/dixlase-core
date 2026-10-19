@@ -55,6 +55,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\MemberRole;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -64,8 +65,16 @@ class CheckInstallStatus extends Command
 
     protected $description = 'Check installation status and migration state';
 
+    /**
+     * Roles that count as an administrator account.
+     */
+    private const ADMIN_ROLES = [MemberRole::SUPER_ADMIN->value, MemberRole::ADMIN->value];
+
     public function handle()
     {
+        // Set when a check throws, so the command cannot report success over it
+        $checkFailed = false;
+
         $this->info('========================================');
         $this->info(__('console/commands/check_install_status.installation_status_check'));
         $this->info('========================================');
@@ -111,14 +120,15 @@ class CheckInstallStatus extends Command
                     $this->line("   - {$migration}");
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $checkFailed = true;
             $this->error(__('console/commands/check_install_status.migrations_table_check_error').$e->getMessage());
         }
         $this->newLine();
 
         // 4. Main tables
         $this->info('4. Main tables:');
-        $requiredTables = ['members', 'site_settings', 'themes', 'theme_settings', 'members_roles'];
+        $requiredTables = ['members', 'site_settings', 'themes', 'theme_settings'];
 
         foreach ($requiredTables as $table) {
             try {
@@ -129,7 +139,8 @@ class CheckInstallStatus extends Command
                 } else {
                     $this->line(__('console/commands/check_install_status.table_not_found', ['table' => $table]));
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                $checkFailed = true;
                 $this->error(__('console/commands/check_install_status.table_error', ['table' => $table]).$e->getMessage());
             }
         }
@@ -138,25 +149,26 @@ class CheckInstallStatus extends Command
         // 5. Administrator user
         try {
             if (DB::getSchemaBuilder()->hasTable('members')) {
-                // role=10: SUPER_ADMIN, role=9: ADMIN, role=1: GUEST
-                $adminCount = DB::table('members')->whereIn('role', [9, 10])->count();
+                $adminCount = DB::table('members')->whereIn('role', self::ADMIN_ROLES)->count();
                 $this->info(__('console/commands/check_install_status.administrator_user_count', ['adminCount' => $adminCount]));
 
                 if ($adminCount > 0) {
                     $admins = DB::table('members')
-                        ->whereIn('role', [9, 10])
-                        ->select('id', 'name', 'email', 'role')
+                        ->whereIn('role', self::ADMIN_ROLES)
+                        ->select('id', 'account_name', 'display_name', 'email', 'role')
                         ->get();
 
                     foreach ($admins as $admin) {
-                        $roleLabel = $admin->role == 10 ? 'SUPER_ADMIN' : 'ADMIN';
-                        $this->line("   - [{$admin->id}] {$admin->name} ({$admin->email}) [role={$admin->role}:{$roleLabel}]");
+                        $roleLabel = MemberRole::tryFrom((int) $admin->role)->name ?? 'UNKNOWN';
+                        $name = $admin->display_name ?: $admin->account_name;
+                        $this->line("   - [{$admin->id}] {$name} ({$admin->email}) [role={$admin->role}:{$roleLabel}]");
                     }
                 } else {
                     $this->warn(__('console/commands/check_install_status.admin_user_not_exist'));
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $checkFailed = true;
             $this->error(__('console/commands/check_install_status.admin_user_check_error').$e->getMessage());
         }
         $this->newLine();
@@ -180,6 +192,7 @@ class CheckInstallStatus extends Command
                 }
             }
         } catch (\Throwable $e) {
+            $checkFailed = true;
             $this->error(__('console/commands/check_install_status.site_settings_check_error').$e->getMessage());
         }
         $this->newLine();
@@ -210,11 +223,19 @@ class CheckInstallStatus extends Command
                 $this->line('');
                 $this->warn(__('console/commands/check_install_status.run_installation_process'));
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $checkFailed = true;
             $this->error(__('console/commands/check_install_status.determination_error').$e->getMessage());
         }
 
-        return 0;
+        if ($checkFailed) {
+            $this->newLine();
+            $this->error(__('console/commands/check_install_status.check_could_not_complete'));
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     private function checkMigrationCompleted(): bool
@@ -240,8 +261,7 @@ class CheckInstallStatus extends Command
                 return false;
             }
 
-            // role=10: SUPER_ADMIN, role=9: ADMIN
-            $adminCount = DB::table('members')->whereIn('role', [9, 10])->count();
+            $adminCount = DB::table('members')->whereIn('role', self::ADMIN_ROLES)->count();
             if ($adminCount === 0) {
                 return false;
             }
