@@ -121,14 +121,46 @@ class HashChainOnWriteTest extends TestCase
 
     public function test_a_row_that_cannot_be_linked_is_still_written(): void
     {
-        $this->write('chained');
-        Schema::drop(AuditLog::CHAIN_LOCK_TABLE);
+        // Taking the lock table away is DDL, and MySQL commits the open
+        // transaction when DDL runs. That ends the transaction
+        // RefreshDatabase wraps the test in, so the savepoint it rolls back
+        // to in tearDown is no longer there and the rollback itself fails
+        // (SQLite allows the same DDL inside a transaction, which is why
+        // this only showed up in CI). The case therefore runs on a
+        // throwaway database of its own, outside that transaction.
+        $path = storage_path('framework/testing/audit-chain-'.uniqid().'.sqlite');
+        @mkdir(dirname($path), 0777, true);
+        touch($path);
 
-        $row = $this->write('lock missing');
+        $default = config('database.default');
+        config(['database.connections.audit_chain' => array_merge(config('database.connections.sqlite'), [
+            'database' => $path,
+        ])]);
 
-        $this->assertTrue($row->exists);
-        $this->assertNull($row->record_hash);
-        $this->assertSame(2, AuditLog::count());
+        try {
+            Artisan::call('migrate', ['--database' => 'audit_chain', '--path' => 'database/migrations', '--force' => true]);
+            DB::purge('audit_chain');
+            DB::setDefaultConnection('audit_chain');
+            AuditLog::forgetChainLockAvailability();
+
+            $this->write('chained');
+
+            // Named explicitly: the Schema facade keeps the builder it
+            // resolved first, which is the connection under test.
+            Schema::connection('audit_chain')->drop(AuditLog::CHAIN_LOCK_TABLE);
+
+            $row = $this->write('lock missing');
+
+            $this->assertTrue($row->exists);
+            $this->assertNull($row->record_hash);
+            $this->assertSame(2, AuditLog::count());
+        } finally {
+            DB::purge('audit_chain');
+            DB::setDefaultConnection($default);
+            foreach ([$path, $path.'-wal', $path.'-shm'] as $file) {
+                @unlink($file);
+            }
+        }
     }
 
     public function test_concurrent_writers_produce_one_unbroken_chain(): void
