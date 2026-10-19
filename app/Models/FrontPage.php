@@ -38,14 +38,17 @@
 namespace App\Models;
 
 use App\Contracts\Revisionable;
+use App\Contracts\TranslationResolver;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
+use App\Helpers\LocaleHelper;
 use App\Models\Traits\BelongsToSite;
 use App\Traits\HasRevisions;
 use App\Traits\TranslatableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 
 /**
  * Front page model
@@ -127,6 +130,39 @@ class FrontPage extends Model implements Revisionable
     public static function findByType(string $pageType): ?self
     {
         return static::query()->where('page_type', $pageType)->first();
+    }
+
+    /**
+     * Resolve the row rendered on the public front for a locale.
+     *
+     * Without a translation provider each locale is its own row (the
+     * installer seeds one per shipped locale), so prefer the row whose
+     * `lang` matches the request locale, then the site's primary locale,
+     * then the first row. When a TranslationResolver is bound the model is
+     * ONE canonical row plus per-locale translations overlaid by
+     * FrontPageContentService, so the canonical row is kept — otherwise the
+     * front would show an orphaned seeded row instead of the operator's
+     * translation.
+     */
+    public static function findForFrontend(string $pageType, ?string $locale = null): ?self
+    {
+        if (App::bound(TranslationResolver::class)) {
+            return static::findByType($pageType);
+        }
+
+        $rows = static::query()->where('page_type', $pageType)->orderBy('id')->get();
+        if ($rows->isEmpty()) {
+            return null;
+        }
+
+        foreach ([$locale ?? App::getLocale(), LocaleHelper::getSiteDefaultLocale()] as $candidate) {
+            $match = $rows->firstWhere('lang', $candidate);
+            if ($match !== null) {
+                return $match;
+            }
+        }
+
+        return $rows->first();
     }
 
     /**
