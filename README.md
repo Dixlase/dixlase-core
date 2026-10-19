@@ -18,8 +18,8 @@ For Japanese, see [README.ja.md](./README.ja.md).
 Two-factor auth via passkeys / email codes, IP restrictions, login notifications, and role-based permissions out of the box.
 - **Plugin-based Architecture**  
 A minimal core; features are added as plugins, and much of the core itself runs on the same plugin API.
-- **On-Premise Ready**  
-Your data on your server: shared hosting, VPS, or dedicated — wherever you like.
+- **Self-Hosted**  
+Your server, your data: shared hosting, a VPS, a dedicated server, or your own on-premise hardware — wherever you like.
 - **Detailed Audit Logs**  
 Every admin action recorded in a structured form for operational transparency and accountability.
 - **Site Health Check**  
@@ -122,7 +122,6 @@ More themes are planned for future releases.
 
 - Plugin API — the plugin / theme API boundary definition (in preparation)
 - Source Comment Localization — comment locale switching with `convert-comments.sh` (in preparation)
-- MCP Server (Laravel Boost) — AI-assisted development setup for VSCode / Cursor (in preparation)
 
 ---
 
@@ -175,6 +174,54 @@ Plugins and themes that interact with Dixlase CMS exclusively through the [Plugi
 ### Source Code Availability (AGPL §13)
 
 If you run Dixlase CMS on a server and make it accessible to users over a network, AGPL §13 requires that users be able to obtain the source code of your running version. Ensure that the "Source" link in your admin footer (or equivalent) is accessible to users. The URL advertised there is configurable via the `DIXLASE_SOURCE_URL` environment variable.
+
+---
+
+## 🙏 Acknowledgments
+
+Dixlase stands on the foundation of excellent open source and services. As a project sustained by open-source developers and communities, we introduce them here with gratitude.
+
+**Framework & Core**
+
+| Project | What it gives Dixlase |
+| --- | --- |
+| [Laravel](https://laravel.com/) | A modern PHP web framework — the application core of Dixlase. |
+| [Symfony](https://symfony.com/) | Reusable PHP components. Laravel builds on many of them, such as HttpFoundation, Console and Routing. |
+| [Alpine.js](https://alpinejs.dev/) | A lightweight, declarative JavaScript framework, powering front-end responsiveness. |
+| [Tailwind CSS](https://tailwindcss.com/) | A utility-first CSS framework — the foundation for a consistent UI. |
+
+**Auth & Security**
+
+| Project | What it gives Dixlase |
+| --- | --- |
+| [Laravel Fortify](https://laravel.com/docs/fortify) | Laravel's official authentication scaffolding: login, registration and two-factor. |
+| [Laravel Passkeys](https://github.com/laravel/passkeys) | Laravel's official passkey (WebAuthn) package, powering passwordless sign-in. |
+| [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | A privacy-conscious, non-interactive CAPTCHA — a built-in driver. |
+| [Google reCAPTCHA](https://www.google.com/recaptcha/about/) | Another CAPTCHA option, switchable between v2 / v3 / Enterprise. |
+
+**UI & Content**
+
+| Project | What it gives Dixlase |
+| --- | --- |
+| [Font Awesome](https://fontawesome.com/) | The icon set used across the admin panel and the official themes. |
+| [Bunny Fonts](https://fonts.bunny.net/) | Privacy-conscious font delivery, used to load Figtree. |
+| [marked](https://marked.js.org/) | A fast, lightweight Markdown parser, for rendering Markdown content. |
+| [highlight.js](https://highlightjs.org/) | Syntax highlighting for code blocks. |
+| [SortableJS](https://sortablejs.github.io/Sortable/) | Drag-and-drop reordering, wherever order is edited by hand. |
+
+**Build & Toolchain**
+
+| Project | What it gives Dixlase |
+| --- | --- |
+| [Composer](https://getcomposer.org/) | PHP package manager. |
+| [Node.js](https://nodejs.org/) | JavaScript runtime. |
+| [npm](https://www.npmjs.com/) | JavaScript package manager. |
+| [Vite](https://vite.dev/) | Front-end build tool. |
+| [Docker](https://www.docker.com/) | Container runtime. |
+
+Beyond these, Dixlase is supported by countless libraries and tools. To every contributor — our deepest thanks.
+
+Company, product and service names and logos mentioned here are trademarks or registered trademarks of their respective owners. They appear as an acknowledgment of each project and do not imply any affiliation or endorsement.
 
 ---
 
