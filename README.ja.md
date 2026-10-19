@@ -155,7 +155,7 @@ CLA 確定後、コントリビューションは [コピーライトポリシ�
 
 ## 📜 ライセンス
 
-Dixlase CMS は**デュアルライセンス**で配布されています:
+Dixlase は**デュアルライセンス**で配布されています:
 
 - **オープンソースライセンス**: [GNU Affero General Public License v3](./LICENSE) および Dixlase プラグイン・テーマ例外条項([LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja))
 - **商用ライセンス**: AGPL v3 の遵守が現実的でないユースケース(クローズドソース SaaS での改変版配布など)向けに、別途商用ライセンスの提供を予定しています。
@@ -170,11 +170,11 @@ Dixlase CMS は**デュアルライセンス**で配布されています:
 
 文書は CC BY 4.0(文書の中のコードの例は CC0 1.0)でも、AI アシスタント向けの指示ファイル(`CLAUDE.md` など)は CC0 1.0 でも利用できます。詳しくは [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) の第 2 部をご覧ください。
 
-[Plugin API](./PLUGIN-API.ja.md) のみを通じて Dixlase CMS と連携するプラグイン・テーマは派生物とはみなされず、**プロプライエタリライセンスを含む任意のライセンスで配布可能**です。詳細は [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) をご確認ください。
+[Plugin API](./PLUGIN-API.ja.md) のみを通じて Dixlase と連携するプラグイン・テーマは派生物とはみなされず、**プロプライエタリライセンスを含む任意のライセンスで配布可能**です。詳細は [LICENSE-EXCEPTIONS.ja](./LICENSE-EXCEPTIONS.ja) をご確認ください。
 
 ### ソースコードの提供(AGPL §13)
 
-Dixlase CMS をサーバーで運用し、ネットワーク経由でユーザーに提供する場合、AGPL §13 により、実行中のバージョンのソースコードをユーザーが取得できる必要があります。管理画面フッターの「Source」リンクがユーザーからアクセス可能であることをご確認ください。公開 URL は環境変数 `DIXLASE_SOURCE_URL` で指定できます。
+Dixlase をサーバーで運用し、ネットワーク経由でユーザーに提供する場合、AGPL §13 により、実行中のバージョンのソースコードをユーザーが取得できる必要があります。管理画面フッターの「Source」リンクがユーザーからアクセス可能であることをご確認ください。公開 URL は環境変数 `DIXLASE_SOURCE_URL` で指定できます。
 
 ---
 
