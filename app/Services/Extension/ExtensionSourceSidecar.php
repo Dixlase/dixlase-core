@@ -51,7 +51,9 @@ use Illuminate\Support\Facades\Log;
  * `source_id` / `source_repo` / `installation_method` /
  * `installed_from_url` land on the Plugin / Theme row, and deletes it
  * so the metadata is not committed to source control by accident if
- * the operator later versions plugins/ or themes/.
+ * the operator later versions plugins/ or themes/. Uninstalling with
+ * the files kept writes it back from the row (restoreFromRow()), so
+ * the extension returns to the state a download leaves it in.
  *
  * The file is excluded from signature verification
  * (see CoreSignatureVerifier), so its presence never invalidates a
@@ -136,6 +138,34 @@ class ExtensionSourceSidecar
         $this->delete($extensionDir);
 
         return $data;
+    }
+
+    /**
+     * Write the linkage an installed extension's row carries back to its
+     * directory. The uninstall steps call this: install moved the linkage
+     * from the sidecar to the row and deleted the file, and uninstall
+     * drops the row, so without it the files left on disk forget the
+     * source they came from. The stale-download notice and the next
+     * install's source linkage both read the sidecar (dixlase-core#485).
+     *
+     * A row without a source_id, or a directory that is no longer there,
+     * is left alone.
+     *
+     * @param  object  $row  The plugins / themes row, as a model or a query-builder record
+     */
+    public function restoreFromRow(string $extensionDir, object $row): void
+    {
+        $sourceId = data_get($row, 'source_id');
+        if ($sourceId === null || ! is_dir($extensionDir)) {
+            return;
+        }
+
+        $this->write($extensionDir, [
+            'source_id' => (int) $sourceId,
+            'source_repo' => data_get($row, 'source_repo'),
+            'installation_method' => data_get($row, 'installation_method'),
+            'installed_from_url' => data_get($row, 'installed_from_url'),
+        ]);
     }
 
     /**
