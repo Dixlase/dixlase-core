@@ -1,7 +1,7 @@
 {
     "name": "dixlase/dixlase-core",
     "type": "project",
-    "description": "Dixlase — a security-hardened, plugin-driven open-source CMS from Japan.",
+    "description": "Dixlase — a security-hardened, plugin-driven open-source CMS.",
     "keywords": [
         "dixlase",
         "cms",
