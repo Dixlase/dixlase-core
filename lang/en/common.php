@@ -445,7 +445,7 @@ return [
     ],
 
     'source_code' => 'Source',
-    'source_code_title' => 'Get the source code of this Dixlase CMS instance (AGPL §13)',
+    'source_code_title' => 'Get the source code of this Dixlase instance (AGPL §13)',
 
     // Generic labels
     'filter' => 'Filter',

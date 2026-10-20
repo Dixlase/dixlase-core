@@ -119,7 +119,7 @@ strong{color:#f1f5f9}
 <svg class="icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
 <span>Setup required / セットアップが必要です</span>
 </h1>
-<p class="subtitle">Dixlase CMS</p>
+<p class="subtitle">Dixlase</p>
 
 <div class="status <?= $missingVendor ? 'bad' : '' ?>">
 <span class="dot" aria-hidden="true"></span>
@@ -135,7 +135,7 @@ strong{color:#f1f5f9}
 <hr>
 
 <h2>English</h2>
-<p>This Dixlase CMS installation has not finished its initial setup. The PHP and front-end dependencies still need to be installed before the application can boot.</p>
+<p>This Dixlase installation has not finished its initial setup. The PHP and front-end dependencies still need to be installed before the application can boot.</p>
 
 <p><strong>Prerequisites:</strong> the commands below need <a href="https://getcomposer.org/download/" target="_blank" rel="noopener noreferrer">Composer</a> and <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">Node.js</a> (which bundles <code>npm</code>) installed on this machine. Follow the links for installation instructions if either is missing.</p>
 
@@ -151,7 +151,7 @@ npm run build</pre>
 <hr>
 
 <h2>日本語 <span class="lang">(Japanese)</span></h2>
-<p>この Dixlase CMS は初期セットアップが完了していません。PHP とフロントエンドの依存関係を先にインストールする必要があります。</p>
+<p>この Dixlase は初期セットアップが完了していません。PHP とフロントエンドの依存関係を先にインストールする必要があります。</p>
 
 <p><strong>前提条件:</strong> 以下のコマンドの実行には、このマシンに <a href="https://getcomposer.org/download/" target="_blank" rel="noopener noreferrer">Composer</a> と <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">Node.js</a>（<code>npm</code> 同梱)がインストールされている必要があります。未導入の場合は各リンクからインストール手順を参照してください。</p>
 
@@ -166,7 +166,7 @@ npm run build</pre>
 </div>
 
 <div class="footer">
-Dixlase CMS &middot; <a href="https://github.com/Dixlase/dixlase-core">github.com/Dixlase/dixlase-core</a>
+Dixlase &middot; <a href="https://github.com/Dixlase/dixlase-core">github.com/Dixlase/dixlase-core</a>
 </div>
 </div>
 </body>

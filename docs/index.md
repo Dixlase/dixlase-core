@@ -1,5 +1,5 @@
 # Dixlase Documentation
-Welcome to the Dixlase CMS documentation. This documentation covers the architecture, features, and development guides for the Dixlase platform.
+Welcome to the Dixlase documentation. This documentation covers the architecture, features, and development guides for the Dixlase platform.
 
 ## Getting Started
 
