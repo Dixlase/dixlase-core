@@ -32,6 +32,20 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.17] — 2026-10-21
+
+### Changed
+- The product is named Dixlase, not "Dixlase CMS" (#700). The one-word name is used wherever
+  the product is named: the AGPL §13 source-code link title that appears on every page, the
+  setup-required page served before the dependencies are installed, the configuration
+  comments, `.env.example`, the READMEs, the installation and license documentation, and the
+  security policy. "CMS" is kept where it says what Dixlase is, rather than as part of its
+  name
+- The descriptions open on what Dixlase is rather than where it comes from (#706). "from
+  Japan" is gone from the READMEs, from `composer.json`'s description and from the
+  `dixlase.json` manifest's own summary, each of which now reads as a plain statement of what
+  the product is
+
 ## [0.1.16] — 2026-10-20
 
 ### Fixed
@@ -993,5 +1007,6 @@ Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` ve
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.16...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.17
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0

@@ -32,6 +32,18 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+## [0.1.17] — 2026-10-21
+
+### 変更
+- 製品名を「Dixlase CMS」ではなく Dixlase と表記するようにしました(#700)。製品名を書くところはすべて 1 語の
+  表記に揃えています。全ページに出る AGPL §13 のソースコード取得リンクの文言、依存関係の
+  インストール前に出るセットアップ案内のページ、設定ファイルのコメント、`.env.example`、README、
+  インストールとライセンスのドキュメント、セキュリティポリシーが対象です。「CMS」は、名前の
+  一部ではなく Dixlase が何であるかを説明する箇所には残しています
+- 説明文の書き出しを、産地ではなく Dixlase が何であるかにしました(#706)。README、`composer.json` の
+  description、`dixlase.json` マニフェストの説明文から「日本発の」を外し、製品が何であるかを
+  そのまま述べる文にしています
+
 ## [0.1.16] — 2026-10-20
 
 ### 修正
@@ -911,5 +923,6 @@ PHP 拡張を含む環境の全体像は `docs/ja/requirements.md` を参照し�
   プラグインは代わりに `App\Contracts\Plugin\SignatureVerifierInterface` に依存して
   ください。
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.16...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.17
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0
