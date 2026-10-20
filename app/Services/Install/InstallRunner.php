@@ -481,9 +481,18 @@ class InstallRunner
 
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_site_settings_update'));
 
+        // The caller decides the install locale (the wizard seeds it from the
+        // session, dls:install from --locale). Guard against a code that
+        // config/language.php does not list so the primary_locale column and
+        // the admin member never hold an unsupported value.
+        $installLocale = $data['app_locale'] ?? 'ja';
+        if (! array_key_exists($installLocale, config('language.languages', []))) {
+            $installLocale = (string) config('language.default', 'en');
+        }
+
         $baseSettings = [
             'app_name' => $data['site_name'],
-            'locale' => $data['app_locale'] ?? 'ja',
+            'locale' => $installLocale,
             'display_timezone' => $data['app_timezone'] ?? 'Asia/Tokyo',
             'mail_mailer' => $data['mail_mailer'] ?? 'smtp',
             'mail_host' => $data['mail_host'] ?? 'localhost',
@@ -526,6 +535,17 @@ class InstallRunner
             ->whereKey(app(SiteContextInterface::class)->currentSiteId())
             ->update(['name' => $data['site_name']]);
         Log::channel('install')->info('initializeDatabase - sites.name: '.$data['site_name']);
+
+        // Same for the canonical Site.primary_locale column. SitesSeeder wrote
+        // config('app.locale') there, which at seed time is still the
+        // pre-install .env value (the in-memory config is not re-read after the
+        // .env is written), so a ja install was left with primary_locale='en'
+        // and an English public front page. The site_settings 'locale' row
+        // written above stays as the legacy shadow.
+        Site::query()
+            ->whereKey(app(SiteContextInterface::class)->currentSiteId())
+            ->update(['primary_locale' => $installLocale]);
+        Log::channel('install')->info('initializeDatabase - sites.primary_locale: '.$installLocale);
 
         // Admin panel URL (admin_url is Global scope so goes to global_settings)
         $resolver->set('admin_url', $data['admin_url']);
@@ -573,9 +593,6 @@ class InstallRunner
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_admin_processing'));
         $admin = DB::table('members')->where('email', $data['admin_email'])->first();
 
-        // The caller decides the locale; the wizard seeds it from the
-        // session before handing the settings over.
-        $installLocale = $data['app_locale'] ?? 'ja';
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_language_setting').$installLocale);
 
         if ($admin) {
