@@ -297,7 +297,7 @@ Each action writes an audit row: `session_destroyed`, `forced_logout`, `api_key_
 
 ### In Scope
 
-- The Dixlase CMS core (this repository)
+- The Dixlase core (this repository)
 - Official Dixlase-maintained plugins and themes
 - Dixlase infrastructure (dixlase.org and related official domains)
 

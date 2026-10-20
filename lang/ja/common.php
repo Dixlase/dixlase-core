@@ -634,7 +634,7 @@ return [
     ],
 
     'source_code' => 'ソース',
-    'source_code_title' => 'この Dixlase CMS のソースコードを取得（AGPL §13）',
+    'source_code_title' => 'この Dixlase のソースコードを取得（AGPL §13）',
 
     // 汎用ラベル
     'filter' => 'フィルター',

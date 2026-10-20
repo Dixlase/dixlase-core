@@ -296,7 +296,7 @@ HSTS は Dixlase が HTTPS と認識したレスポンスに対してのみ送�
 
 ### 対象範囲内
 
-- Dixlase CMS コア(本リポジトリ)
+- Dixlase コア(本リポジトリ)
 - exc-D inc. が公式にメンテナンスしているプラグインおよびテーマ
 - Dixlase インフラ(dixlase.org および関連する公式ドメイン)
 
