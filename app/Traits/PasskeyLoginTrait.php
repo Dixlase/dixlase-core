@@ -37,6 +37,8 @@
 
 namespace App\Traits;
 
+use App\Facades\Audit;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -266,6 +268,14 @@ trait PasskeyLoginTrait
 
             // Login successful
             $guardName = $this->getGuardName();
+
+            // Name the factor before logging in: the Login event the audit
+            // subscriber listens to does not carry it, and it fires inside
+            // the call below. The session's auth_method further down is
+            // written after the event and under a per-context key, so it
+            // cannot serve this.
+            Audit::setAuthFactor(AuditLog::AUTH_FACTOR_PASSKEY);
+
             Auth::guard($guardName)->login($user, true);
 
             // Rotate the session ID on privilege change. Password login
