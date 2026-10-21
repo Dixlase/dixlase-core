@@ -1,9 +1,9 @@
-# Dixlase CMS Plugin API Boundary
+# Dixlase Plugin API Boundary
 
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-10-17
+**Last Updated:** 2026-10-19
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -83,11 +83,11 @@ For new extensions, scaffolding via `dls:make:plugin` / `dls:make:theme` include
 
 ## Licensing Your Plugin or Theme
 
-Plugins and themes that interact with Dixlase CMS **exclusively through the interfaces listed in this document** are **not** considered derivative works of Dixlase CMS. You may distribute them under any license of your choice, including proprietary licenses.
+Plugins and themes that interact with Dixlase **exclusively through the interfaces listed in this document** are **not** considered derivative works of Dixlase. You may distribute them under any license of your choice, including proprietary licenses.
 
 This right is granted by the **Dixlase Plugin and Theme Exception** (see the `LICENSE-EXCEPTIONS` file, which grants an additional permission under GNU AGPL version 3 section 7). The exception applies when all of the following conditions are met:
 
-1. Your plugin/theme communicates with Dixlase CMS only through the Plugin API defined in this document.
+1. Your plugin/theme communicates with Dixlase only through the Plugin API defined in this document.
 2. Your plugin/theme does not modify, replace, or monkey-patch any core source file.
 3. Your plugin/theme does not bypass or replicate internal core implementations.
 4. Your plugin/theme is loaded through the standard loading mechanism (`PluginLoaderTrait` / `ThemeLoaderTrait`) and resides in the `plugins/` or `themes/` directory.
@@ -155,6 +155,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\PreviewProviderInterface` | Contract for plugins that provide preview data |
 | `App\Contracts\PluginIntegration\PrivacyDataProviderInterface` | Contract that a plugin (or core subsystem) implements to declare which |
 | `App\Contracts\PluginIntegration\PrivacyPolicyProviderInterface` | Privacy policy provider contract |
+| `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` | Contract for extensions that declare which state-changing routes a site |
 | `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 | `App\Contracts\PluginIntegration\TranslationUiProviderInterface` | Contract for plugins that provide a translation editor for content records |
 

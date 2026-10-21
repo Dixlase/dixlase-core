@@ -41,11 +41,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | The URL where users can obtain the source code of the running
-    | Dixlase CMS instance, including any modifications. This is
-    | required by AGPL v3 Section 13 when Dixlase CMS is made available
+    | Dixlase instance, including any modifications. This is
+    | required by AGPL v3 Section 13 when Dixlase is made available
     | over a network.
     |
-    | Default: The official Dixlase CMS repository.
+    | Default: The official Dixlase repository.
     | Operators running a modified version MUST override this to point
     | to the repository (or equivalent distribution) of their running code.
     |

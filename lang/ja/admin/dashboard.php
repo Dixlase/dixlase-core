@@ -221,6 +221,7 @@ return [
     'action_role_changed' => 'ロール変更',
     'action_api_key_created' => 'API キー作成',
     'action_api_key_revoked' => 'API キー失効',
+    'action_api_keys_revoked_all' => 'API キーの一括失効',
     'action_api_key_regenerated' => 'API キー再生成',
     'action_privacy_data_erased' => '個人データの消去',
 

@@ -32,6 +32,71 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.17] — 2026-10-21
+
+### Changed
+- The product is named Dixlase, not "Dixlase CMS" (#700). The one-word name is used wherever
+  the product is named: the AGPL §13 source-code link title that appears on every page, the
+  setup-required page served before the dependencies are installed, the configuration
+  comments, `.env.example`, the READMEs, the installation and license documentation, and the
+  security policy. "CMS" is kept where it says what Dixlase is, rather than as part of its
+  name
+- The descriptions open on what Dixlase is rather than where it comes from (#706). "from
+  Japan" is gone from the READMEs, from `composer.json`'s description and from the
+  `dixlase.json` manifest's own summary, each of which now reads as a plain statement of what
+  the product is
+
+## [0.1.16] — 2026-10-20
+
+### Fixed
+- A site installed in a language other than English serves its front end in that
+  language. The installer synced `Site.name` but not `Site.primary_locale`, and the
+  seeder set the locale from `config('app.locale')`, which at seed time still holds the
+  pre-install `.env` value. So `dls_sites.primary_locale` stayed `en` and a guest saw
+  English while the admin panel and the stored content were in the chosen language. The
+  installer is the authority for this column, as it already is for the name, and both the
+  web wizard and `dls:install` go through the same path (#684)
+
+### Plugin API — Added
+- `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` (`@api`) and the
+  `ReadonlyRoutes` facade. An extension declares which state-changing admin routes become
+  read-only while a site runs in restricted (demo) mode by returning their route names and
+  tagging itself on `plugin.capabilities`. Core aggregates every registered provider and
+  falls back to its built-in list while none is registered, so nothing changes for a site
+  that registers none. The demo middleware and the admin read-only cues now read one source
+  of truth instead of a middleware constant and static calls (#691)
+
+---
+
+## [0.1.15] — 2026-10-20
+
+### Added
+- Administrators can list members' active admin sessions — device, IP address, when the
+  session started and when it was last used — on a member's edit page and on a site-wide
+  *Active sessions* page under Member Management, and end one session at a time. Ending a
+  session also clears the member's remember-me token, so the device cannot sign straight back
+  in; it is recorded as `session_destroyed`. Sessions are never identified by their id in the
+  page, only by a keyed hash. Run `php artisan migrate` to add the `started_at` column; until
+  then the start time shows as unknown (#674)
+- *Delete All Keys* on the API settings screen deletes every API key of the site in one step,
+  recorded as one `api_keys_revoked_all` audit row naming each key by id and name. Network keys
+  shared with other sites are not touched (#674)
+- `SECURITY.md` gains a "Revocation" section: what each action takes away, and that sessions
+  and API keys are refused on the next request on every instance, with no cache in between
+  (#674)
+
+- An admin edit screen asks before it is left with unsaved changes — by a link, the back
+  button, a reload or closing the tab. It covers every screen that saves through
+  `<x-admin.save-button>`: the front page, the settings screens, and plugin editors such as
+  pages and blog posts. Plugins need no change (#648)
+- `dls:custom:diff` reports whether upstream has moved on since a `custom/` override was
+  taken from it. A file under `custom/` replaces its upstream view wholesale, so a control
+  added upstream later never reaches a site that overrides that view, and nothing said so.
+  Comparing the two files says nothing, because an override always differs; `--record`
+  therefore stores the upstream SHA-256 of each override in `custom/.overrides.json` as the
+  baseline, and the command reports each one as current, upstream changed, upstream missing
+  or no baseline, exiting non-zero for the middle two (#482)
+
 ### Fixed
 - An audit row written through an action records who did it and to what. `AbstractAction`
   passed the actor and the target under the column names, which `AuditLog::log()` ignored,
@@ -83,6 +148,91 @@ repository to be notified of changes.
   unkeyed for now; the decision and its reasons are in the audit-log integrity document. The
   unused `AuditLog::logWithHashChain()` is removed. Run `php artisan migrate` to create the
   lock table; until then rows are written unchained as before (#629)
+- The session cookie (and the `XSRF-TOKEN` cookie) is marked `Secure` on every HTTPS
+  request, including one forwarded by a trusted proxy. When neither `SESSION_SECURE_COOKIE`
+  nor `FORCE_SSL` was set, `config/session.php` fell back to an explicit `false`, so an HTTPS
+  install sent both cookies without the flag. Unset, the flag now follows the request, and
+  plain HTTP is unchanged; `FORCE_SSL=true` and an explicit `SESSION_SECURE_COOKIE` work as
+  before. `SECURITY.md` gains a "Session cookie" section, including why the admin session is
+  not given `SameSite=Strict` (#673)
+
+- `dls:install:check` matches the current `members` schema. It reported `members_roles`, a
+  table no migration creates, as missing, and listing the administrators threw on a `name`
+  column that no longer exists; the exception was swallowed and the command still exited 0
+  (#568)
+- The media library's grid stays inside the main content area. `1fr` resolves through `auto`
+  to an item's intrinsic minimum width, which for a card holding a long unbreakable filename
+  is the filename's rendered width, so the columns together insisted on being wider than the
+  content area: the page gained a horizontal scrollbar, and scrolling slid the content under
+  the fixed sidebar (#606)
+- An extension update is offered only when the release is actually newer. System > Updates,
+  the dashboard badge and `dls:source:update --all` treated a recorded `available_version` as
+  an update, and that value is left as it was when the files reach that version without the
+  updater (a deploy, a manual pull). An extension already on the offered version was listed,
+  counted and, with `--all`, "updated" — which deletes the directory before moving the
+  release in, taking the nested `.git` with it (#469)
+- Installing or updating an extension checks `requires.dixlase` and `requires.php`. Every
+  manifest declares them, but only `requires.dixlase_api` was read, so an extension could be
+  installed on a core or a PHP version it says it does not support (#473)
+- `dls:plugin:uninstall` no longer prints `DEBUG:` lines at the default verbosity, and its
+  closing hint names `dls:plugin:delete` instead of `plugin:delete`, which does not exist
+  (#636)
+- A core update no longer deletes a working front end's assets. `PublicAssetRelinker` deleted
+  any real directory in a public asset slot before linking it to the extension's
+  `resources/assets`, and `is_dir()` only says the target exists, not that it holds the build
+  the page asks for. Where the real directory held the current build, the update replaced it
+  with one whose asset URLs answer 404, and reported success (#479)
+- A command that installs, enables, disables or uninstalls a plugin again boots no plugins, so
+  a plugin that fails at boot cannot take down the very command that would disable or remove
+  it. The check compared the command name against the names these commands had before the
+  `dls:` prefix, so it had not matched since they were renamed (#646)
+- Three console hints no longer tell the operator to run a command core does not have (#645)
+- A double click on the installer's completion screen reaches the chosen destination. The
+  second `POST /install/finalize` found the install already done and was sent to the front
+  page like any other `/install` request on an installed site, ignoring `redirect_to`. The
+  buttons also disable themselves on submit (#656)
+- Uninstalling an extension writes its source linkage back to the extension directory, so the
+  files left on disk remember where they came from. The row was dropped and nothing was
+  written back, so the stale-download notice never returned for them and a reinstall was left
+  without an update source (#485)
+- Installing a download that is behind its source shows the update badge straight away. The
+  install confirmation already said a newer release exists, but the row the install created
+  carried no `available_version`, so the installed card showed nothing until the next update
+  check — up to a day later with the default interval (#486)
+- `POST /install/finalize` checks that `redirect_to` is on the request's host before following
+  it. The repeated-finalize path has checked this since #656, while the controller followed
+  the value as given, so the two paths handling the same completion-screen form behaved
+  differently (#671)
+- The two buttons on the installer's completion screen are 20px apart instead of 12px, so they
+  no longer read as one block (#669)
+- The media selector's search box and type filter work. `selector.js` read neither, so the
+  list never changed, and the "document" type could not have matched anything: the repository
+  filters by MIME prefix and no document MIME type starts with `document`. It now maps to the
+  MIME types core files as documents, which repairs the same filter on the media list screen
+  as well (#602)
+- `dls:install` reaches the database named by `--db-host` from its first query. The core
+  integrity check at the start of the run already reads a table, and the chosen settings were
+  applied to the in-memory config only after `.env` had been written, so that first query went
+  to `127.0.0.1` and the install failed whenever the database was elsewhere (#574)
+- The front page renders the row that matches the request locale. The installer seeds one
+  `main_content` row per shipped locale, and the controller took the first row by id with no
+  language filter, so a site without a translation provider always showed the English row.
+  With a provider bound the canonical row is still used, so multilingual sites are unaffected,
+  and the page's custom CSS and JS now come from the same row as its HTML (#685)
+
+### Plugin API — Added
+- `App\Contracts\I18n\LocaleUrlRouting` (`@api`) answers whether front URLs on this site
+  carry a leading locale segment. The extension that implements locale routing binds it in the
+  container; a plugin that builds its own front URLs calls
+  `LocaleHelper::localeUrlRoutingEnabled()`, which answers `false` when nothing is bound. A
+  plugin that reads another extension's config key for this should move to the helper after
+  the provider ships its binding, not before (#595)
+- `App\Contracts\PluginIntegration\TranslationUiProviderInterface` (`@api`) and the
+  `<x-admin.translate-button>` component. The provider returns the translation editor's URL
+  for a content type and id, or `null` when it does not translate that type, and registers on
+  the `plugin.capabilities` tag. The component links to the first provider that answers, and
+  renders nothing for an unsaved record, with no provider installed, or when no provider
+  handles the type, so an edit screen embeds it without a guard (#596)
 
 ### Plugin API — Deprecated
 - `GitIgnoreHelper::addPluginExclusion()` / `addThemeExclusion()` and
@@ -857,5 +1007,6 @@ Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` ve
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.17
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0

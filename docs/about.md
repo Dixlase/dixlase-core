@@ -1,6 +1,6 @@
 # What is Dixlase
 
-Dixlase is an open-source content management system built with Laravel. It provides a modern, extensible platform for building and managing websites with a focus on security, simplicity, and plugin-based extensibility.
+Dixlase is an open-source content management system. It provides a modern, extensible platform for building and managing websites with a focus on security, simplicity, and plugin-based extensibility.
 
 ## Key Features
 

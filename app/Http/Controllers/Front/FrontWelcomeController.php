@@ -59,8 +59,8 @@ class FrontWelcomeController extends FrontController
      */
     public function index()
     {
-        // Get main content for front page
-        $frontPage = FrontPage::findByType('main_content');
+        // Get main content for front page (locale-aware; see findForFrontend)
+        $frontPage = FrontPage::findForFrontend('main_content');
         $frontContent = null;
         $frontEditorType = 'html';
 

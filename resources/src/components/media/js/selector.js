@@ -53,6 +53,12 @@ function escapeAttribute(value) {
 }
 
 /**
+ * How long the search box waits after the last keystroke before it asks
+ * the server.
+ */
+const SEARCH_DEBOUNCE_MS = 300;
+
+/**
  * Open media selector modal
  */
 window.openMediaSelector = function (modalId, inputId, previewId, multiple = false, aspectRatio = 'original') {
@@ -66,8 +72,14 @@ window.openMediaSelector = function (modalId, inputId, previewId, multiple = fal
         previewId: previewId,
         multiple: multiple,
         aspectRatio: aspectRatio,
-        currentPage: 1
+        currentPage: 1,
+        search: '',
+        type: '',
+        requestId: 0,
+        searchTimer: null
     };
+
+    bindSelectorFilters(modalId);
 
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -75,6 +87,39 @@ window.openMediaSelector = function (modalId, inputId, previewId, multiple = fal
     // Load media
     loadMediaForSelector(modalId);
 };
+
+/**
+ * Wire the search box and the type filter, and clear what the last
+ * opening left in them. Typing waits for a pause before it asks the
+ * server; either change starts again from page 1.
+ */
+function bindSelectorFilters(modalId) {
+    const search = document.getElementById(`${modalId}-search`);
+    const typeFilter = document.getElementById(`${modalId}-type-filter`);
+
+    if (search) {
+        search.value = '';
+        search.oninput = function () {
+            const state = window.mediaSelectorData[modalId];
+            if (!state) return;
+            clearTimeout(state.searchTimer);
+            state.searchTimer = setTimeout(function () {
+                state.search = search.value.trim();
+                loadMediaForSelector(modalId, 1);
+            }, SEARCH_DEBOUNCE_MS);
+        };
+    }
+
+    if (typeFilter) {
+        typeFilter.value = '';
+        typeFilter.onchange = function () {
+            const state = window.mediaSelectorData[modalId];
+            if (!state) return;
+            state.type = typeFilter.value;
+            loadMediaForSelector(modalId, 1);
+        };
+    }
+}
 
 /**
  * Close media selector modal
@@ -87,6 +132,7 @@ window.closeMediaSelector = function (modalId) {
     document.body.style.overflow = '';
 
     // Clear data
+    clearTimeout(window.mediaSelectorData[modalId]?.searchTimer);
     delete window.mediaSelectorData[modalId];
 };
 
@@ -103,15 +149,20 @@ async function loadMediaForSelector(modalId, page = 1) {
 
     const state = window.mediaSelectorData[modalId];
     if (state) state.currentPage = page;
+    const requestId = state ? ++state.requestId : 0;
+
+    const params = new URLSearchParams({ page: String(page), per_page: '20' });
+    if (state?.search) params.set('search', state.search);
+    if (state?.type) params.set('type', state.type);
 
     try {
-        const response = await fetch(`${apiUrl}?page=${page}&per_page=20`);
+        const response = await fetch(`${apiUrl}?${params.toString()}`);
         const data = await response.json();
 
         if (data.success) {
-            // Drop the response when the modal was closed, or another page
-            // was asked for, while the request was in flight.
-            if (window.mediaSelectorData[modalId]?.currentPage !== page) return;
+            // Drop the response when the modal was closed, or another page,
+            // search or type was asked for, while the request was in flight.
+            if (window.mediaSelectorData[modalId]?.requestId !== requestId) return;
             renderMediaGrid(modalId, data.media.data);
             renderPagination(modalId, data.media);
         }
