@@ -47,6 +47,15 @@ function createLoginFlow() {
         hasPasskey: false,
         loading: false,
         errors: {},
+        // Bound to the remember_me checkbox. The passkey button sits outside
+        // the password form, so the checkbox is not submitted on that path --
+        // this is how the choice reaches the verify request.
+        //
+        // It starts true because that is how the checkbox renders today, and
+        // x-model would otherwise untick it on load and change the password
+        // path's default along with it. What this fixes is unticking being
+        // ignored, not what the box starts as.
+        remember: true,
 
         async checkIdentifier() {
             this.loading = true;
@@ -196,7 +205,10 @@ function createLoginFlow() {
                             clientDataJSON: this.arrayBufferToBase64url(credential.response.clientDataJSON),
                             signature: this.arrayBufferToBase64url(credential.response.signature),
                             userHandle: credential.response.userHandle ? this.arrayBufferToBase64url(credential.response.userHandle) : null
-                        }
+                        },
+                        // Read on the server and removed before the rest is
+                        // deserialized into a PublicKeyCredential.
+                        remember: this.remember
                     })
                 });
 
