@@ -55,6 +55,9 @@
         <testsuite name="DixlasePages">
             <directory>plugins/DixlasePages/tests</directory>
         </testsuite>
+        <testsuite name="DixlaseBlog">
+            <directory>plugins/DixlaseBlog/tests</directory>
+        </testsuite>
         <!-- Every extension present, in one suite -->
         <!-- Usage: php artisan test testsuite=Plugins   -->
         <testsuite name="Plugins">
