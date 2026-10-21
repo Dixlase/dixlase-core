@@ -118,7 +118,6 @@ window.recoveryCodesModal = function (modalId, codes = [], autoOpen = false, cle
                             'Accept': 'application/json'
                         }
                     });
-                    console.log(`[${this.modalId}] Recovery codes session cleared`);
                 } catch (error) {
                     console.error(`[${this.modalId}] Failed to clear session:`, error);
                 }

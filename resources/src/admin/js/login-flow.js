@@ -111,21 +111,16 @@ function createLoginFlow() {
         },
 
         async loginWithPasskeyDirect() {
-            console.log('[DEBUG] loginWithPasskeyDirect called, current step:', this.step);
             // アカウント名が未入力の場合は何もしない
             if (!this.identifier.trim()) {
-                console.log('[DEBUG] identifier is empty, returning');
                 return;
             }
 
-            console.log('[DEBUG] calling loginWithPasskey(false)');
             // 直接パスキー認証を実行（ステップは変更しない）
             await this.loginWithPasskey(false);
-            console.log('[DEBUG] after loginWithPasskey, current step:', this.step);
         },
 
         async loginWithPasskey(fromStep2 = true) {
-            console.log('[DEBUG] loginWithPasskey called, fromStep2:', fromStep2, 'current step:', this.step);
             this.loading = true;
             this.errors = {};
 
@@ -145,10 +140,8 @@ function createLoginFlow() {
                 });
 
                 const challengeData = await challengeResponse.json();
-                console.log('[DEBUG] challengeData:', challengeData);
 
                 if (!challengeResponse.ok || !challengeData.success) {
-                    console.log('[DEBUG] Challenge failed, response.ok:', challengeResponse.ok, 'data.success:', challengeData.success);
                     // リダイレクトフラグがある場合はページをリロード
                     if (challengeData.redirect) {
                         window.location.reload();
@@ -157,7 +150,6 @@ function createLoginFlow() {
 
                     this.errors.login = challengeData.error || challengeData.message || this.translations.errorOccurred;
                     this.loading = false;
-                    console.log('[DEBUG] Error set, step should remain:', this.step);
                     // ステップ1から呼ばれた場合はステップ1のまま、ステップ2から呼ばれた場合はステップ2のまま
                     return;
                 }
