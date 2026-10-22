@@ -197,9 +197,10 @@ class AdminMediaApiTest extends TestCase
     }
 
     /**
-     * The modal renders id / name / alt_text / type / url / width / height and
-     * nothing else, so the endpoint hands out exactly those. Serialising the
-     * model whole would also emit its uploader relation and its stored path.
+     * The modal renders id / name / alt_text / type / url / width / height /
+     * file_size and nothing else, so the endpoint hands out exactly those.
+     * Serialising the model whole would also emit its uploader relation and
+     * its stored path.
      */
     public function test_each_item_carries_only_the_fields_the_selector_renders(): void
     {
@@ -211,9 +212,27 @@ class AdminMediaApiTest extends TestCase
             ->json('media.data.0');
 
         $this->assertEqualsCanonicalizing(
-            ['id', 'name', 'alt_text', 'type', 'url', 'width', 'height'],
+            ['id', 'name', 'alt_text', 'type', 'url', 'width', 'height', 'file_size'],
             array_keys($item),
         );
+    }
+
+    /**
+     * The caption under a tile prints the file size, formatted in the browser
+     * from this value. The selector has no test of its own, so dropping the
+     * field would not fail anything -- the size would simply stop appearing.
+     */
+    public function test_each_item_carries_the_file_size_the_caption_formats(): void
+    {
+        $this->makeMedia(1);
+
+        $item = $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api'))
+            ->assertOk()
+            ->json('media.data.0');
+
+        $this->assertArrayHasKey('file_size', $item);
+        $this->assertSame(1024, $item['file_size']);
     }
 
     public function test_the_uploader_record_is_not_part_of_the_payload(): void

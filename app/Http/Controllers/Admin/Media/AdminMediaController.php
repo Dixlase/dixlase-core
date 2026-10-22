@@ -447,6 +447,7 @@ class AdminMediaController extends AdminLoggedInController
                 'url' => $url,
                 'width' => $item->width,
                 'height' => $item->height,
+                'file_size' => $item->file_size,
             ];
         });
 
