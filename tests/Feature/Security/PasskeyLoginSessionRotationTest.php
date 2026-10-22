@@ -78,7 +78,7 @@ class PasskeyLoginSessionRotationTest extends TestCase
     {
         $source = $this->source('app/Traits/PasskeyLoginTrait.php');
 
-        $login = strpos($source, 'Auth::guard($guardName)->login($user, true)');
+        $login = strpos($source, 'Auth::guard($guardName)->login($user, $remember)');
         $rotate = strpos($source, '$request->session()->regenerate()');
 
         $this->assertNotFalse($login, 'The passkey login call is expected in this trait.');
