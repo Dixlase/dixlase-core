@@ -35,6 +35,8 @@
 
 namespace App\Traits;
 
+use App\Facades\Audit;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -377,6 +379,11 @@ trait LoginTrait
             // Login immediately if 2FA is not required
             $guardName = $this->getGuardName();
             $remember = $request->boolean('remember');
+
+            // Name the factor before logging in: the Login event the audit
+            // subscriber listens to does not carry it, and it fires inside
+            // the call below.
+            Audit::setAuthFactor(AuditLog::AUTH_FACTOR_PASSWORD);
 
             Auth::guard($guardName)->login($user, $remember);
             $request->session()->regenerate();
