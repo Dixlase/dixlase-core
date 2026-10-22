@@ -36,8 +36,9 @@
         if (window.opener && !window.opener.closed) {
             try {
                 theme = window.opener.localStorage.getItem('theme');
-            } catch (e) {
-                console.log('[Dark Mode] Failed to get theme from parent window:', e);
+            } catch {
+                // Reading the opener's localStorage throws when it is on
+                // another origin. Expected: fall through to this window's own.
             }
         }
 
@@ -62,7 +63,6 @@
             document.documentElement.classList.remove('dark');
         }
 
-        console.log('[Dark Mode] Applied theme:', theme);
     }
 
     // Execute immediately to prevent flash

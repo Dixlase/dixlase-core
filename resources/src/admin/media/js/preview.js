@@ -63,4 +63,3 @@ window.copyMediaUrlToClipboard = function (event) {
     });
 };
 
-console.log('[Media Preview] Script loaded');

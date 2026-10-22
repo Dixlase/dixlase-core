@@ -120,7 +120,7 @@ class MailForm extends MailFormBase {
                 }
             }
         } catch (error) {
-            console.log('Session check error', error);
+            console.error('Session check error', error);
         }
     }
 

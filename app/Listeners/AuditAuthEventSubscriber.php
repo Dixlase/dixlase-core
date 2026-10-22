@@ -57,14 +57,27 @@ class AuditAuthEventSubscriber
      */
     public function handleLogin(Login $event): void
     {
+        // What authenticated the member. The Login event does not carry it,
+        // so the authentication path names it on the audit service just
+        // before logging in. Null when nothing named one -- a console
+        // command or a test helper calling Auth::login() directly.
+        $factor = Audit::getAuthFactor();
+        Audit::setAuthFactor(null);
+
+        $context = [
+            'message' => __('listeners/audit_auth_event_subscriber.logged_in'),
+            'guard' => $event->guard,
+            'remember' => $event->remember,
+        ];
+
+        if ($factor !== null) {
+            $context['auth_factor'] = $factor;
+        }
+
         Audit::logAuth(AuditLog::ACTION_LOGIN, [
             'actor' => $event->user,
             'outcome' => AuditLog::OUTCOME_SUCCESS,
-            'context' => [
-                'message' => __('listeners/audit_auth_event_subscriber.logged_in'),
-                'guard' => $event->guard,
-                'remember' => $event->remember,
-            ],
+            'context' => $context,
         ]);
     }
 

@@ -104,7 +104,6 @@ export class MailFormBase {
             const text = await response.text();
             if (text) {
                 const data = JSON.parse(text);
-                console.log('Mail tests reset response:', data);
             }
         } catch (error) {
             console.error('Error resetting mail tests:', error);

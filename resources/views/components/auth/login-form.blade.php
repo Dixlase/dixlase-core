@@ -163,9 +163,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
 
             <!-- Remember Me -->
+            {{-- xModel carries the choice to the passkey path too: that button
+                 is outside this form, so the checkbox is never submitted with
+                 it and the login flow reads the bound value instead. --}}
             <x-form-checkbox
                 id="remember_me"
                 name="remember"
+                xModel="remember"
                 :label="$translationPrefix . '.remember_me'"
                 class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-500 dark:bg-gray-800 dark:text-indigo-400"
             />
