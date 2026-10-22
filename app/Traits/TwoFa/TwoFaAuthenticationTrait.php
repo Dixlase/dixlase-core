@@ -38,7 +38,9 @@
 namespace App\Traits\TwoFa;
 
 use App\Enums\TwoFaMethod;
+use App\Facades\Audit;
 use App\Helpers\TwoFaHelper;
+use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\MemberTwoFaToken;
 use App\Services\Auth\AuthContextRegistryService;
@@ -347,8 +349,17 @@ trait TwoFaAuthenticationTrait
 
     /**
      * Login process after successful authentication
+     *
+     * @param  string|null  $authFactor  What completed the authentication
+     *                                   (AuditLog::AUTH_FACTOR_*), for the
+     *                                   audit record. This method is shared
+     *                                   by the e-mail-code and recovery-code
+     *                                   paths and cannot tell which one
+     *                                   called it. Optional so an existing
+     *                                   caller outside core keeps working;
+     *                                   the row then simply omits the factor.
      */
-    protected function completeAuthentication($user, Request $request)
+    protected function completeAuthentication($user, Request $request, ?string $authFactor = null)
     {
         $sessionPrefix = $this->getSessionPrefix();
         $remember = session($sessionPrefix.'.remember', false);
@@ -380,6 +391,11 @@ trait TwoFaAuthenticationTrait
             return redirect()->route($this->getLoginRoute())
                 ->withErrors(['login' => __('auth.account_inactive')]);
         }
+
+        // Name the factor before logging in: the Login event the audit
+        // subscriber listens to does not carry it, and it fires inside the
+        // call below.
+        Audit::setAuthFactor($authFactor);
 
         // Login first (same order as AdminLoginController)
         Auth::guard($guardName)->login($user, $remember);
@@ -629,7 +645,7 @@ trait TwoFaAuthenticationTrait
             ]);
         }
 
-        return $this->completeAuthentication($user, $request);
+        return $this->completeAuthentication($user, $request, AuditLog::AUTH_FACTOR_PASSWORD_EMAIL_CODE);
     }
 
     /**
@@ -739,6 +755,6 @@ trait TwoFaAuthenticationTrait
             ]);
         }
 
-        return $this->completeAuthentication($user, $request);
+        return $this->completeAuthentication($user, $request, AuditLog::AUTH_FACTOR_PASSWORD_RECOVERY_CODE);
     }
 }

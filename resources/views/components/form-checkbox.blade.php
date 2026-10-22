@@ -37,8 +37,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'label' => '', // チェックボックスのラベル
     'id' => '',            // チェックボックスのid
     'name' => '',          // チェックボックスの共通name
-    'value' => 1,          // チェックボックスの値（デフォルト1）
-    'checked' => false,    // チェック状態
+    'value' => 1,          // The submitted value. It does not decide the checked state.
+    'checked' => false,    // The checked state, and the only thing that decides it.
     'class' => '',         // カスタムクラス
     'xModel' => null, // Alpine.jsのx-model属性
 ])
@@ -48,10 +48,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <input type="checkbox"
                 id="{{ $id ?: $name }}"
                 name="{{ $name }}"
-                value="1"
+                value="{{ $value }}"
                 {{ $xModel ? "x-model=$xModel" : '' }}
                 class="checkbox-common {{ $class }}"
-                @if ($value || $checked) checked @endif>
+                @checked($checked)>
             <span class="ml-2 text-sm dark:text-white">{{ __($label) }}</span>
         </label>
 </div>
