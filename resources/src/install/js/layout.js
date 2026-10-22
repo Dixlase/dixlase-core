@@ -99,7 +99,6 @@ window.initLanguageSwitcher = function (config) {
     languageSelector.addEventListener('change', function (e) {
         e.preventDefault();
         const locale = languageSelector.value;
-        console.log('Language selector changed to:', locale);
         languageSelector.disabled = true;
         changeLanguage(locale);
     });
@@ -107,7 +106,6 @@ window.initLanguageSwitcher = function (config) {
     // フォーム送信を完全に無効化
     languageForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        console.log('Form submit prevented');
         return false;
     });
 
@@ -141,9 +139,7 @@ window.initLanguageSwitcher = function (config) {
                 }
             })
             .then(data => {
-                console.log('Language change response:', data);
                 if (data && data.success) {
-                    console.log('Language change successful, reloading page...');
                     window.location.reload();
                 } else {
                     console.error('Language change failed:', data);

@@ -530,4 +530,3 @@ function renderPagination(modalId, paginationData) {
     };
 }
 
-console.log('[Media Selector] Script loaded');
