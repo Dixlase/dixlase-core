@@ -216,4 +216,3 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-console.log('[Media Index] Script loaded');

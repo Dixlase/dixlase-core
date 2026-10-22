@@ -37,6 +37,8 @@
 
 namespace App\Traits;
 
+use App\Facades\Audit;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -242,10 +244,18 @@ trait PasskeyLoginTrait
             ], 422);
         }
 
+        // The member's "remember me" choice, sent alongside the assertion.
+        // Absent means false, so a client that does not send it gets the
+        // session-only login rather than a persistent one.
+        $remember = $request->boolean('remember');
+
         try {
-            // Verify WebAuthn authentication
+            // Verify WebAuthn authentication.
+            //
+            // `remember` is excluded because this array is deserialized into a
+            // PublicKeyCredential: it carries the assertion and nothing else.
             $challengeId = session('passkey_challenge_id');
-            $verified = $this->passkeyService->verifyLoginChallenge($user, $request->all(), $challengeId);
+            $verified = $this->passkeyService->verifyLoginChallenge($user, $request->except('remember'), $challengeId);
 
             if (! $verified) {
                 return response()->json([
@@ -264,9 +274,25 @@ trait PasskeyLoginTrait
                 ], 422);
             }
 
-            // Login successful
+            // Login successful.
+            //
+            // The remember flag follows the member's choice, as it does on the
+            // password path (LoginTrait) and on 2FA completion
+            // (TwoFaAuthenticationTrait). It used to be hard-coded true here,
+            // so a member who deliberately left the box unticked still got a
+            // persistent cookie -- and the recaller cookie outlives the
+            // session by a long way, which is the opposite of what unticking
+            // it asks for.
             $guardName = $this->getGuardName();
-            Auth::guard($guardName)->login($user, true);
+
+            // Name the factor before logging in: the Login event the audit
+            // subscriber listens to does not carry it, and it fires inside
+            // the call below. The session's auth_method further down is
+            // written after the event and under a per-context key, so it
+            // cannot serve this.
+            Audit::setAuthFactor(AuditLog::AUTH_FACTOR_PASSKEY);
+
+            Auth::guard($guardName)->login($user, $remember);
 
             // Rotate the session ID on privilege change. Password login
             // (LoginTrait) and 2FA completion (TwoFaAuthenticationTrait) both

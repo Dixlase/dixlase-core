@@ -80,6 +80,16 @@ class AuditService
     protected ?string $actorSource = null;
 
     /**
+     * What authenticated the login in flight (AuditLog::AUTH_FACTOR_*).
+     *
+     * An authentication path sets this immediately before Auth::login(), so
+     * the value is in place when the framework's Login event fires and the
+     * audit subscriber can record it. The subscriber clears it again, so it
+     * cannot reach an unrelated row later in the same request.
+     */
+    protected ?string $authFactor = null;
+
+    /**
      * Record audit log (DB + file)
      */
     public function log(array $data): ?AuditLog
@@ -358,6 +368,29 @@ class AuditService
         }
 
         return AuditLog::ACTOR_SOURCE_WEB;
+    }
+
+    /**
+     * Set the authentication factor for the login in flight
+     *
+     * Call it immediately before Auth::login(). Pass null to clear.
+     */
+    public function setAuthFactor(?string $factor): self
+    {
+        $this->authFactor = $factor;
+
+        return $this;
+    }
+
+    /**
+     * Get the authentication factor for the login in flight
+     *
+     * Null when no authentication path has named one -- a login from a
+     * console command or a test helper, for instance.
+     */
+    public function getAuthFactor(): ?string
+    {
+        return $this->authFactor;
     }
 
     /**

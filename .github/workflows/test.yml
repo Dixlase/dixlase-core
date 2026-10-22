@@ -284,7 +284,7 @@ jobs:
 
       - name: Run Plugin Tests (Tier 2 - Moderate)
         run: |
-          php artisan test --testsuite="DixlaseMenus,DixlasePages${EXTRA_SUITES_TIER2:+,$EXTRA_SUITES_TIER2}"
+          php artisan test --testsuite="DixlaseMenus,DixlasePages,DixlaseBlog${EXTRA_SUITES_TIER2:+,$EXTRA_SUITES_TIER2}"
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test

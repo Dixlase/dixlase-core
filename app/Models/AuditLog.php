@@ -433,6 +433,25 @@ class AuditLog extends Model
     public const ACTOR_SOURCE_QUEUE = 'queue';
 
     // ========================================
+    // Authentication factor constants
+    //
+    // What actually authenticated the member on the login row. Every path
+    // ends in the same `login` action, so without this the log cannot tell a
+    // password-only session from one that went through a second factor.
+    //
+    // The password values name the factor that *completed* the login; the
+    // password step is implied by both of them, because neither route is
+    // reachable without it.
+    // ========================================
+    public const AUTH_FACTOR_PASSWORD = 'password';
+
+    public const AUTH_FACTOR_PASSKEY = 'passkey';
+
+    public const AUTH_FACTOR_PASSWORD_EMAIL_CODE = 'password+email_code';
+
+    public const AUTH_FACTOR_PASSWORD_RECOVERY_CODE = 'password+recovery_code';
+
+    // ========================================
     // Relations
     // ========================================
 
