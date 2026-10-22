@@ -70,6 +70,4 @@ function initSmoothScroll() {
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initSmoothScroll();
-    
-    console.log('Dixlase Front Scripts Loaded');
 });

@@ -52,4 +52,3 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
-console.log('[Content Editor] Alpine translation helper and marked.js loaded');

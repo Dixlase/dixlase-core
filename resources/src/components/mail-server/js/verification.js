@@ -55,8 +55,9 @@ class MailVerification {
         if (window.opener && !window.opener.closed) {
             try {
                 theme = window.opener.localStorage.getItem('theme');
-            } catch (e) {
-                console.log('親ウィンドウのテーマ取得失敗:', e);
+            } catch {
+                // Reading the opener's localStorage throws when it is on
+                // another origin. Expected: fall through to this window's own.
             }
         }
 
@@ -81,20 +82,17 @@ class MailVerification {
             document.documentElement.classList.remove('dark');
         }
 
-        console.log('適用されたテーマ:', theme);
     }
 
     /**
      * 成功時の処理
      */
     handleSuccess() {
-        console.log('=== メール認証成功ページ読み込み完了 ===');
 
         // セッションストレージに受信テスト完了を記録
         try {
             sessionStorage.setItem('mail_receive_test_completed', 'true');
             sessionStorage.setItem('mail_receive_test_date', new Date().toLocaleString());
-            console.log('✅ セッションストレージに受信テスト完了を記録しました');
         } catch (e) {
             console.error('❌ セッションストレージへの保存に失敗しました:', e);
         }
@@ -102,15 +100,11 @@ class MailVerification {
         // 親ウィンドウをリロード（可能な場合）
         if (window.opener && !window.opener.closed) {
             try {
-                console.log('親ウィンドウをリロードします...');
                 window.opener.location.reload();
-                console.log('✅ 親ウィンドウのリロード完了');
             } catch (e) {
                 console.error('❌ 親ウィンドウのリロードに失敗しました:', e);
             }
         } else {
-            console.log('❌ 親ウィンドウが存在しないか閉じられています');
-            console.log('💡 元のページに戻ってリロードしてください');
 
             // 代替案：BroadcastChannelを使用してタブ間通信
             try {
@@ -119,7 +113,6 @@ class MailVerification {
                     type: 'mail_receive_test_completed',
                     timestamp: new Date().toISOString()
                 });
-                console.log('✅ BroadcastChannelでメッセージを送信しました');
                 channel.close();
             } catch (e) {
                 console.error('❌ BroadcastChannelの送信に失敗しました:', e);
