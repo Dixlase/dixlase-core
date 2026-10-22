@@ -59,6 +59,58 @@ function escapeAttribute(value) {
 const SEARCH_DEBOUNCE_MS = 300;
 
 /**
+ * How many characters at the end of a file name stay visible when the name
+ * is too long for its tile. Variants of one image usually differ only there
+ * (`card-ja.png` / `card-en.png`), so the name is cut in the middle, never at
+ * the end.
+ */
+const NAME_TAIL_LENGTH = 10;
+
+/**
+ * Format a byte count the way Media::formattedFileSize does.
+ */
+function formatFileSize(bytes) {
+    if (bytes === null || bytes === undefined) return '';
+    const value = Number(bytes);
+    if (value === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+    const scaled = value / Math.pow(1024, i);
+    return `${i > 0 ? Math.round(scaled * 10) / 10 : Math.round(scaled)} ${units[i]}`;
+}
+
+/**
+ * Caption under a grid tile: the file name, cut in the middle when it does
+ * not fit, and a muted line with the dimensions and the file size.
+ *
+ * Every value goes through escapeAttribute(): the name is the uploaded file
+ * name verbatim (see the note on escapeAttribute), and escaping all five
+ * characters makes it safe in a text node as well as in an attribute.
+ */
+function renderMediaCaption(media) {
+    // Split by code point, so an emoji or other astral character is never cut
+    // in half. whitespace-pre keeps a space at the cut from collapsing.
+    const chars = Array.from(String(media.name ?? ''));
+    const head = 'min-w-0 overflow-hidden text-ellipsis whitespace-pre';
+    const nameHtml = chars.length > NAME_TAIL_LENGTH + 2
+        ? `<span class="${head}">${escapeAttribute(chars.slice(0, -NAME_TAIL_LENGTH).join(''))}</span>`
+            + `<span class="shrink-0 whitespace-pre">${escapeAttribute(chars.slice(-NAME_TAIL_LENGTH).join(''))}</span>`
+        : `<span class="${head}">${escapeAttribute(chars.join(''))}</span>`;
+
+    const meta = [
+        media.width && media.height ? `${media.width}×${media.height}` : '',
+        formatFileSize(media.file_size),
+    ].filter(Boolean).join(' · ');
+
+    return `
+        <div class="mt-1.5 px-0.5 text-xs leading-tight">
+            <div class="flex text-gray-700 dark:text-gray-200">${nameHtml}</div>
+            ${meta ? `<div class="mt-0.5 truncate text-gray-500 dark:text-gray-400">${escapeAttribute(meta)}</div>` : ''}
+        </div>
+    `;
+}
+
+/**
  * Open media selector modal
  */
 window.openMediaSelector = function (modalId, inputId, previewId, multiple = false, aspectRatio = 'original') {
@@ -203,13 +255,20 @@ function renderMediaGrid(modalId, mediaItems) {
             ? data.selectedMedia.some(m => m.id === media.id)
             : data.selectedMedia?.id === media.id;
 
+        // The full name, and the alt text when there is one, for the tooltip
+        const tooltip = [media.name, media.alt_text].filter(Boolean).join('\n');
+
+        // object-contain, not object-cover: a picker is for telling files
+        // apart, and a centre crop removes exactly the edges where variants
+        // of one image differ.
         return `
             <div class="media-selector-item cursor-pointer ${isSelected ? 'selected' : ''}"
                  data-media-id="${media.id}"
-                 data-media-json="${encodeURIComponent(JSON.stringify(media))}">
+                 data-media-json="${encodeURIComponent(JSON.stringify(media))}"
+                 title="${escapeAttribute(tooltip)}">
                 <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all">
                     ${isImage
-                ? `<img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.name)}" class="w-full h-full object-cover">`
+                ? `<img src="${escapeAttribute(media.url)}" alt="${escapeAttribute(media.name)}" class="w-full h-full object-contain">`
                 : `<div class="flex items-center justify-center w-full h-full">
                              <i class="fas fa-file-alt text-4xl text-gray-400"></i>
                            </div>`
@@ -222,6 +281,7 @@ function renderMediaGrid(modalId, mediaItems) {
                 : ''
             }
                 </div>
+                ${renderMediaCaption(media)}
             </div>
         `;
     }).join('');

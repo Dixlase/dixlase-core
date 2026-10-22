@@ -109,6 +109,7 @@ class MediaRepository implements MediaRepositoryInterface
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('alt_text', 'like', "%{$search}%")
                     ->orWhere('caption', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });
@@ -210,6 +211,7 @@ class MediaRepository implements MediaRepositoryInterface
         return Media::with($relations)
             ->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('alt_text', 'like', "%{$search}%")
                     ->orWhere('caption', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             })
@@ -275,6 +277,7 @@ class MediaRepository implements MediaRepositoryInterface
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('alt_text', 'like', "%{$search}%")
                     ->orWhere('caption', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             });

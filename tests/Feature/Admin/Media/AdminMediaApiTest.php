@@ -128,6 +128,24 @@ class AdminMediaApiTest extends TestCase
         );
     }
 
+    /**
+     * Authors search for what an image shows, which is what the alt text
+     * says; the file name is often a camera number or a date.
+     */
+    public function test_search_matches_the_alt_text(): void
+    {
+        $this->makeFile('IMG_0412.jpg', 'image/jpeg');
+        $this->makeFile('IMG_0413.jpg', 'image/jpeg');
+        Media::where('name', 'IMG_0412.jpg')->update(['alt_text' => 'Lighthouse at dusk']);
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->getJson(route('admin.media.api', ['search' => 'lighthouse']))
+            ->assertOk()
+            ->assertJsonPath('media.total', 1);
+
+        $this->assertSame('IMG_0412.jpg', $response->json('media.data.0.name'));
+    }
+
     public function test_type_narrows_the_list_by_mime_prefix(): void
     {
         $this->makeFile('a.jpg', 'image/jpeg');
