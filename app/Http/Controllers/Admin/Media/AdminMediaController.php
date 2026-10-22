@@ -423,19 +423,31 @@ class AdminMediaController extends AdminLoggedInController
         // Execute pagination using repository
         $media = $this->mediaRepository->paginate($perPage, $filters, 'created_at', 'desc');
 
-        // Add URL
+        // Project every row onto the fields the media selector renders. The
+        // model is not serialised directly: that would also emit the
+        // eager-loaded uploader relation and the stored path, neither of which
+        // any consumer of this endpoint reads. Keep the list minimal and add a
+        // field only when a consumer actually needs it.
         $mediaPath = config('admin.files.mediaPath', 'media');
         $media->getCollection()->transform(function ($item) use ($mediaPath) {
             // Consider cases where path field contains only filename or full path
             if (strpos($item->path, $mediaPath.'/') === 0) {
                 // When full path is stored (media/filename.jpg)
-                $item->url = asset('storage/'.$item->path);
+                $url = asset('storage/'.$item->path);
             } else {
                 // When only filename is stored (filename.jpg)
-                $item->url = asset('storage/'.$mediaPath.'/'.$item->path);
+                $url = asset('storage/'.$mediaPath.'/'.$item->path);
             }
 
-            return $item;
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'alt_text' => $item->alt_text,
+                'type' => $item->type,
+                'url' => $url,
+                'width' => $item->width,
+                'height' => $item->height,
+            ];
         });
 
         return response()->json([
