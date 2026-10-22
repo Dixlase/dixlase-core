@@ -57,6 +57,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static array buildAiContext(string $reason, ?string $intent = null, array $extra = [])
  * @method static \App\Services\AuditService setActorSource(?string $source)
  * @method static string|null getActorSource()
+ * @method static \App\Services\AuditService setAuthFactor(?string $factor)
+ * @method static string|null getAuthFactor()
  * @method static string getRequestId()
  * @method static \App\Services\AuditService setRequestId(string $requestId)
  * @method static \App\Services\AuditService setPluginContext(?string $pluginName, ?string $version = null)

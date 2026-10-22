@@ -376,7 +376,6 @@ Dixlase.boot = function () {
  * 内部初期化処理
  */
 Dixlase._init = function () {
-    console.log('[Dixlase] Bootloader initializing...');
 
     // アクションシステムを初期化
     this.actions.init();
@@ -386,8 +385,6 @@ Dixlase._init = function () {
 
     // ウィジェットを初期化
     this.widgets.initAll();
-
-    console.log('[Dixlase] Bootloader initialized');
 
     // カスタムイベントを発火
     window.dispatchEvent(new CustomEvent('dixlase:ready'));

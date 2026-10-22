@@ -51,11 +51,12 @@ function createLoginFlow() {
         // the password form, so the checkbox is not submitted on that path --
         // this is how the choice reaches the verify request.
         //
-        // It starts true because that is how the checkbox renders today, and
-        // x-model would otherwise untick it on load and change the password
-        // path's default along with it. What this fixes is unticking being
-        // ignored, not what the box starts as.
-        remember: true,
+        // It starts false to match how the checkbox renders. x-model writes
+        // this value into the input when Alpine initialises, so starting it
+        // true would tick the box on load and undo #715 -- the component no
+        // longer derives the checked state from the submitted value, so an
+        // unticked box is now what the server actually sends.
+        remember: false,
 
         async checkIdentifier() {
             this.loading = true;
@@ -120,21 +121,16 @@ function createLoginFlow() {
         },
 
         async loginWithPasskeyDirect() {
-            console.log('[DEBUG] loginWithPasskeyDirect called, current step:', this.step);
             // アカウント名が未入力の場合は何もしない
             if (!this.identifier.trim()) {
-                console.log('[DEBUG] identifier is empty, returning');
                 return;
             }
 
-            console.log('[DEBUG] calling loginWithPasskey(false)');
             // 直接パスキー認証を実行（ステップは変更しない）
             await this.loginWithPasskey(false);
-            console.log('[DEBUG] after loginWithPasskey, current step:', this.step);
         },
 
         async loginWithPasskey(fromStep2 = true) {
-            console.log('[DEBUG] loginWithPasskey called, fromStep2:', fromStep2, 'current step:', this.step);
             this.loading = true;
             this.errors = {};
 
@@ -154,10 +150,8 @@ function createLoginFlow() {
                 });
 
                 const challengeData = await challengeResponse.json();
-                console.log('[DEBUG] challengeData:', challengeData);
 
                 if (!challengeResponse.ok || !challengeData.success) {
-                    console.log('[DEBUG] Challenge failed, response.ok:', challengeResponse.ok, 'data.success:', challengeData.success);
                     // リダイレクトフラグがある場合はページをリロード
                     if (challengeData.redirect) {
                         window.location.reload();
@@ -166,7 +160,6 @@ function createLoginFlow() {
 
                     this.errors.login = challengeData.error || challengeData.message || this.translations.errorOccurred;
                     this.loading = false;
-                    console.log('[DEBUG] Error set, step should remain:', this.step);
                     // ステップ1から呼ばれた場合はステップ1のまま、ステップ2から呼ばれた場合はステップ2のまま
                     return;
                 }

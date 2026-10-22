@@ -28,8 +28,6 @@
  * Handles sending verification emails to members/users
  */
 
-console.log('[Account Verification] Script loaded');
-
 (function () {
     let currentEntityId = null;
 
@@ -38,17 +36,13 @@ console.log('[Account Verification] Script loaded');
      * @param {number} entityId - Entity ID (member or user)
      */
     window.sendVerificationEmail = function (entityId) {
-        console.log('[Account Verification] sendVerificationEmail called with ID:', entityId);
         currentEntityId = entityId;
         if (typeof window.openModal === 'function') {
-            console.log('[Account Verification] Opening modal');
             window.openModal('verificationEmailModal');
         } else {
             console.error('[Account Verification] openModal function not found');
         }
     };
-
-    console.log('[Account Verification] sendVerificationEmail function registered');
 
     /**
      * Initialize verification email sender
