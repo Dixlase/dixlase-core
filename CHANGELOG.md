@@ -32,6 +32,46 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+## [0.1.18] — 2026-10-23
+
+### Security
+- The media listing endpoint behind the selector modal returned the whole `Media` model, so its
+  response also carried the eager-loaded uploader's member record and the file's stored path. It
+  now returns only the fields the selector renders. The uploader's record included that member's
+  e-mail address and the state of their second factor, and the endpoint is reachable by any role
+  with access to the media library. An advisory will be published separately
+
+### Added
+- The audit log records which factor authenticated a login (#713). Every path ended in the same
+  `login` action, so the log could not tell a password-only session from one that went through a
+  second factor. The login row now carries `auth_factor` — `password`, `passkey`,
+  `password+email_code` or `password+recovery_code` — and omits it when nothing named one, as a
+  console command or a test helper does
+
+### Fixed
+- The remember-me choice is honoured on passkey login (#711). The flag was hard-coded, so a
+  member who deliberately left the box unticked still received a persistent cookie, which
+  outlives the session by a long way
+- A checkbox's checked state comes from its `checked` prop (#715). `<x-form-checkbox>` derived it
+  from the submitted value, which defaults to `1`, so every checkbox rendered ticked and the
+  `checked` prop could never make a difference. Visibly, the admin login screen's "remember me"
+  box arrived ticked, which opts the member into a persistent login by default
+- Development console logging no longer ships (#716). 37 `console.log` calls are gone from 15
+  files, among them a load marker on every admin page, eight lines narrating an authentication in
+  progress, and one that printed the server's response body during installation. `console.warn`
+  and `console.error` are untouched — those report conditions
+
+### Plugin API — Changed
+- `<x-form-checkbox>`'s `checked` prop is now the only thing that decides the checked state, and
+  `value` is emitted as the element's `value` attribute instead of being hard-coded to `1`
+  (#715). A caller that passed `value` and relied on the box rendering ticked has to pass
+  `checked` as well
+
+### Internal
+- Core changes are checked against the blog plugin in CI (#597). The plugin was in none of the
+  three places that make core's CI aware of a plugin, so no core change had ever been checked
+  against it
+
 ## [0.1.17] — 2026-10-21
 
 ### Changed
@@ -1007,6 +1047,7 @@ Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` ve
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.17...HEAD
+[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.18...HEAD
+[0.1.18]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.18
 [0.1.17]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.17
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0
