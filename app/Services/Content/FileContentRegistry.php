@@ -40,6 +40,7 @@ declare(strict_types=1);
 namespace App\Services\Content;
 
 use App\Contracts\Content\PublishesFileContent;
+use App\Enums\ContentPublishMode;
 use App\Support\Content\FileContentColumns;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
@@ -134,5 +135,36 @@ class FileContentRegistry
         }
 
         return $count;
+    }
+
+    /**
+     * Whether any registered model publishes on file save
+     *
+     * The publish mode is a setting of the owner, not of the record — a front
+     * page reads one front setting, an extension reads its own — so the first
+     * file-stored record of a model answers for that model, and this costs
+     * one row per model rather than a walk over all of them.
+     *
+     * Used to warn in the admin that, on this site, a change made to the
+     * files reaches it without anyone publishing it.
+     */
+    public function usesFileSaveMode(): bool
+    {
+        foreach ($this->models as $modelClass) {
+            try {
+                $record = $modelClass::fileStoredQuery()->first();
+            } catch (Throwable $e) {
+                report($e);
+
+                continue;
+            }
+
+            if ($record instanceof PublishesFileContent
+                && $record->fileContentPublishMode() === ContentPublishMode::FILE_SAVE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

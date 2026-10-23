@@ -46,6 +46,7 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Enums\PluginHealthStatus;
+use App\Helpers\AdminHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
 use App\Models\AuditLog;
@@ -65,6 +66,7 @@ use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
 use App\Support\HttpsEnforcement;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Presenter for dashboard display data
@@ -100,6 +102,13 @@ class DashboardPresenter
                 'badge' => 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
                 'badge_label' => __('admin/dashboard.status_recommendation'),
             ],
+            // Not a status: the colour of an item the member may not act on
+            'not_permitted' => [
+                'border_bg' => 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20',
+                'icon_color' => 'text-gray-400 dark:text-gray-500',
+                'badge' => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+                'badge_label' => '',
+            ],
             default => [
                 'border_bg' => 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20',
                 'icon_color' => 'text-green-600 dark:text-green-400',
@@ -112,6 +121,10 @@ class DashboardPresenter
     /**
      * Assign display classes to site health items
      *
+     * An item whose target page the current member may not open is not a
+     * link, and is shown in grey so it reads as information rather than as a
+     * dead link. An item hidden only by simple mode keeps its status colour.
+     *
      * @param  array<int, array<string, mixed>>  $items
      * @return array<int, array<string, mixed>>
      */
@@ -120,7 +133,12 @@ class DashboardPresenter
         return array_map(function (array $item) use ($isAdvancedMode) {
             $classes = self::statusClasses($item['status'] ?? 'ok');
             $requiresAdvanced = (bool) ($item['requires_advanced_mode'] ?? false);
-            $isClickable = ! empty($item['url']) && (! $requiresAdvanced || $isAdvancedMode);
+            $isPermitted = collect($item['menu_keys'] ?? [])
+                ->every(fn (string $menuKey) => AdminHelper::canAccessMenu($menuKey));
+            $isClickable = ! empty($item['url']) && $isPermitted && (! $requiresAdvanced || $isAdvancedMode);
+            if (! $isPermitted) {
+                $classes = array_merge(self::statusClasses('not_permitted'), ['badge_label' => $classes['badge_label']]);
+            }
 
             return array_merge($item, [
                 'border_bg_class' => $classes['border_bg'],
@@ -133,9 +151,33 @@ class DashboardPresenter
     }
 
     /**
+     * URL of an admin page, with the menu keys its route checks
+     *
+     * The keys are read from the route's check.menu.access middleware, so a
+     * card asks exactly what the page itself will ask when it is opened.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array{url: string, menu_keys: list<string>}
+     */
+    private static function link(string $routeName, array $parameters = []): array
+    {
+        $menuKeys = [];
+        foreach (Route::getRoutes()->getByName($routeName)?->gatherMiddleware() ?? [] as $middleware) {
+            if (is_string($middleware) && str_starts_with($middleware, 'check.menu.access:')) {
+                $menuKeys[] = substr($middleware, strlen('check.menu.access:'));
+            }
+        }
+
+        return [
+            'url' => route($routeName, $parameters),
+            'menu_keys' => $menuKeys,
+        ];
+    }
+
+    /**
      * Get site health (various operational status checks)
      *
-     * @return array<int, array{key: string, status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}>
+     * @return array<int, array{key: string, status: string, icon: string, label: string, description: string, url: string|null, menu_keys?: list<string>, requires_advanced_mode: bool}>
      */
     public static function siteHealth(Member $user): array
     {
@@ -152,7 +194,7 @@ class DashboardPresenter
             'description' => $maintenanceActive
                 ? __('admin/dashboard.maintenance_mode_active')
                 : __('admin/dashboard.maintenance_mode_inactive'),
-            'url' => route('admin.settings.base.maintenance'),
+            ...self::link('admin.settings.base.maintenance'),
             'requires_advanced_mode' => false,
         ];
 
@@ -186,7 +228,7 @@ class DashboardPresenter
             'icon' => 'fas fa-server',
             'label' => __('admin/dashboard.environment_settings'),
             'description' => __($envDescKey, ['env' => $siteEnv]),
-            'url' => route('admin.settings.security.environment'),
+            ...self::link('admin.settings.security.environment'),
             'requires_advanced_mode' => true,
         ];
 
@@ -226,7 +268,7 @@ class DashboardPresenter
             'icon' => $httpsIcon,
             'label' => __('admin/dashboard.https_status'),
             'description' => $httpsDescription,
-            'url' => route('admin.settings.base.admin'),
+            ...self::link('admin.settings.base.admin'),
             'requires_advanced_mode' => false,
         ];
 
@@ -253,7 +295,7 @@ class DashboardPresenter
             'icon' => $cspIcon,
             'label' => __('admin/dashboard.csp_mode'),
             'description' => $cspDescription,
-            'url' => route('admin.settings.security.csp'),
+            ...self::link('admin.settings.security.csp'),
             'requires_advanced_mode' => true,
         ];
 
@@ -275,7 +317,7 @@ class DashboardPresenter
             'icon' => 'fas fa-bug',
             'label' => __('admin/dashboard.debug_mode'),
             'description' => $debugDescription,
-            'url' => route('admin.settings.security.environment'),
+            ...self::link('admin.settings.security.environment'),
             'requires_advanced_mode' => true,
         ];
 
@@ -289,7 +331,7 @@ class DashboardPresenter
             'icon' => 'fas fa-toggle-on',
             'label' => __('admin/dashboard.extension_mode'),
             'description' => __('admin/dashboard.extension_mode_'.$preset->value),
-            'url' => route('admin.settings.security.extensions'),
+            ...self::link('admin.settings.security.extensions'),
             'requires_advanced_mode' => true,
         ];
 
@@ -304,7 +346,7 @@ class DashboardPresenter
             'description' => $signatureAvailable
                 ? __('admin/dashboard.public_key_available')
                 : __('admin/dashboard.public_key_unavailable'),
-            'url' => route('admin.settings.security.extensions'),
+            ...self::link('admin.settings.security.extensions'),
             'requires_advanced_mode' => true,
         ];
 
@@ -318,7 +360,7 @@ class DashboardPresenter
             'description' => $notificationEnabled
                 ? __('admin/dashboard.error_notification_enabled')
                 : __('admin/dashboard.error_notification_disabled'),
-            'url' => route('admin.settings.security.notifications'),
+            ...self::link('admin.settings.security.notifications'),
             'requires_advanced_mode' => true,
         ];
 
@@ -347,7 +389,7 @@ class DashboardPresenter
             'icon' => 'fas fa-fingerprint',
             'label' => __('admin/dashboard.file_integrity_status'),
             'description' => $integrityDescription,
-            'url' => route('admin.settings.security.integrity'),
+            ...self::link('admin.settings.security.integrity'),
             'requires_advanced_mode' => true,
         ];
 
@@ -362,7 +404,22 @@ class DashboardPresenter
                 'icon' => 'fas fa-file-pen',
                 'label' => __('admin/dashboard.file_content_status'),
                 'description' => __('admin/dashboard.file_content_pending', ['count' => $pendingFileContent]),
-                'url' => route('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db', 'search' => '.file_changed']),
+                ...self::link('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db', 'search' => '.file_changed']),
+                'requires_advanced_mode' => false,
+            ];
+        }
+
+        // Publishing on file save gives up review before publishing, and the
+        // setting says so nowhere else. Shown on a production site only:
+        // choosing it in development is the ordinary way to work (#744).
+        if (app()->isProduction() && app(FileContentRegistry::class)->usesFileSaveMode()) {
+            $items[] = [
+                'key' => 'file_content_mode',
+                'status' => 'warning',
+                'icon' => 'fas fa-file-circle-exclamation',
+                'label' => __('admin/dashboard.file_content_mode_status'),
+                'description' => __('admin/dashboard.file_content_mode_file_save'),
+                ...self::link('admin.front.settings'),
                 'requires_advanced_mode' => false,
             ];
         }
@@ -402,7 +459,7 @@ class DashboardPresenter
             'icon' => 'fas fa-link',
             'label' => __('admin/dashboard.audit_integrity_status'),
             'description' => $auditDescription,
-            'url' => route('admin.settings.systems.logs.index'),
+            ...self::link('admin.settings.systems.logs.index'),
             'requires_advanced_mode' => true,
         ];
 
@@ -438,7 +495,7 @@ class DashboardPresenter
                 ]),
                 default => __('admin/dashboard.dependency_integrity_ok', ['count' => $depHealth['checked']]),
             },
-            'url' => route('admin.settings.systems.updates.index'),
+            ...self::link('admin.settings.systems.updates.index'),
             'requires_advanced_mode' => true,
         ];
 
@@ -449,6 +506,12 @@ class DashboardPresenter
             ? AuthenticationMode::from($twoFaStatusService->getActualTwoFaMode($user))
             : null;
 
+        // While the global mode follows the profile setting, the member's own
+        // profile is the only place that changes this card's state.
+        $twoFaRoute = $twoFaStatusService->getGlobalTwoFaMode() === AuthenticationMode::UseProfileSetting->value
+            ? 'admin.profile.two-fa'
+            : 'admin.settings.security.two-fa';
+
         $items[] = [
             'key' => 'two_fa',
             'status' => $twoFaEnabled ? 'ok' : 'recommendation',
@@ -457,7 +520,7 @@ class DashboardPresenter
             'description' => $twoFaEnabled
                 ? __('admin/dashboard.two_fa_enabled', ['method' => $actualMode->twoFactorLabel()])
                 : __('admin/dashboard.two_fa_disabled'),
-            'url' => route('admin.settings.security.two-fa'),
+            ...self::link($twoFaRoute),
             'requires_advanced_mode' => false,
         ];
 
@@ -467,7 +530,7 @@ class DashboardPresenter
     /**
      * Get mail server status
      *
-     * @return array{status: string, icon: string, label: string, description: string, mailer: string, url: string|null, requires_advanced_mode: bool}
+     * @return array{status: string, icon: string, label: string, description: string, mailer: string, url: string|null, menu_keys?: list<string>, requires_advanced_mode: bool}
      */
     public static function mailServerStatus(): array
     {
@@ -475,7 +538,7 @@ class DashboardPresenter
         $host = ConfigHelper::getMailHost();
         $port = ConfigHelper::getMailPort();
         $fromAddress = ConfigHelper::getMailFromAddress();
-        $url = route('admin.settings.base.mail');
+        $link = self::link('admin.settings.base.mail');
 
         // log / array / mailpit drivers are warnings (for development)
         if (in_array($mailer, ['log', 'array', 'mailpit'], true)) {
@@ -485,7 +548,7 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_using_log_driver', ['driver' => $mailer]),
                 'mailer' => $mailer,
-                'url' => $url,
+                ...$link,
                 'requires_advanced_mode' => false,
             ];
         }
@@ -499,7 +562,7 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_not_configured'),
                 'mailer' => $mailer,
-                'url' => $url,
+                ...$link,
                 'requires_advanced_mode' => false,
             ];
         }
@@ -516,7 +579,7 @@ class DashboardPresenter
                 'label' => __('admin/dashboard.mail_status'),
                 'description' => __('admin/dashboard.mail_test_not_completed'),
                 'mailer' => $mailer,
-                'url' => $url,
+                ...$link,
                 'requires_advanced_mode' => false,
             ];
         }
@@ -527,7 +590,7 @@ class DashboardPresenter
             'label' => __('admin/dashboard.mail_status'),
             'description' => __('admin/dashboard.mail_configured'),
             'mailer' => $mailer,
-            'url' => $url,
+            ...$link,
             'requires_advanced_mode' => false,
         ];
     }
@@ -535,12 +598,12 @@ class DashboardPresenter
     /**
      * Get CAPTCHA status
      *
-     * @return array{status: string, icon: string, label: string, description: string, url: string|null, requires_advanced_mode: bool}
+     * @return array{status: string, icon: string, label: string, description: string, url: string|null, menu_keys?: list<string>, requires_advanced_mode: bool}
      */
     public static function captchaStatus(): array
     {
         $settings = CaptchaHelper::getSettings();
-        $url = route('admin.settings.security.captcha');
+        $link = self::link('admin.settings.security.captcha');
 
         $isConfigured = $settings['enabled']
             && ! empty($settings['site_key'])
@@ -555,7 +618,7 @@ class DashboardPresenter
                 'icon' => 'fas fa-robot',
                 'label' => __('admin/dashboard.captcha_status'),
                 'description' => __('admin/dashboard.captcha_test_not_completed'),
-                'url' => $url,
+                ...$link,
                 'requires_advanced_mode' => false,
             ];
         }
@@ -567,7 +630,7 @@ class DashboardPresenter
             'description' => $isConfigured
                 ? __('admin/dashboard.captcha_configured')
                 : __('admin/dashboard.captcha_not_configured'),
-            'url' => $url,
+            ...$link,
             'requires_advanced_mode' => false,
         ];
     }

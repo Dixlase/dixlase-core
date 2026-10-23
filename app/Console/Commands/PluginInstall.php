@@ -43,6 +43,7 @@ use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionDownloadFreshness;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
@@ -183,7 +184,10 @@ class PluginInstall extends Command
                 $licenseVerdict['spdx'] ?? '(none)',
             ));
             if (! $force) {
-                $this->line('  Pass --force to install anyway; the install is then recorded in the audit log with this refusal reason.');
+                $this->line('  Pass --force to install anyway (the refusal reason is recorded in the audit log).');
+                app(ExtensionRefusalReport::class)->record(
+                    $licenseVerdict['reason'] ?? 'License is not accepted by this Dixlase install.'
+                );
 
                 return 1;
             }

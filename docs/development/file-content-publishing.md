@@ -17,9 +17,36 @@ Settings*). The default is `admin`.
 | Mode | What the site shows | A change made to the file |
 |---|---|---|
 | `admin` (default) | The published copy in the database | Recorded once in the audit log, listed on the edit screen with a diff, and goes live when someone with edit permission presses **Publish** |
-| `file_save` | The file | Taken in as the published copy at once, recorded as an `auto` revision, and recorded in the audit log |
+| `file_save` | The file, **except for the parts that can carry a script** | Taken in as the published copy at once, recorded as an `auto` revision, and recorded in the audit log. A script-capable part is held and waits for **Publish**, as under `admin` |
 
 `App\Enums\ContentPublishMode` holds the two values.
+
+### Parts that can carry a script
+
+Writing a script into the site is an ADMIN-and-above capability in the admin panel. The
+file save mode would otherwise be a second way in that does not pass that limit —
+`storage/` is writable by the application by design, so it can be writable where the code
+directories are not. So under `file_save` the shared code takes in only the parts that
+cannot carry a script; the rest wait to be published, and `context.held` on the audit entry
+names them.
+
+Which parts those are is the owner's to say:
+
+- **Without doing anything**, the answer comes from the part's name:
+  `FileContentPublisher::DEFAULT_SCRIPT_CAPABLE_PARTS` covers the conventional `custom_css`
+  and `custom_js`.
+- **Implement `App\Contracts\Content\DeclaresScriptCapableParts`** when a part's name does
+  not describe it — most often a body, where the editor type decides. It is a separate,
+  optional interface, so `PublishesFileContent` did not change and an existing
+  implementation keeps working. Returning an empty array is a statement that no part of the
+  record can carry a script, and switches the name-based default off.
+
+The core front page declares its body script-capable under the HTML editor, where
+`<script>` is part of what the author writes. A Markdown or GUI body cannot carry one, so
+it still goes live at once under `file_save`.
+
+A production site whose publish mode is `file_save` is warned on the dashboard, because the
+setting otherwise says nowhere that review before publishing has been given up.
 
 ## What is not covered
 
@@ -87,7 +114,7 @@ Settings*). The default is `admin`.
 
 | Action | Category | Written when |
 |---|---|---|
-| `{prefix}.file_changed` | content (warning) | A change made outside the admin is first seen. `context.published` tells whether the file save mode took it in |
+| `{prefix}.file_changed` | content (warning) | A change made outside the admin is first seen. `context.published` tells whether the whole change went live; `context.held` names the parts that were kept back for review |
 | `{prefix}.published_from_file` | content | The changes are published from the edit screen |
 
 Changing the mode is audited as a settings change (`settings_updated`, with the owner's

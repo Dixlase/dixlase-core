@@ -54,6 +54,7 @@ use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionDownloadFreshness;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
@@ -821,18 +822,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
 
             // A refused install (license, requires.dixlase / requires.php,
             // health gate) leaves the files where they were, so keep the
-            // sidecar that links them to their source and say why.
+            // sidecar that links them to their source and say why. The
+            // reason shown is the one the refusing check recorded; the
+            // command's console buffer goes to the log only.
             if ($exitCode !== 0) {
-                $output = trim((string) Artisan::output());
                 Log::error('Plugin installation command failed', [
                     'directory' => $pluginDir,
                     'exit_code' => $exitCode,
-                    'output' => $output,
+                    'output' => trim((string) Artisan::output()),
                 ]);
+                $reason = app(ExtensionRefusalReport::class)->reason();
 
-                return redirect()->back()->with('error', __('admin/settings/plugins/index.messages.install_failed', [
-                    'error' => $output !== '' ? $output : (string) $exitCode,
-                ]));
+                return redirect()->back()->with('error', $reason !== null
+                    ? __('admin/settings/plugins/index.messages.install_failed', ['error' => $reason])
+                    : __('admin/settings/plugins/index.messages.install_failed_no_reason'));
             }
             $sidecar->delete(base_path("plugins/{$pluginDir}"));
 

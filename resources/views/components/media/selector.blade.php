@@ -39,8 +39,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'previewId' => 'media_preview',
     'multiple' => false,
     'allowedTypes' => ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+    // Ignored: the selector uploads in place now; kept for existing callers
     'confirmUploadNavigation' => false,
 ])
+
+@php
+    // The same permission the media.store route checks (check.menu.edit:media)
+    $canUpload = \App\Helpers\AdminHelper::canEditMenu('media')
+        && (! \App\Helpers\AdminModeHelper::isSimpleMode() || \App\Helpers\AdminModeHelper::isMenuEditable('media'));
+    $uploadExtensions = $canUpload
+        ? (array) app(\App\Contracts\Repositories\MediaSettingRepositoryInterface::class)->get('allowed_file_types', [])
+        : [];
+@endphp
 
 <!-- Media selection modal -->
 <div id="{{ $id }}" 
@@ -51,6 +61,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      data-previous-label="{{ __('common.previous') }}"
      data-next-label="{{ __('common.next') }}"
      data-page-label="{{ __('common.page_of') }}"
+     @if($canUpload)
+     x-data="mediaSelectorUpload"
+     data-upload-url="{{ route('admin.media.store') }}"
+     data-upload-failed="{{ __('components/media-selector.upload_failed') }}"
+     data-upload-network-error="{{ __('components/media-selector.upload_network_error') }}"
+     @dragover="dragOver($event)"
+     @dragleave="dragLeave($event)"
+     @drop="drop($event)"
+     @endif
      aria-labelledby="{{ $id }}-title"
      role="dialog"
      aria-modal="true">
@@ -63,17 +82,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('common.select_media') }}
                 </h3>
                 <div class="flex items-center gap-3">
-                    @if($confirmUploadNavigation)
+                    @if($canUpload)
                         <button type="button"
-                            @click="openModal('{{ $id }}_uploadConfirmModal')"
+                            @click="togglePanel()"
+                            :aria-expanded="panelOpen"
+                            aria-controls="{{ $id }}-upload"
                             class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
                             <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
                         </button>
-                    @else
-                        <a href="{{ route('admin.media.upload') }}" target="_blank"
-                           class="px-3 py-1.5 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 inline-flex items-center">
-                            <i class="fas fa-upload mr-1.5"></i>{{ __('common.upload') }}
-                        </a>
                     @endif
                     <button type="button"
                             @click="closeMediaSelector('{{ $id }}')"
@@ -82,6 +98,52 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </button>
                 </div>
             </div>
+
+            @if($canUpload)
+                {{-- In-modal upload. Opens from the Upload button, or by itself when files are dragged over the modal. Each file shows its progress or the server's reason for refusing it. --}}
+                <div id="{{ $id }}-upload" x-show="panelOpen" x-cloak class="px-6 pt-4">
+                    <div class="flex flex-col items-center justify-center gap-2 px-4 py-6 text-center border-2 border-dashed rounded-lg transition-colors"
+                         :class="dropZoneClass()">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400" aria-hidden="true"></i>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                            {{ __('components/media-selector.upload_drop_here') }}
+                            <button type="button" @click="chooseFiles()"
+                                    class="font-medium text-blue-600 hover:underline dark:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">
+                                {{ __('components/media-selector.upload_choose_files') }}
+                            </button>
+                        </p>
+                        @if(! empty($uploadExtensions))
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ __('components/media-selector.upload_allowed_types', ['types' => collect($uploadExtensions)->implode(', ')]) }}
+                            </p>
+                        @endif
+                        <input type="file" x-ref="uploadInput" multiple class="hidden"
+                               accept="{{ collect($uploadExtensions)->map(fn ($ext) => '.'.$ext)->implode(',') }}"
+                               @change="picked($event)">
+                    </div>
+
+                    <ul x-show="hasItems()" class="mt-3 space-y-2 text-sm" aria-live="polite">
+                        <template x-for="item in items" :key="item.key">
+                            <li class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span class="min-w-0 flex-1 truncate text-gray-700 dark:text-gray-200" x-text="item.name"></span>
+                                <span x-show="isUploading(item)" class="w-24 h-1.5 shrink-0 overflow-hidden rounded bg-gray-200 dark:bg-gray-700">
+                                    <span class="block h-full bg-blue-600 transition-all" :style="progressWidth(item)"></span>
+                                </span>
+                                <i x-show="isSuccess(item)" class="fas fa-check shrink-0 text-green-600 dark:text-green-400" aria-hidden="true"></i>
+                                <span x-show="isError(item)" class="basis-full text-xs text-red-600 dark:text-red-400" x-text="item.error"></span>
+                            </li>
+                        </template>
+                    </ul>
+                    <div x-show="hasFinished()" class="mt-2 flex justify-end gap-4 text-xs">
+                        <button type="button" @click="clearFinished()" class="text-gray-500 hover:underline dark:text-gray-400">
+                            {{ __('components/media-selector.upload_clear_list') }}
+                        </button>
+                        <button type="button" @click="closePanel()" class="text-gray-500 hover:underline dark:text-gray-400">
+                            {{ __('components/media-selector.upload_close_panel') }}
+                        </button>
+                    </div>
+                </div>
+            @endif
 
             <!-- Search and filter -->
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900">
@@ -143,33 +205,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 </div>
-
-@if($confirmUploadNavigation)
-{{-- Upload screen transition confirmation modal --}}
-<x-ui-modal id="{{ $id }}_uploadConfirmModal"
-    :title="__('components/media-selector.upload_confirm_title')"
-    :message="__('components/media-selector.upload_confirm_message')"
-    :confirm-label="__('components/media-selector.upload_confirm_ok')"
-    :cancel-label="__('common.cancel')"
-    icon-type="warning"
-    confirm-color="blue"
-    :form="null"
->
-    @slot('footer')
-        <x-form-button
-            type="button"
-            variant="secondary"
-            icon="fas fa-times"
-            @click="close()"
-            class="mx-2"
-        >{{ __('common.cancel') }}</x-form-button>
-        <x-form-button
-            type="link"
-            variant="primary"
-            icon="fas fa-upload"
-            :href="route('admin.media.upload')"
-            class="mx-2"
-        >{{ __('components/media-selector.upload_confirm_ok') }}</x-form-button>
-    @endslot
-</x-ui-modal>
-@endif

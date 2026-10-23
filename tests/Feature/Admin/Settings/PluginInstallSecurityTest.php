@@ -33,13 +33,16 @@ use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\PluginAudit;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Plugin\PluginHealthScorer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Illuminate\Testing\TestResponse;
 use Mockery;
 use Tests\TestCase;
 
@@ -371,6 +374,60 @@ class PluginInstallSecurityTest extends TestCase
         // 成功でリダイレクトされること
         $response->assertRedirect(route('admin.settings.plugins.index'));
         $response->assertSessionHas('success');
+    }
+
+    public function test_a_refused_install_shows_the_recorded_reason_not_the_console_output(): void
+    {
+        $response = $this->refusedPluginInstall(function () {
+            app(ExtensionRefusalReport::class)->record('TestPlugin needs Dixlase ^9.0, but this site runs 0.1.19.');
+
+            return 1;
+        });
+
+        $response->assertSessionHas(
+            'error',
+            __('admin/settings/plugins/index.messages.install_failed', ['error' => 'TestPlugin needs Dixlase ^9.0, but this site runs 0.1.19.']),
+        );
+        Log::shouldHaveReceived('error')->withArgs(fn (string $message, array $context) => $message === 'Plugin installation command failed'
+            && $context['exit_code'] === 1
+            && $context['output'] === '{}');
+    }
+
+    public function test_a_failed_install_without_a_recorded_reason_shows_the_plain_message(): void
+    {
+        $this->refusedPluginInstall(fn () => 1)
+            ->assertSessionHas('error', __('admin/settings/plugins/index.messages.install_failed_no_reason'));
+    }
+
+    /**
+     * Post an install whose command fails as $command does, with a console
+     * buffer ({}) that must not reach the flash message.
+     */
+    private function refusedPluginInstall(\Closure $command): TestResponse
+    {
+        $this->withoutMiddleware([
+            CheckInstallationReady::class,
+            EnsureEmailIsVerified::class,
+        ]);
+        Cache::put('security_settings:'.'extension_security_preset', 'development');
+
+        $fileMock = File::partialMock();
+        $fileMock->shouldReceive('exists')
+            ->withArgs(fn (string $path) => str_ends_with($path, 'plugins/TestPlugin'))
+            ->andReturn(true);
+
+        Artisan::shouldReceive('call')
+            ->with('dls:plugin:install', Mockery::any())
+            ->once()
+            ->andReturnUsing($command);
+        Artisan::shouldReceive('output')
+            ->andReturn('{}');
+        Log::spy();
+
+        return $this->actingAs($this->admin, 'member')
+            ->post(route('admin.settings.plugins.install'), [
+                'directory' => 'TestPlugin',
+            ]);
     }
 
     // ========================================

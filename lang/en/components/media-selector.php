@@ -34,7 +34,11 @@
  */
 
 return [
-    'upload_confirm_title' => 'Go to Upload Page?',
-    'upload_confirm_message' => 'You will be redirected to the media upload page.<br>Unsaved changes will be lost.',
-    'upload_confirm_ok' => 'OK',
+    'upload_drop_here' => 'Drop files here, or',
+    'upload_choose_files' => 'choose files',
+    'upload_allowed_types' => 'Allowed: :types',
+    'upload_failed' => 'Upload failed',
+    'upload_network_error' => 'The upload was interrupted. Check the connection and try again.',
+    'upload_clear_list' => 'Clear finished',
+    'upload_close_panel' => 'Close',
 ];
