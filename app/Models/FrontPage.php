@@ -37,6 +37,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Content\DeclaresScriptCapableParts;
 use App\Contracts\Content\PublishesFileContent;
 use App\Contracts\Revisionable;
 use App\Contracts\TranslationResolver;
@@ -46,6 +47,7 @@ use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Helpers\LocaleHelper;
 use App\Models\Traits\BelongsToSite;
+use App\Services\Content\FileContentPublisher;
 use App\Services\FrontPageContentService;
 use App\Traits\HasRevisions;
 use App\Traits\TranslatableTrait;
@@ -57,7 +59,7 @@ use Illuminate\Support\Facades\App;
 /**
  * Front page model
  */
-class FrontPage extends Model implements PublishesFileContent, Revisionable
+class FrontPage extends Model implements DeclaresScriptCapableParts, PublishesFileContent, Revisionable
 {
     use BelongsToSite;
     use HasFactory;
@@ -243,6 +245,28 @@ class FrontPage extends Model implements PublishesFileContent, Revisionable
         if ($this->editorType() === ContentEditorType::HTML) {
             $parts['custom_css'] = 'custom_css';
             $parts['custom_js'] = 'custom_js';
+        }
+
+        return $parts;
+    }
+
+    /**
+     * The parts of a front page that may carry a script
+     *
+     * The custom CSS and JS always may, as their names say. The body may as
+     * well under the HTML editor, where `<script>` is simply part of what the
+     * author writes; under the Markdown and GUI editors it cannot, and those
+     * bodies therefore still go live at once under the file save mode. The
+     * Blade editor is out of the file-stored layer altogether.
+     *
+     * @return list<string>
+     */
+    public function scriptCapableFileContentParts(): array
+    {
+        $parts = FileContentPublisher::DEFAULT_SCRIPT_CAPABLE_PARTS;
+
+        if ($this->editorType() === ContentEditorType::HTML) {
+            $parts[] = 'content';
         }
 
         return $parts;
