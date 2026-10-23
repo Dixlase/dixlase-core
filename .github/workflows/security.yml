@@ -3,9 +3,11 @@ name: Security Scan
 on:
   push:
     branches:
+      - next
       - main
   pull_request:
     branches:
+      - next
       - main
   schedule:
     # 毎週月曜日 9:00 JST (0:00 UTC)
