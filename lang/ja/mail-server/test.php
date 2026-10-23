@@ -48,7 +48,7 @@ return [
     'test_not_completed' => '未実行',
     'mail_test_complete' => 'メール機能テスト完了',
     'mail_test_incomplete' => 'メール機能テスト未完了',
-    'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
+    'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、多要素認証機能を使用するには、すべてのメールテストを完了してください。',
     'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
     'mail_receive_test_completed' => 'メール受信テストが完了しました。設定を保存してください。',
     'connection_test_required' => '接続テストを先に実行してください。',

@@ -35,7 +35,7 @@
 
 return [
     'unlock_lockout' => 'ロックアウト解除',
-    'unlock_lockout_description' => 'ログイン試行制限と二段階認証のロックアウトを解除します。',
+    'unlock_lockout_description' => 'ログイン試行制限と多要素認証のロックアウトを解除します。',
     'unlock_lockout_button' => 'ロックアウトを解除',
     'force_logout' => '強制ログアウト',
     'force_logout_description' => 'このアカウントの全てのセッションを強制的に終了します。',

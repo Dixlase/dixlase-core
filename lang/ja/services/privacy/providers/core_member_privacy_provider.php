@@ -34,5 +34,5 @@
  */
 
 return [
-    'member_account_session_auth_data' => '管理メンバーアカウント、セッション、ログイン試行、2 段階認証情報、WebAuthn 認証情報、およびメンバーごとの監査ログ・セキュリティイベント。',
+    'member_account_session_auth_data' => '管理メンバーアカウント、セッション、ログイン試行、多要素認証情報、WebAuthn 認証情報、およびメンバーごとの監査ログ・セキュリティイベント。',
 ];
