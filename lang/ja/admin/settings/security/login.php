@@ -59,9 +59,9 @@ return [
     // ヒント
     'plugin_custom_hint' => 'プラグイン側で独自のログイン試行制限を設定できます。プラグインでカスタム設定が有効な場合、そちらが優先されます。',
 
-    // 二段階認証の詳細設定
-    'two_fa_detailed_settings' => '二段階認証の詳細設定',
-    'two_fa_detailed_settings_description' => '二段階認証のコード有効期限、再送信間隔、試行制限、リカバリーコードなどの詳細設定を管理します。',
+    // 多要素認証の詳細設定
+    'two_fa_detailed_settings' => '多要素認証の詳細設定',
+    'two_fa_detailed_settings_description' => '多要素認証のコード有効期限、再送信間隔、試行制限、リカバリーコードなどの詳細設定を管理します。',
 
     // ログイン識別子モード設定
     'login_identifier_mode_settings' => 'ログイン識別子設定',

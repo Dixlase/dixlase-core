@@ -43,8 +43,8 @@ return [
     'appearance' => '外観設定',
     'notifications' => '通知設定',
     'notifications_description' => 'ログイン通知などの設定',
-    'two_factor' => '二段階認証設定',
-    'two_factor_management' => '二段階認証管理',
+    'two_factor' => '多要素認証設定',
+    'two_factor_management' => '多要素認証管理',
 
     'passkey_count' => 'パスキー: :count個',
     'recovery_codes_count' => '回復コード: :count個',
