@@ -287,11 +287,12 @@ What an administrator can take away, and how fast it takes effect:
 | End one session | Member Management → *Active sessions*, or a member's edit page | Deletes that session and clears the member's remember-me token, so the device cannot sign straight back in. The member's other sessions stay signed in, but their remember-me cookies stop working |
 | Force logout of a member | A member's edit page | Deletes every session of that member and clears their remember-me token |
 | Force logout of all members | Member Management | The same for every member at or below your role, except yourself |
+| Send a verification email | A member's edit page | Marks the member's address unconfirmed and deletes every session of that member. Their remember-me token is kept, but the admin panel stays closed to them until they confirm the address again |
 | Delete one API key / all API keys | Global Settings → System → API Management | Deletes the key rows of this site. Network keys (shared by several sites, created with `dls:api:create-network-key`) are not touched; there is no screen or command to delete them yet |
 
 **It takes effect on the next request, on every instance.** Admin sessions are stored in the database on an installed site (the session driver is set per request, whatever `SESSION_DRIVER` says), and API keys are looked up in the database on every request. Neither goes through a cache, so there is no grace period: any instance that shares the database refuses a revoked session or key at once. A browser that is mid-request finishes that request.
 
-Each action writes an audit row: `session_destroyed`, `forced_logout`, `api_key_revoked` or `api_keys_revoked_all`. Rows name sessions by a keyed hash and keys by id and name — never by the session id or key material.
+Each action writes an audit row: `session_destroyed`, `forced_logout`, `email_verification_reset`, `api_key_revoked` or `api_keys_revoked_all`. Rows name sessions by a keyed hash and keys by id and name — never by the session id or key material.
 
 ## Scope
 

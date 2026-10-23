@@ -51,8 +51,8 @@ return [
     // 設定ラベル
     'labels' => [
         // 認証
-        'two_fa_enabled' => '二段階認証',
-        'two_fa_mode' => '二段階認証モード',
+        'two_fa_enabled' => '多要素認証',
+        'two_fa_mode' => '多要素認証モード',
         'password_min_length' => 'パスワード最小文字数',
         'password_require_mixed_case' => '大文字小文字を必須にする',
         'password_require_numbers' => '数字を必須にする',

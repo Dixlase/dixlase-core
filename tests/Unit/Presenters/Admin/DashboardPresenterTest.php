@@ -23,6 +23,7 @@
 namespace Tests\Unit\Presenters\Admin;
 
 use App\Enums\AuthenticationMode;
+use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
 use App\Models\AuditLog;
 use App\Models\Member;
@@ -52,6 +53,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
         $user = new Member();
@@ -88,6 +90,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
         $user = new Member();
@@ -110,6 +113,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(true);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $twoFaStatusService->shouldReceive('getActualTwoFaMode')->andReturn(AuthenticationMode::Always->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
@@ -136,6 +140,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
         $log = AuditLog::create([
@@ -172,6 +177,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
         $user = new Member();
@@ -347,6 +353,7 @@ class DashboardPresenterTest extends TestCase
 
         $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
         $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
         $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
 
         $user = new Member();
@@ -396,6 +403,100 @@ class DashboardPresenterTest extends TestCase
         $this->assertTrue($advancedResult[2]['is_clickable'], 'requires_advanced_mode=true でも advanced モードならクリック可能');
 
         $this->assertStringContainsString('red', $result[1]['border_bg_class'], 'critical ステータスは red の表示');
+    }
+
+    public function test_two_fa_card_opens_the_profile_page_while_the_global_mode_follows_profiles(): void
+    {
+        $twoFa = $this->twoFaCardWithGlobalMode(AuthenticationMode::UseProfileSetting);
+
+        $this->assertSame(route('admin.profile.two-fa'), $twoFa['url']);
+        $this->assertSame([], $twoFa['menu_keys']);
+    }
+
+    public function test_two_fa_card_opens_the_global_page_when_the_global_mode_decides(): void
+    {
+        foreach ([AuthenticationMode::Disabled, AuthenticationMode::Always] as $mode) {
+            $twoFa = $this->twoFaCardWithGlobalMode($mode);
+
+            $this->assertSame(route('admin.settings.security.two-fa'), $twoFa['url'], $mode->name);
+        }
+    }
+
+    public function test_an_item_carries_the_menu_keys_its_page_checks(): void
+    {
+        $this->assertSame(
+            ['settings.security', 'settings.security.captcha'],
+            DashboardPresenter::captchaStatus()['menu_keys'],
+        );
+    }
+
+    public function test_an_item_the_member_may_not_open_is_grey_and_not_a_link(): void
+    {
+        $items = [
+            ['key' => 'a', 'status' => 'warning', 'icon' => 'fa', 'label' => 'A', 'description' => 'd', 'url' => '/a', 'menu_keys' => ['settings.security', 'settings.security.captcha'], 'requires_advanced_mode' => false],
+            ['key' => 'b', 'status' => 'warning', 'icon' => 'fa', 'label' => 'B', 'description' => 'd', 'url' => '/b', 'menu_keys' => [], 'requires_advanced_mode' => false],
+        ];
+
+        $this->actingAs($this->memberWithRole(MemberRole::GUEST), 'member');
+        $result = DashboardPresenter::decorateSiteHealthItems($items, true);
+
+        $this->assertFalse($result[0]['is_clickable']);
+        $this->assertStringContainsString('gray', $result[0]['border_bg_class']);
+        $this->assertStringNotContainsString('yellow', $result[0]['border_bg_class'].$result[0]['icon_color_class'].$result[0]['badge_class']);
+        $this->assertSame(__('admin/dashboard.status_warning'), $result[0]['badge_label']);
+
+        $this->assertTrue($result[1]['is_clickable']);
+        $this->assertStringContainsString('yellow', $result[1]['border_bg_class']);
+    }
+
+    public function test_an_item_the_member_may_open_keeps_its_link_and_colour(): void
+    {
+        $items = [
+            ['key' => 'a', 'status' => 'warning', 'icon' => 'fa', 'label' => 'A', 'description' => 'd', 'url' => '/a', 'menu_keys' => ['settings.security', 'settings.security.captcha'], 'requires_advanced_mode' => true],
+        ];
+
+        $this->actingAs($this->memberWithRole(MemberRole::SUPER_ADMIN), 'member');
+
+        $this->assertTrue(DashboardPresenter::decorateSiteHealthItems($items, true)[0]['is_clickable']);
+        $this->assertStringContainsString('yellow', DashboardPresenter::decorateSiteHealthItems($items, true)[0]['border_bg_class']);
+
+        // Hidden by simple mode only: still not a link, but keeps its status colour
+        $simple = DashboardPresenter::decorateSiteHealthItems($items, false)[0];
+        $this->assertFalse($simple['is_clickable']);
+        $this->assertStringContainsString('yellow', $simple['border_bg_class']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function twoFaCardWithGlobalMode(AuthenticationMode $globalMode): array
+    {
+        $safeModeService = Mockery::mock(SafeModeService::class);
+        $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
+        $this->app->instance(SafeModeService::class, $safeModeService);
+
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn($globalMode->value);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
+        $user = new Member();
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
+
+        return collect(DashboardPresenter::siteHealth($user))->firstWhere('key', 'two_fa');
+    }
+
+    private function memberWithRole(MemberRole $role): Member
+    {
+        return Member::create([
+            'account_name' => 'member'.$role->value,
+            'display_name' => 'Member',
+            'email' => 'member'.$role->value.'@example.com',
+            'password' => 'password',
+            'email_verified_at' => now(),
+            'role' => $role,
+            'status' => MemberStatus::Active,
+        ]);
     }
 
     /**

@@ -49,8 +49,8 @@ return [
     'info_title' => 'クリーンアップ対象の説明',
     'info_login_attempts' => 'ログイン試行履歴の古いレコードを削除します。',
     'info_password_reset' => 'パスワードリセットトークンの期限切れレコードを削除します。',
-    'info_two_fa_attempts' => '二段階認証試行履歴の古いレコードを削除します。',
-    'info_two_fa_tokens' => '二段階認証トークンの期限切れレコードを削除します。',
+    'info_two_fa_attempts' => '多要素認証試行履歴の古いレコードを削除します。',
+    'info_two_fa_tokens' => '多要素認証トークンの期限切れレコードを削除します。',
     'info_recovery_codes' => '使用済みの古い回復コードを削除します。',
     'info_passkeys' => '削除済みの古いPASSKEYを完全に削除します。',
     'info_cache' => 'キャッシュデータの期限切れレコードを削除します。',
@@ -85,13 +85,13 @@ return [
         'invalid_days' => '日数は0以上の整数である必要があります。',
     ],
     'two_fa_attempts' => [
-        'name' => '二段階認証試行履歴',
-        'description' => '古い二段階認証試行履歴をクリーンアップします',
+        'name' => '多要素認証試行履歴',
+        'description' => '古い多要素認証試行履歴をクリーンアップします',
         'invalid_days' => '日数は0以上の整数である必要があります。',
     ],
     'two_fa_tokens' => [
-        'name' => '二段階認証トークン(メール認証)',
-        'description' => '期限切れの二段階認証(メール認証)の認証コードをクリーンアップします',
+        'name' => '多要素認証トークン(メール認証)',
+        'description' => '期限切れの多要素認証(メール認証)の認証コードをクリーンアップします',
         'default_days' => '7日',
     ],
     'recovery_codes' => [
@@ -100,8 +100,8 @@ return [
         'default_days' => '90日',
     ],
     'passkeys' => [
-        'name' => '二段階認証用PASSKEY(生体認証)',
-        'description' => '削除済みの古い二段階認証用PASSKEY(生体認証)をクリーンアップします',
+        'name' => '多要素認証用PASSKEY(生体認証)',
+        'description' => '削除済みの古い多要素認証用PASSKEY(生体認証)をクリーンアップします',
         'default_days' => '90日',
     ],
     'backup_records' => [
