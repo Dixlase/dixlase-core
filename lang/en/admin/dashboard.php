@@ -78,6 +78,8 @@ return [
     'file_integrity_status' => 'File Integrity',
     'file_content_status' => 'File-stored content',
     'file_content_pending' => ':count item(s) have file changes that are not published.',
+    'file_content_mode_status' => 'Publishing on file save',
+    'file_content_mode_file_save' => 'A change made to the files reaches this site without anyone publishing it. Parts that can carry a script still wait for the admin.',
     'file_integrity_ok' => 'No file integrity issues detected in the latest scan.',
     'file_integrity_warning' => ':count file(s) changed since the last baseline scan.',
     'file_integrity_critical' => ':count suspicious file(s) detected. Investigate immediately.',

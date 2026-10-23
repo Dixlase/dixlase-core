@@ -42,6 +42,7 @@ use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
 use App\Models\FrontSetting;
 use App\Models\Member;
+use App\Presenters\Admin\DashboardPresenter;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\FileContentRegistry;
 use App\Services\FrontPageContentService;
@@ -286,6 +287,35 @@ class FrontFileContentPublishTest extends TestCase
         $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
     }
 
+    public function test_a_production_site_on_the_file_save_mode_is_warned(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $this->createFilePage();
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $item = $this->healthItem('file_content_mode');
+
+        $this->assertNotNull($item);
+        $this->assertSame('warning', $item['status']);
+    }
+
+    public function test_the_admin_mode_raises_no_warning(): void
+    {
+        $this->createFilePage();
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->assertNull($this->healthItem('file_content_mode'));
+    }
+
+    public function test_outside_production_the_file_save_mode_raises_no_warning(): void
+    {
+        // Choosing it while developing is the ordinary way to work.
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $this->createFilePage();
+
+        $this->assertNull($this->healthItem('file_content_mode'));
+    }
+
     public function test_an_html_front_page_names_every_part_as_script_capable(): void
     {
         $this->assertSame(
@@ -403,6 +433,16 @@ class FrontFileContentPublishTest extends TestCase
         ])->assertRedirect(route('admin.front.edit'));
 
         return FrontPage::findByType('main_content');
+    }
+
+    /**
+     * One item of the dashboard's site health list, or null when absent
+     *
+     * @return array<string, mixed>|null
+     */
+    private function healthItem(string $key): ?array
+    {
+        return collect(DashboardPresenter::siteHealth($this->admin))->firstWhere('key', $key);
     }
 
     private function content(FrontPage $page): ?string
