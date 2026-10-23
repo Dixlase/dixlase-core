@@ -37,12 +37,14 @@ namespace App\Console\Commands;
 
 use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\EnforcesExtensionRequirements;
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\ExtensionSource;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
+use App\Services\ExtensionOperationService;
 use App\Services\ThemeMigrator;
 use App\Support\ComposerLocalManifest;
 use Illuminate\Console\Command;
@@ -54,13 +56,14 @@ class ThemeInstall extends Command
 {
     use BuildsExtensionAssets;
     use EnforcesExtensionRequirements;
+    use RecordsExtensionOperation;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:theme:install {themeName : The directory name of the theme to install} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the theme to, for a theme placed on disk by hand (git clone) rather than downloaded from a source}';
+    protected $signature = 'dls:theme:install {themeName : The directory name of the theme to install} {--force : Force reinstall even if already registered} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the theme to, for a theme placed on disk by hand (git clone) rather than downloaded from a source} {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -164,6 +167,16 @@ class ThemeInstall extends Command
             ]);
 
             $this->info('Theme migrations and seeders completed.');
+
+            // A reinstall over the registered row, recorded as an install
+            // the way the admin panel always has.
+            $existing = Theme::where('slug', $slug)->firstOrFail();
+            $this->recordExtensionOperation(ExtensionOperationService::TYPE_THEME, ExtensionOperationService::OPERATION_INSTALLED, $existing, [
+                'name' => $existing->name,
+                'slug' => $existing->slug,
+                'version' => $existing->version,
+                'health_status' => $this->extensionHealthStatus(ExtensionOperationService::TYPE_THEME, (string) $existing->slug, rescan: true),
+            ]);
 
             return Command::SUCCESS;
         }
@@ -384,6 +397,13 @@ class ThemeInstall extends Command
         // request does not write to storage/framework/views/ mid-navigation
         // (Vite cancels the navigation in dev — see the helper's class docblock).
         \App\Services\View\CompiledViewCacheRebuilder::rebuild();
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_THEME, ExtensionOperationService::OPERATION_INSTALLED, $theme, [
+            'name' => $theme->name,
+            'slug' => $theme->slug,
+            'version' => $theme->version,
+            'health_status' => $this->extensionHealthStatus(ExtensionOperationService::TYPE_THEME, (string) $theme->slug, rescan: true),
+        ]);
 
         $this->info(__('admin/command/theme-install.registered', ['themeName' => $themeName]));
         $this->info(__('admin/command/theme-install.enable_help', ['themeName' => $themeName]));

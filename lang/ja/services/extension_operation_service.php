@@ -34,6 +34,7 @@
  */
 
 return [
+    'delete' => '削除',
     'disable' => '無効化',
     'enable' => '有効化',
     'install' => 'インストール',

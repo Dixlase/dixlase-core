@@ -35,20 +35,25 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
+use App\Services\ExtensionOperationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 class ThemeDelete extends Command
 {
+    use RecordsExtensionOperation;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'dls:theme:delete {themeDirectory : The directory name of the theme to delete}
-                            {--force : Force delete without confirmation}';
+                            {--force : Force delete without confirmation}
+                            {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -138,6 +143,10 @@ class ThemeDelete extends Command
             }
         }
 
+        // What the files said they were, read before they go.
+        $manifest = json_decode((string) @file_get_contents($themePath.'/theme.json'), true);
+        $manifest = is_array($manifest) ? $manifest : [];
+
         // Delete directory
         try {
             File::deleteDirectory($themePath);
@@ -157,6 +166,12 @@ class ThemeDelete extends Command
         // Update composer.local.json
         ComposerLocalHelper::syncAutoload();
         $this->info(__('console/commands/theme_delete.updated_composer_local_json'));
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_THEME, ExtensionOperationService::OPERATION_DELETED, null, [
+            'name' => $theme !== null ? $theme->name : $themeDirectory,
+            'slug' => $theme !== null ? $theme->slug : (is_string($manifest['slug'] ?? null) ? $manifest['slug'] : null),
+            'version' => $theme !== null ? $theme->version : (is_string($manifest['version'] ?? null) ? $manifest['version'] : null),
+        ]);
 
         $this->info(__('admin/command/theme-delete.completed', ['directory' => $themeDirectory]));
 

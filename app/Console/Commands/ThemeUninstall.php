@@ -35,8 +35,10 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceSidecar;
+use App\Services\ExtensionOperationService;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -44,6 +46,8 @@ use Illuminate\Filesystem\Filesystem;
 
 class ThemeUninstall extends Command
 {
+    use RecordsExtensionOperation;
+
     /**
      * The name and signature of the console command.
      *
@@ -52,7 +56,8 @@ class ThemeUninstall extends Command
     protected $signature = 'dls:theme:uninstall 
                             {themeName : The name of the theme to uninstall}
                             {--rollback : Rollback database migrations}
-                            {--force : Force uninstall even if theme is enabled}';
+                            {--force : Force uninstall even if theme is enabled}
+                            {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -147,6 +152,12 @@ class ThemeUninstall extends Command
         if ($manifestPath !== null) {
             $sidecar->restoreFromRow(dirname($manifestPath), $theme);
         }
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_THEME, ExtensionOperationService::OPERATION_UNINSTALLED, $theme, [
+            'name' => $theme->name,
+            'slug' => $theme->slug,
+            'version' => $theme->version,
+        ]);
 
         $this->info(__('admin/command/theme-uninstall.uninstalled', ['themeName' => $theme->name]));
         $this->info(__('admin/command/theme-uninstall.files_preserved'));
