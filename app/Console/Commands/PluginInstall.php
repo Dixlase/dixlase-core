@@ -39,11 +39,14 @@ use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
+use App\Models\Plugin;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
+use App\Services\ExtensionOperationService;
 use App\Services\Licensing\LicenseCompatibilityChecker;
 use App\Services\PluginMigrator;
 use App\Support\ComposerLocalManifest;
@@ -60,13 +63,14 @@ class PluginInstall extends Command
     use EnforcesExtensionRequirements;
     use GuardsExtensionActivation;
     use PluginManagementTrait;
+    use RecordsExtensionOperation;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing; with --enable, also proceed when the health check asks for confirmation (a blocked plugin is still refused)} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the plugin to, for a plugin placed on disk by hand (git clone) rather than by dls:plugin:download --extract}';
+    protected $signature = 'dls:plugin:install {pluginName : The name of the plugin to install} {--enable : Enable the plugin after installation} {--force : Skip the license-compatibility guard and install even when the manifest license is refused or missing; with --enable, also proceed when the health check asks for confirmation (a blocked plugin is still refused)} {--build : Force a front-end asset rebuild even when compiled assets already exist} {--skip-build : Skip the npm install / build step entirely} {--source= : ID of the extension source to link the plugin to, for a plugin placed on disk by hand (git clone) rather than by dls:plugin:download --extract} {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -164,7 +168,8 @@ class PluginInstall extends Command
         // Evaluate the manifest's `license` field against the SPDX whitelist
         // in config/licensing.php. The guard:
         //   - fails when the field is missing, malformed, or explicitly refused
-        //     (use --force to override; the failure reason is logged either way)
+        //     (use --force to override; the install's audit entry then
+        //     carries the refusal reason)
         //   - prints a soft warning on unknown SPDX values and continues
         //   - is silent on accepted values
         $licenseVerdict = $licenseChecker->evaluateForInstall($license);
@@ -178,11 +183,12 @@ class PluginInstall extends Command
                 $licenseVerdict['spdx'] ?? '(none)',
             ));
             if (! $force) {
-                $this->line('  Pass --force to install anyway (the refusal reason is recorded in the audit log).');
+                $this->line('  Pass --force to install anyway; the install is then recorded in the audit log with this refusal reason.');
 
                 return 1;
             }
             $this->warn('Proceeding despite license guard refusal because --force was passed.');
+            $this->forcedPast['license'] = (string) ($licenseVerdict['reason'] ?? $licenseVerdict['status']);
         } elseif ($licenseVerdict['verdict'] === LicenseCompatibilityChecker::VERDICT_WARN) {
             $this->warn(sprintf(
                 'License notice: %s',
@@ -352,12 +358,24 @@ class PluginInstall extends Command
         // the helper's class docblock).
         \App\Services\View\CompiledViewCacheRebuilder::rebuild();
 
+        // Recorded before the optional enable below, which records itself.
+        // The new code has not been scanned yet unless the gate did it, so
+        // scan now for the health the row and the notice report.
+        $plugin = Plugin::where('name', $pluginName)->first();
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_PLUGIN, ExtensionOperationService::OPERATION_INSTALLED, $plugin, [
+            'name' => $pluginName,
+            'slug' => $slug,
+            'version' => $version,
+            'health_status' => $this->extensionHealthStatus(ExtensionOperationService::TYPE_PLUGIN, $slug, rescan: true),
+        ]);
+
         // Confirm plugin activation (only if --enable option is not specified)
         // When running via web, interactive input is not possible, so judge only by presence of --enable option
         if ($enable) {
             return $this->call('dls:plugin:enable', [
                 'pluginName' => $pluginName,
                 '--force' => $force,
+                '--applied-by' => $this->option('applied-by'),
             ]);
         } elseif (app()->runningInConsole() && ! app()->runningUnitTests()) {
             // Show confirmation prompt only when running from CLI
@@ -367,6 +385,7 @@ class PluginInstall extends Command
                 return $this->call('dls:plugin:enable', [
                     'pluginName' => $pluginName,
                     '--force' => $force,
+                    '--applied-by' => $this->option('applied-by'),
                 ]);
             } else {
                 $this->info(__('admin/command/plugin-install.enable_skipped', [

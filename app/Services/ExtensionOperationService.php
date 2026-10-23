@@ -37,12 +37,12 @@ namespace App\Services;
 
 use App\Enums\PluginHealthStatus;
 use App\Facades\Audit;
-use App\Helpers\AdminHelper;
 use App\Mail\ExtensionOperationNotificationMail;
 use App\Models\AuditLog;
+use App\Models\Member;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -62,6 +62,8 @@ class ExtensionOperationService
 
     public const OPERATION_DISABLED = 'disabled';
 
+    public const OPERATION_DELETED = 'deleted';
+
     /**
      * Extension type constants
      */
@@ -72,17 +74,32 @@ class ExtensionOperationService
     /**
      * Record and notify extension operations
      *
+     * The lifecycle commands call this on success, whichever entry point ran
+     * them (dixlase-core#630), so an operation is recorded once whether it
+     * came from the admin panel or the command line. The admin panel names
+     * its member through the command's --applied-by option; a command-line
+     * run records no member, and the row's actor_source says `cli`.
+     *
      * @param  string  $type  Extension type (plugin/theme)
-     * @param  string  $operation  Operation type (installed/uninstalled/enabled/disabled)
+     * @param  string  $operation  Operation type (installed/uninstalled/enabled/disabled/deleted)
      * @param  array  $extensionData  Extension detail data
+     * @param  Member|null  $actor  The member who asked for it; null on the command line
+     * @param  Model|null  $target  The extension row, when one exists (a deleted directory may have none)
+     * @param  array<string, mixed>  $context  Extra audit context, e.g. what --force overrode
      */
-    public function recordOperation(string $type, string $operation, array $extensionData): void
-    {
-        $details = $this->buildOperationDetails($type, $operation, $extensionData);
+    public function recordOperation(
+        string $type,
+        string $operation,
+        array $extensionData,
+        ?Member $actor = null,
+        ?Model $target = null,
+        array $context = [],
+    ): void {
+        $details = $this->buildOperationDetails($type, $operation, $extensionData, $actor);
 
         // Log the operation
         if ($this->shouldLogOperation()) {
-            $this->logOperation($details, $operation);
+            $this->logOperation($details, $operation, $actor, $target, $context);
         }
 
         // Email notification
@@ -92,17 +109,15 @@ class ExtensionOperationService
     /**
      * Build operation detail data
      */
-    protected function buildOperationDetails(string $type, string $operation, array $extensionData): array
+    protected function buildOperationDetails(string $type, string $operation, array $extensionData, ?Member $member): array
     {
-        $member = $this->getCurrentMember();
-
         return [
             'type' => $type,
             'name' => $extensionData['name'] ?? 'Unknown',
             'slug' => $extensionData['slug'] ?? null,
             'version' => $extensionData['version'] ?? null,
             'health_status' => $extensionData['health_status'] ?? $extensionData['risk_level'] ?? 'unknown',
-            'operated_by' => $member ? ($member->display_name ?? $member->account_name) : 'System',
+            'operated_by' => $member ? ($member->getAttribute('display_name') ?? $member->getAttribute('account_name')) : 'System',
             'operated_by_id' => $member ? $member->id : null,
             'operated_at' => now()->format('Y-m-d H:i:s'),
             'operation' => $operation,
@@ -110,28 +125,9 @@ class ExtensionOperationService
     }
 
     /**
-     * Safely get the current logged-in member
-     * Return null when auth guard is unavailable, such as during Artisan command execution
-     */
-    protected function getCurrentMember(): ?object
-    {
-        try {
-            // Check if admin guard is defined
-            if (! config('auth.guards.admin')) {
-                return null;
-            }
-
-            return Auth::guard('admin')->user();
-        } catch (\Exception $e) {
-            // When guard is unavailable (e.g., CLI)
-            return null;
-        }
-    }
-
-    /**
      * Log the operation (integrated with audit log)
      */
-    protected function logOperation(array $details, string $operation): void
+    protected function logOperation(array $details, string $operation, ?Member $actor, ?Model $target, array $context): void
     {
         // Determine audit log action
         $action = $this->getAuditAction($details['type'], $operation);
@@ -142,15 +138,14 @@ class ExtensionOperationService
 
         $severity = $isUnhealthy ? AuditLog::SEVERITY_WARNING : AuditLog::SEVERITY_NOTICE;
 
-        // Get the operator
-        $actor = AdminHelper::getMember();
-
         // Record to audit log
         Audit::logExtension($action, [
             'actor' => $actor,
+            'target' => $target,
+            'target_label' => $details['slug'] ?? $details['name'],
             'outcome' => AuditLog::OUTCOME_SUCCESS,
             'severity' => $severity,
-            'context' => [
+            'context' => $context + [
                 'message' => $this->getOperationMessage($details, $operation),
                 'extension_type' => $details['type'],
                 'extension_name' => $details['name'],
@@ -173,12 +168,14 @@ class ExtensionOperationService
                 self::OPERATION_UNINSTALLED => AuditLog::ACTION_PLUGIN_UNINSTALLED,
                 self::OPERATION_ENABLED => AuditLog::ACTION_PLUGIN_ENABLED,
                 self::OPERATION_DISABLED => AuditLog::ACTION_PLUGIN_DISABLED,
+                self::OPERATION_DELETED => AuditLog::ACTION_PLUGIN_DELETED,
             ],
             self::TYPE_THEME => [
                 self::OPERATION_INSTALLED => AuditLog::ACTION_THEME_INSTALLED,
                 self::OPERATION_UNINSTALLED => AuditLog::ACTION_THEME_UNINSTALLED,
                 self::OPERATION_ENABLED => AuditLog::ACTION_THEME_ENABLED,
                 self::OPERATION_DISABLED => AuditLog::ACTION_THEME_DISABLED,
+                self::OPERATION_DELETED => AuditLog::ACTION_THEME_DELETED,
             ],
         ];
 
@@ -196,6 +193,7 @@ class ExtensionOperationService
             self::OPERATION_UNINSTALLED => __('services/extension_operation_service.uninstall'),
             self::OPERATION_ENABLED => __('services/extension_operation_service.enable'),
             self::OPERATION_DISABLED => __('services/extension_operation_service.disable'),
+            self::OPERATION_DELETED => __('services/extension_operation_service.delete'),
         ];
         $operationLabel = $operationLabels[$operation] ?? $operation;
 

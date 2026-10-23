@@ -34,6 +34,7 @@
  */
 
 return [
+    'delete' => 'Delete',
     'disable' => 'Disable',
     'enable' => 'Enable',
     'install' => 'Install',

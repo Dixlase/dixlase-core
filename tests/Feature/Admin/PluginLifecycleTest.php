@@ -235,7 +235,7 @@ class PluginLifecycleTest extends TestCase
 
         // disable コマンドが呼ばれたら enabled_at を null に
         Artisan::shouldReceive('call')
-            ->with('dls:plugin:disable', ['pluginName' => $meta['name']])
+            ->with('dls:plugin:disable', ['pluginName' => $meta['name'], '--applied-by' => $this->admin->id])
             ->once()
             ->andReturnUsing(function ($cmd, $opts) use ($meta) {
                 Plugin::where('name', $meta['name'])->update(['enabled_at' => null]);
@@ -260,7 +260,7 @@ class PluginLifecycleTest extends TestCase
             ->andReturn(0);
         Artisan::shouldReceive('output')->andReturn('{}');
         Artisan::shouldReceive('call')
-            ->with('dls:plugin:enable', ['pluginName' => $meta['name'], '--force' => true])
+            ->with('dls:plugin:enable', ['pluginName' => $meta['name'], '--force' => true, '--applied-by' => $this->admin->id])
             ->once()
             ->andReturnUsing(function ($cmd, $opts) use ($meta) {
                 Plugin::where('name', $meta['name'])->update(['enabled_at' => now()]);
@@ -412,7 +412,7 @@ class PluginLifecycleTest extends TestCase
         ]);
 
         Artisan::shouldReceive('call')
-            ->with('dls:plugin:disable', ['pluginName' => $meta['name']])
+            ->with('dls:plugin:disable', ['pluginName' => $meta['name'], '--applied-by' => $this->admin->id])
             ->once()
             ->andReturnUsing(function ($cmd, $opts) use ($meta) {
                 Plugin::where('name', $meta['name'])->update(['enabled_at' => null]);
