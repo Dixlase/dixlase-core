@@ -42,6 +42,7 @@ use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
 use App\Models\FrontSetting;
 use App\Models\Member;
+use App\Presenters\Admin\DashboardPresenter;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\FileContentRegistry;
 use App\Services\FrontPageContentService;
@@ -181,17 +182,18 @@ class FrontFileContentPublishTest extends TestCase
         $this->assertSame(0, AuditLog::where('action', 'front_page.published_from_file')->count());
     }
 
-    public function test_under_the_file_save_mode_a_change_goes_live(): void
+    public function test_under_the_file_save_mode_a_markdown_body_goes_live(): void
     {
         FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
-        $page = $this->createFilePage();
-        Storage::disk('local')->put('core/front/style.css', 'body { color: blue; }');
+        $page = $this->createMarkdownFilePage();
+        Storage::disk('local')->put('core/front/content.md', '# Edited on disk');
 
-        $this->assertSame('body { color: blue; }', $this->css($page));
-        $this->assertSame('body { color: blue; }', $page->fresh()->custom_css);
+        $this->assertSame('# Edited on disk', $this->content($page));
+        $this->assertSame('# Edited on disk', $page->fresh()->content);
 
         $log = AuditLog::where('action', 'front_page.file_changed')->sole();
-        $this->assertSame(['custom_css'], $log->context['parts']);
+        $this->assertSame(['content'], $log->context['parts']);
+        $this->assertSame([], $log->context['held']);
         $this->assertTrue($log->context['published']);
         $this->assertSame(0, app(FileContentRegistry::class)->pendingCount());
 
@@ -199,7 +201,81 @@ class FrontFileContentPublishTest extends TestCase
         $this->assertSame(FrontPageRevision::TYPE_AUTO, $revision->type);
     }
 
-    public function test_switching_to_the_file_save_mode_takes_in_a_waiting_change(): void
+    public function test_under_the_file_save_mode_a_script_capable_part_still_waits(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $page = $this->createFilePage();
+        Storage::disk('local')->put('core/front/style.css', 'body { color: blue; }');
+
+        // The site keeps rendering the reviewed copy.
+        $this->assertSame('body { color: red; }', $this->css($page));
+        $this->assertSame('body { color: red; }', $page->fresh()->custom_css);
+
+        $log = AuditLog::where('action', 'front_page.file_changed')->sole();
+        $this->assertSame(ContentPublishMode::FILE_SAVE->value, $log->context['publish_mode']);
+        $this->assertSame(['custom_css'], $log->context['parts']);
+        $this->assertSame(['custom_css'], $log->context['held']);
+        $this->assertFalse($log->context['published']);
+        $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
+
+        // Nothing went live, so nothing was recorded as an automatic revision.
+        $this->assertSame(0, FrontPageRevision::where('front_page_id', $page->id)
+            ->where('type', FrontPageRevision::TYPE_AUTO)->count());
+    }
+
+    public function test_under_the_file_save_mode_an_html_body_still_waits(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $page = $this->createFilePage();
+        Storage::disk('local')->put('core/front/content.html', '<h1>Edited on disk</h1>');
+
+        $this->assertSame('<h1>Published</h1>', $this->content($page));
+
+        $log = AuditLog::where('action', 'front_page.file_changed')->sole();
+        $this->assertSame(['content'], $log->context['held']);
+    }
+
+    public function test_a_held_part_is_recorded_once_however_often_the_page_is_rendered(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $page = $this->createFilePage();
+        Storage::disk('local')->put('core/front/script.js', 'console.log(2);');
+
+        // A held part keeps the two hashes apart for as long as it is held,
+        // and check() runs on every render of a public page.
+        for ($i = 0; $i < 5; $i++) {
+            $this->content($page->fresh());
+        }
+
+        $this->assertSame(1, AuditLog::where('action', 'front_page.file_changed')->count());
+    }
+
+    public function test_a_further_file_change_after_a_held_one_is_recorded(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $page = $this->createFilePage();
+
+        Storage::disk('local')->put('core/front/script.js', 'console.log(2);');
+        $this->content($page->fresh());
+
+        Storage::disk('local')->put('core/front/script.js', 'console.log(3);');
+        $this->content($page->fresh());
+
+        $this->assertSame(2, AuditLog::where('action', 'front_page.file_changed')->count());
+    }
+
+    public function test_switching_to_the_file_save_mode_takes_in_a_waiting_markdown_body(): void
+    {
+        $page = $this->createMarkdownFilePage();
+        Storage::disk('local')->put('core/front/content.md', '# Edited on disk');
+        $this->assertSame('# Published', $this->content($page));
+
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+
+        $this->assertSame('# Edited on disk', $this->content($page->fresh()));
+    }
+
+    public function test_switching_to_the_file_save_mode_leaves_a_script_capable_part_waiting(): void
     {
         $page = $this->createFilePage();
         Storage::disk('local')->put('core/front/content.html', '<h1>Edited on disk</h1>');
@@ -207,7 +283,55 @@ class FrontFileContentPublishTest extends TestCase
 
         FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
 
-        $this->assertSame('<h1>Edited on disk</h1>', $this->content($page->fresh()));
+        $this->assertSame('<h1>Published</h1>', $this->content($page->fresh()));
+        $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
+    }
+
+    public function test_a_production_site_on_the_file_save_mode_is_warned(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $this->createFilePage();
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $item = $this->healthItem('file_content_mode');
+
+        $this->assertNotNull($item);
+        $this->assertSame('warning', $item['status']);
+    }
+
+    public function test_the_admin_mode_raises_no_warning(): void
+    {
+        $this->createFilePage();
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->assertNull($this->healthItem('file_content_mode'));
+    }
+
+    public function test_outside_production_the_file_save_mode_raises_no_warning(): void
+    {
+        // Choosing it while developing is the ordinary way to work.
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $this->createFilePage();
+
+        $this->assertNull($this->healthItem('file_content_mode'));
+    }
+
+    public function test_an_html_front_page_names_every_part_as_script_capable(): void
+    {
+        $this->assertSame(
+            ['content', 'custom_css', 'custom_js'],
+            app(FileContentPublisher::class)->scriptCapableParts($this->createFilePage()),
+        );
+    }
+
+    public function test_a_markdown_front_page_names_no_part_as_script_capable(): void
+    {
+        // A Markdown body cannot carry a script, and such a page has no
+        // custom CSS or JS part at all, so nothing of it is ever held back.
+        $this->assertSame(
+            [],
+            app(FileContentPublisher::class)->scriptCapableParts($this->createMarkdownFilePage()),
+        );
     }
 
     public function test_a_missing_css_file_counts_as_empty(): void
@@ -294,6 +418,31 @@ class FrontFileContentPublishTest extends TestCase
         ])->assertRedirect(route('admin.front.edit'));
 
         return FrontPage::findByType('main_content');
+    }
+
+    /**
+     * A file-stored page whose only part is a body that cannot carry a script
+     */
+    private function createMarkdownFilePage(): FrontPage
+    {
+        $this->actingAs($this->admin, 'member')->post(route('admin.front.store'), [
+            'lang' => 'en',
+            'editor_type' => ContentEditorType::MARKDOWN->slug(),
+            'storage_type' => 'file',
+            'content' => '# Published',
+        ])->assertRedirect(route('admin.front.edit'));
+
+        return FrontPage::findByType('main_content');
+    }
+
+    /**
+     * One item of the dashboard's site health list, or null when absent
+     *
+     * @return array<string, mixed>|null
+     */
+    private function healthItem(string $key): ?array
+    {
+        return collect(DashboardPresenter::siteHealth($this->admin))->firstWhere('key', $key);
     }
 
     private function content(FrontPage $page): ?string

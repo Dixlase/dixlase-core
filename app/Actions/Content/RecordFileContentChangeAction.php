@@ -66,6 +66,9 @@ class RecordFileContentChangeAction extends AbstractAction
     /** @var list<string> */
     private array $parts = [];
 
+    /** @var list<string> The changed parts this mode did not take in */
+    private array $held = [];
+
     /**
      * @param  PublishesFileContent&Model  $model
      * @param  array<string, string>  $files  The files as just read
@@ -98,24 +101,35 @@ class RecordFileContentChangeAction extends AbstractAction
         $this->parts = $this->publisher->changedParts($this->model, $this->files);
         $fileHash = FileContentPublisher::hash($this->files);
 
-        if ($this->mode === ContentPublishMode::FILE_SAVE) {
+        $taken = $this->publisher->takeableParts($this->model, $this->files);
+        $this->held = array_values(array_diff($this->parts, $taken));
+
+        if ($taken !== []) {
+            // Only the parts this mode may take in. A part that can carry a
+            // script is left on the record as it was published, so the site
+            // keeps rendering the reviewed copy until someone publishes the
+            // new one from the admin.
+            $columns = $this->model->fileContentParts();
             $values = [];
-            foreach ($this->model->fileContentParts() as $part => $column) {
-                $values[$column] = $this->files[$part];
+            foreach ($taken as $part) {
+                $values[$columns[$part]] = $this->files[$part];
             }
             $this->model->forceFill($values)->save();
-            $this->publisher->storeHashes($this->model, $fileHash, $fileHash);
 
             if ($this->model instanceof Revisionable) {
                 app(RevisionService::class)->record($this->model, RevisionService::TYPE_AUTO);
             }
-        } else {
-            $this->publisher->storeHashes(
-                $this->model,
-                FileContentPublisher::hash($this->publisher->publishedParts($this->model)),
-                $fileHash,
-            );
         }
+
+        // The published hash comes from the columns as they now stand -- a
+        // mix of what was just taken in and what was held -- and the file
+        // hash from the files. The two are equal only when nothing was held,
+        // so a held part keeps the record pending without being asked to.
+        $this->publisher->storeHashes(
+            $this->model,
+            FileContentPublisher::hash($this->publisher->publishedParts($this->model)),
+            $fileHash,
+        );
 
         return ActionResult::success($this->model);
     }
@@ -145,7 +159,15 @@ class RecordFileContentChangeAction extends AbstractAction
         return [
             'publish_mode' => $this->mode->value,
             'parts' => $this->parts,
-            'published' => $this->mode === ContentPublishMode::FILE_SAVE,
+            // The parts that were not taken in and are waiting to be
+            // published from the admin. Under the admin mode that is every
+            // changed part; under the file save mode, the ones that may
+            // carry a script.
+            'held' => $this->held,
+            // True only when the whole change went live. It used to be "the
+            // mode is file save", which stopped being the same thing once a
+            // part can be held.
+            'published' => $this->held === [],
         ];
     }
 }
