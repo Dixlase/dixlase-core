@@ -51,7 +51,7 @@ use Throwable;
  * enough for an operator to find it, rarely enough not to flood the log of a
  * site that is serving every request with the same broken plugin.
  *
- * @api Stable API available for plugins/themes
+ * @internal Core wiring. Read by core's own surfaces, not by plugins.
  */
 class PluginBootFailures
 {
