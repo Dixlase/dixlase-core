@@ -34,7 +34,7 @@
  */
 
 return [
-    'title' => '二段階認証管理',
+    'title' => '多要素認証管理',
     'passkey_devices' => 'Passkeyデバイス',
     'no_passkey_devices' => 'Passkeyデバイスが登録されていません',
     'add_passkey' => 'Passkeyを追加',
@@ -43,7 +43,7 @@ return [
     'registered_at' => '登録日時',
     'last_used' => '最終使用',
     'passkey_info_title' => 'Passkeyについて',
-    'passkey_info_1' => 'デバイスを登録すると、二段階認証で認証コードを入力する必要がなくなります。',
+    'passkey_info_1' => 'デバイスを登録すると、多要素認証で認証コードを入力する必要がなくなります。',
     'passkey_info_2' => '生体認証（指紋認証、顔認証など）またはデバイスのPINでログインできます。',
     'passkey_info_3' => 'Touch ID、Face ID、Windows Helloなどに対応しています。',
     'passkey_info_4' => '管理者はPasskeyデバイスの追加はできません。メンバー本人のみが実行できます。',
@@ -58,7 +58,7 @@ return [
     'recovery_codes_regenerate' => '回復コードを再生成',
     'recovery_codes_generate' => '回復コードを生成',
     'recovery_codes_info_title' => '回復コードについて',
-    'recovery_codes_info_1' => '回復コードは二段階認証デバイスにアクセスできない場合に使用します',
+    'recovery_codes_info_1' => '回復コードは多要素認証デバイスにアクセスできない場合に使用します',
     'recovery_codes_info_2' => '各コードは1回のみ使用できます',
     'recovery_codes_info_3' => '安全な場所に保管してください',
     'recovery_codes_info_4' => 'コードを紛失した場合は再生成できます',
@@ -79,7 +79,7 @@ return [
     'unknown_device' => '不明なデバイス',
     'ip_address' => 'IPアドレス',
     'trusted_devices_info_title' => '信頼済みデバイスについて',
-    'trusted_devices_info_1' => '信頼済みデバイスでは二段階認証がスキップされます',
+    'trusted_devices_info_1' => '信頼済みデバイスでは多要素認証がスキップされます',
     'trusted_devices_info_2' => 'セキュリティのため、定期的に見直すことを推奨します',
     'trusted_devices_info_3' => '不要なデバイスは削除してください',
     'confirm_delete_trusted_device' => '本当にこの信頼済みデバイスを削除しますか？',

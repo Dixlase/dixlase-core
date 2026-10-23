@@ -37,10 +37,10 @@ return [
     // 基本
     'updated' => '認証設定が更新されました。',
 
-    // 二段階認証基本設定
-    'two_fa_basic_settings' => '二段階認証基本設定',
-    'two_fa_basic_settings_description' => '二段階認証の基本的な動作を設定します。',
-    'mail_server_test_warning' => '二段階認証を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
+    // 多要素認証基本設定
+    'two_fa_basic_settings' => '多要素認証基本設定',
+    'two_fa_basic_settings_description' => '多要素認証の基本的な動作を設定します。',
+    'mail_server_test_warning' => '多要素認証を使用するには、<a href=":url" class="text-blue-600 dark:text-blue-400 hover:underline">基本設定</a>でメールサーバー設定とメールテストをすべて完了してください。',
 
     // パスキーデバイス管理設定
     'passkey_device_management' => 'パスキーデバイス管理設定',
@@ -49,9 +49,9 @@ return [
     'passkey_max_devices_help' => '1人のユーザーが登録できるパスキーデバイスの最大数。1〜10台の範囲で設定できます。',
     'devices_unit' => '台',
 
-    // 二段階認証詳細設定
-    'two_fa_detailed_settings' => '二段階認証詳細設定',
-    'two_fa_detailed_settings_description' => '二段階認証の詳細な動作を設定します。',
+    // 多要素認証詳細設定
+    'two_fa_detailed_settings' => '多要素認証詳細設定',
+    'two_fa_detailed_settings_description' => '多要素認証の詳細な動作を設定します。',
 
     'two_fa_expire_minutes' => 'コード有効期限',
     'two_fa_expire_minutes_help' => '認証コードの有効期限（分）。1〜60分の範囲で設定できます。',
