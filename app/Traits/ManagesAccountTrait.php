@@ -83,11 +83,18 @@ trait ManagesAccountTrait
             $sessionTable = $isMember ? 'members_sessions' : 'users_sessions';
             $idColumn = $isMember ? 'member_id' : 'user_id';
 
+            $sessions = 0;
+
             if (DB::getSchemaBuilder()->hasTable($sessionTable)) {
-                DB::table($sessionTable)
+                $sessions = DB::table($sessionTable)
                     ->where($idColumn, $model->id)
                     ->delete();
             }
+
+            // This logs the account out of every device, like a force logout,
+            // so it is recorded the same way. Written before the mail goes
+            // out: the reset has already happened even if sending fails.
+            MemberSecurityAudit::record(AuditLog::ACTION_EMAIL_VERIFICATION_RESET, $model, ['sessions' => $sessions]);
 
             $model->sendEmailVerificationNotification('resend');
 

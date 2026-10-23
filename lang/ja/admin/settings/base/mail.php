@@ -52,7 +52,7 @@ return [
     'view_messages' => [
         'mail_test_complete' => 'メール機能テスト完了',
         'mail_test_incomplete' => 'メール機能テスト未完了',
-        'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、二段階認証機能を使用するには、すべてのメールテストを完了してください。',
+        'mail_test_warning_features' => 'メンバー全体設定のロックアウト通知、パスワードリセット、ログイン通知、多要素認証機能を使用するには、すべてのメールテストを完了してください。',
         'mail_test_warning_temporary' => 'テスト結果は一時的に保存されます。更新ボタンを押すまで、設定やテスト結果は保存されません。',
         'connection_test' => 'サーバー接続テスト',
         'send_test' => 'メール送信テスト',

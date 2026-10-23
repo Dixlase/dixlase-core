@@ -105,8 +105,8 @@ return [
         'datetime' => '日時',
         'timestamp' => '日時',
         'email' => [
-            'subject' => '【:app_name】二段階認証コード',
-            'greeting' => '二段階認証',
+            'subject' => '【:app_name】多要素認証コード',
+            'greeting' => '多要素認証',
             'message' => 'ログインするには、以下の認証コードを入力してください。',
             'instructions' => 'このコードは10分間有効です。心当たりがない場合は、このメールを無視してください。',
         ],

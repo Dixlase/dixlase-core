@@ -63,7 +63,7 @@ return [
         'password' => 'パスワード設定',
         'appearance' => '外観設定',
         'notifications' => '通知設定',
-        'two_fa' => '二段階認証',
+        'two_fa' => '多要素認証',
         'two_fa_management' => 'パスキー・コード',
     ],
     'settings' => [
@@ -85,7 +85,7 @@ return [
             'password' => 'パスワード',
             'login_attempt' => 'ログイン',
             'session' => 'セッション',
-            'two-fa' => '二段階認証',
+            'two-fa' => '多要素認証',
             'captcha' => 'CAPTCHA',
             'ip' => 'IPアクセス制御',
             'extensions' => '拡張機能',

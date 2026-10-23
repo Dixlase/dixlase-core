@@ -88,6 +88,6 @@ return [
     'system_notifications_enabled' => 'システム通知を有効にするか',
     'theme_max_health_level' => 'テーマの最大許可健全性レベル',
     'trusted_domains' => '信頼済みドメイン（改行区切り）',
-    'two_factor_auth_mode' => '二段階認証モード（optional/required/disabled）',
-    'two_factor_auth_toggle' => '二段階認証の有効/無効',
+    'two_factor_auth_mode' => '多要素認証モード（optional/required/disabled）',
+    'two_factor_auth_toggle' => '多要素認証の有効/無効',
 ];

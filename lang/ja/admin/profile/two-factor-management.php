@@ -34,6 +34,6 @@
  */
 
 return [
-    'heading' => '二段階認証管理',
+    'heading' => '多要素認証管理',
     'description' => 'Passkeyデバイスと回復コードを管理します。',
 ];

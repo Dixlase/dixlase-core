@@ -46,7 +46,7 @@ return [
         ],
         'unlock_lockout' => [
             'title' => 'ロックアウト解除確認',
-            'message' => ':name のログインおよび二段階認証のロックアウトを解除しますか？',
+            'message' => ':name のログインおよび多要素認証のロックアウトを解除しますか？',
             'confirm' => 'ロックアウト解除',
         ],
         'delete' => [

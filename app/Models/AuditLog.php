@@ -215,6 +215,8 @@ class AuditLog extends Model
 
     public const ACTION_EMAIL_CHANGED = 'email_changed';
 
+    public const ACTION_EMAIL_VERIFICATION_RESET = 'email_verification_reset';
+
     // ========================================
     // Action constants - Two-FA related
     // ========================================
@@ -784,7 +786,8 @@ class AuditLog extends Model
 
         $accountActions = [
             self::ACTION_PASSWORD_CHANGED, self::ACTION_PASSWORD_RESET,
-            self::ACTION_EMAIL_CHANGED, self::ACTION_TWO_FA_ENABLED,
+            self::ACTION_EMAIL_CHANGED, self::ACTION_EMAIL_VERIFICATION_RESET,
+            self::ACTION_TWO_FA_ENABLED,
             self::ACTION_TWO_FA_DISABLED, self::ACTION_RECOVERY_CODE_USED,
             self::ACTION_PASSKEY_REGISTERED, self::ACTION_PASSKEY_REVOKED,
             self::ACTION_RECOVERY_CODES_GENERATED, self::ACTION_RECOVERY_CODES_REVOKED,
@@ -868,6 +871,7 @@ class AuditLog extends Model
             self::ACTION_PASSWORD_CHANGED, self::ACTION_EMAIL_CHANGED,
             self::ACTION_TWO_FA_DISABLED, self::ACTION_IP_BLOCKED,
             self::ACTION_FORCED_LOGOUT, self::ACTION_SESSION_DESTROYED,
+            self::ACTION_EMAIL_VERIFICATION_RESET,
             self::ACTION_API_KEYS_REVOKED_ALL, self::ACTION_DEVICE_BLOCKED,
             self::ACTION_MEMBER_DELETED, self::ACTION_RECOVERY_CODES_REVOKED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
@@ -961,6 +965,7 @@ class AuditLog extends Model
             self::ACTION_MEMBER_DELETED,        // Member deletion
             self::ACTION_FORCED_LOGOUT,         // Force logout
             self::ACTION_SESSION_DESTROYED,     // One session revoked by an administrator
+            self::ACTION_EMAIL_VERIFICATION_RESET, // Verification reset, every session ended
             self::ACTION_TWO_FA_DISABLED,          // 2FA disabled
             self::ACTION_DEVICE_BLOCKED,        // Device blocked
             self::ACTION_DEVICE_REMOVED,        // Device deleted
@@ -1076,6 +1081,7 @@ class AuditLog extends Model
             self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
             self::ACTION_STEP_UP_AUTH_COMPLETED, self::ACTION_SESSION_CREATED,
             self::ACTION_SESSION_DESTROYED, self::ACTION_FORCED_LOGOUT,
+            self::ACTION_EMAIL_VERIFICATION_RESET,
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
             self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
@@ -1128,6 +1134,7 @@ class AuditLog extends Model
             self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
             self::ACTION_STEP_UP_AUTH_COMPLETED, self::ACTION_SESSION_CREATED,
             self::ACTION_SESSION_DESTROYED, self::ACTION_FORCED_LOGOUT,
+            self::ACTION_EMAIL_VERIFICATION_RESET,
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
             self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
