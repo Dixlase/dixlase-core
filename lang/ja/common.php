@@ -532,6 +532,29 @@ return [
         'scheduled' => '日付指定',
     ],
 
+    'content_publish_mode' => [
+        'label' => 'ファイルの変更の公開のしかた',
+        'admin' => '管理画面で公開する',
+        'admin_description' => 'サイトには、最後に公開した版を表示します。ファイルの変更は編集画面に表示され、そこで公開すると反映されます。おすすめです。',
+        'file_save' => 'ファイルの保存で即時公開',
+        'file_save_description' => 'サイトには、ファイルをそのまま表示します。ファイルの変更はすぐに反映され、監査ログに記録されます。',
+    ],
+
+    'file_changes' => [
+        'title' => 'ファイルに、公開していない変更があります',
+        'description' => '管理画面の外で、ファイルが変更されました。公開するまで、サイトには公開済みの版が表示されます。',
+        'published' => '公開済み',
+        'file' => 'ファイル',
+        'publish' => '公開する',
+        'confirm_title' => 'ファイルの変更を公開',
+        'confirm_message' => 'ファイルの変更を公開しますか？ サイトにすぐ反映されます。',
+        'view_only' => '変更は確認できますが、公開するには編集の権限が必要です。',
+        'nothing_to_publish' => 'ファイルに、公開する変更はありません。',
+        'part_content' => 'コンテンツ',
+        'part_custom_css' => 'カスタム CSS',
+        'part_custom_js' => 'カスタム JS',
+    ],
+
     'content_storage' => [
         'label' => 'コンテンツの保存方法',
         'database' => 'データベース',

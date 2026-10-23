@@ -37,15 +37,19 @@
 
 namespace App\Models;
 
+use App\Contracts\Content\PublishesFileContent;
 use App\Contracts\Revisionable;
 use App\Contracts\TranslationResolver;
 use App\Enums\ContentEditorType;
+use App\Enums\ContentPublishMode;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Helpers\LocaleHelper;
 use App\Models\Traits\BelongsToSite;
+use App\Services\FrontPageContentService;
 use App\Traits\HasRevisions;
 use App\Traits\TranslatableTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
@@ -53,7 +57,7 @@ use Illuminate\Support\Facades\App;
 /**
  * Front page model
  */
-class FrontPage extends Model implements Revisionable
+class FrontPage extends Model implements PublishesFileContent, Revisionable
 {
     use BelongsToSite;
     use HasFactory;
@@ -210,5 +214,77 @@ class FrontPage extends Model implements Revisionable
             'editor_type',
             'status',
         ];
+    }
+
+    /**
+     * The front settings key holding the publish mode for file-stored content
+     */
+    public const PUBLISH_MODE_SETTING = 'publish_mode';
+
+    public function usesFileStorage(): bool
+    {
+        return $this->storage_type === ContentStorageType::FILE;
+    }
+
+    public function fileContentPublishMode(): ContentPublishMode
+    {
+        return ContentPublishMode::fromSetting(FrontSetting::getValue(self::PUBLISH_MODE_SETTING));
+    }
+
+    /**
+     * The body, plus the custom CSS and JS that only the HTML editor keeps
+     *
+     * @return array<string, string>
+     */
+    public function fileContentParts(): array
+    {
+        $parts = ['content' => 'content'];
+
+        if ($this->editorType() === ContentEditorType::HTML) {
+            $parts['custom_css'] = 'custom_css';
+            $parts['custom_js'] = 'custom_js';
+        }
+
+        return $parts;
+    }
+
+    public function fileContentPath(string $part): string
+    {
+        $files = app(FrontPageContentService::class);
+        $locale = (string) $this->lang;
+
+        return match ($part) {
+            'custom_css' => $files->getCssFilePath($this->page_type, $locale),
+            'custom_js' => $files->getJsFilePath($this->page_type, $locale),
+            default => $files->getFilePath($this->page_type, $locale, $this->editorType()->slug()),
+        };
+    }
+
+    public function fileContentDisk(): string
+    {
+        return app(FrontPageContentService::class)->getDisk();
+    }
+
+    public function fileContentAuditPrefix(): string
+    {
+        return 'front_page';
+    }
+
+    /**
+     * @return Builder<static>
+     */
+    public static function fileStoredQuery(): Builder
+    {
+        return static::query()->where('storage_type', ContentStorageType::FILE->value);
+    }
+
+    /**
+     * The editor type as the enum the cast gives
+     */
+    private function editorType(): ContentEditorType
+    {
+        $editorType = $this->editor_type;
+
+        return $editorType instanceof ContentEditorType ? $editorType : ContentEditorType::from((int) $editorType);
     }
 }

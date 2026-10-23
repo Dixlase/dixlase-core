@@ -32,6 +32,30 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ## [Unreleased]
 
+### 変更
+- ファイル保存のフロントページを、管理画面から公開するようにしました（#555）。これまでは、
+  サーバー上のファイルを書き換えるだけで、監査ログもリビジョンも残らないまま公開サイトが
+  変わっていました。サイトには最後に公開した版を表示し、ファイルの変更は監査ログに記録した
+  うえで、編集画面に差分つきで表示します。編集の権限がある人がそこで公開すると反映されます。
+  **フロントページをファイルで保存している既存のサイトでは、挙動が変わります。** これまでの
+  挙動にするには、*フロントページ → 設定* で「ファイルの保存で即時公開」を選びます。サイトは
+  ファイルに従い、変更はそのたびにリビジョンとして取り込まれ、監査ログに記録されます
+- ファイル保存のフロントページでリビジョンを復元すると、ファイルも書き戻すようにしました
+  （#555）。これまでは復元がデータベースだけを変えていたため、サイトには置き換えたはずの
+  ファイルが表示されたままでした
+- 毎日の整合性スキャンでファイル保存のコンテンツも確かめ、公開待ちのファイルの変更がある
+  コンテンツをダッシュボードに表示します（#555）
+
+### Plugin API — 追加
+- ファイル保存のコンテンツを公開する共通の仕組みを追加しました（#555）。
+  `App\Contracts\Content\PublishesFileContent`、`App\Enums\ContentPublishMode`、
+  `App\Services\Content\FileContentPublisher`、`App\Services\Content\FileContentRegistry`、
+  `App\Actions\Content\PublishFileContentAction`、`App\Support\Content\FileContentColumns` と
+  `<x-content.file-changes>` コンポーネントで、すべて `@api` です。ファイル保存を提供する拡張は、
+  ハッシュの列を足し、Contract を実装し、モデルを登録して、表示を公開の仕組みに通せば、
+  フロントページと同じ公開のしかたを使えます。`docs/ja/development/file-content-publishing.md`
+  を参照してください
+
 ## [0.1.18] — 2026-10-23
 
 ### セキュリティ

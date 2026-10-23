@@ -45,6 +45,7 @@ use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
+use App\Services\Content\FileContentPublisher;
 use App\Services\FrontPageContentService;
 use App\Services\FrontPageRevisionService;
 
@@ -116,6 +117,9 @@ class CreateFrontPageAction extends AbstractAction
             'storage_type' => $storageTypeEnum,
             'status' => ContentStatus::PUBLISHED,
         ]);
+
+        // The admin wrote the published copy and the files together
+        app(FileContentPublisher::class)->markSaved($frontPage);
 
         // Record revision on initial creation (treated as manual since it's an explicit user save)
         $this->revisionService->record(

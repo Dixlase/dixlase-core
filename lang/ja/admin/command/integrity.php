@@ -81,4 +81,5 @@ return [
     'no_notification_email' => '通知先メールアドレスが設定されていません。',
     'notification_sent' => 'アラート通知を送信しました: :email',
     'notification_failed' => '通知の送信に失敗しました: :error',
+    'file_content_checked' => 'ファイル保存のコンテンツ: :checked 件を確認、公開待ち :pending 件',
 ];

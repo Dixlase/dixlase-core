@@ -81,4 +81,5 @@ return [
     'no_notification_email' => 'Notification email address is not configured.',
     'notification_sent' => 'Alert notification sent to: :email',
     'notification_failed' => 'Failed to send notification: :error',
+    'file_content_checked' => 'File-stored content: :checked checked, :pending waiting to be published',
 ];

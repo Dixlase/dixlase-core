@@ -37,6 +37,7 @@ GitHub Issue の書き方・ラベルの付け方・閉じ方と、リリース�
 RevisionService、差分プレゼンター、Blade コンポーネントの解説。
 
 - [リビジョン](revisions.md)
+- [ファイル保存のコンテンツの公開](file-content-publishing.md)
 
 ## メンバー
 

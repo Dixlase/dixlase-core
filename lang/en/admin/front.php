@@ -115,6 +115,7 @@ return [
         'confirm_message' => 'Save the changes to the front page content?',
 
         'save_success' => 'Front page content has been updated.',
+        'publish_file_success' => 'The file changes have been published.',
 
         'sidebar_open' => 'Open sidebar',
         'sidebar_close' => 'Close sidebar',
@@ -148,7 +149,7 @@ return [
         'heading' => 'Front Page Settings',
         'description' => 'Configure front page settings.',
 
-        'no_settings' => 'No additional settings are available at this time.',
+        'publish_mode_help' => 'Applies when the front page is stored as a file. Changing it is recorded in the audit log.',
 
         'settings_updated' => 'Front page settings have been updated.',
 

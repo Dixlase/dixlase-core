@@ -39,6 +39,8 @@ use App\Mail\FileIntegrityAlertMail;
 use App\Models\FileIntegrityAudit;
 use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
+use App\Services\Content\FileContentPublisher;
+use App\Services\Content\FileContentRegistry;
 use App\Services\FileIntegrityService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
@@ -99,6 +101,12 @@ class IntegrityScan extends Command
             FileIntegrityAudit::INITIATED_BY_CLI
         );
 
+        // File-stored content lives under storage/, which the scan above
+        // skips. Check it here so a change to a file nobody has viewed is
+        // recorded too (#555). It does not decide the exit code: a change
+        // waiting to be published is not tampering with the code.
+        $contentCheck = app(FileContentRegistry::class)->checkAll(app(FileContentPublisher::class));
+
         // Send email notification if issues are detected
         if ($audit->hasIssues()) {
             $this->sendAlertNotification($audit, $outputJson);
@@ -115,6 +123,8 @@ class IntegrityScan extends Command
 
         // Display results
         $this->displayResult($audit);
+
+        $this->info(__('admin/command/integrity.file_content_checked', $contentCheck));
 
         return $audit->hasIssues() ? Command::FAILURE : Command::SUCCESS;
     }

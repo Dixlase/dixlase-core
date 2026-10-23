@@ -35,13 +35,17 @@
 
 namespace App\Http\Controllers\Admin\Front;
 
+use App\Actions\Content\PublishFileContentAction;
 use App\Actions\FrontPage\CreateFrontPageAction;
 use App\Actions\FrontPage\DeleteFrontPageAction;
 use App\Actions\FrontPage\UpdateFrontPageAction;
+use App\Actions\Settings\UpdateSettingsAction;
 use App\Actors\MemberActor;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
 use App\Enums\ContentEditorType;
+use App\Enums\ContentPublishMode;
 use App\Enums\ContentStorageType;
+use App\Enums\Permission;
 use App\Helpers\AdminHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Front\AdminFrontCreateRequest;
@@ -49,6 +53,8 @@ use App\Http\Requests\Admin\Front\AdminFrontEditUpdateRequest;
 use App\Http\Requests\Admin\Front\AdminFrontSettingsUpdateRequest;
 use App\Models\FrontPage;
 use App\Presenters\Admin\ContentEditorPresenter;
+use App\Presenters\Admin\RevisionDiffPresenter;
+use App\Services\Content\FileContentPublisher;
 use App\Services\ContentPreviewService;
 use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
@@ -197,14 +203,32 @@ class AdminFrontController extends AdminLoggedInController
             }
         }
 
-        // Load JS/CSS content as well when using HTML editor
+        // Load JS/CSS content as well when using HTML editor. Like the body,
+        // a file-stored page edits its files: the working copy.
         $isHtmlEditor = $frontPage->editor_type === ContentEditorType::HTML;
         $customJs = null;
         $customCss = null;
+        $publisher = app(FileContentPublisher::class);
         if ($isHtmlEditor) {
-            $customJs = $this->contentService->getJsContent($frontPage, $frontPage->lang);
-            $customCss = $this->contentService->getCssContent($frontPage, $frontPage->lang);
+            if ($frontPage->storage_type === ContentStorageType::FILE) {
+                $files = $publisher->readFiles($frontPage);
+                $customJs = $files['custom_js'] ?? null;
+                $customCss = $files['custom_css'] ?? null;
+            } else {
+                $customJs = $this->contentService->getJsContent($frontPage, $frontPage->lang);
+                $customCss = $this->contentService->getCssContent($frontPage, $frontPage->lang);
+            }
         }
+
+        // Changes made to the files outside the admin that are not published
+        $publisher->check($frontPage);
+        $diffPresenter = new RevisionDiffPresenter();
+        $fileChanges = [];
+        foreach ($publisher->pendingChanges($frontPage) as $part => $change) {
+            $fileChanges[$part] = $diffPresenter->buildSideBySide($change['published'], $change['file']);
+        }
+        $this->viewParams['fileChanges'] = $fileChanges;
+        $this->viewParams['canPublishFile'] = AdminHelper::canEditMenu('front');
 
         $this->viewParams['frontPage'] = $frontPage;
         $this->viewParams['body'] = old('content', $body);
@@ -350,6 +374,27 @@ class AdminFrontController extends AdminLoggedInController
     }
 
     /**
+     * Publish the changes made to the front page's files
+     */
+    public function publishFile(): RedirectResponse
+    {
+        $frontPage = FrontPage::findByType('main_content');
+        if (! $frontPage) {
+            return redirect()->route('admin.front.index');
+        }
+
+        $actor = new MemberActor(AdminHelper::getMember());
+        $result = (new PublishFileContentAction($frontPage, Permission::SETTINGS_BASE, app(FileContentPublisher::class)))
+            ->execute($actor, []);
+
+        return redirect()
+            ->route('admin.front.edit')
+            ->with($result->success ? 'success' : 'error', $result->success
+                ? __('admin/front.edit.publish_file_success')
+                : $result->message);
+    }
+
+    /**
      * Reset front page (delete records + delete files)
      */
     public function destroy(): RedirectResponse
@@ -371,6 +416,11 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function settings(): View
     {
+        $this->viewParams['publishMode'] = ContentPublishMode::fromSetting(
+            $this->frontSettingRepository->get(FrontPage::PUBLISH_MODE_SETTING)
+        )->value;
+        $this->viewParams['publishModeOptions'] = ContentPublishMode::options();
+
         return view('admin::front/settings', $this->viewParams);
     }
 
@@ -379,6 +429,19 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function updateSettings(AdminFrontSettingsUpdateRequest $request): RedirectResponse
     {
+        $actor = new MemberActor(AdminHelper::getMember());
+
+        UpdateSettingsAction::make(
+            repository: $this->frontSettingRepository,
+            settingsPage: 'front.settings',
+            settingKeys: [FrontPage::PUBLISH_MODE_SETTING],
+            writeCallback: function ($repo, $data) {
+                $repo->setMultiple([
+                    FrontPage::PUBLISH_MODE_SETTING => $data['publish_mode'],
+                ]);
+            },
+        )->execute($actor, $request->validated());
+
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin/front.settings.settings_updated'));
     }

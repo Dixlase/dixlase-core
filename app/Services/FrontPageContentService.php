@@ -40,6 +40,7 @@ namespace App\Services;
 use App\Contracts\TranslationResolver;
 use App\Enums\ContentStorageType;
 use App\Models\FrontPage;
+use App\Services\Content\FileContentPublisher;
 use Illuminate\Support\Facades\App;
 
 /**
@@ -99,8 +100,11 @@ class FrontPageContentService extends ContentFileService
             }
         }
 
+        // FILE storage: the publish mode decides between the published copy
+        // and the file, and a change made to the file outside the admin is
+        // recorded here (#555).
         if ($frontPage->storage_type === ContentStorageType::FILE) {
-            return $this->loadFromFile($frontPage->page_type, $locale, $frontPage->editor_type->slug());
+            return app(FileContentPublisher::class)->resolve($frontPage, 'content');
         }
 
         // DB storage with no translation override: the row's primary-locale
@@ -155,44 +159,34 @@ class FrontPageContentService extends ContentFileService
     }
 
     /**
-     * Retrieve JS content (DB or file)
+     * Retrieve JS content to render (DB, or for FILE storage per the publish mode)
      *
      * @param  FrontPage  $frontPage  Front page model
-     * @param  string|null  $locale  Language code (current language if null)
+     * @param  string|null  $locale  Language code (unused in Core, kept for plugin extension)
      * @return string|null Content
      */
     public function getJsContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
-        $locale = $locale ?? app()->getLocale();
-
-        if ($frontPage->storage_type === ContentStorageType::FILE) {
-            $filePath = $this->getJsFilePath($frontPage->page_type, $locale);
-
-            if (\Illuminate\Support\Facades\Storage::disk($this->disk)->exists($filePath)) {
-                return \Illuminate\Support\Facades\Storage::disk($this->disk)->get($filePath);
-            }
+        if ($frontPage->storage_type === ContentStorageType::FILE
+            && array_key_exists('custom_js', $frontPage->fileContentParts())) {
+            return app(FileContentPublisher::class)->resolve($frontPage, 'custom_js');
         }
 
         return $frontPage->custom_js ?? null;
     }
 
     /**
-     * Retrieve CSS content (DB or file)
+     * Retrieve CSS content to render (DB, or for FILE storage per the publish mode)
      *
      * @param  FrontPage  $frontPage  Front page model
-     * @param  string|null  $locale  Language code (current language if null)
+     * @param  string|null  $locale  Language code (unused in Core, kept for plugin extension)
      * @return string|null Content
      */
     public function getCssContent(FrontPage $frontPage, ?string $locale = null): ?string
     {
-        $locale = $locale ?? app()->getLocale();
-
-        if ($frontPage->storage_type === ContentStorageType::FILE) {
-            $filePath = $this->getCssFilePath($frontPage->page_type, $locale);
-
-            if (\Illuminate\Support\Facades\Storage::disk($this->disk)->exists($filePath)) {
-                return \Illuminate\Support\Facades\Storage::disk($this->disk)->get($filePath);
-            }
+        if ($frontPage->storage_type === ContentStorageType::FILE
+            && array_key_exists('custom_css', $frontPage->fileContentParts())) {
+            return app(FileContentPublisher::class)->resolve($frontPage, 'custom_css');
         }
 
         return $frontPage->custom_css ?? null;
