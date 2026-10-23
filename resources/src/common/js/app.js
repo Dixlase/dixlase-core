@@ -49,6 +49,7 @@ import '../../components/two-fa/js/two-fa-management';
 import '../../components/js/form-content-editor';
 import '../../components/js/content-preview-mixin';
 import '../../components/media/js/selector';
+import '../../components/media/js/selector-upload';
 import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import '../../admin/js/layout';

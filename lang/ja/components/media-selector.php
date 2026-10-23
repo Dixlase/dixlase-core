@@ -34,7 +34,11 @@
  */
 
 return [
-    'upload_confirm_title' => 'アップロード画面に移動しますか？',
-    'upload_confirm_message' => 'OKでメディアアップロード画面に移動します。<br>保存していない内容は失われます。',
-    'upload_confirm_ok' => 'OK',
+    'upload_drop_here' => 'ここにファイルをドロップするか、',
+    'upload_choose_files' => 'ファイルを選択',
+    'upload_allowed_types' => '使用できる形式: :types',
+    'upload_failed' => 'アップロードに失敗しました',
+    'upload_network_error' => 'アップロードが中断されました。接続を確認して、もう一度お試しください。',
+    'upload_clear_list' => '完了したものを消す',
+    'upload_close_panel' => '閉じる',
 ];

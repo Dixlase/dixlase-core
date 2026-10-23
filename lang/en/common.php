@@ -363,7 +363,7 @@ return [
         'admin' => 'Publish from the admin',
         'admin_description' => 'The site shows the last published version. A change made to the file is listed on the edit screen and goes live when it is published there. Recommended.',
         'file_save' => 'Publish on file save',
-        'file_save_description' => 'The site shows the file as it is. A change made to the file goes live at once and is recorded in the audit log.',
+        'file_save_description' => 'The site shows the file as it is. A change made to the file goes live at once and is recorded in the audit log. Parts that can carry a script — the custom CSS and JS, and an HTML body — still wait to be published from the admin.',
     ],
 
     'file_changes' => [

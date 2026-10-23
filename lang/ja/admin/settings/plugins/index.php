@@ -337,6 +337,7 @@ return [
         'enable_cta' => '「:name」を有効化',
         'download_complete_cta' => '「:name」をインストール',
         'install_failed' => 'プラグインのインストールに失敗しました: :error',
+        'install_failed_no_reason' => 'プラグインのインストールに失敗しました。',
         'install_directory_not_found' => 'プラグインディレクトリが見つかりません。',
         'uninstall_success' => 'プラグインをアンインストールしました',
         'uninstall_failed' => 'プラグインのアンインストールに失敗しました: :error',

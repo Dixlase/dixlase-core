@@ -78,6 +78,8 @@ return [
     'file_integrity_status' => 'ファイル整合性',
     'file_content_status' => 'ファイル保存のコンテンツ',
     'file_content_pending' => ':count 件に、公開していないファイルの変更があります。',
+    'file_content_mode_status' => 'ファイルの保存で即時公開',
+    'file_content_mode_file_save' => 'ファイルを書き換えると、誰も公開の操作をしなくてもこのサイトに出ます。スクリプトを含められる部分は、引き続き管理画面での公開を待ちます。',
     'file_integrity_ok' => '直近のスキャンでファイル整合性に問題はありませんでした。',
     'file_integrity_warning' => '直近のベースライン以降、:count 件のファイルが変更されています。',
     'file_integrity_critical' => ':count 件の不審なファイルを検出しました。早急に確認してください。',

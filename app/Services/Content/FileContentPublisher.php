@@ -41,6 +41,7 @@ namespace App\Services\Content;
 
 use App\Actions\Content\RecordFileContentChangeAction;
 use App\Actors\SystemActor;
+use App\Contracts\Content\DeclaresScriptCapableParts;
 use App\Contracts\Content\PublishesFileContent;
 use App\Enums\ContentPublishMode;
 use App\Support\Content\FileContentColumns;
@@ -60,6 +61,15 @@ use Illuminate\Support\Facades\Storage;
  */
 class FileContentPublisher
 {
+    /**
+     * The part names taken to carry a script when the owner does not say
+     *
+     * See {@see scriptCapableParts()} for why a body is not in this list.
+     *
+     * @var list<string>
+     */
+    public const DEFAULT_SCRIPT_CAPABLE_PARTS = ['custom_css', 'custom_js'];
+
     /**
      * The value of a part to render
      *
@@ -104,10 +114,17 @@ class FileContentPublisher
         }
 
         if ($model->getAttribute(FileContentColumns::FILE_HASH) === $fileHash
-            && $model->fileContentPublishMode() === ContentPublishMode::ADMIN) {
-            // Already recorded, and waiting to be published. Under the file
-            // save mode it goes on to be taken in: the owner may have switched
-            // modes since it was recorded.
+            && $this->takeableParts($model, $files) === []) {
+            // Already recorded, and nothing here this mode may take in, so
+            // there is nothing new to say. What is takeable is re-asked
+            // rather than decided by the mode alone, for two reasons:
+            //
+            //  - the owner may have switched to the file save mode since the
+            //    change was recorded, and the change should then be taken in
+            //  - a part held for review keeps the two hashes apart for as
+            //    long as it is held. A mode-only guard would therefore let
+            //    every later check record the same change again, and check()
+            //    runs on every render of the page.
             return;
         }
 
@@ -266,6 +283,56 @@ class FileContentPublisher
             array_keys($files),
             fn (string $part) => $files[$part] !== ($published[$part] ?? ''),
         ));
+    }
+
+    /**
+     * The parts of this record that may carry a script
+     *
+     * An owner says so itself by implementing
+     * {@see DeclaresScriptCapableParts}. Otherwise the answer comes from the
+     * part's name: `custom_css` and `custom_js` are the conventional names
+     * for the two parts that are a script or can introduce one, and a record
+     * that uses them means them. A body is not assumed either way, because
+     * whether it can carry a script depends on its editor type, which only
+     * the owner knows.
+     *
+     * @param  PublishesFileContent&Model  $model
+     * @return list<string>
+     */
+    public function scriptCapableParts(PublishesFileContent $model): array
+    {
+        $parts = array_keys($model->fileContentParts());
+
+        if ($model instanceof DeclaresScriptCapableParts) {
+            $declared = $model->scriptCapableFileContentParts();
+
+            return array_values(array_intersect($parts, $declared));
+        }
+
+        return array_values(array_intersect($parts, self::DEFAULT_SCRIPT_CAPABLE_PARTS));
+    }
+
+    /**
+     * The changed parts this record's publish mode may take in by itself
+     *
+     * Empty under the admin mode: nothing is taken in without someone
+     * publishing it. Under the file save mode it is the changed parts that
+     * cannot carry a script — the rest wait to be published, so that "only
+     * ADMIN and above can put a script on the site" holds for the files too.
+     *
+     * @param  PublishesFileContent&Model  $model
+     * @param  array<string, string>  $files
+     * @return list<string>
+     */
+    public function takeableParts(PublishesFileContent $model, array $files): array
+    {
+        if ($model->fileContentPublishMode() !== ContentPublishMode::FILE_SAVE) {
+            return [];
+        }
+
+        $scriptCapable = $this->scriptCapableParts($model);
+
+        return array_values(array_diff($this->changedParts($model, $files), $scriptCapable));
     }
 
     /**

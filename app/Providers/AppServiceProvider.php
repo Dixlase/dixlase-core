@@ -204,6 +204,10 @@ class AppServiceProvider extends ServiceProvider
         // never reported on the next.
         $this->app->scoped(\App\Services\Extension\ExtensionAssetBuildReport::class);
 
+        // Why an extension install was refused, read back by the admin
+        // controllers after Artisan::call() in place of the console buffer.
+        $this->app->scoped(\App\Services\Extension\ExtensionRefusalReport::class);
+
         // Register legal page registry service as singleton
         $this->app->singleton(LegalPageService::class);
 

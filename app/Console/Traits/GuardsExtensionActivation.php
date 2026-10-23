@@ -37,6 +37,7 @@ namespace App\Console\Traits;
 
 use App\Enums\PluginEnableAction;
 use App\Services\Extension\ExtensionActivationGate;
+use App\Services\Extension\ExtensionRefusalReport;
 
 /**
  * Applies the admin panel's activation check (health score and signature,
@@ -86,7 +87,7 @@ trait GuardsExtensionActivation
         ];
 
         if ($action === PluginEnableAction::Blocked) {
-            $this->error(__('admin/command/extension-gate.blocked', $replace));
+            $this->refuseWith(__('admin/command/extension-gate.blocked', $replace));
             $this->line('  '.__('admin/command/extension-gate.blocked_hint', $replace));
 
             return false;
@@ -99,7 +100,7 @@ trait GuardsExtensionActivation
         $replace['level'] = __('admin/command/extension-gate.level.'.$action->value);
 
         if (! $force) {
-            $this->error(__('admin/command/extension-gate.confirmation_required', $replace));
+            $this->refuseWith(__('admin/command/extension-gate.confirmation_required', $replace));
             $this->line('  '.__('admin/command/extension-gate.confirmation_hint', $replace));
 
             return false;
@@ -108,5 +109,15 @@ trait GuardsExtensionActivation
         $this->warn(__('admin/command/extension-gate.forced', $replace));
 
         return true;
+    }
+
+    /**
+     * Print a refusal and record it for the admin panel. The console-only
+     * hint that follows it (an artisan command line) is not recorded.
+     */
+    private function refuseWith(string $message): void
+    {
+        $this->error($message);
+        app(ExtensionRefusalReport::class)->record($message);
     }
 }
