@@ -36,6 +36,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 {{--
 Admin bar displayed only when administrator is logged in.
 Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
+
+A front page can offer an edit link for its content by setting Blade
+sections in its view, only when the signed-in member may edit it:
+  @section('admin_bar_edit_url', route('...edit', $item))
+  @section('admin_bar_edit_label', __('...'))   (optional; "Edit")
 --}}
 @props(['isAdminLayout' => false])
 
@@ -60,6 +65,19 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
     // here and the token validated against `members_sessions` belong to
     // different rows and every submit fails with 419.
     $logoutAction = $isAdminLayout ? route('admin.logout') : route('admin-bar.logout');
+
+    // An edit link for the content on this front page. The page's view
+    // sets the sections, and only when the member may edit that content:
+    //   @section('admin_bar_edit_url', route('...edit', $post))
+    //   @section('admin_bar_edit_label', __('...'))   (optional)
+    // The inline @section form escapes its value, so it is decoded here
+    // and escaped again on output. Only http(s) and root-relative URLs.
+    $editUrl = $isAdminLayout ? '' : html_entity_decode(trim(\Illuminate\Support\Facades\View::yieldContent('admin_bar_edit_url')), ENT_QUOTES | ENT_HTML5);
+    if ($editUrl !== '' && ! preg_match('~^(https?://|/(?!/))~i', $editUrl)) {
+        $editUrl = '';
+    }
+    $editLabel = html_entity_decode(trim(\Illuminate\Support\Facades\View::yieldContent('admin_bar_edit_label')), ENT_QUOTES | ENT_HTML5)
+        ?: __('components/ui-admin-bar.edit');
 @endphp
 
 @if($isAuthenticated)
@@ -123,7 +141,15 @@ Pass `isAdminLayout="true"` when mounting inside the admin panel layout.
                         </a>
                     @endif
 
-
+                    {{-- Edit the content on this page (admin_bar_edit_url) --}}
+                    @if($editUrl !== '')
+                        {{-- The label shows from sm up, earlier than the links above:
+                             it names what this page offers, not a fixed place. --}}
+                        <a href="{{ $editUrl }}" aria-label="{{ $editLabel }}" title="{{ $editLabel }}" data-admin-bar-edit class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
+                            <i class="fas fa-pen-to-square mr-1" aria-hidden="true"></i>
+                            <span class="hidden sm:inline">{{ $editLabel }}</span>
+                        </a>
+                    @endif
                 </nav>
 
                 {{-- Environment/debug badge --}}
