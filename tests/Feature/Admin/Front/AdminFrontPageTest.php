@@ -645,6 +645,18 @@ class AdminFrontPageTest extends TestCase
         $this->assertStringContainsString('<h1>Hello World</h1>', $response->json('html'));
     }
 
+    public function test_preview_renders_markdown_ids_and_classes(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->postJson(route('admin.front.preview'), [
+                'content' => '## Overview {#overview .lead}',
+                'editor_type' => 'markdown',
+            ]);
+
+        $response->assertOk();
+        $this->assertStringContainsString('<h2 class="lead" id="overview">Overview</h2>', $response->json('html'));
+    }
+
     public function test_preview_returns_empty_html_for_empty_content(): void
     {
         $response = $this->actingAs($this->admin, 'member')
@@ -687,6 +699,8 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewHas('previewUrl');
         $response->assertViewHas('previewFrameUrl');
         $response->assertViewHas('editorTypeValue', 'html');
+        // The live preview renders on the server, as the page does.
+        $response->assertSee('&quot;previewRender&quot;:&quot;server&quot;', false);
     }
 
     // =========================================================

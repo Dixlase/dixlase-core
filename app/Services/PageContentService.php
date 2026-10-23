@@ -318,7 +318,9 @@ class PageContentService
             'allow_unsafe_links' => false,
             // Single line breaks render as <br>, as in the preview.
             'renderer' => ContentPreviewService::MARKDOWN_RENDERER,
-        ]);
+            // `{#id}` and `{.class}`, as in the preview.
+            'attributes' => ContentPreviewService::MARKDOWN_ATTRIBUTES,
+        ], ContentPreviewService::markdownExtensions());
     }
 
     /**
