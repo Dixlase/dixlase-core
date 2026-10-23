@@ -31,11 +31,13 @@ use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\Member;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Theme\ThemeHealthScorer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Mockery;
 use Tests\TestCase;
@@ -156,12 +158,36 @@ class ThemeInstallSecurityTest extends TestCase
         $response = $this->actingAs($this->admin, 'member')
             ->post(route('admin.settings.themes.install'), ['directory' => 'TestTheme']);
 
-        // The command ran (the scan let it through); its output is shown as the reason
-        $response->assertSessionHas('error');
-        $this->assertStringStartsWith(
-            __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason'),
-            (string) $response->getSession()->get('error'),
+        // The command ran (the scan let it through) and failed without a
+        // recorded reason: the plain message, never the console buffer ({})
+        $response->assertSessionHas('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
+    }
+
+    public function test_a_refused_install_shows_the_recorded_reason_not_the_console_output(): void
+    {
+        Cache::put('security_settings:extension_security_preset', 'balanced');
+        $this->scorerReturns(PluginEnableAction::Allowed);
+        $this->expectAudit('test-theme');
+        Artisan::shouldReceive('call')->with('dls:theme:install', Mockery::any())->once()
+            ->andReturnUsing(function () {
+                app(ExtensionRefusalReport::class)->record('TestTheme needs PHP >=9.0, but this site runs 8.3.');
+
+                return 1;
+            });
+        Log::spy();
+
+        $response = $this->actingAs($this->admin, 'member')
+            ->post(route('admin.settings.themes.install'), ['directory' => 'TestTheme']);
+
+        $response->assertSessionHas(
+            'error',
+            __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason')
+                .'TestTheme needs PHP >=9.0, but this site runs 8.3.',
         );
+        // The console buffer still reaches the log, with the exit code
+        Log::shouldHaveReceived('error')->withArgs(fn (string $message, array $context) => $message === 'Theme installation command failed'
+            && $context['exit_code'] === 1
+            && $context['output'] === '{}');
     }
 
     public function test_install_is_not_scanned_in_development_mode(): void
