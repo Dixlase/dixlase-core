@@ -337,6 +337,7 @@ return [
         'enable_cta' => 'Enable ":name"',
         'download_complete_cta' => 'Install ":name"',
         'install_failed' => 'Plugin installation failed: :error',
+        'install_failed_no_reason' => 'Plugin installation failed.',
         'install_directory_not_found' => 'Plugin directory not found.',
         'uninstall_success' => 'Plugin has been uninstalled',
         'uninstall_failed' => 'Plugin uninstall failed: :error',

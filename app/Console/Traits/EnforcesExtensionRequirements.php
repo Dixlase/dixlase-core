@@ -38,6 +38,7 @@ namespace App\Console\Traits;
 use App\Enums\ExtensionCompatibilityStatus;
 use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Services\Extension\ExtensionCompatibilityChecker;
+use App\Services\Extension\ExtensionRefusalReport;
 
 /**
  * Enforces a manifest's requires.dixlase and requires.php where an install
@@ -57,7 +58,7 @@ trait EnforcesExtensionRequirements
     /**
      * The refusal message when the manifest declares a requirement this
      * site does not meet, or null. Prints a warning for each constraint
-     * that cannot be parsed.
+     * that cannot be parsed. A refusal is also recorded for the admin panel.
      *
      * @param  array<string, mixed>  $manifest
      * @param  'installed'|'updated'  $operation
@@ -88,7 +89,14 @@ trait EnforcesExtensionRequirements
             ]);
         }
 
-        return $refusals === [] ? null : implode("\n", $refusals);
+        if ($refusals === []) {
+            return null;
+        }
+
+        $message = implode("\n", $refusals);
+        app(ExtensionRefusalReport::class)->record($message);
+
+        return $message;
     }
 
     /**

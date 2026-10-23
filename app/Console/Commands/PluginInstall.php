@@ -41,6 +41,7 @@ use App\Console\Traits\GuardsExtensionActivation;
 use App\Console\Traits\PluginManagementTrait;
 use App\Helpers\ComposerLocalHelper;
 use App\Services\Extension\ExtensionDownloadFreshness;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
@@ -179,6 +180,9 @@ class PluginInstall extends Command
             ));
             if (! $force) {
                 $this->line('  Pass --force to install anyway (the refusal reason is recorded in the audit log).');
+                app(ExtensionRefusalReport::class)->record(
+                    $licenseVerdict['reason'] ?? 'License is not accepted by this Dixlase install.'
+                );
 
                 return 1;
             }

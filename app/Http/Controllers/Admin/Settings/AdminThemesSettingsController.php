@@ -51,6 +51,7 @@ use App\Presenters\Admin\ExtensionCardPresenter;
 use App\Services\Extension\ExtensionAssetBuildReport;
 use App\Services\Extension\ExtensionDisplayName;
 use App\Services\Extension\ExtensionDownloadFreshness;
+use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceSidecar;
@@ -652,17 +653,19 @@ class AdminThemesSettingsController extends AdminLoggedInController
             ], fn ($v) => $v !== null));
 
             // A refused install leaves the files where they were, so keep
-            // the sidecar that links them to their source and say why.
+            // the sidecar that links them to their source and say why. The
+            // reason shown is the one the refusing check recorded; the
+            // command's console buffer goes to the log only.
             if ($exitCode !== 0) {
-                $output = trim((string) Artisan::output());
                 Log::error('Theme installation command failed', [
                     'directory' => $themeDir,
                     'exit_code' => $exitCode,
-                    'output' => $output,
+                    'output' => trim((string) Artisan::output()),
                 ]);
+                $reason = app(ExtensionRefusalReport::class)->reason();
 
-                return redirect()->back()->with('error', $output !== ''
-                    ? __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason').$output
+                return redirect()->back()->with('error', $reason !== null
+                    ? __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed_with_reason').$reason
                     : __('http/controllers/admin/settings/admin_themes_settings_controller.theme_installation_failed'));
             }
             $sidecar->delete(base_path("themes/{$themeDir}"));
