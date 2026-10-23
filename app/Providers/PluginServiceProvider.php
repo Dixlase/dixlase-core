@@ -38,6 +38,8 @@ namespace App\Providers;
 use App\Helpers\PluginHelper;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionCompatibilityChecker;
+use App\Services\Plugin\GuardedPluginLoader;
+use App\Services\Plugin\PluginBootFailures;
 use App\Traits\PluginLoaderTrait;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -59,6 +61,16 @@ class PluginServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Bound here rather than in AppServiceProvider: the guard needs it
+        // while plugin providers are being registered, and provider order is
+        // not something this class should depend on.
+        $this->app->singleton(PluginBootFailures::class);
+        $this->app->singleton(GuardedPluginLoader::class);
+
+        // Laravel boots this one; it boots the plugin providers, each behind
+        // the guard. Without it nothing would boot them.
+        $this->app->register(PluginBootGuard::class);
+
         // Register plugin ServiceProviders (for loading settings)
         $this->registerPluginServiceProviders();
     }
@@ -130,18 +142,28 @@ class PluginServiceProvider extends ServiceProvider
                 if (isset($manifest['providers']) && is_array($manifest['providers'])) {
                     foreach ($manifest['providers'] as $provider) {
                         if (class_exists($provider)) {
-                            try {
-                                $this->app->register($provider);
-                            } catch (\Exception $e) {
-                                // Provider registration failed, skip
-                            }
+                            $this->registerGuarded($provider, $pluginDirectory);
                         }
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // Failed to load plugin manifest
             }
         }
+    }
+
+    /**
+     * Register a plugin's provider behind the guard
+     *
+     * The guard covers boot() as well as register(). Without it a plugin that
+     * throws from boot() stops the application: Laravel boots providers in a
+     * phase this class does not wrap, so the exception reaches the top and
+     * takes the site, the admin panel and every artisan command with it --
+     * including the commands an operator would use to recover.
+     */
+    protected function registerGuarded(string $provider, string $pluginDirectory): void
+    {
+        $this->app->make(GuardedPluginLoader::class)->load($provider, $pluginDirectory);
     }
 
     /**
