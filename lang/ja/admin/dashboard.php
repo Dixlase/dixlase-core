@@ -176,6 +176,7 @@ return [
     'action_password_changed' => 'パスワード変更',
     'action_password_reset' => 'パスワードリセット',
     'action_email_changed' => 'メールアドレス変更',
+    'action_email_verification_reset' => 'メール確認のやり直し',
     'action_two_fa_enabled' => '2FA有効化',
     'action_two_fa_disabled' => '2FA無効化',
     'action_two_fa_code_sent' => '2FAコード送信',

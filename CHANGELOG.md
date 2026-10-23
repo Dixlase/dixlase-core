@@ -46,6 +46,12 @@ repository to be notified of changes.
 - The daily integrity scan also checks file-stored content, and the dashboard lists the
   content with file changes waiting to be published (#555)
 
+### Fixed
+- Sending a verification email from a member's security page is recorded in the audit log
+  (#679). The action ends every session of the account, like a force logout, but left no
+  entry; it now writes `email_verification_reset` with who sent it and how many sessions
+  ended
+
 ### Plugin API — Added
 - A shared layer for publishing file-stored content (#555):
   `App\Contracts\Content\PublishesFileContent`, `App\Enums\ContentPublishMode`,
