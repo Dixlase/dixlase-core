@@ -176,6 +176,7 @@ return [
     'action_password_changed' => 'Password Changed',
     'action_password_reset' => 'Password Reset',
     'action_email_changed' => 'Email Changed',
+    'action_email_verification_reset' => 'Email Verification Reset',
     'action_two_fa_enabled' => '2FA Enabled',
     'action_two_fa_disabled' => '2FA Disabled',
     'action_two_fa_code_sent' => '2FA Code Sent',

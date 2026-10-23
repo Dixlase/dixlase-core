@@ -38,7 +38,7 @@ return [
     'description' => 'セキュリティ設定の概要と各機能の状態を確認できます。',
     'password_security' => 'パスワード漏洩チェック',
     'login_attempt_desc' => 'ログイン試行制限とログイン通知',
-    'two_fa_desc' => '二段階認証とパスキー設定',
+    'two_fa_desc' => '多要素認証とパスキー設定',
     'session_driver' => 'セッションドライバー',
     'captcha_active' => 'CAPTCHA有効',
     'captcha_test_required' => 'テスト未完了',
@@ -68,7 +68,7 @@ return [
     'nav' => [
         'password' => 'パスワード',
         'login_attempt' => 'ログイン',
-        'two_fa' => '二段階認証',
+        'two_fa' => '多要素認証',
         'captcha' => 'CAPTCHA',
         'session' => 'セッション',
         'notifications' => 'エラー通知',

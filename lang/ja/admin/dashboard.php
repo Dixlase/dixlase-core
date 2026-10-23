@@ -94,9 +94,9 @@ return [
     'dependency_integrity_ok' => 'インストール済みパッケージ :count 件はすべて composer.lock と一致しています。',
     'dependency_integrity_mismatched' => 'vendor/ の :count 件のパッケージが composer.lock と一致していません（:packages）。コア更新がソースの入れ替えと vendor/ の入れ替えの間で中断された可能性があります。更新をやり直すか、更新前に取得したバックアップから復元してください。',
     'dependency_integrity_unknown' => 'vendor/ と composer.lock を比較できませんでした: :reason',
-    'two_fa_status' => '二要素認証',
+    'two_fa_status' => '多要素認証',
     'two_fa_enabled' => '有効（:method）',
-    'two_fa_disabled' => '未設定です。二要素認証の設定を推奨します。',
+    'two_fa_disabled' => '未設定です。多要素認証の設定を推奨します。',
 
     // メール状態
     'mail_status' => 'メールサーバー',
@@ -176,6 +176,7 @@ return [
     'action_password_changed' => 'パスワード変更',
     'action_password_reset' => 'パスワードリセット',
     'action_email_changed' => 'メールアドレス変更',
+    'action_email_verification_reset' => 'メール確認のやり直し',
     'action_two_fa_enabled' => '2FA有効化',
     'action_two_fa_disabled' => '2FA無効化',
     'action_two_fa_code_sent' => '2FAコード送信',

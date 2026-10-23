@@ -46,6 +46,12 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 - 毎日の整合性スキャンでファイル保存のコンテンツも確かめ、公開待ちのファイルの変更がある
   コンテンツをダッシュボードに表示します（#555）
 
+### 修正
+- メンバーのセキュリティ画面から確認メールを送ると、監査ログに記録するようにしました
+  （#679）。この操作は強制ログアウトと同じくアカウントのすべてのセッションを終わらせますが、
+  記録が残っていませんでした。送った人と終わらせたセッションの数を
+  `email_verification_reset` として記録します
+
 ### Plugin API — 追加
 - ファイル保存のコンテンツを公開する共通の仕組みを追加しました（#555）。
   `App\Contracts\Content\PublishesFileContent`、`App\Enums\ContentPublishMode`、

@@ -44,15 +44,18 @@ use App\Models\Member;
 use App\Models\MemberLoginAttempt;
 use App\Models\MemberTwoFaAttempt;
 use App\Models\Passkey;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
- * Taking a passkey, the recovery codes or the sessions away from a member
- * writes an audit row, on the member's own profile and on another member's
+ * Taking a passkey, the recovery codes or the sessions away from a member --
+ * including through a verification email, which ends every session -- writes
+ * an audit row, on the member's own profile and on another member's
  * security page alike.
  */
 class MemberSecurityAuditTest extends TestCase
@@ -210,6 +213,52 @@ class MemberSecurityAuditTest extends TestCase
         $this->assertSame(1, $row->context['members']);
     }
 
+    public function test_sending_another_member_a_verification_email_is_recorded(): void
+    {
+        $this->markMailServerTested();
+        $this->memberSession($this->staff, 'staff-a');
+        $this->memberSession($this->staff, 'staff-b');
+
+        $this->actingAs($this->owner, 'member')
+            ->postJson(route('admin.members.send-verification-email', $this->staff))
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $row = $this->onlyRow(AuditLog::ACTION_EMAIL_VERIFICATION_RESET);
+        $this->assertRecordedBy($row, $this->owner, $this->staff);
+        $this->assertSame(AuditLog::CATEGORY_ACCOUNT, $row->category);
+        $this->assertSame(AuditLog::SEVERITY_WARNING, $row->severity);
+        $this->assertSame(2, $row->context['sessions']);
+        $this->assertTrue($row->context['by_other_member']);
+        $this->assertSame(0, DB::table('members_sessions')->where('member_id', $this->staff->id)->count());
+    }
+
+    public function test_sending_yourself_a_verification_email_is_recorded(): void
+    {
+        $this->markMailServerTested();
+
+        $this->actingAs($this->staff, 'member')
+            ->postJson(route('admin.members.send-verification-email', $this->staff))
+            ->assertOk();
+
+        $row = $this->onlyRow(AuditLog::ACTION_EMAIL_VERIFICATION_RESET);
+        $this->assertRecordedBy($row, $this->staff, $this->staff);
+        $this->assertFalse($row->context['by_other_member']);
+    }
+
+    public function test_a_refused_verification_email_writes_no_row(): void
+    {
+        // Mail server not tested: the action stops before touching the account.
+        $this->memberSession($this->staff, 'staff-a');
+
+        $this->actingAs($this->owner, 'member')
+            ->postJson(route('admin.members.send-verification-email', $this->staff))
+            ->assertStatus(400);
+
+        $this->assertSame(0, AuditLog::where('action', AuditLog::ACTION_EMAIL_VERIFICATION_RESET)->count());
+        $this->assertSame(1, DB::table('members_sessions')->where('member_id', $this->staff->id)->count());
+    }
+
     public function test_revoking_own_passkeys_is_recorded_once(): void
     {
         $this->passkey($this->staff, 'phone');
@@ -256,6 +305,15 @@ class MemberSecurityAuditTest extends TestCase
         $this->assertSame($actor->id, $row->actor_id);
         $this->assertSame(Member::class, $row->target_type);
         $this->assertSame($target->id, $row->target_id);
+    }
+
+    private function markMailServerTested(): void
+    {
+        Notification::fake();
+
+        SiteSetting::setValue('mail_connection_tested', true);
+        SiteSetting::setValue('mail_send_tested', true);
+        SiteSetting::setValue('mail_receive_tested', true);
     }
 
     private function memberSession(Member $member, string $id): void

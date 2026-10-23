@@ -38,7 +38,7 @@ return [
     'description' => 'Dixlase を最大限に活用するために、以下のステップを完了しましょう。',
     'dismiss' => '閉じる',
 
-    'two_fa_title' => '2段階認証を有効にする',
+    'two_fa_title' => '多要素認証を有効にする',
     'two_fa_description' => 'アカウントをより安全に保護しましょう。',
 
     'plugins_title' => 'プラグインを探す',

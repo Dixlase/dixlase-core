@@ -34,13 +34,13 @@
  */
 
 return [
-    'mode_label' => '二段階認証モード',
-    'help' => '二段階認証を有効にすると、ログイン時に追加の認証が必要になります。',
-    'method_label' => '二段階認証方法',
+    'mode_label' => '多要素認証モード',
+    'help' => '多要素認証を有効にすると、ログイン時に追加の認証が必要になります。',
+    'method_label' => '多要素認証方法',
     'email_always_enabled' => 'メール認証は常に有効です',
     'passkey' => 'パスキー',
     'passkey_disabled_globally' => '全体設定で無効になっています',
-    'method_note' => '二段階認証方法は全体設定で管理されています。',
+    'method_note' => '多要素認証方法は全体設定で管理されています。',
     'change_in_global_settings' => '全体設定で変更',
     'default_method' => 'デフォルトの認証方法',
     'passkey_disabled_default_email_only' => 'パスキーが無効の場合、メール認証のみ使用できます。',

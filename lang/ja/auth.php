@@ -48,7 +48,7 @@ return [
     'password' => 'パスワードが正しくありません。',
     'throttle' => 'ログイン試行回数が多すぎます。:seconds秒後に再度お試しください。',
     'lockout' => 'ログイン試行回数が上限に達しました。:minutes分後に再度お試しください。',
-    'two_fa_locked_out' => '二段階認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
+    'two_fa_locked_out' => '多要素認証の試行回数が上限に達しました。:minutes分後に再度お試しください。',
     'account_inactive' => 'このアカウントは現在無効化されています。サイト管理者にお問い合わせください。',
     'email_not_verified' => 'このアカウントはメール認証が完了していません。登録されたメールアドレスに送信された認証メールを確認し、アカウントの認証を完了してください。',
     'session_expired' => 'セッションの有効期限が切れました。再度ログインしてください。',
@@ -95,7 +95,7 @@ return [
     'passkey_cancelled' => 'パスキー認証がキャンセルされました',
     'passkey_https_required' => 'パスキー認証にはHTTPS接続が必要です。',
     'no_passkey_registered' => 'パスキーが登録されていません',
-    'two_fa_disabled' => '二段階認証が無効になっています',
+    'two_fa_disabled' => '多要素認証が無効になっています',
     'change_account' => 'アカウントを変更',
 
     // IP制限
