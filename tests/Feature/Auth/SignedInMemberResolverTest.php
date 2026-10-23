@@ -42,6 +42,7 @@ use App\Services\Auth\SignedInMemberResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
 /**
@@ -151,6 +152,51 @@ class SignedInMemberResolverTest extends TestCase
         $html = Blade::render('<x-ui-admin-bar />');
 
         $this->assertStringNotContainsString('Hanako Dixlase', $html);
+    }
+
+    public function test_the_admin_bar_offers_the_edit_link_a_front_page_sets(): void
+    {
+        $this->actingAs(Member::factory()->create(), 'member');
+
+        View::startSection('admin_bar_edit_url', 'https://example.com/admin-custom/blog/1/edit?a=1&b=2');
+        View::startSection('admin_bar_edit_label', 'Edit "post"');
+        $html = Blade::render('<x-ui-admin-bar />');
+
+        $this->assertStringContainsString('href="https://example.com/admin-custom/blog/1/edit?a=1&amp;b=2"', $html);
+        $this->assertStringContainsString('aria-label="Edit &quot;post&quot;"', $html);
+        // Not inside the admin layout, where the page is the edit screen.
+        $this->assertStringNotContainsString('data-admin-bar-edit', Blade::render('<x-ui-admin-bar :isAdminLayout="true" />'));
+    }
+
+    public function test_the_admin_bar_edit_link_defaults_its_label_and_needs_a_url(): void
+    {
+        $this->actingAs(Member::factory()->create(), 'member');
+
+        $this->assertStringNotContainsString('data-admin-bar-edit', Blade::render('<x-ui-admin-bar />'));
+
+        View::startSection('admin_bar_edit_url', '/admin-custom/pages/3/edit');
+        $html = Blade::render('<x-ui-admin-bar />');
+        $this->assertStringContainsString('href="/admin-custom/pages/3/edit"', $html);
+        $this->assertStringContainsString('aria-label="'.__('components/ui-admin-bar.edit').'"', $html);
+    }
+
+    public function test_the_admin_bar_edit_link_refuses_other_schemes(): void
+    {
+        $this->actingAs(Member::factory()->create(), 'member');
+
+        foreach (['javascript:alert(1)', '//evil.example/edit', 'data:text/html,x'] as $url) {
+            View::flushSections();
+            View::startSection('admin_bar_edit_url', $url);
+
+            $this->assertStringNotContainsString('data-admin-bar-edit', Blade::render('<x-ui-admin-bar />'), $url);
+        }
+    }
+
+    public function test_a_visitor_never_sees_the_edit_link(): void
+    {
+        View::startSection('admin_bar_edit_url', '/admin-custom/blog/1/edit');
+
+        $this->assertStringNotContainsString('data-admin-bar-edit', Blade::render('<x-ui-admin-bar />'));
     }
 
     private function resolver(): SignedInMemberResolver

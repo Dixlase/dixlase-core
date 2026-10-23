@@ -72,13 +72,17 @@
         min-width: 0;
     }
 
+    // The frame stays 16:9 so every row of cards has the same height; the
+    // image is fitted inside it on a neutral background rather than cropped,
+    // as in the media selector. Files that differ only near their edges
+    // (language variants of one card) must look different here.
     .media-card__preview {
-        @apply relative overflow-hidden rounded-t-lg;
+        @apply relative overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-700;
         aspect-ratio: 16/9;
     }
 
     .media-card__image {
-        @apply w-full h-full object-cover;
+        @apply w-full h-full object-contain;
     }
 
     .media-card__placeholder {
