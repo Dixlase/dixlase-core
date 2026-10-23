@@ -24,6 +24,7 @@ name: Release preflight
 on:
   pull_request:
     branches:
+      - next
       - main
 
 permissions:
