@@ -133,6 +133,10 @@ window.openMediaSelector = function (modalId, inputId, previewId, multiple = fal
 
     bindSelectorFilters(modalId);
 
+    // Lets the in-modal upload (selector-upload.js) clear what the last
+    // opening left behind
+    modal.dispatchEvent(new CustomEvent('media-selector-open'));
+
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
@@ -190,10 +194,13 @@ window.closeMediaSelector = function (modalId) {
 
 /**
  * Load media list
+ *
+ * Resolves to the items it rendered, or null when nothing was rendered
+ * (the request failed, or a newer one superseded it).
  */
 async function loadMediaForSelector(modalId, page = 1) {
     const grid = document.getElementById(`${modalId}-grid`);
-    if (!grid) return;
+    if (!grid) return null;
 
     const modal = document.getElementById(modalId);
     const apiUrl = modal?.dataset.apiUrl || '/admin/media/api';
@@ -214,9 +221,10 @@ async function loadMediaForSelector(modalId, page = 1) {
         if (data.success) {
             // Drop the response when the modal was closed, or another page,
             // search or type was asked for, while the request was in flight.
-            if (window.mediaSelectorData[modalId]?.requestId !== requestId) return;
+            if (window.mediaSelectorData[modalId]?.requestId !== requestId) return null;
             renderMediaGrid(modalId, data.media.data);
             renderPagination(modalId, data.media);
+            return data.media.data;
         }
     } catch (error) {
         console.error('[Media Selector] Failed to load media:', error);
@@ -227,7 +235,53 @@ async function loadMediaForSelector(modalId, page = 1) {
             </div>
         `;
     }
+
+    return null;
 }
+
+/**
+ * Show and select what was just uploaded inside the modal.
+ *
+ * The list is newest first, so the new items are on page 1 once the search
+ * and the type filter are cleared. In multiple mode every uploaded item is
+ * added to the selection; in single mode the last one is selected. An item
+ * that is not on page 1 (more than a page was uploaded at once) is simply
+ * not selected.
+ */
+window.mediaSelectorUploaded = async function (modalId, ids) {
+    const state = window.mediaSelectorData[modalId];
+    if (!state || !ids || ids.length === 0) return;
+
+    clearTimeout(state.searchTimer);
+    state.search = '';
+    state.type = '';
+    const search = document.getElementById(`${modalId}-search`);
+    const typeFilter = document.getElementById(`${modalId}-type-filter`);
+    if (search) search.value = '';
+    if (typeFilter) typeFilter.value = '';
+
+    const items = await loadMediaForSelector(modalId, 1);
+    if (!items || window.mediaSelectorData[modalId] !== state) return;
+
+    const uploaded = ids
+        .map(id => items.find(media => media.id === id))
+        .filter(Boolean);
+    if (uploaded.length === 0) return;
+
+    if (state.multiple) {
+        uploaded.forEach(media => {
+            if (!state.selectedMedia.some(m => m.id === media.id)) state.selectedMedia.push(media);
+        });
+    } else {
+        state.selectedMedia = uploaded[uploaded.length - 1];
+    }
+
+    updateSelectedCount(modalId);
+    renderMediaGrid(modalId, items);
+
+    const scroller = document.getElementById(`${modalId}-scroll`);
+    if (scroller) scroller.scrollTop = 0;
+};
 
 /**
  * Render media grid
