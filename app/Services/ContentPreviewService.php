@@ -42,6 +42,8 @@ use App\Services\Editor\EditorManager;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use League\CommonMark\Extension\Attributes\AttributesExtension;
+use League\CommonMark\Extension\ExtensionInterface;
 
 /**
  * Rendering service for content preview
@@ -63,6 +65,26 @@ class ContentPreviewService
      * preview gives marked the matching `breaks: true`.
      */
     public const MARKDOWN_RENDERER = ['soft_break' => "<br>\n"];
+
+    /**
+     * Attributes an author may give a Markdown block or span with the
+     * `{#id}` / `{.class}` syntax: an id for in-page links (a table of
+     * contents) and classes for styling. The extension drops every other
+     * attribute, so `{onclick=...}` or `{style=...}` never reach the page.
+     */
+    public const MARKDOWN_ATTRIBUTES = ['allow' => ['id', 'class']];
+
+    /**
+     * CommonMark extensions every content Markdown render adds on top of
+     * GitHub-flavoured Markdown. Shared with PageContentService so a page
+     * previews as it publishes.
+     *
+     * @return list<ExtensionInterface>
+     */
+    public static function markdownExtensions(): array
+    {
+        return [new AttributesExtension()];
+    }
 
     /**
      * Render content to HTML for preview.
@@ -97,7 +119,8 @@ class ContentPreviewService
                     'allow_unsafe_links' => false,
                     'html_input' => $allowRawHtml ? 'allow' : 'escape',
                     'renderer' => self::MARKDOWN_RENDERER,
-                ]),
+                    'attributes' => self::MARKDOWN_ATTRIBUTES,
+                ], self::markdownExtensions()),
                 ContentEditorType::BLADE => Blade::render($content),
                 ContentEditorType::HTML => $content,
             };
