@@ -30,7 +30,17 @@ repository to be notified of changes.
 
 ---
 
-## [Unreleased]
+## [0.1.19] — 2026-10-23
+
+### Added
+- Markdown can give a block an id or a class (#727). `## Overview {#overview .lead}` writes
+  them onto the heading, so a table of contents can link into the page and a block can be
+  styled. Only `id` and `class` are allowed; anything else in the braces is dropped
+- A front page can offer an edit link in the admin bar (#732), so an administrator reading
+  the page reaches its edit screen without going through the menu
+- The media selector uploads without leaving it (#737). What was just uploaded is selected,
+  so inserting a new image is one trip instead of two
+- The content editor inserts several images at once (#743), in the order they were chosen
 
 ### Changed
 - A file-stored front page is published through the admin (#555). Editing its file on the
@@ -46,11 +56,29 @@ repository to be notified of changes.
 - The daily integrity scan also checks file-stored content, and the dashboard lists the
   content with file changes waiting to be published (#555)
 
+- The media selector tells near-identical thumbnails apart (#721). Each tile now shows the
+  whole image rather than a square crop, with the file name below it — shortened in the
+  middle, because variants of one picture differ at the end — and its dimensions and size
+- The media library shows the whole image too (#730), on the same reasoning
+- Under *Publish on file save*, the parts that can carry a script wait to be published from
+  the admin (#744). The custom CSS and JS, and the body of an HTML-editor page, are held;
+  a Markdown or GUI body still goes live at once. Writing a script into the site stays an
+  ADMIN-and-above capability on both paths, and a production site using that mode is warned
+  on the dashboard
+- The Japanese admin calls two-factor authentication 多要素認証 throughout (#709); it used
+  three different words for it
+
 ### Fixed
 - Sending a verification email from a member's security page is recorded in the audit log
   (#679). The action ends every session of the account, like a force logout, but left no
   entry; it now writes `email_verification_reset` with who sent it and how many sessions
   ended
+
+- The media selector's page navigation stays in view (#729). It sat at the bottom of the
+  scrolling grid, so with more than one page an author had to scroll to the end to find it
+- The dashboard's site health cards link only where the member can act (#507)
+- A refused extension install says why in words (#654), instead of showing the command's
+  raw output, which could be empty or carry paths that belong in the log
 
 ### Plugin API — Added
 - A shared layer for publishing file-stored content (#555):
@@ -61,6 +89,15 @@ repository to be notified of changes.
   adds the hash columns, implements the contract, registers its model and renders through the
   publisher to get the same publish modes as the front page. See
   `docs/development/file-content-publishing.md`
+- `App\Contracts\Content\DeclaresScriptCapableParts` (#744), optional, for an owner to say
+  which of its parts may carry a script. Without it the answer comes from the part's name
+
+
+### Internal
+- Core ships its own media factory, so the test suite no longer needs one from an installed
+  extension (#722). A Dependabot run gets no repository secrets, so it fetched no extension
+  and every test touching `Media::factory()` failed
+- Dependency updates: vite 8.3.4, follow-redirects 1.16.1
 
 ## [0.1.18] — 2026-10-23
 
@@ -1077,7 +1114,7 @@ Only relevant to a site that ran a pre-release build (the `v0.2.x` / `v0.3.x` ve
 - `App\Services\Plugin\CoreSignatureVerifier` is intentionally left without `@api`;
   plugins should depend on `App\Contracts\Plugin\SignatureVerifierInterface` instead.
 
-[Unreleased]: https://github.com/Dixlase/dixlase-core/compare/v0.1.18...HEAD
+[0.1.19]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.19
 [0.1.18]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.18
 [0.1.17]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.17
 [0.1.0]: https://github.com/Dixlase/dixlase-core/releases/tag/v0.1.0
