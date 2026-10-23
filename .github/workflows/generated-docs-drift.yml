@@ -36,6 +36,7 @@ name: Generated Docs Drift Check
 on:
   push:
     branches:
+      - next
       - main
       - 'feature/**'
     paths-ignore:
@@ -50,6 +51,7 @@ on:
   # The `push` trigger above keeps its filter.
   pull_request:
     branches:
+      - next
       - main
 
 # Cancel older runs on the same ref when a new one starts.

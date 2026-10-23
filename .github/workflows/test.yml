@@ -3,6 +3,7 @@ name: Dixlase Tests
 on:
   push:
     branches:
+      - next
       - main
       - develop
       - 'feature/**'
@@ -19,6 +20,7 @@ on:
   # The `push` trigger above keeps its filter: no check is required there.
   pull_request:
     branches:
+      - next
       - main
       - develop
 
