@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-10-19
+**最終更新日:** 2026-10-23
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -107,6 +107,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Admin\AdminNavigationManagerInterface` | Admin panel navigation manager interface |
 | `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
 | `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
+| `App\Contracts\Content\PublishesFileContent` | Content that can be stored as files and is published through the admin |
 | `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor's cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
 | `App\Contracts\Encryption\FileEncryptionServiceInterface` | File encryption service interface |
@@ -335,6 +336,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 - `App\Enums\AuthenticationMode`
 - `App\Enums\ConsentCategory`
 - `App\Enums\ContentEditorType`
+- `App\Enums\ContentPublishMode`
 - `App\Enums\ContentStatus`
 - `App\Enums\ContentStorageType`
 - `App\Enums\ExtensionCompatibilityStatus`
