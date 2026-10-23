@@ -58,7 +58,7 @@ return [
     'minutes' => '分',
     'enabled_at' => '有効化日時',
     'affected_features' => '影響を受ける機能:',
-    'feature_two_fa' => '二段階認証（メール認証）',
+    'feature_two_fa' => '多要素認証（メール認証）',
     'feature_password_reset' => 'パスワードリセット',
     'invalid_action' => '無効なアクション: :action',
     'valid_actions' => '有効なアクション:',
