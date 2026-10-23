@@ -39,6 +39,7 @@ namespace App\Traits;
 
 use App\Contracts\Admin\AdminNavigationManagerInterface;
 use App\Contracts\Repositories\PluginRepositoryInterface;
+use App\Services\Plugin\GuardedPluginLoader;
 use App\Support\ExtensionManagementCommands;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
@@ -95,7 +96,10 @@ trait PluginLoaderTrait
             $providerClass = $this->resolvePluginServiceProvider($pluginName, $pluginDirectory);
 
             if ($providerClass) {
-                $this->app->register($providerClass);
+                // Behind the guard: a plugin that throws from register() or
+                // boot() is skipped, rather than stopping the application
+                // and every artisan command with it.
+                $this->app->make(GuardedPluginLoader::class)->load($providerClass, $pluginDirectory);
             }
         }
     }
