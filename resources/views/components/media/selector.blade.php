@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'confirmUploadNavigation' => false,
 ])
 
-<!-- メディア選択モーダル -->
+<!-- Media selection modal -->
 <div id="{{ $id }}" 
      class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900/50 dark:bg-gray-900/70"
      data-api-url="{{ route('admin.media.api') }}"
@@ -55,9 +55,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      role="dialog"
      aria-modal="true">
     <div class="flex w-full items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <!-- モーダルコンテンツ -->
+        <!-- Modal content -->
         <div class="inline-block max-w-6xl mx-8 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl dark:bg-gray-800 mb-8 mt-36 mx-10sm:align-middle">
-            <!-- ヘッダー -->
+            <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 id="{{ $id }}-title" class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ __('common.select_media') }}
@@ -83,7 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            <!-- 検索とフィルター -->
+            <!-- Search and filter -->
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div class="flex-1">
@@ -104,10 +104,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            <!-- メディアグリッド -->
-            <div class="px-6 py-4" style="max-height: 60vh; overflow-y: auto;">
+            <!-- Media grid -->
+            <div id="{{ $id }}-scroll" class="px-6 py-4" style="max-height: 60vh; overflow-y: auto;">
                 <div id="{{ $id }}-grid" class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    <!-- JavaScriptで動的に読み込み -->
+                    <!-- Loaded dynamically by JavaScript -->
                     <div class="col-span-full flex items-center justify-center py-12">
                         <div class="text-center">
                             <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
@@ -115,19 +115,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     </div>
                 </div>
-
-                <!-- ページネーション -->
-                <div id="{{ $id }}-pagination" class="mt-6 hidden">
-                    <!-- JavaScriptで動的に生成 -->
-                </div>
             </div>
 
-            <!-- フッター -->
-            <div class="flex items-center justify-between px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+            <!-- Footer -->
+            <div class="flex flex-wrap items-center justify-between gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-600 dark:text-gray-400 sm:col-start-1 sm:row-start-1">
                     <span id="{{ $id }}-selected-count">0</span> {{ __('common.items_selected') }}
                 </div>
-                <div class="flex gap-3">
+
+                {{-- Page navigation lives in the footer, not under the grid, so it is visible without scrolling. From sm up the footer is a grid with two equal outer columns, so the navigation sits at the centre of the modal rather than midway between the count and the buttons; each item names its column, so the buttons stay right when the navigation is hidden. On a narrow screen the navigation takes a row of its own above the count and the buttons. --}}
+                <div id="{{ $id }}-pagination" class="hidden order-first w-full sm:order-none sm:w-auto sm:col-start-2 sm:row-start-1">
+                    <!-- Generated dynamically by JavaScript -->
+                </div>
+                <div class="flex gap-3 sm:col-start-3 sm:row-start-1 sm:justify-self-end">
                     <button type="button" 
                             @click="closeMediaSelector('{{ $id }}')"
                             class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
