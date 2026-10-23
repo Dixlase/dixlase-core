@@ -51,6 +51,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :placeholder="__('admin/front.create.content_placeholder')"
             :guiEditorInfo="$guiEditorInfo ?? null"
             :preview="true"
+            {{-- Through ContentPreviewService, as the page renders: the
+                 browser's Markdown renderer knows no {#id} / {.class}. --}}
+            previewRender="server"
             :previewFrameUrl="$previewFrameUrl"
             :previewUrl="$previewUrl"
             :assetTabs="true"

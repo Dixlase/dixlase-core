@@ -119,6 +119,42 @@ class PageContentServiceMarkdownTest extends TestCase
         $this->assertStringNotContainsString('<script>', $html);
     }
 
+    public function test_a_heading_takes_an_id_and_classes_for_in_page_links(): void
+    {
+        $markdown = "- [What happened](#what-happened)\n\n## 何が起きたのか {#what-happened .note}\n\n本文\n{.dx-roles}";
+
+        $html = $this->render($markdown);
+
+        $this->assertStringContainsString('<h2 class="note" id="what-happened">何が起きたのか</h2>', $html);
+        $this->assertStringContainsString('<p class="dx-roles">本文</p>', $html);
+        $this->assertStringContainsString('<a href="#what-happened">', $html);
+        $this->assertStringNotContainsString('{#', $html);
+        // The preview renders the same, with raw HTML allowed or escaped.
+        $this->assertSame($html, app(ContentPreviewService::class)->render($markdown, ContentEditorType::MARKDOWN));
+        $this->assertStringContainsString(
+            '<h2 class="note" id="what-happened">',
+            app(ContentPreviewService::class)->render($markdown, ContentEditorType::MARKDOWN, false),
+        );
+    }
+
+    public function test_attributes_other_than_id_and_class_are_dropped(): void
+    {
+        $markdown = "## Title {#t onclick=\"alert(1)\" style=\"color:red\" data-x=1}\n\n[link](https://example.com){href=\"javascript:alert(1)\" onmouseover=\"x()\"}";
+
+        foreach ([
+            $this->render($markdown),
+            app(ContentPreviewService::class)->render($markdown, ContentEditorType::MARKDOWN, false),
+        ] as $html) {
+            $this->assertStringContainsString('<h2 id="t">Title</h2>', $html);
+            $this->assertStringContainsString('<a href="https://example.com">link</a>', $html);
+            $this->assertStringNotContainsString('onclick', $html);
+            $this->assertStringNotContainsString('style=', $html);
+            $this->assertStringNotContainsString('data-x', $html);
+            $this->assertStringNotContainsString('javascript:', $html);
+            $this->assertStringNotContainsString('onmouseover', $html);
+        }
+    }
+
     public function test_render_falls_back_to_raw_content_when_the_renderer_raises_an_error(): void
     {
         // The fallback in renderContent() used to catch \Exception only, so an
