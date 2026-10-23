@@ -35,7 +35,9 @@
 
 namespace App\Http\Requests\Admin\Front;
 
+use App\Enums\ContentPublishMode;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AdminFrontSettingsUpdateRequest extends FormRequest
 {
@@ -54,6 +56,8 @@ class AdminFrontSettingsUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return [
+            'publish_mode' => ['required', Rule::enum(ContentPublishMode::class)],
+        ];
     }
 }

@@ -43,6 +43,7 @@ use App\DTO\Action\ActionResult;
 use App\Enums\Permission;
 use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
+use App\Services\Content\FileContentPublisher;
 use App\Services\RevisionService;
 
 /**
@@ -77,6 +78,10 @@ class RestoreFrontPageRevisionAction extends AbstractAction
     {
         /** @var FrontPage $frontPage */
         $frontPage = $this->revisionService->restore($this->revision, $actor->getActorId());
+
+        // The restore changes only the database. Write the files back so a
+        // file-stored front page does not keep the content just replaced.
+        app(FileContentPublisher::class)->writeBack($frontPage);
 
         return ActionResult::success(
             model: $frontPage,

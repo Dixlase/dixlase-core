@@ -58,6 +58,7 @@ use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Models\Theme;
 use App\Services\AuditLogIntegrityService;
+use App\Services\Content\FileContentRegistry;
 use App\Services\Core\DependencyIntegrityService;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
@@ -349,6 +350,22 @@ class DashboardPresenter
             'url' => route('admin.settings.security.integrity'),
             'requires_advanced_mode' => true,
         ];
+
+        // File-stored content with changes that are not published (#555).
+        // Listed only while there are some: a site that stores nothing in
+        // files has nothing to show here.
+        $pendingFileContent = app(FileContentRegistry::class)->pendingCount();
+        if ($pendingFileContent > 0) {
+            $items[] = [
+                'key' => 'file_content',
+                'status' => 'warning',
+                'icon' => 'fas fa-file-pen',
+                'label' => __('admin/dashboard.file_content_status'),
+                'description' => __('admin/dashboard.file_content_pending', ['count' => $pendingFileContent]),
+                'url' => route('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db', 'search' => '.file_changed']),
+                'requires_advanced_mode' => false,
+            ];
+        }
 
         // Audit log integrity (hash chain + daily seals)
         $auditHealth = app(AuditLogIntegrityService::class)->getHealthCached();

@@ -44,6 +44,7 @@ use App\Enums\ContentEditorType;
 use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
+use App\Services\Content\FileContentPublisher;
 use App\Services\FrontPageContentService;
 use App\Services\FrontPageRevisionService;
 
@@ -112,6 +113,9 @@ class UpdateFrontPageAction extends AbstractAction
             $updateData['custom_css'] = $customCss;
         }
         $this->frontPage->update($updateData);
+
+        // The admin wrote the published copy and the files together
+        app(FileContentPublisher::class)->markSaved($this->frontPage);
 
         // Record post-save state to revision (treated as manual since it's an explicit user save)
         // Skip if no difference from previous revision

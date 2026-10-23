@@ -358,6 +358,29 @@ return [
     ],
 
     // Content Storage
+    'content_publish_mode' => [
+        'label' => 'How file changes are published',
+        'admin' => 'Publish from the admin',
+        'admin_description' => 'The site shows the last published version. A change made to the file is listed on the edit screen and goes live when it is published there. Recommended.',
+        'file_save' => 'Publish on file save',
+        'file_save_description' => 'The site shows the file as it is. A change made to the file goes live at once and is recorded in the audit log.',
+    ],
+
+    'file_changes' => [
+        'title' => 'The files have changes that are not published',
+        'description' => 'These changes were made to the files outside the admin. The site keeps showing the published version until they are published.',
+        'published' => 'Published',
+        'file' => 'File',
+        'publish' => 'Publish',
+        'confirm_title' => 'Publish the file changes',
+        'confirm_message' => 'Publish the changes made to the files? The site will show them at once.',
+        'view_only' => 'You can view these changes, but publishing them needs edit permission.',
+        'nothing_to_publish' => 'The files have no changes to publish.',
+        'part_content' => 'Content',
+        'part_custom_css' => 'Custom CSS',
+        'part_custom_js' => 'Custom JS',
+    ],
+
     'content_storage' => [
         'label' => 'Content Storage Method',
         'database' => 'Database',

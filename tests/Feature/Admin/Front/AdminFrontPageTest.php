@@ -823,7 +823,7 @@ class AdminFrontPageTest extends TestCase
     public function test_update_settings_redirects_with_success(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->post(route('admin.front.settings.store'), []);
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'admin']);
 
         $response->assertRedirect(route('admin.front.settings'));
         $response->assertSessionHas('success');

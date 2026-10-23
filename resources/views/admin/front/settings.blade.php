@@ -38,9 +38,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ __('admin/front.settings.no_settings') }}
-            </p>
+            <x-form-label :text="__('common.content_publish_mode.label')" />
+            <x-form-radio-card-group
+                name="publish_mode"
+                :options="$publishModeOptions"
+                :value="$publishMode"
+                :columns="2"
+            />
+            <x-form-help-text :text="__('admin/front.settings.publish_mode_help')" />
+            <x-form-error name="publish_mode" />
         </div>
     </form>
 @endsection

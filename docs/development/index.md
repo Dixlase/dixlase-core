@@ -37,6 +37,7 @@ Shared revision API: Revisionable contract, HasRevisions trait,
 RevisionService, diff presenter and blade components.
 
 - [Revisions](revisions.md)
+- [Publishing File-Stored Content](file-content-publishing.md)
 
 ## Members
 

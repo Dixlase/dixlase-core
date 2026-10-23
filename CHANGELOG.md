@@ -32,6 +32,30 @@ repository to be notified of changes.
 
 ## [Unreleased]
 
+### Changed
+- A file-stored front page is published through the admin (#555). Editing its file on the
+  server used to change the public site at once, with no audit entry and no revision. The
+  site now shows the last published version; a change made to the file is recorded in the
+  audit log, listed on the edit screen with a diff, and goes live when someone with edit
+  permission publishes it there. **This changes the behaviour of existing sites that store
+  the front page as a file.** To keep the old behaviour, choose *Publish on file save* in
+  *Front Page → Settings*: the site then follows the file, and each change is still taken in
+  as a revision and recorded in the audit log
+- Restoring a revision of a file-stored front page also writes its files back (#555). The
+  restore used to change only the database, so the site kept showing the files it replaced
+- The daily integrity scan also checks file-stored content, and the dashboard lists the
+  content with file changes waiting to be published (#555)
+
+### Plugin API — Added
+- A shared layer for publishing file-stored content (#555):
+  `App\Contracts\Content\PublishesFileContent`, `App\Enums\ContentPublishMode`,
+  `App\Services\Content\FileContentPublisher`, `App\Services\Content\FileContentRegistry`,
+  `App\Actions\Content\PublishFileContentAction`, `App\Support\Content\FileContentColumns` and
+  the `<x-content.file-changes>` component, all `@api`. An extension that offers file storage
+  adds the hash columns, implements the contract, registers its model and renders through the
+  publisher to get the same publish modes as the front page. See
+  `docs/development/file-content-publishing.md`
+
 ## [0.1.18] — 2026-10-23
 
 ### Security

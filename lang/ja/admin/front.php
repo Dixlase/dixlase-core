@@ -116,6 +116,7 @@ return [
         'confirm_message' => 'フロントページのコンテンツへの変更を保存しますか？',
 
         'save_success' => 'フロントページのコンテンツを更新しました。',
+        'publish_file_success' => 'ファイルの変更を公開しました。',
 
         'sidebar_open' => 'サイドバーを開く',
         'sidebar_close' => 'サイドバーを閉じる',
@@ -149,7 +150,7 @@ return [
         'heading' => 'フロントページ設定',
         'description' => 'フロントページの設定を行います。',
 
-        'no_settings' => '現在、追加の設定項目はありません。',
+        'publish_mode_help' => 'フロントページをファイルで保存しているときに使われます。変更すると監査ログに記録されます。',
 
         'settings_updated' => 'フロントページの設定を更新しました。',
 

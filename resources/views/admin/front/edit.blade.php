@@ -34,6 +34,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @extends('layouts.admin')
 
 @section('content')
+    {{-- Changes made to the files outside the admin, waiting to be
+         published (#555). Outside the edit form: it posts its own form. --}}
+    <x-content.file-changes
+        id="front-file-changes"
+        :changes="$fileChanges"
+        :publishUrl="route('admin.front.publish-file')"
+        :canPublish="$canPublishFile"
+    />
+
     <form id="front-page-edit-form"
           action="{{ route('admin.front.edit.update') }}"
           method="POST"

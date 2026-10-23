@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-10-19
+**Last Updated:** 2026-10-23
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -107,6 +107,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Admin\AdminNavigationManagerInterface` | Admin panel navigation manager interface |
 | `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
 | `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
+| `App\Contracts\Content\PublishesFileContent` | Content that can be stored as files and is published through the admin |
 | `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor's cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
 | `App\Contracts\Encryption\FileEncryptionServiceInterface` | File encryption service interface |
@@ -335,6 +336,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\Enums\AuthenticationMode`
 - `App\Enums\ConsentCategory`
 - `App\Enums\ContentEditorType`
+- `App\Enums\ContentPublishMode`
 - `App\Enums\ContentStatus`
 - `App\Enums\ContentStorageType`
 - `App\Enums\ExtensionCompatibilityStatus`

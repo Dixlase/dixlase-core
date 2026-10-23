@@ -76,6 +76,8 @@ return [
     'error_notification_enabled' => 'エラー通知が有効です。重大なイベントはメールで通知されます。',
     'error_notification_disabled' => 'エラー通知が無効です。本番環境では有効化を推奨します。',
     'file_integrity_status' => 'ファイル整合性',
+    'file_content_status' => 'ファイル保存のコンテンツ',
+    'file_content_pending' => ':count 件に、公開していないファイルの変更があります。',
     'file_integrity_ok' => '直近のスキャンでファイル整合性に問題はありませんでした。',
     'file_integrity_warning' => '直近のベースライン以降、:count 件のファイルが変更されています。',
     'file_integrity_critical' => ':count 件の不審なファイルを検出しました。早急に確認してください。',

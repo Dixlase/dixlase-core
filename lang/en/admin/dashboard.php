@@ -76,6 +76,8 @@ return [
     'error_notification_enabled' => 'Error notifications are enabled. Critical events will be sent by email.',
     'error_notification_disabled' => 'Error notifications are disabled. Enabling them is recommended for production.',
     'file_integrity_status' => 'File Integrity',
+    'file_content_status' => 'File-stored content',
+    'file_content_pending' => ':count item(s) have file changes that are not published.',
     'file_integrity_ok' => 'No file integrity issues detected in the latest scan.',
     'file_integrity_warning' => ':count file(s) changed since the last baseline scan.',
     'file_integrity_critical' => ':count suspicious file(s) detected. Investigate immediately.',

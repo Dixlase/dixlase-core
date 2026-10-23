@@ -161,6 +161,8 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.access:front')->name('front.preview');
                 Route::put('/front/edit', [AdminFrontController::class, 'update'])
                     ->middleware('check.menu.edit:front')->name('front.edit.update');
+                Route::post('/front/publish-file', [AdminFrontController::class, 'publishFile'])
+                    ->middleware('check.menu.edit:front')->name('front.publish-file');
                 Route::delete('/front/reset', [AdminFrontController::class, 'destroy'])
                     ->middleware('check.menu.edit:front')->name('front.destroy');
                 Route::get('/front/settings', [AdminFrontController::class, 'settings'])->name('front.settings');

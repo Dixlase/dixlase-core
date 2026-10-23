@@ -266,6 +266,17 @@ class AppServiceProvider extends ServiceProvider
         // ReadonlyRouteProviderInterface tagged on the capability tag above;
         // the guard falls back to its built-in list while none is registered.
         $this->app->singleton(\App\Services\Admin\ReadonlyRouteGuard::class);
+
+        // File-stored content published through the admin (#555). The
+        // registry lists the models the scheduled scan and the dashboard look
+        // at; core registers its front page, extensions their own models.
+        $this->app->singleton(\App\Services\Content\FileContentPublisher::class);
+        $this->app->singleton(\App\Services\Content\FileContentRegistry::class, function () {
+            $registry = new \App\Services\Content\FileContentRegistry();
+            $registry->register(\App\Models\FrontPage::class);
+
+            return $registry;
+        });
     }
 
     /**
