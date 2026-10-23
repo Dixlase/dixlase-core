@@ -33,7 +33,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{--
 "Insert image" for <x-form-content-editor>: opens the media selector and
-puts a tag for the chosen item at the cursor of the editor's field
+puts a tag for each chosen item, in the order they were chosen, at the
+cursor of the editor's field
 (contentEditorInsertImage in resources/src/admin/js/content-editor.js).
 Markdown gets ![alt](path); HTML and Blade get <img>. A file that is not
 an image becomes a link. Paths are root-relative, so content survives a
@@ -69,5 +70,6 @@ change of domain.
         :id="$selectorId"
         :inputId="$selectorId.'_input'"
         :previewId="$selectorId.'_preview'"
+        :multiple="true"
     />
 @endpush

@@ -230,6 +230,24 @@ async function loadMediaForSelector(modalId, page = 1) {
 }
 
 /**
+ * The badge on a selected tile. In multiple mode it is the item's place in
+ * the selection (1, 2, 3 …), because callers such as the content editor
+ * use the selection in that order; in single mode it is a check mark.
+ */
+function selectionMarker(data, mediaId) {
+    const base = 'media-selector-marker absolute top-2 right-2 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white';
+
+    if (data.multiple) {
+        const index = data.selectedMedia.findIndex(m => m.id === mediaId);
+        if (index === -1) return '';
+        return `<div class="${base} min-w-6 px-1.5 text-xs font-semibold">${index + 1}</div>`;
+    }
+
+    if (data.selectedMedia?.id !== mediaId) return '';
+    return `<div class="${base} w-6"><i class="fas fa-check text-xs" aria-hidden="true"></i></div>`;
+}
+
+/**
  * Render media grid
  */
 function renderMediaGrid(modalId, mediaItems) {
@@ -274,12 +292,7 @@ function renderMediaGrid(modalId, mediaItems) {
                            </div>`
             }
                     <div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-all"></div>
-                    ${isSelected
-                ? `<div class="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                             <i class="fas fa-check text-white text-xs"></i>
-                           </div>`
-                : ''
-            }
+                    ${selectionMarker(data, media.id)}
                 </div>
                 ${renderMediaCaption(media)}
             </div>
@@ -328,20 +341,12 @@ window.toggleMediaSelection = function (modalId, media) {
             ? data.selectedMedia.some(m => m.id === itemId)
             : data.selectedMedia?.id === itemId;
 
+        item.classList.toggle('selected', isSelected);
+
+        // Redrawn on every change: deselecting one item renumbers the rest
+        item.querySelector('.media-selector-marker')?.remove();
         if (isSelected) {
-            item.classList.add('selected');
-            const checkmark = item.querySelector('.absolute.top-2');
-            if (!checkmark) {
-                item.querySelector('.relative').insertAdjacentHTML('beforeend', `
-                    <div class="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check text-white text-xs"></i>
-                    </div>
-                `);
-            }
-        } else {
-            item.classList.remove('selected');
-            const checkmark = item.querySelector('.absolute.top-2');
-            if (checkmark) checkmark.remove();
+            item.querySelector('.relative').insertAdjacentHTML('beforeend', selectionMarker(data, itemId));
         }
     });
 };
