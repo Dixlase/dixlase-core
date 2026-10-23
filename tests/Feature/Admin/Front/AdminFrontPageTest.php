@@ -649,7 +649,7 @@ class AdminFrontPageTest extends TestCase
     {
         $response = $this->actingAs($this->admin, 'member')
             ->postJson(route('admin.front.preview'), [
-                'content' => "## Overview {#overview .lead}",
+                'content' => '## Overview {#overview .lead}',
                 'editor_type' => 'markdown',
             ]);
 
