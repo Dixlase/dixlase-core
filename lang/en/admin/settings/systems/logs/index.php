@@ -81,6 +81,7 @@ return [
         'unchained' => 'Not chained yet',
     ],
     'system' => 'System',
+    'source_outside_admin' => 'This change was made to the files outside the admin, so who made it is not known. The system is named as the actor because Dixlase recorded the change, not because Dixlase made it.',
     'impersonated_by' => 'Impersonated By',
     'changes' => 'Changes',
     'field' => 'Field',

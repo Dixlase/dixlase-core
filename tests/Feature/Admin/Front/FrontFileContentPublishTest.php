@@ -31,6 +31,7 @@
 
 namespace Tests\Feature\Admin\Front;
 
+use App\Actions\Content\RecordFileContentChangeAction;
 use App\Contracts\TranslationResolver;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentPublishMode;
@@ -382,6 +383,58 @@ class FrontFileContentPublishTest extends TestCase
 
         $this->assertSame(['checked' => 1, 'pending' => 1], $result);
         $this->assertSame(1, AuditLog::where('action', 'front_page.file_changed')->count());
+    }
+
+    public function test_a_change_found_by_a_render_says_where_it_came_from(): void
+    {
+        $page = $this->createFilePage();
+        $publishedHash = $page->content_hash;
+        Storage::disk('local')->put('core/front/content.html', '<h1>Edited on disk</h1>');
+
+        $this->content($page);
+
+        $log = AuditLog::where('action', 'front_page.file_changed')->sole();
+        $this->assertSame(RecordFileContentChangeAction::SOURCE_OUTSIDE_ADMIN, $log->context['source']);
+        $this->assertSame(FileContentPublisher::DETECTED_BY_RENDER, $log->context['detected_by']);
+
+        // Before and after: what was published, and what the files held.
+        $this->assertSame($publishedHash, $log->context['published_hash']);
+        $this->assertSame($page->fresh()->content_file_hash, $log->context['file_hash']);
+        $this->assertNotSame($log->context['published_hash'], $log->context['file_hash']);
+    }
+
+    public function test_a_change_found_by_the_scan_says_so(): void
+    {
+        $this->createFilePage();
+        Storage::disk('local')->put('core/front/content.html', '<h1>Edited on disk</h1>');
+
+        app(FileContentRegistry::class)->checkAll(app(FileContentPublisher::class));
+
+        $log = AuditLog::where('action', 'front_page.file_changed')->sole();
+        $this->assertSame(FileContentPublisher::DETECTED_BY_SCAN, $log->context['detected_by']);
+        $this->assertSame(RecordFileContentChangeAction::SOURCE_OUTSIDE_ADMIN, $log->context['source']);
+    }
+
+    public function test_publishing_records_the_hash_it_published(): void
+    {
+        $page = $this->createFilePage();
+        Storage::disk('local')->put('core/front/content.html', '<h1>Edited on disk</h1>');
+        $this->content($page);
+
+        $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.publish-file'))
+            ->assertRedirect(route('admin.front.edit'));
+
+        $log = AuditLog::where('action', 'front_page.published_from_file')->sole();
+        $fresh = $page->fresh();
+
+        // The approver is the member, and the hash is the one now published.
+        $this->assertSame($this->admin->id, $log->actor_id);
+        $this->assertSame($fresh->content_hash, $log->context['published_hash']);
+
+        // It is the hash the file_changed entry reported as the file's.
+        $changed = AuditLog::where('action', 'front_page.file_changed')->sole();
+        $this->assertSame($changed->context['file_hash'], $log->context['published_hash']);
     }
 
     public function test_the_publish_mode_setting_is_saved_and_audited(): void
