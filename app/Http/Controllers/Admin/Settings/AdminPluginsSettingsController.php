@@ -60,7 +60,6 @@ use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
-use App\Services\ExtensionOperationService;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\Plugin\PluginPermissionService;
 use App\Support\ComposerLocalManifest;
@@ -818,6 +817,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $exitCode = Artisan::call('dls:plugin:install', array_filter([
                 'pluginName' => $pluginDir,
                 '--source' => $linkage['source_id'] ?? null,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ], fn ($v) => $v !== null));
 
             // A refused install (license, requires.dixlase / requires.php,
@@ -860,21 +860,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                 );
 
                 $this->runPluginAudit($plugin->slug);
-
-                // Notification and logging of extension operations
-                $permissionService = app(PluginPermissionService::class);
-                $summary = $permissionService->getSummary($plugin->slug);
-
-                app(ExtensionOperationService::class)->recordOperation(
-                    ExtensionOperationService::TYPE_PLUGIN,
-                    ExtensionOperationService::OPERATION_INSTALLED,
-                    [
-                        'name' => $plugin->translated_name ?? $plugin->name,
-                        'slug' => $plugin->slug,
-                        'version' => $plugin->version ?? null,
-                        'health_status' => $summary['risk_level'] ?? 'unknown',
-                    ]
-                );
             }
 
             // Installation success message.
@@ -932,20 +917,13 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             return back()->with('error', __('admin/settings/plugins/index.messages.uninstall_must_disable_first'));
         }
 
-        // Save plugin information for notification
-        $pluginData = [
-            'name' => $this->getPluginName($plugin),
-            'slug' => $plugin->slug,
-            'version' => $plugin->version ?? null,
-            'health_status' => 'low', // no health warning needed on uninstall
-        ];
-
         try {
             // Uninstall using command
             $options = [
                 'pluginName' => $plugin->name,
                 '--force' => true,
                 '--no-interaction' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ];
 
             // When deleting DB data as well
@@ -954,13 +932,6 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             }
 
             Artisan::call('dls:plugin:uninstall', $options);
-
-            // Notification and logging of extension operations
-            app(ExtensionOperationService::class)->recordOperation(
-                ExtensionOperationService::TYPE_PLUGIN,
-                ExtensionOperationService::OPERATION_UNINSTALLED,
-                $pluginData
-            );
 
             return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', __('admin/settings/plugins/index.messages.uninstall_success'));
@@ -1007,26 +978,12 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $exitCode = Artisan::call('dls:plugin:enable', [
                 'pluginName' => $plugin->name,
                 '--force' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ]);
 
             if ($exitCode !== 0) {
                 return back()->with('error', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.failed')).': '.trim(Artisan::output()));
             }
-
-            // Notification and logging of extension operations
-            $permissionService = app(PluginPermissionService::class);
-            $summary = $permissionService->getSummary($plugin->slug);
-
-            app(ExtensionOperationService::class)->recordOperation(
-                ExtensionOperationService::TYPE_PLUGIN,
-                ExtensionOperationService::OPERATION_ENABLED,
-                [
-                    'name' => $translatedName,
-                    'slug' => $plugin->slug,
-                    'version' => $plugin->version ?? null,
-                    'health_status' => $summary['risk_level'] ?? 'unknown',
-                ]
-            );
 
             return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', str_replace('{name}', $translatedName, __('admin/settings/plugins/index.enabled.success')));
@@ -1049,19 +1006,8 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             // Disable using command
             Artisan::call('dls:plugin:disable', [
                 'pluginName' => $plugin->name,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ]);
-
-            // Notification and logging of extension operations
-            app(ExtensionOperationService::class)->recordOperation(
-                ExtensionOperationService::TYPE_PLUGIN,
-                ExtensionOperationService::OPERATION_DISABLED,
-                [
-                    'name' => $translatedName,
-                    'slug' => $plugin->slug,
-                    'version' => $plugin->version ?? null,
-                    'health_status' => 'low', // no health warning needed on disable
-                ]
-            );
 
             return $this->redirectAfterPluginAction($request, $plugin->slug)
                 ->with('success', __('admin/settings/plugins/index.messages.disable_success'));
@@ -1094,6 +1040,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
                     'pluginName' => $plugin->slug,
                     '--force' => true,
                     '--no-interaction' => true,
+                    '--applied-by' => AdminHelper::getMember()?->id,
                 ]);
 
                 if ($exitCode !== 0) {
@@ -1112,6 +1059,7 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $exitCode = Artisan::call('dls:plugin:delete', [
                 'pluginDirectory' => $pluginDir,
                 '--force' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ]);
 
             if ($exitCode !== 0) {

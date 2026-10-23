@@ -35,19 +35,23 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
 use App\Services\Extension\PluginAutoloadState;
+use App\Services\ExtensionOperationService;
 use Illuminate\Console\Command;
 
 class PluginDisable extends Command
 {
+    use RecordsExtensionOperation;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:disable {pluginName : The name of the plugin to disable}';
+    protected $signature = 'dls:plugin:disable {pluginName : The name of the plugin to disable} {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -93,6 +97,12 @@ class PluginDisable extends Command
         // Rebuild the Tailwind plugin-source aggregator so the disabled
         // plugin's content directories drop out of the next CSS build.
         app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_PLUGIN, ExtensionOperationService::OPERATION_DISABLED, $plugin, [
+            'name' => $pluginName,
+            'slug' => $plugin->slug,
+            'version' => $plugin->version,
+        ]);
 
         $this->info(__('admin/command/plugin-disable.disabled', ['pluginName' => $pluginName]));
 

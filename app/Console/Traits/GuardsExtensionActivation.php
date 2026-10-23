@@ -47,13 +47,22 @@ use App\Services\Extension\ExtensionRefusalReport;
  * - Blocked is always refused; --force does not override it.
  * - Outcomes the admin panel asks the operator to confirm (WarningRequired,
  *   AcknowledgementRequired) are refused unless --force is passed, and are
- *   reported with a warning when it is.
+ *   reported with a warning when it is -- and recorded with the operation
+ *   when the command also uses RecordsExtensionOperation.
  * - The Development preset is unrestricted.
  *
  * @internal Core only. Do not reference from plugins/themes
  */
 trait GuardsExtensionActivation
 {
+    /**
+     * What --force overrode in this run. Declared identically in
+     * RecordsExtensionOperation, which records it with the operation.
+     *
+     * @var array<string, string>
+     */
+    protected array $forcedPast = [];
+
     /**
      * Whether the extension may proceed. Prints the reason when it may not.
      *
@@ -107,6 +116,9 @@ trait GuardsExtensionActivation
         }
 
         $this->warn(__('admin/command/extension-gate.forced', $replace));
+
+        // Kept for the operation's audit row (RecordsExtensionOperation).
+        $this->forcedPast['activation_gate'] = $action->value;
 
         return true;
     }

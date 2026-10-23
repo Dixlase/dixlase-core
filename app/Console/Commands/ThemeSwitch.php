@@ -36,20 +36,23 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\GuardsExtensionActivation;
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Models\Theme;
+use App\Services\ExtensionOperationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class ThemeSwitch extends Command
 {
     use GuardsExtensionActivation;
+    use RecordsExtensionOperation;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:theme:switch {themeName? : The name or slug of the theme to switch to (omit to choose interactively)} {--force : Switch even when the health check asks for confirmation (warning or acknowledgement); a blocked theme is still refused}';
+    protected $signature = 'dls:theme:switch {themeName? : The name or slug of the theme to switch to (omit to choose interactively)} {--force : Switch even when the health check asks for confirmation (warning or acknowledgement); a blocked theme is still refused} {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -143,6 +146,14 @@ class ThemeSwitch extends Command
                 fn (bool $exists) => ($exists ? [] : ['created_at' => now()])
                     + ['value' => $theme->id, 'updated_at' => now()]
             );
+
+        // Recorded as theme_enabled, as the admin panel always has.
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_THEME, ExtensionOperationService::OPERATION_ENABLED, $theme, [
+            'name' => $theme->name,
+            'slug' => $theme->slug,
+            'version' => $theme->version,
+            'health_status' => $this->extensionHealthStatus(ExtensionOperationService::TYPE_THEME, (string) $theme->slug),
+        ]);
 
         $this->info(__('admin/command/theme-switch.switched', ['themeName' => $theme->name]));
 

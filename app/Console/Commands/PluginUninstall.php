@@ -36,10 +36,12 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\PluginHelper;
 use App\Providers\PluginServiceProvider;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\PluginAutoloadState;
+use App\Services\ExtensionOperationService;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionResolverInterface;
@@ -51,6 +53,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class PluginUninstall extends Command
 {
     use PluginManagementTrait;
+    use RecordsExtensionOperation;
 
     /**
      * The name and signature of the console command.
@@ -59,7 +62,8 @@ class PluginUninstall extends Command
      */
     protected $signature = 'dls:plugin:uninstall {pluginName}
                             {--rollback : Rollback database migrations}
-                            {--force : Force uninstall even if plugin is enabled}';
+                            {--force : Force uninstall even if plugin is enabled}
+                            {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -177,6 +181,13 @@ class PluginUninstall extends Command
         // uninstalled plugin's content directories drop out of the
         // next CSS build.
         app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
+        // The row is gone, so the entry names the plugin by slug only.
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_PLUGIN, ExtensionOperationService::OPERATION_UNINSTALLED, null, [
+            'name' => $pluginName,
+            'slug' => $plugin->slug,
+            'version' => $plugin->version,
+        ]);
 
         $this->info(__('admin/command/plugin-uninstall.completed', ['pluginName' => $pluginName]));
         $this->info(__('admin/command/plugin-uninstall.delete_hint'));
