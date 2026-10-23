@@ -149,6 +149,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @else
                                     <span class="text-gray-400 dark:text-gray-500">{{ __('admin/settings/systems/logs/index.system') }}</span>
                                 @endif
+
+                                {{-- The actor is the system because the change arrived through
+                                     the files and the application cannot know who wrote them.
+                                     Say so, or the entry reads as a change Dixlase made itself. --}}
+                                @if(($auditLog->context['source'] ?? null) === \App\Actions\Content\RecordFileContentChangeAction::SOURCE_OUTSIDE_ADMIN)
+                                    <p class="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                                        {{ __('admin/settings/systems/logs/index.source_outside_admin') }}
+                                    </p>
+                                @endif
                             </dd>
                         </div>
                         <div>

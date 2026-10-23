@@ -81,6 +81,7 @@ return [
         'unchained' => '未連結',
     ],
     'system' => 'システム',
+    'source_outside_admin' => 'この変更は管理画面の外でファイルに対して行われたため、誰が行ったかは分かりません。実行者が「システム」なのは、Dixlase が記録したからであって、Dixlase が変更したからではありません。',
     'impersonated_by' => 'なりすまし操作者',
     'changes' => '変更内容',
     'field' => 'フィールド',
