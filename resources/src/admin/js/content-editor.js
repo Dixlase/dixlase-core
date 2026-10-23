@@ -675,9 +675,20 @@ export function mediaTag(media, editorType) {
 }
 
 /**
+ * The tags for several media items, in the order given. In Markdown each
+ * item is its own paragraph (a blank line between); in HTML and Blade each
+ * tag is on its own line.
+ */
+export function mediaTags(items, editorType) {
+    const separator = editorType === 'markdown' ? '\n\n' : '\n';
+    return items.map(media => mediaTag(media, editorType)).join(separator);
+}
+
+/**
  * "Insert image" button of the content editor. Opens the media selector
- * and, when an item is chosen, writes its tag over the field's selection
- * (or at the cursor) and fires input, so x-model and the preview follow.
+ * in multiple mode and writes a tag for every chosen item, in the order
+ * they were chosen, over the field's selection (or at the cursor), then
+ * fires input, so x-model and the preview follow.
  * The editor type comes from the field's data-editor-type.
  */
 export function contentEditorInsertImage() {
@@ -702,16 +713,18 @@ export function contentEditorInsertImage() {
 
         open() {
             if (typeof window.openMediaSelector === 'function') {
-                window.openMediaSelector(this.selectorId, this.selectorId + '_input', this.selectorId + '_preview', false);
+                // Multiple mode: the selection comes back in the order it was made
+                window.openMediaSelector(this.selectorId, this.selectorId + '_input', this.selectorId + '_preview', true);
             }
         },
 
         insert(media) {
             const field = document.getElementById(this.targetId);
-            if (!field || !media) {
+            const items = (Array.isArray(media) ? media : [media]).filter(Boolean);
+            if (!field || items.length === 0) {
                 return;
             }
-            const tag = mediaTag(media, field.dataset.editorType || 'html');
+            const tag = mediaTags(items, field.dataset.editorType || 'html');
             const start = field.selectionStart ?? field.value.length;
             const end = field.selectionEnd ?? start;
             field.focus();
