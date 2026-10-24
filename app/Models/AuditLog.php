@@ -286,6 +286,12 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_DELETED = 'plugin_deleted';
 
+    /**
+     * A plugin's service provider threw while registering or booting, so the
+     * plugin was skipped for that request and the site kept running
+     */
+    public const ACTION_PLUGIN_BOOT_FAILED = 'plugin_boot_failed';
+
     public const ACTION_PLUGIN_UPDATED = 'plugin_updated';
 
     public const ACTION_PLUGIN_UPDATE_FAILED = 'plugin_update_failed';
