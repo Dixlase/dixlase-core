@@ -101,6 +101,16 @@ class FormContentEditorTest extends TestCase
         $this->assertSame('/frame', $this->config($full)['previewFrameUrl']);
     }
 
+    public function test_markdown_gets_the_css_tab_only_when_asked_for(): void
+    {
+        $this->assertFalse($this->config(Blade::render('<x-form-content-editor :assetTabs="true" />'))['markdownCss']);
+
+        $html = Blade::render('<x-form-content-editor editorType="markdown" :assetTabs="true" :markdownCss="true" />');
+        $this->assertTrue($this->config($html)['markdownCss']);
+        // The JS tab's button follows the HTML editor alone.
+        $this->assertStringContainsString('x-show="showJsTabButton"', $html);
+    }
+
     public function test_the_settings_survive_markup_in_the_content(): void
     {
         $content = '</textarea><script>alert(1)</script>"\'';

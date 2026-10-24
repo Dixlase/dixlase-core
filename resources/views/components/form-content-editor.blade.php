@@ -46,6 +46,8 @@ Optional parts:
     Without a preview, Markdown keeps its side-by-side rendered view
     unless inlineMarkdownPreview is false (a page with its own preview).
   - assetTabs: CSS / JS tabs for the HTML editor (customCss, customJs).
+    With markdownCss as well, the Markdown editor gets the CSS tab (never
+    the JS one); storing and serving that CSS is the page's job.
   - editors: a fixed list of editor types, instead of the ones the
     storage type allows.
   - templates + langField: starter content per language and editor type,
@@ -86,6 +88,7 @@ Optional parts:
     'previewUrl' => '',
     'previewRender' => 'auto',
     'assetTabs' => false,
+    'markdownCss' => false,
     'customCss' => '',
     'customJs' => '',
     'customCssFieldName' => 'custom_css',
@@ -115,6 +118,7 @@ Optional parts:
          'previewUrl' => $previewUrl,
          'previewRender' => $previewRender,
          'assetTabs' => (bool) $assetTabs,
+         'markdownCss' => (bool) $markdownCss,
          'templates' => $templates ?: new \stdClass(),
          'langField' => $langField,
          'lang' => $lang,
@@ -235,7 +239,7 @@ Optional parts:
                     <x-form-label :for="$contentFieldName" :text="$contentLabel ?? __('common.content')" />
                 @endif
 
-                {{-- CSS / JS tabs (HTML editor) --}}
+                {{-- CSS / JS tabs (HTML editor; CSS only for Markdown with markdownCss) --}}
                 @if ($assetTabs)
                     <div x-show="showAssetTabs" x-cloak>
                         <nav class="border-b border-gray-200 dark:border-gray-600">
@@ -251,6 +255,7 @@ Optional parts:
                                     <i class="fab fa-css3-alt mr-1.5"></i>{{ __('components/content-editor.tab_css') }}
                                 </button>
                                 <button type="button" @click="showTab('js')"
+                                        x-show="showJsTabButton"
                                         class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
                                         :class="tabClass('js')">
                                     <i class="fab fa-js mr-1.5"></i>{{ __('components/content-editor.tab_js') }}

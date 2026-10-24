@@ -31,7 +31,8 @@
  *     previewUrl, previewRender: 'auto' renders HTML and Markdown in
  *     the browser and the rest on the server, 'server' always asks the
  *     server)
- *   - CSS / JS tabs for the HTML editor (config.assetTabs)
+ *   - CSS / JS tabs for the HTML editor (config.assetTabs), and the CSS
+ *     tab alone for Markdown when config.markdownCss is set too
  *   - starter templates per language and editor type (config.templates,
  *     with the language read from the form field named config.langField)
  *
@@ -104,6 +105,7 @@ export function contentEditor() {
         inlineMarkdownPreview: config.inlineMarkdownPreview !== false,
         previewRender: config.previewRender || 'auto',
         assetTabs: !!config.assetTabs,
+        markdownCss: !!config.markdownCss,
         templates: config.templates || {},
         langField: config.langField || '',
         lang: config.lang || '',
@@ -144,7 +146,12 @@ export function contentEditor() {
         },
 
         get showAssetTabs() {
-            return this.assetTabs && this.isHtmlEditor;
+            return this.assetTabs && (this.isHtmlEditor || (this.markdownCss && this.editorType === 'markdown'));
+        },
+
+        // JavaScript stays with the HTML editor.
+        get showJsTabButton() {
+            return this.showAssetTabs && this.isHtmlEditor;
         },
 
         get showCssTab() {
@@ -152,7 +159,7 @@ export function contentEditor() {
         },
 
         get showJsTab() {
-            return this.showAssetTabs && this.activeTab === 'js';
+            return this.showJsTabButton && this.activeTab === 'js';
         },
 
         get showInlineMarkdownPreview() {
