@@ -41,6 +41,8 @@ return [
     'api_version_missing' => 'plugin.json does not declare requires.dixlase_api.',
     'api_version_incompatible' => 'Plugin declares Extension API :declared but core supports :supported.',
     'api_constraint_malformed' => 'requires.dixlase_api is not a valid semver constraint.',
+    'requirement_unmet' => 'Plugin requires :requirement :declared, but this site has :current.',
+    'requirement_malformed' => 'requires.:requirement is not a valid constraint (:declared).',
     'csp_violation_detected' => 'CSP violation detected (:cspMode mode)',
     'dangerous_api_declared' => 'Declared dangerous API in use: :permission',
     'dangerous_api_detected' => 'Dangerous API detected: :permission',

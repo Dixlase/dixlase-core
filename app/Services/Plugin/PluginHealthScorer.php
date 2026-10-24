@@ -143,6 +143,9 @@ class PluginHealthScorer
         // 9. Extension API contract version evaluation (requires.dixlase_api)
         $issues = array_merge($issues, $this->evaluateApiCompatibility($pluginSlug, $deductionRules));
 
+        // 10. Core release and PHP requirements (requires.dixlase / requires.php)
+        $issues = array_merge($issues, $this->evaluateCoreRequirements($pluginSlug, $deductionRules));
+
         // Calculate total score
         $totalDeduction = array_sum(array_map(fn (HealthIssue $i) => $i->deduction, $issues));
         $score = max(0, self::BASE_SCORE + $totalDeduction);
@@ -483,6 +486,90 @@ class PluginHealthScorer
      *
      * @return array<HealthIssue>
      */
+    /**
+     * Evaluate the core release and PHP requirements (requires.dixlase / requires.php)
+     *
+     * These were enforced only where an install or update was decided
+     * (dixlase-core#473), so an extension placed as files -- a git checkout,
+     * an rsync, a restored backup -- reached a site that does not meet them
+     * with nothing to say so. The manifest states the requirement truthfully;
+     * until now nothing compared it to the running core outside those
+     * commands.
+     *
+     * Reported here so it shows up wherever plugin health does, and so the
+     * daily rescan finds it without an operator running anything.
+     *
+     * @param  array<string, int>  $deductionRules
+     * @return array<HealthIssue>
+     */
+    protected function evaluateCoreRequirements(string $pluginSlug, array $deductionRules): array
+    {
+        $manifest = $this->readManifest($pluginSlug);
+
+        if ($manifest === null) {
+            return [];
+        }
+
+        $issues = [];
+
+        foreach ((new ExtensionCompatibilityChecker())->checkRequirements($manifest) as $problem) {
+            $requirement = (string) ($problem['requirement'] ?? '');
+
+            if (($problem['status'] ?? null) === ExtensionCompatibilityStatus::MalformedConstraint) {
+                $issues[] = new HealthIssue(
+                    type: 'malformed_requirement',
+                    severity: 'warning',
+                    description: __('services/plugin/plugin_health_scorer.requirement_malformed', [
+                        'requirement' => $requirement,
+                        'declared' => (string) ($problem['declared'] ?? ''),
+                    ]),
+                    deduction: $deductionRules['malformed_requirement'] ?? -10,
+                );
+
+                continue;
+            }
+
+            // The extension says it will not work on this core or this PHP.
+            // Critical, because believing it is cheaper than finding out when
+            // it reaches for something that is not there.
+            $issues[] = new HealthIssue(
+                type: 'unmet_requirement',
+                severity: 'critical',
+                description: __('services/plugin/plugin_health_scorer.requirement_unmet', [
+                    'requirement' => $requirement,
+                    'declared' => (string) ($problem['declared'] ?? ''),
+                    'current' => (string) ($problem['current'] ?? ''),
+                ]),
+                deduction: $deductionRules['unmet_requirement'] ?? -40,
+            );
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Read a plugin's manifest, or null when it is missing or unreadable
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function readManifest(string $pluginSlug): ?array
+    {
+        $pluginName = \App\Models\Plugin::directoryNameFromSlug($pluginSlug);
+        $pluginJsonPath = base_path("plugins/{$pluginName}/plugin.json");
+
+        if (! File::exists($pluginJsonPath)) {
+            return null;
+        }
+
+        try {
+            $data = json_decode(File::get($pluginJsonPath), true);
+
+            return (json_last_error() === JSON_ERROR_NONE && is_array($data)) ? $data : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     /**
      * Evaluate Extension API contract version declaration
      *

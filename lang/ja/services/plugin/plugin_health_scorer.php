@@ -41,6 +41,8 @@ return [
     'api_version_missing' => 'plugin.json に requires.dixlase_api が宣言されていません。',
     'api_version_incompatible' => 'プラグインは Extension API :declared を要求していますが、コアは :supported に対応しています。',
     'api_constraint_malformed' => 'requires.dixlase_api が有効な semver 制約ではありません。',
+    'requirement_unmet' => 'プラグインは :requirement :declared を要求していますが、このサイトは :current です。',
+    'requirement_malformed' => 'requires.:requirement が有効な制約ではありません（:declared）。',
     'csp_violation_detected' => 'CSP違反が検出されました（:cspModeモード）。',
     'dangerous_api_declared' => '宣言済みの危険なAPIを使用しています: :permission',
     'dangerous_api_detected' => '危険なAPIが検出されました: :permission',
