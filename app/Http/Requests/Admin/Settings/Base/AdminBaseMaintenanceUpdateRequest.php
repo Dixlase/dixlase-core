@@ -35,6 +35,7 @@
 
 namespace App\Http\Requests\Admin\Settings\Base;
 
+use App\Helpers\DateTimeHelper;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminBaseMaintenanceUpdateRequest extends FormRequest
@@ -82,6 +83,41 @@ class AdminBaseMaintenanceUpdateRequest extends FormRequest
             $this->merge([
                 'maintenance_release_at' => null,
             ]);
+        }
+
+        $this->readWindowInDisplayTimezone();
+    }
+
+    /**
+     * The window fields are <x-form-datetime>, so they submit a wall clock
+     * in the display timezone, not UTC. Read here, before validation, so
+     * maintenance_release_at's `after:maintenance_start_at` compares two
+     * normalized values; stored raw, a window typed for 10:00 opened at
+     * 19:00 on a site displaying Asia/Tokyo.
+     */
+    private function readWindowInDisplayTimezone(): void
+    {
+        $merge = [];
+
+        foreach (['maintenance_start_at', 'maintenance_release_at'] as $field) {
+            $value = $this->input($field);
+
+            if (! is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            $utc = DateTimeHelper::fromInput($value);
+
+            // An unparseable value is left exactly as submitted, so the
+            // field's `date` rule reports it. Merging the null would pass
+            // `nullable` and drop what was typed without saying so.
+            if ($utc !== null) {
+                $merge[$field] = $utc;
+            }
+        }
+
+        if ($merge !== []) {
+            $this->merge($merge);
         }
     }
 }
