@@ -100,7 +100,7 @@ class FileContentRegistry
             try {
                 foreach ($modelClass::fileStoredQuery()->cursor() as $model) {
                     /** @var PublishesFileContent&Model $model */
-                    $publisher->check($model);
+                    $publisher->check($model, FileContentPublisher::DETECTED_BY_SCAN);
                     $checked++;
                 }
             } catch (Throwable $e) {

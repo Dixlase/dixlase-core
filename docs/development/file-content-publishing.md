@@ -114,8 +114,23 @@ setting otherwise says nowhere that review before publishing has been given up.
 
 | Action | Category | Written when |
 |---|---|---|
-| `{prefix}.file_changed` | content (warning) | A change made outside the admin is first seen. `context.published` tells whether the whole change went live; `context.held` names the parts that were kept back for review |
+| `{prefix}.file_changed` | content (warning) | A change made outside the admin is first seen |
 | `{prefix}.published_from_file` | content | The changes are published from the edit screen |
+
+### What `file_changed` carries
+
+| Key | Value |
+|---|---|
+| `source` | Always `outside_admin`. The entry's actor is the system because the application cannot know who wrote a file outside it — not because Dixlase made the change. The audit log view says so next to the actor |
+| `detected_by` | `render` (a page or an edit screen was read) or `scan` (the scheduled integrity scan). With cron off, only `render` ever happens |
+| `published_hash` | The hash of the published copy **before** this change |
+| `file_hash` | The hash of the files **as found** |
+| `publish_mode` | `admin` or `file_save` |
+| `parts` | The parts whose files differ from the published copy |
+| `held` | The parts kept back for review (see above). Empty when the whole change went live |
+| `published` | True only when the whole change went live |
+
+`published_from_file` carries `parts` and `published_hash` — the hash the record now publishes, which is the `file_hash` of the `file_changed` entry the approval answered. The approver is the entry's actor, and the publish is also recorded as a `manual` revision.
 
 Changing the mode is audited as a settings change (`settings_updated`, with the owner's
 settings page as the target).

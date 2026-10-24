@@ -73,6 +73,15 @@ repository to be notified of changes.
   (#679). The action ends every session of the account, like a force logout, but left no
   entry; it now writes `email_verification_reset` with who sent it and how many sessions
   ended
+- Installing, uninstalling, enabling, disabling and deleting a plugin, and installing,
+  uninstalling, deleting and switching a theme, are recorded in the audit log when run from
+  the command line (#630). The commands now write the entry themselves, so a run from the
+  command line is recorded with actor source `cli`, and one from the admin panel is
+  recorded once, as before, with the member who asked for it. Deleting an extension's files
+  is recorded for the first time (`plugin_deleted` / `theme_deleted`), from the admin panel
+  too. An install or enable that `--force` pushed past the license check or the health check
+  records what was overridden. `dls:plugin:install` no longer claims to record a refusal it
+  did not record
 
 - The media selector's page navigation stays in view (#729). It sat at the bottom of the
   scrolling grid, so with more than one page an author had to scroll to the end to find it

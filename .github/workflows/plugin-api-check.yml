@@ -3,6 +3,7 @@ name: Plugin API Boundary Check
 on:
   push:
     branches:
+      - next
       - main
       - 'feature/**'
     paths-ignore:
@@ -10,6 +11,7 @@ on:
       - 'docs/**'
   pull_request:
     branches:
+      - next
       - main
     paths-ignore:
       - '**.md'

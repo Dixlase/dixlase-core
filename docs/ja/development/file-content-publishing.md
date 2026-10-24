@@ -80,7 +80,22 @@
 
 | アクション | カテゴリ | 記録されるとき |
 |---|---|---|
-| `{prefix}.file_changed` | content(warning) | 管理画面の外での変更を最初に見たとき。`context.published` は変更全体が反映されたかを示し、`context.held` には確認のために取り込まなかった部分の名前が入る |
+| `{prefix}.file_changed` | content(warning) | 管理画面の外での変更を最初に見たとき |
 | `{prefix}.published_from_file` | content | 編集画面から変更を公開したとき |
+
+### `file_changed` が持つもの
+
+| キー | 値 |
+|---|---|
+| `source` | 常に `outside_admin`。このエントリの実行者がシステムなのは、アプリの外でファイルを書いた人をアプリが知りようがないからであって、Dixlase が変更したからではない。監査ログの画面でも実行者の横にその旨を出す |
+| `detected_by` | `render`（ページや編集画面を表示したとき）か `scan`（定期の整合性スキャン）。cron が無効なら `render` しか起こらない |
+| `published_hash` | この変更の**前に**公開されていた版のハッシュ |
+| `file_hash` | **見つけたときの**ファイルのハッシュ |
+| `publish_mode` | `admin` か `file_save` |
+| `parts` | ファイルが公開済みのコピーと異なる部分 |
+| `held` | 確認のために取り込まなかった部分（上記参照）。変更全体が反映されたときは空 |
+| `published` | 変更全体が反映されたときだけ true |
+
+`published_from_file` は `parts` と `published_hash` を持ちます。`published_hash` はそのレコードが現在公開しているハッシュで、この承認が応えた `file_changed` エントリの `file_hash` と一致します。承認した人はこのエントリの実行者で、公開は `manual` のリビジョンとしても記録されます。
 
 公開のしかたの変更は、設定の変更(`settings_updated`、対象は持ち主の設定画面)として記録されます。

@@ -144,19 +144,21 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 - Exception: when the user explicitly names the branch (e.g. "create branch `task-3-foo`")
 
 ### Sync Local Checkout Before Branching
-- In long-lived development checkouts (e.g., `dixlase-core` under `html/`, shared multi-developer plugin/theme repos), **always sync with remote before cutting a feature branch**
-- A clean working tree and "up to date" are different — `git status` showing `## main...origin/main` only means "local matches the origin pointer at the time you last fetched", not "local matches upstream right now"
-- Required pre-branch check:
+- Every repository has two long-lived branches: **`next`**, the default branch, where development lands, and **`main`**, which is exactly the latest release (see the gate below). **New work always starts from `origin/next`** — right after a release too.
+- A clean working tree and "up to date" are different — `git status` showing `## next...origin/next` only means "local matches the origin pointer at the time you last fetched", not "local matches upstream right now"
+- Required before starting work:
   ```bash
-  git fetch origin
-  git log --oneline HEAD..origin/<base-branch> | head   # empty output = OK to branch
-  git checkout -b <new-branch>
+  git fetch origin                                      # fetch, not pull: pull merges into whatever branch you are on
+  git switch -c <new-branch> origin/next                # a new branch starts from the remote next
+  git merge origin/next                                 # an open branch takes in next first
   ```
-- If `git log HEAD..origin/<base>` has unfetched commits, fast-forward / rebase the local base first, then branch
+- Checking out `next` to read or verify the code is fine. **A change is still made on a branch**, never committed on `next` directly, so that CI checks it before it reaches `next`
+- In a shared checkout (the Dev checkout's `plugins/` and `themes/`), cut a worktree from `origin/next` outside those directories instead of switching the shared directory's branch
+- A repository without a `next` branch (`git ls-remote --heads origin next` prints nothing) has not moved yet: read `next` as `main` there
 - Skipping this step is the #1 cause of duplicate-implementation PRs that re-do already-merged changes
 
 ### Pull Request Number in Merge / Squash Commits
-- When a change lands through a pull request, the **PR number (`#N`) must appear in the resulting merge or squash commit subject** — every commit in `main`'s history should be traceable back to its PR by number.
+- When a change lands through a pull request, the **PR number (`#N`) must appear in the resulting merge or squash commit subject** — every commit in `next`'s history — and so in `main`'s — should be traceable back to its PR by number.
   - GitHub's *Create a merge commit* (`Merge pull request #N from …`) and *Squash and merge* (`<subject> (#N)`) both include `#N` by default. Keep that default; never strip it or rewrite the subject without it.
   - When you merge a PR's branch locally instead (`git merge <branch>`), add the number to the message yourself — a trailing `(#N)` on the subject, or a `PR #N` / `Closes #N` line in the body.
 
@@ -173,29 +175,41 @@ The database is not the only thing a test run can destroy. Tests that exercise f
 
 ### Branch, Verify, Merge, Release — the gate for core and extensions
 
-Two things must hold at all times, and they are separate requirements:
+Every repository has two long-lived branches:
 
-- **A repository's remote `main` is always stable.** It is what every site, every CI run and every other session builds on.
+- **`main` is exactly the latest release.** It is the commit of the newest tag, and it is signed where the repository signs. **Only a release moves it.** Nothing else is ever committed, pushed or merged to `main`, so a push to `main`, a deploy from `main` and an install that clones `main` all mean "the latest release".
+- **`next` is the next version under development.** It is GitHub's default branch, it carries a `-dev` version (`0.2.6-dev`), and every pull request targets it — Dependabot's included. It must be stable at all times: a release can be cut from it at any moment.
+
+Two more things must hold at all times:
+
+- **Nothing reaches `next` without passing CI.** It is what every other session builds on.
 - **A production site receives only a signed, tagged release.** Nothing else reaches it.
 
 **The gate, in order:**
 
-1. **Branch.** Never commit implementation work on `main`. Confirm the branch with the maintainer first, and sync the base before cutting it (see the two rules above on confirmation and syncing).
-2. **Push the branch and open a pull request.** CI runs here, which is the point: it runs *before* remote `main` has the change. Local verification is not a substitute — it exercises behaviour, while CI runs the suite, PHPStan, Pint, the migration lint and the manifest check. A change can pass by hand and fail PHPStan.
-3. **Bring the base into the branch** (`git merge origin/main`, or GitHub's *Update branch*). The branch tree is then the tree the merge will produce, so what you verify next is what `main` gets.
+1. **Branch.** `git fetch origin`, then cut the branch from `origin/next` (see the syncing rule above). Never commit implementation work on `next` or `main`. Confirm the branch with the maintainer first.
+2. **Push the branch and open a pull request against `next`.** CI runs here, which is the point: it runs *before* `next` has the change. Local verification is not a substitute — it exercises behaviour, while CI runs the suite, PHPStan, Pint, the migration lint and the manifest check. A change can pass by hand and fail PHPStan.
+3. **Bring the base into the branch** (`git merge origin/next`, or GitHub's *Update branch*). The branch tree is then the tree the merge will produce, so what you verify next is what `next` gets.
 4. **Verify locally.** Use the site checkout that owns the verification — each site has its own core root and its own `plugins/`. Do **not** switch a branch inside the shared Dev checkout's `plugins/` or `themes/`: parallel sessions read those directories, and switching one has been done out from under another session before. After checking a branch out inside a plugin or theme, regenerate the autoload, and again when you switch back — see the autoload rule below; `composer.local.json` otherwise still describes the branch you left.
-5. **Merge the pull request, then delete the working branch** — remote and local. The merge or squash commit keeps its `#N`, so every commit on `main` stays traceable to its pull request.
+5. **Merge the pull request into `next` — never into `main` — then delete the working branch**, remote and local. The merge or squash commit keeps its `#N`, so every commit stays traceable to its pull request.
 6. **Approval by the maintainer**, before anything is released. Approval is tied to a **commit**: any commit after it voids it, otherwise "approved" drifts the way a signature does.
-7. **Release.** Bump → changelog → **sign** → commit → tag, in that order, in the environment that holds the signing key. Signing is last because the signature manifest covers the version files and the changelog, so a signature made earlier invalidates itself. A public repository then gets a GitHub Release and a ZIP, and the ZIP is checked against the signature; an unpublished repository gets the tag alone.
-8. **Deploy.** Triggered by the release, never by a push to `main`, and it verifies the signature before installing. Verification needs only the **public** key, which the key-publishing site serves, so no secret is involved.
+7. **Release** — only in the environment that holds the signing key. Every other session asks for a release; it never signs, tags, releases or moves `main`. Prepare everything locally and push once, so the remote `main` never holds an unreleased tree:
+   1. `git fetch origin`, `git switch -C main origin/main`, `git merge --ff-only origin/next`. A refused fast-forward means `main` has a commit `next` lacks: stop and report; never create a merge commit on `main`.
+   2. On `main`: bump (drop `-dev`) → changelog → **sign** → commit → annotated tag. Signing is last because the signature manifest covers the version files and the changelog, so a signature made earlier invalidates itself.
+   3. `git push --atomic origin main <tag>` — never force-push `main`.
+   4. A public repository then gets a GitHub Release and a ZIP, and the ZIP is checked against the signature; an unpublished repository gets the tag alone.
+   5. **At once, in the same session, start the new `next` from `main`:** `git merge --ff-only origin/main` on `next`, bump to the next patch with `-dev`, and push. That bump is the one commit pushed to `next` without a pull request. Never delete `next` to re-create it — the default branch cannot be deleted, and deleting a branch closes every pull request that targets it. If something was merged into `next` while the release was being cut, the fast-forward is refused: merge `origin/main` into `next` instead, so nothing is lost, and report what missed the release.
+8. **Deploy.** Triggered by the release, never by a merge, and it verifies the signature before installing. A deploy that runs on a push to `main` is the same thing now, because `main` moves only at a release. Verification needs only the **public** key, which the key-publishing site serves, so no secret is involved.
 
-**After the tag, `main` carries a development version.** A released version number on `main` is a claim that `main` *is* that release, and the next merge makes it false. So the release is followed by a bump to the next patch with a `-dev` suffix (`0.1.9` → `0.1.10-dev`), on its own pull request, and the next release's bump is what removes the suffix again. `scripts/bump-version.php` and the manifest consistency test both accept the suffix, and `version_compare` places `0.1.10-dev` above `0.1.9` and below `0.1.10`, so an install that tracks `main` is never offered the release it has already passed. This matters wherever a branch can be installed: the Docker installer clones core at `main` (`dixlase-core#548`).
+**`next` carries a development version.** A released version number on a development line is a claim that it *is* that release, and the next merge makes it false. So `next` is bumped to the next patch with a `-dev` suffix (`0.1.9` → `0.1.10-dev`) right after the release, and the next release's bump is what removes the suffix again. `scripts/bump-version.php` and the manifest consistency test both accept the suffix, and `version_compare` places `0.1.10-dev` above `0.1.9` and below `0.1.10`, so an install that tracks `next` is never offered the release it has already passed. An install that clones `main` — the Docker installer clones core at `main` (`dixlase-core#548`) — gets the latest release.
+
+**A hotfix of a released version** branches from `main`: cut `hotfix/<issue>-<slug>` from `origin/main`, release from it with step 7 (bump → changelog → sign → commit → tag), fast-forward `main` to the new tag, then merge `origin/main` into `next` in place of step 7.5, keeping `next`'s `-dev` version.
 
 **Where the signing steps apply.** Steps 7 and 8 assume the thing being released carries a signature manifest (`files` in `plugin.json` / `theme.json`). Core does not carry one yet, so a core release is bump → changelog → commit → tag with no signature to refresh, and a core change does not force a release the way an extension change does. When core gains a manifest, this rule applies to it unchanged.
 
 **A change that ships no runnable code** — documentation, AI rules, a changelog — skips step 4, because there is nothing to exercise. It still goes through 5 onward: where a manifest covers those files, skipping the release would leave the signature invalid.
 
-**A change spanning core and an extension.** An extension's CI checks out core at `ref: main`, so an extension pull request that needs an unreleased core change cannot go green. Land the core side on `main` first, keeping it backwards-compatible, then the extension. Do not work around it by pointing CI at a branch.
+**A change spanning core and an extension.** An extension's CI checks out core at `ref: main` — core's latest release — so an extension pull request that needs an unreleased core change cannot go green. Land the core side first, keeping it backwards-compatible, and have it released; then the extension. Do not work around it by pointing CI at a branch.
 
 **Staging.** Default is local-only; staging is not a required step. Reach for it when what you need to verify depends on the server's own shape and a local container cannot show it: the Installer layout, the reverse proxy and TLS, cron, mail delivery, queue workers, or data volume.
 

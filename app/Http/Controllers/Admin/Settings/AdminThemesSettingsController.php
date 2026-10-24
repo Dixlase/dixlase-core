@@ -56,7 +56,6 @@ use App\Services\Extension\ExtensionRescanService;
 use App\Services\Extension\ExtensionScanPolicy;
 use App\Services\Extension\ExtensionSourceSidecar;
 use App\Services\Extension\ExtensionSourceSnapshot;
-use App\Services\ExtensionOperationService;
 use App\Services\Theme\ThemeHealthScorer;
 use App\Services\Theme\ThemePermissionService;
 use App\Support\ComposerLocalManifest;
@@ -650,6 +649,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                 '--force' => true,
                 '--no-interaction' => true,
                 '--source' => $linkage['source_id'] ?? null,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ], fn ($v) => $v !== null));
 
             // A refused install leaves the files where they were, so keep
@@ -690,20 +690,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
                 // Run audit after installation
                 $this->runThemeAudit($theme->slug);
-
-                $permissionService = app(ThemePermissionService::class);
-                $summary = $permissionService->getSummary($theme->slug);
-
-                app(ExtensionOperationService::class)->recordOperation(
-                    ExtensionOperationService::TYPE_THEME,
-                    ExtensionOperationService::OPERATION_INSTALLED,
-                    [
-                        'name' => $theme->name,
-                        'slug' => $theme->slug,
-                        'version' => $theme->version ?? null,
-                        'health_status' => $summary['risk_level'] ?? 'unknown',
-                    ]
-                );
             }
 
             $redirect = redirect()->route('admin.settings.themes.index')
@@ -754,20 +740,13 @@ class AdminThemesSettingsController extends AdminLoggedInController
             return back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.active_theme_cannot_uninstall'));
         }
 
-        // Save theme information for notification
-        $themeData = [
-            'name' => $theme->name,
-            'slug' => $theme->slug,
-            'version' => $theme->version ?? null,
-            'health_status' => 'low', // no health warning needed on uninstall
-        ];
-
         try {
             // Uninstall using command
             $options = [
                 'themeName' => $theme->slug,
                 '--force' => true,
                 '--no-interaction' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ];
 
             // If DB data should also be deleted
@@ -776,13 +755,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
             }
 
             Artisan::call('dls:theme:uninstall', $options);
-
-            // Notification and logging of extension operations
-            app(ExtensionOperationService::class)->recordOperation(
-                ExtensionOperationService::TYPE_THEME,
-                ExtensionOperationService::OPERATION_UNINSTALLED,
-                $themeData
-            );
 
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_uninstalled'));
@@ -818,6 +790,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $exitCode = Artisan::call('dls:theme:switch', [
                 'themeName' => $theme->slug,
                 '--force' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ]);
 
             if ($exitCode !== 0) {
@@ -830,21 +803,6 @@ class AdminThemesSettingsController extends AdminLoggedInController
 
                 return redirect()->back()->with('error', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switch_failed'));
             }
-
-            // Notification and logging of extension operations
-            $permissionService = app(ThemePermissionService::class);
-            $summary = $permissionService->getSummary($theme->slug);
-
-            app(ExtensionOperationService::class)->recordOperation(
-                ExtensionOperationService::TYPE_THEME,
-                ExtensionOperationService::OPERATION_ENABLED,
-                [
-                    'name' => $theme->name,
-                    'slug' => $theme->slug,
-                    'version' => $theme->version ?? null,
-                    'health_status' => $summary['risk_level'] ?? 'unknown',
-                ]
-            );
 
             return redirect()->route('admin.settings.themes.index')
                 ->with('success', __('http/controllers/admin/settings/admin_themes_settings_controller.theme_switched'));
@@ -877,6 +835,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
                     'themeName' => $theme->slug,
                     '--force' => true,
                     '--no-interaction' => true,
+                    '--applied-by' => AdminHelper::getMember()?->id,
                 ]);
 
                 if ($exitCode !== 0) {
@@ -895,6 +854,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
             $exitCode = Artisan::call('dls:theme:delete', [
                 'themeDirectory' => $themeDir,
                 '--force' => true,
+                '--applied-by' => AdminHelper::getMember()?->id,
             ]);
 
             if ($exitCode !== 0) {

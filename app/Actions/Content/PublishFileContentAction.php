@@ -111,6 +111,14 @@ class PublishFileContentAction extends AbstractAction
      */
     protected function buildAuditContext(array $data, ActionResult $result): array
     {
-        return ['parts' => $this->parts];
+        return [
+            'parts' => $this->parts,
+            // The hash the record now publishes. Together with the
+            // file_changed entry's published_hash it says which copy this
+            // approval moved the record from and to.
+            'published_hash' => FileContentPublisher::hash(
+                $this->publisher->publishedParts($this->model),
+            ),
+        ];
     }
 }

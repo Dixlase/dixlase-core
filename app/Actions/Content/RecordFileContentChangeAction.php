@@ -61,6 +61,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RecordFileContentChangeAction extends AbstractAction
 {
+    /**
+     * Nobody known made this change: it arrived through the files
+     *
+     * @api Read it from the audit context to tell such an entry apart from
+     *      one Dixlase wrote by itself.
+     */
+    public const SOURCE_OUTSIDE_ADMIN = 'outside_admin';
+
     private ContentPublishMode $mode;
 
     /** @var list<string> */
@@ -72,11 +80,18 @@ class RecordFileContentChangeAction extends AbstractAction
     /**
      * @param  PublishesFileContent&Model  $model
      * @param  array<string, string>  $files  The files as just read
+     * @param  string  $detectedBy  {@see FileContentPublisher::DETECTED_BY_RENDER}
+     *                              or {@see FileContentPublisher::DETECTED_BY_SCAN}
+     * @param  string  $publishedHash  The published copy's hash as it stood
+     *                                 before this change, taken by the caller
+     *                                 because handle() may move it
      */
     public function __construct(
         protected readonly PublishesFileContent $model,
         protected readonly FileContentPublisher $publisher,
         protected readonly array $files,
+        protected readonly string $detectedBy = FileContentPublisher::DETECTED_BY_RENDER,
+        protected readonly string $publishedHash = '',
     ) {
         $this->mode = $model->fileContentPublishMode();
     }
@@ -157,6 +172,15 @@ class RecordFileContentChangeAction extends AbstractAction
     protected function buildAuditContext(array $data, ActionResult $result): array
     {
         return [
+            // The actor is the system, because the application cannot know
+            // who wrote a file outside it. Saying so in the entry keeps a
+            // reader from taking it for a change Dixlase made by itself.
+            'source' => self::SOURCE_OUTSIDE_ADMIN,
+            'detected_by' => $this->detectedBy,
+            // What the record published before this change, and what the
+            // files held when it was found.
+            'published_hash' => $this->publishedHash,
+            'file_hash' => FileContentPublisher::hash($this->files),
             'publish_mode' => $this->mode->value,
             'parts' => $this->parts,
             // The parts that were not taken in and are waiting to be

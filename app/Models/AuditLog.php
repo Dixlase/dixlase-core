@@ -284,6 +284,8 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_UNINSTALLED = 'plugin_uninstalled';
 
+    public const ACTION_PLUGIN_DELETED = 'plugin_deleted';
+
     /**
      * A plugin's service provider threw while registering or booting, so the
      * plugin was skipped for that request and the site kept running
@@ -325,6 +327,8 @@ class AuditLog extends Model
     public const ACTION_THEME_DISABLED = 'theme_disabled';
 
     public const ACTION_THEME_UNINSTALLED = 'theme_uninstalled';
+
+    public const ACTION_THEME_DELETED = 'theme_deleted';
 
     public const ACTION_THEME_UPDATED = 'theme_updated';
 
@@ -823,6 +827,7 @@ class AuditLog extends Model
         $extensionActions = [
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
             self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_PLUGIN_DELETED, self::ACTION_THEME_DELETED,
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
@@ -957,8 +962,10 @@ class AuditLog extends Model
             self::ACTION_LOCKOUT_RELEASED,      // Unlock lockout
             self::ACTION_PLUGIN_INSTALLED,      // Plugin installation
             self::ACTION_PLUGIN_UNINSTALLED,    // Plugin uninstallation
+            self::ACTION_PLUGIN_DELETED,        // Plugin files deleted
             self::ACTION_THEME_INSTALLED,       // Theme installation
             self::ACTION_THEME_UNINSTALLED,     // Theme uninstallation
+            self::ACTION_THEME_DELETED,         // Theme files deleted
             self::ACTION_API_KEY_CREATED,       // API key created
             self::ACTION_API_KEY_REVOKED,       // API key revoked
             self::ACTION_API_KEY_REGENERATED,   // API key regenerated
@@ -1090,6 +1097,7 @@ class AuditLog extends Model
             self::ACTION_EMAIL_VERIFICATION_RESET,
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
             self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_PLUGIN_DELETED, self::ACTION_THEME_DELETED,
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
@@ -1115,6 +1123,7 @@ class AuditLog extends Model
             self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_RELEASED,
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_UNINSTALLED,
             self::ACTION_THEME_INSTALLED, self::ACTION_THEME_UNINSTALLED,
+            self::ACTION_PLUGIN_DELETED, self::ACTION_THEME_DELETED,
         ];
 
         return $query->whereIn('action', $allActions);
@@ -1143,6 +1152,7 @@ class AuditLog extends Model
             self::ACTION_EMAIL_VERIFICATION_RESET,
             self::ACTION_PLUGIN_INSTALLED, self::ACTION_PLUGIN_ENABLED,
             self::ACTION_PLUGIN_DISABLED, self::ACTION_PLUGIN_UNINSTALLED,
+            self::ACTION_PLUGIN_DELETED, self::ACTION_THEME_DELETED,
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,

@@ -71,6 +71,19 @@ class FileContentPublisher
     public const DEFAULT_SCRIPT_CAPABLE_PARTS = ['custom_css', 'custom_js'];
 
     /**
+     * A change was noticed while a page or an edit screen was being read
+     */
+    public const DETECTED_BY_RENDER = 'render';
+
+    /**
+     * A change was noticed by the scheduled integrity scan
+     *
+     * Worth telling apart from a render: with cron off, nothing finds a
+     * change until somebody looks at the page.
+     */
+    public const DETECTED_BY_SCAN = 'scan';
+
+    /**
      * The value of a part to render
      *
      * Looks at the files first, so a change made outside the admin is
@@ -95,8 +108,14 @@ class FileContentPublisher
      * Compare the files with what was last seen, and record a change once
      *
      * @param  PublishesFileContent&Model  $model
+     * @param  string  $detectedBy  How this check came about, recorded in the
+     *                              audit entry: {@see DETECTED_BY_RENDER} when
+     *                              a page or an edit screen was being read,
+     *                              {@see DETECTED_BY_SCAN} from the scheduled
+     *                              scan. The default suits a render, which is
+     *                              every call site but the scan.
      */
-    public function check(PublishesFileContent $model): void
+    public function check(PublishesFileContent $model, string $detectedBy = self::DETECTED_BY_RENDER): void
     {
         if (! $model->usesFileStorage()) {
             return;
@@ -104,8 +123,9 @@ class FileContentPublisher
 
         $files = $this->readFiles($model);
         $fileHash = self::hash($files);
+        $publishedHash = $this->publishedHash($model);
 
-        if ($fileHash === $this->publishedHash($model)) {
+        if ($fileHash === $publishedHash) {
             if ($model->getAttribute(FileContentColumns::FILE_HASH) !== $fileHash) {
                 $this->storeHashes($model, $fileHash, $fileHash);
             }
@@ -128,7 +148,7 @@ class FileContentPublisher
             return;
         }
 
-        (new RecordFileContentChangeAction($model, $this, $files))
+        (new RecordFileContentChangeAction($model, $this, $files, $detectedBy, $publishedHash))
             ->execute(new SystemActor('file-content'), []);
     }
 

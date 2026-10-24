@@ -36,21 +36,24 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\GuardsExtensionActivation;
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Models\Plugin;
 use App\Providers\PluginServiceProvider;
 use App\Services\Extension\PluginAutoloadState;
+use App\Services\ExtensionOperationService;
 use Illuminate\Console\Command;
 
 class PluginEnable extends Command
 {
     use GuardsExtensionActivation;
+    use RecordsExtensionOperation;
 
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable} {--force : Enable even when the health check asks for confirmation (warning or acknowledgement); a blocked plugin is still refused}';
+    protected $signature = 'dls:plugin:enable {pluginName : The name of the plugin to enable} {--force : Enable even when the health check asks for confirmation (warning or acknowledgement); a blocked plugin is still refused} {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -108,6 +111,13 @@ class PluginEnable extends Command
         // the next CSS build. Safe no-op when the plugin declares
         // no `declares.tailwind_content`.
         app(\App\Services\Tailwind\PluginSourceAggregator::class)->regenerate();
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_PLUGIN, ExtensionOperationService::OPERATION_ENABLED, $plugin, [
+            'name' => $pluginName,
+            'slug' => $plugin->slug,
+            'version' => $plugin->version,
+            'health_status' => $this->extensionHealthStatus(ExtensionOperationService::TYPE_PLUGIN, (string) $plugin->slug),
+        ]);
 
         $this->info(__('admin/command/plugin-enable.enabled', ['pluginName' => $pluginName]));
 

@@ -215,6 +215,12 @@ enum PluginHealthStatus: string
             'incompatible_api_version' => -15,
             'malformed_api_constraint' => -10,
 
+            // requires.dixlase / requires.php: the extension says it will not
+            // work here. Weighted like an invalid signature, because the
+            // manifest is making a claim about this site, not about quality.
+            'unmet_requirement' => -40,
+            'malformed_requirement' => -10,
+
             // License declaration (SPDX whitelist; see config/licensing.php
             // for per-deployment override of these defaults)
             'missing_license' => -10,
@@ -262,6 +268,7 @@ enum PluginHealthStatus: string
             'dangerous_api_exec',
             'permission_undeclared_major',
             'license_refused',
+            'unmet_requirement',
         ];
 
         return in_array($issueType, $criticalIssues, true);

@@ -35,20 +35,25 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
+use App\Services\ExtensionOperationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class PluginDelete extends Command
 {
+    use RecordsExtensionOperation;
+
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
     protected $signature = 'dls:plugin:delete {pluginDirectory : The directory name of the plugin to delete}
-                            {--force : Force delete without confirmation}';
+                            {--force : Force delete without confirmation}
+                            {--applied-by= : Member id recorded as the actor (the admin screen passes it; CLI runs record none)}';
 
     /**
      * The console command description.
@@ -131,6 +136,10 @@ class PluginDelete extends Command
             }
         }
 
+        // What the files said they were, read before they go.
+        $manifest = json_decode((string) @file_get_contents($pluginPath.'/plugin.json'), true);
+        $manifest = is_array($manifest) ? $manifest : [];
+
         // Delete directory
         try {
             File::deleteDirectory($pluginPath);
@@ -147,6 +156,12 @@ class PluginDelete extends Command
 
         // Note: Only update composer.local.json, keep composer.json in pristine state
         // Reflect autoload changes by manually running `composer dump-autoload`
+
+        $this->recordExtensionOperation(ExtensionOperationService::TYPE_PLUGIN, ExtensionOperationService::OPERATION_DELETED, null, [
+            'name' => $pluginDirectory,
+            'slug' => is_string($manifest['slug'] ?? null) ? $manifest['slug'] : null,
+            'version' => is_string($manifest['version'] ?? null) ? $manifest['version'] : null,
+        ]);
 
         $this->info(__('admin/command/plugin-delete.completed', ['directory' => $pluginDirectory]));
 
