@@ -83,10 +83,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="mb-4">
                     <label for="maintenance_start_at">{{ __('admin/settings/base/maintenance.start_at') }}</label>
-                    <x-form-text
-                        type="datetime-local"
+                    <x-form-datetime
                         name="maintenance_start_at"
-                        :value="old('maintenance_start_at', $settings['maintenance_start_at'] ? \Carbon\Carbon::parse($settings['maintenance_start_at'])->format('Y-m-d\TH:i') : '')"
+                        :value="old('maintenance_start_at', $settings['maintenance_start_at'])"
                         x-bind:disabled="maintenanceMode === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.start_at_help') }}</p>
@@ -94,10 +93,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="mb-4">
                     <label for="maintenance_release_at">{{ __('admin/settings/base/maintenance.release_at') }}</label>
-                    <x-form-text
-                        type="datetime-local"
+                    <x-form-datetime
                         name="maintenance_release_at"
-                        :value="old('maintenance_release_at', $settings['maintenance_release_at'] ? \Carbon\Carbon::parse($settings['maintenance_release_at'])->format('Y-m-d\TH:i') : '')"
+                        :value="old('maintenance_release_at', $settings['maintenance_release_at'])"
                         x-bind:disabled="maintenanceMode === '0'"
                     />
                     <p class="text-sm text-gray-600 mt-1">{{ __('admin/settings/base/maintenance.release_at_help') }}</p>
