@@ -73,6 +73,14 @@ class PluginServiceProvider extends ServiceProvider
 
         // Register plugin ServiceProviders (for loading settings)
         $this->registerPluginServiceProviders();
+
+        // This runs before later core providers have registered, so a plugin
+        // that failed here is tried again once they all have, and reported
+        // only if it fails then (#768). Booting callbacks run before any
+        // provider boots.
+        $this->app->booting(function (): void {
+            $this->app->make(GuardedPluginLoader::class)->retryDeferred();
+        });
     }
 
     /**
@@ -163,7 +171,7 @@ class PluginServiceProvider extends ServiceProvider
      */
     protected function registerGuarded(string $provider, string $pluginDirectory): void
     {
-        $this->app->make(GuardedPluginLoader::class)->load($provider, $pluginDirectory);
+        $this->app->make(GuardedPluginLoader::class)->load($provider, $pluginDirectory, retryLater: true);
     }
 
     /**

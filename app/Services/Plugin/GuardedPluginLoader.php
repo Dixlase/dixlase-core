@@ -68,6 +68,14 @@ class GuardedPluginLoader
     /** @var array<class-string, true> */
     private array $seen = [];
 
+    /**
+     * Providers that failed to register on the early path, keyed by class,
+     * waiting for retryDeferred() before anything is reported
+     *
+     * @var array<class-string, string>
+     */
+    private array $deferred = [];
+
     public function __construct(private readonly Application $app) {}
 
     /**
@@ -77,8 +85,14 @@ class GuardedPluginLoader
      * PluginServiceProvider and the database list in PluginLoaderTrait -- and
      * the same provider can arrive from both. The first one wins; the second
      * is a no-op, which is what Laravel's own register() did for it before.
+     *
+     * The early path runs while core's own providers are still registering,
+     * so a plugin may throw there only because a binding it needs is not
+     * made yet. With $retryLater, such a failure is held, not reported:
+     * retryDeferred() tries the provider again once every core provider has
+     * registered, and only a failure there is logged and audited (#768).
      */
-    public function load(string $providerClass, string $plugin): void
+    public function load(string $providerClass, string $plugin, bool $retryLater = false): void
     {
         if (isset($this->seen[$providerClass])) {
             return;
@@ -101,11 +115,20 @@ class GuardedPluginLoader
             // exist -- a plugin that cannot register yet may register fine
             // when the later path reaches it. Marking it here would turn a
             // recoverable ordering problem into a plugin that never loads.
+            if ($retryLater) {
+                // Nor reported yet: logging "disabled" about a plugin that
+                // registers a moment later is a false alarm on every request.
+                $this->deferred[$providerClass] = $plugin;
+
+                return;
+            }
+
             $this->record($plugin, $providerClass, $provider === null ? 'construct' : 'register', $e);
 
             return;
         }
 
+        unset($this->deferred[$providerClass]);
         $this->seen[$providerClass] = true;
         $this->pending[$providerClass] = ['plugin' => $plugin, 'provider' => $provider];
 
@@ -121,6 +144,23 @@ class GuardedPluginLoader
         // or a provider loaded by a command. Boot it now, or it never boots.
         if ($this->app->isBooted()) {
             $this->bootPending();
+        }
+    }
+
+    /**
+     * Register again the providers the early path held, reporting a failure
+     *
+     * Called once every core provider has registered (a booting callback of
+     * PluginServiceProvider), so a binding a plugin needs exists by now. A
+     * provider the later path has registered meanwhile is skipped.
+     */
+    public function retryDeferred(): void
+    {
+        $deferred = $this->deferred;
+        $this->deferred = [];
+
+        foreach ($deferred as $providerClass => $plugin) {
+            $this->load($providerClass, $plugin);
         }
     }
 
