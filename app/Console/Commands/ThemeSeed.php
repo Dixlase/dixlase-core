@@ -35,6 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Models\Theme;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -43,6 +45,8 @@ use Illuminate\Support\Str;
 
 class ThemeSeed extends Command
 {
+    use RecordsExtensionStep;
+
     /**
      * The name and signature of the console command.
      *
@@ -98,6 +102,7 @@ class ThemeSeed extends Command
 
             $this->info(Artisan::output());
             $this->info("Seeding completed successfully for theme: {$themeName}");
+            $this->recordExtensionStep(AuditLog::ACTION_THEME_SEEDED, 'theme', $themeName, ['seeder' => $seederClassName]);
 
             return 0;
         } catch (\Exception $e) {

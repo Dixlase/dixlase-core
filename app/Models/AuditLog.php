@@ -300,6 +300,15 @@ class AuditLog extends Model
 
     public const ACTION_PLUGIN_ROLLBACK_FAILED = 'plugin_rollback_failed';
 
+    // Step commands run on their own, outside an install, update or
+    // rollback that records itself (dls:plugin:migrate, :migrate:rollback,
+    // :migrate:refresh, :seed)
+    public const ACTION_PLUGIN_MIGRATED = 'plugin_migrated';
+
+    public const ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK = 'plugin_migrations_rolled_back';
+
+    public const ACTION_PLUGIN_SEEDED = 'plugin_seeded';
+
     // The recorded version was reconciled with the manifest on disk: the
     // files moved without going through an install or an update.
     public const ACTION_PLUGIN_VERSION_RECONCILED = 'plugin_version_reconciled';
@@ -337,6 +346,15 @@ class AuditLog extends Model
     public const ACTION_THEME_ROLLED_BACK = 'theme_rolled_back';
 
     public const ACTION_THEME_ROLLBACK_FAILED = 'theme_rollback_failed';
+
+    // Theme step commands, as for plugins, plus dls:theme:build (npm scripts)
+    public const ACTION_THEME_MIGRATED = 'theme_migrated';
+
+    public const ACTION_THEME_MIGRATIONS_ROLLED_BACK = 'theme_migrations_rolled_back';
+
+    public const ACTION_THEME_SEEDED = 'theme_seeded';
+
+    public const ACTION_THEME_BUILT = 'theme_built';
 
     public const ACTION_THEME_VERSION_RECONCILED = 'theme_version_reconciled';
 
@@ -834,6 +852,10 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UPDATE_FAILED, self::ACTION_PLUGIN_ROLLED_BACK,
             self::ACTION_PLUGIN_ROLLBACK_FAILED, self::ACTION_THEME_UPDATE_FAILED,
             self::ACTION_THEME_ROLLED_BACK, self::ACTION_THEME_ROLLBACK_FAILED,
+            self::ACTION_PLUGIN_MIGRATED, self::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK,
+            self::ACTION_PLUGIN_SEEDED, self::ACTION_THEME_MIGRATED,
+            self::ACTION_THEME_MIGRATIONS_ROLLED_BACK, self::ACTION_THEME_SEEDED,
+            self::ACTION_THEME_BUILT,
         ];
 
         if (in_array($action, $authActions)) {
@@ -986,6 +1008,8 @@ class AuditLog extends Model
             self::ACTION_RECOVERY_CODES_REVOKED, // Recovery codes revoked
             self::ACTION_PLUGIN_DISABLED,       // Plugin disabled
             self::ACTION_THEME_DISABLED,        // Theme disabled
+            self::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK, // Plugin tables reverted (data can be dropped)
+            self::ACTION_THEME_MIGRATIONS_ROLLED_BACK,  // Theme tables reverted (data can be dropped)
             self::ACTION_ROLE_CHANGED,          // Permission changed
             self::ACTION_AI_BULK_OPERATION,     // AI bulk operation
         ];
@@ -1006,6 +1030,11 @@ class AuditLog extends Model
             self::ACTION_THEME_UPDATED,         // Theme update
             self::ACTION_PLUGIN_ROLLED_BACK,    // Plugin rollback
             self::ACTION_THEME_ROLLED_BACK,     // Theme rollback
+            self::ACTION_PLUGIN_MIGRATED,       // Plugin migrations run
+            self::ACTION_PLUGIN_SEEDED,         // Plugin seeder run
+            self::ACTION_THEME_MIGRATED,        // Theme migrations run
+            self::ACTION_THEME_SEEDED,          // Theme seeder run
+            self::ACTION_THEME_BUILT,           // Theme npm build run
         ];
 
         if (in_array($action, $criticalActions)) {
@@ -1101,6 +1130,10 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
+            self::ACTION_PLUGIN_MIGRATED, self::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK,
+            self::ACTION_PLUGIN_SEEDED, self::ACTION_THEME_MIGRATED,
+            self::ACTION_THEME_MIGRATIONS_ROLLED_BACK, self::ACTION_THEME_SEEDED,
+            self::ACTION_THEME_BUILT,
             self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,
@@ -1156,6 +1189,10 @@ class AuditLog extends Model
             self::ACTION_PLUGIN_UPDATED, self::ACTION_THEME_INSTALLED,
             self::ACTION_THEME_ENABLED, self::ACTION_THEME_DISABLED,
             self::ACTION_THEME_UNINSTALLED, self::ACTION_THEME_UPDATED,
+            self::ACTION_PLUGIN_MIGRATED, self::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK,
+            self::ACTION_PLUGIN_SEEDED, self::ACTION_THEME_MIGRATED,
+            self::ACTION_THEME_MIGRATIONS_ROLLED_BACK, self::ACTION_THEME_SEEDED,
+            self::ACTION_THEME_BUILT,
             self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,

@@ -36,12 +36,15 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 
 class PluginMigrate extends Command
 {
     use PluginManagementTrait;
+    use RecordsExtensionStep;
 
     /**
      * The name and signature of the console command.
@@ -114,6 +117,7 @@ class PluginMigrate extends Command
                     $this->info('Migrated: '.$file);
                 }
                 $this->info("Migrations for plugin [{$plugin}] completed successfully.");
+                $this->recordExtensionStep(AuditLog::ACTION_PLUGIN_MIGRATED, 'plugin', $plugin, ['migrations' => $migrated]);
             }
 
             return Command::SUCCESS;

@@ -41,6 +41,7 @@ use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Plugin;
+use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\Extension\ExtensionUpdateRecorder;
@@ -250,11 +251,12 @@ class PluginUpdate extends Command
             $updateSeederClass = "Plugins\\{$plugin->directory}\\Database\\Seeders\\UpdateSeeder";
             if (class_exists($updateSeederClass)) {
                 $this->info('Running plugin UpdateSeeder...');
-                $this->call('dls:plugin:seed', [
+                // The update row covers the seeder (#749)
+                ExtensionAuditScope::run(fn () => $this->call('dls:plugin:seed', [
                     'plugin' => $plugin->directory,
                     '--class' => 'UpdateSeeder',
                     '--force' => true,
-                ]);
+                ]));
             }
 
             $plugin->update([

@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\ThemeMigrationRepository;
@@ -188,7 +189,8 @@ class ThemeRollback extends Command
                 "Backup '%s' has no migration metadata (older format). Delegating a whole-batch schema rollback; verify dls_theme_migrations after the operation.",
                 basename($backupPath),
             ));
-            Artisan::call('dls:theme:migrate:rollback', ['theme' => $directoryName, '--force' => true]);
+            // The rollback row covers the schema half (#749)
+            ExtensionAuditScope::run(fn () => Artisan::call('dls:theme:migrate:rollback', ['theme' => $directoryName, '--force' => true]));
 
             return;
         }
@@ -206,11 +208,12 @@ class ThemeRollback extends Command
             return;
         }
 
-        Artisan::call('dls:theme:migrate:rollback', [
+        // The rollback row covers the schema half (#749)
+        ExtensionAuditScope::run(fn () => Artisan::call('dls:theme:migrate:rollback', [
             'theme' => $directoryName,
             '--step' => $stepsBack,
             '--force' => true,
-        ]);
+        ]));
     }
 
     /**

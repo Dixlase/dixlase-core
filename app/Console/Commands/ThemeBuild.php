@@ -35,6 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Exceptions\ProcessTimedOutException;
@@ -43,6 +45,8 @@ use Illuminate\Support\Facades\Process;
 
 class ThemeBuild extends Command
 {
+    use RecordsExtensionStep;
+
     /**
      * Timeout for each npm step, in seconds.
      *
@@ -187,6 +191,7 @@ class ThemeBuild extends Command
         }
 
         $this->info("Theme '{$theme}' built successfully.");
+        $this->recordExtensionStep(AuditLog::ACTION_THEME_BUILT, 'theme', $theme, ['npm_install' => ! $this->option('no-install')]);
 
         return self::SUCCESS;
     }

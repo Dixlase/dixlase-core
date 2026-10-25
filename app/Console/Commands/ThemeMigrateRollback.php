@@ -35,6 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Models\Theme;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
@@ -45,6 +47,8 @@ use Illuminate\Support\Str;
 
 class ThemeMigrateRollback extends Command
 {
+    use RecordsExtensionStep;
+
     /**
      * The name and signature of the console command.
      *
@@ -126,6 +130,7 @@ class ThemeMigrateRollback extends Command
                 $this->info('Rolled back: '.$file);
             }
             $this->info("Rollback completed successfully for theme: {$themeName}");
+            $this->recordExtensionStep(AuditLog::ACTION_THEME_MIGRATIONS_ROLLED_BACK, 'theme', $themeName, ['migrations' => $rolledBack], AuditLog::SEVERITY_WARNING);
         }
 
         return 0;
