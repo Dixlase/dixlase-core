@@ -553,6 +553,9 @@ return [
         'part_content' => 'コンテンツ',
         'part_custom_css' => 'カスタム CSS',
         'part_custom_js' => 'カスタム JS',
+        'front_page' => 'フロントページ',
+        'scheduler_stopped_title' => 'スケジューラ (cron) が動いていません',
+        'scheduler_stopped_message' => 'ファイルの変更は、それを表示するページや編集画面を開いたときにしか見つかりません。そのため、ダッシュボードや通知のメールがファイルより遅れることがあります。cron で `php artisan schedule:run` を毎分実行するよう設定してください。',
     ],
 
     'content_storage' => [

@@ -71,10 +71,27 @@
 
    `$fileChanges` は、`FileContentPublisher::pendingChanges()` の各部分を `RevisionDiffPresenter::buildSideBySide($change['published'], $change['file'])` に通したものです。公開のルートでは、編集画面と同じ権限を渡して `App\Actions\Content\PublishFileContentAction` を実行します。
 
+7. ダッシュボードがレコードを名前で並べ、その編集画面に飛べるよう、`App\Contracts\Content\ProvidesFileContentEditLink` を実装します。任意の Contract で、`PublishesFileContent` とは別です。実装しないと、レコードはモデル名とキーで、リンクなしで並びます。URL は見ている人に関係なく返してください。ダッシュボードは、ルートの `check.menu.access` ミドルウェアを通る人にだけリンクにします。
+
+8. 拡張で公開のしかたを設定する画面に、スケジューラが動いていないことを出します。
+
+   ```blade
+   <x-content.scheduler-notice :running="$schedulerRunning" />
+   ```
+
+   `$schedulerRunning` は、コントローラーで `app(FileContentPublisher::class)->schedulerRunning()` から渡します。スケジューラが動いている間は何も出しません。
+
 ## 検知
 
 - **表示のとき。** `resolve()` は、コンテンツを読むたびにファイルと公開済みのコピーを比べます。ファイルは小さく、もともとリクエストのたびに読んでいました。
-- **毎日。** cron が有効なら毎日動く `dls:integrity:scan --scheduled` が、登録されたすべてのレコードを確かめます。誰も見ていないコンテンツの変更も、ここで見つかります。ダッシュボードには、公開待ちの変更があるレコードの数が出ます。別の設定はありません。スキャンは cron の有無で動いたり止まったりします。
+- **毎日。** cron が有効なら毎日動く `dls:integrity:scan --scheduled` が、登録されたすべてのレコードを確かめます。誰も見ていないコンテンツの変更も、ここで見つかります。別の設定はありません。スキャンは cron の有無で動いたり止まったりします。
+
+cron がないと、変更は、レコードを表示するページか編集画面を開いたときにしか見つかりません。スケジューラの動作の記録がないとき、ダッシュボードの項目と `<x-content.scheduler-notice>` がそのことを伝えます。
+
+## 知らせ
+
+- **ダッシュボード。** 公開待ちの変更がある間、サイトヘルスの項目にレコードが並びます（最初の 5 件と、残りの件数）。各行は `ProvidesFileContentEditLink` を通じて編集画面に飛びます。項目の見出しは、監査ログの `file_changed` の記録に飛びます。
+- **バナーとメール。** 最初の変更を記録したとき、管理画面全体にバナーを出し、通知のメールを 1 通送ります。定期のセキュリティチェックと同じ仕組みを使います。バナーは公開待ちがなくなるまで、その時点の件数を出して残ります。残っている間、メールはもう送りません。見えるのは、フロントページの編集画面を開ける人です。ハッシュを動かすもの（変更の記録、公開、管理画面での保存、復元、毎日のスキャン）がすべてバナーを更新するので、スケジュールではなくレコードの状態に従います。
 
 ## 監査ログのアクション
 

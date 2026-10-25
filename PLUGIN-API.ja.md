@@ -108,6 +108,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
 | `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
 | `App\Contracts\Content\DeclaresScriptCapableParts` | Which of a record's file-stored parts may carry a script |
+| `App\Contracts\Content\ProvidesFileContentEditLink` | Where a record with file-stored content is reviewed and published |
 | `App\Contracts\Content\PublishesFileContent` | Content that can be stored as files and is published through the admin |
 | `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor's cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |

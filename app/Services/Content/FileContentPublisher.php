@@ -44,9 +44,12 @@ use App\Actors\SystemActor;
 use App\Contracts\Content\DeclaresScriptCapableParts;
 use App\Contracts\Content\PublishesFileContent;
 use App\Enums\ContentPublishMode;
+use App\Services\SchedulerHeartbeat;
+use App\Services\Security\ScheduledSecurityCheckMonitor;
 use App\Support\Content\FileContentColumns;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 /**
  * Publish file-stored content through the admin
@@ -127,7 +130,10 @@ class FileContentPublisher
 
         if ($fileHash === $publishedHash) {
             if ($model->getAttribute(FileContentColumns::FILE_HASH) !== $fileHash) {
+                // The files went back to the published copy, so a change
+                // recorded earlier is no longer waiting.
                 $this->storeHashes($model, $fileHash, $fileHash);
+                $this->syncPendingAlert();
             }
 
             return;
@@ -150,6 +156,8 @@ class FileContentPublisher
 
         (new RecordFileContentChangeAction($model, $this, $files, $detectedBy, $publishedHash))
             ->execute(new SystemActor('file-content'), []);
+
+        $this->syncPendingAlert();
     }
 
     /**
@@ -195,6 +203,7 @@ class FileContentPublisher
 
         $hash = self::hash($files);
         $this->storeHashes($model, $hash, $hash);
+        $this->syncPendingAlert();
 
         return $changed;
     }
@@ -213,6 +222,7 @@ class FileContentPublisher
         $file = $model->usesFileStorage() ? self::hash($this->readFiles($model)) : null;
 
         $this->storeHashes($model, $published, $file);
+        $this->syncPendingAlert();
     }
 
     /**
@@ -246,6 +256,41 @@ class FileContentPublisher
 
         $hash = self::hash($published);
         $this->storeHashes($model, $hash, $hash);
+        $this->syncPendingAlert();
+    }
+
+    /**
+     * Raise or clear the admin-wide alert for changes waiting to be published
+     *
+     * The alert is raised, with one mail, when the first change is recorded
+     * and cleared once nothing is pending. Every place that moves the hashes
+     * calls this, so the alert follows the records rather than a schedule.
+     * A failure is reported and never breaks the page or the save.
+     *
+     * @param  int|null  $pending  The pending count when the caller already
+     *                             has it; counted here otherwise
+     */
+    public function syncPendingAlert(?int $pending = null): void
+    {
+        try {
+            $pending ??= app(FileContentRegistry::class)->pendingCount();
+            app(ScheduledSecurityCheckMonitor::class)->recordFileContentPending($pending);
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Whether the scheduler is running, so that a change is found without
+     * anyone reading a page
+     *
+     * Without it, a change to the files is found only when a page or an edit
+     * screen that shows the record is read. A screen that sets a publish mode
+     * says so when this is false; see `<x-content.scheduler-notice>`.
+     */
+    public function schedulerRunning(): bool
+    {
+        return app(SchedulerHeartbeat::class)->status()['status'] !== SchedulerHeartbeat::STATUS_STOPPED;
     }
 
     /**
