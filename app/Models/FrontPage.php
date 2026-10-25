@@ -38,6 +38,7 @@
 namespace App\Models;
 
 use App\Contracts\Content\DeclaresScriptCapableParts;
+use App\Contracts\Content\ProvidesFileContentEditLink;
 use App\Contracts\Content\PublishesFileContent;
 use App\Contracts\Revisionable;
 use App\Contracts\TranslationResolver;
@@ -59,7 +60,7 @@ use Illuminate\Support\Facades\App;
 /**
  * Front page model
  */
-class FrontPage extends Model implements DeclaresScriptCapableParts, PublishesFileContent, Revisionable
+class FrontPage extends Model implements DeclaresScriptCapableParts, ProvidesFileContentEditLink, PublishesFileContent, Revisionable
 {
     use BelongsToSite;
     use HasFactory;
@@ -292,6 +293,16 @@ class FrontPage extends Model implements DeclaresScriptCapableParts, PublishesFi
     public function fileContentAuditPrefix(): string
     {
         return 'front_page';
+    }
+
+    public function fileContentLabel(): string
+    {
+        return __('common.file_changes.front_page');
+    }
+
+    public function fileContentEditUrl(): ?string
+    {
+        return route('admin.front.edit');
     }
 
     /**

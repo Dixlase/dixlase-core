@@ -70,6 +70,8 @@ class ScheduledSecurityCheckMonitor
 
     public const KEY_AUDIT_CHAIN = 'audit_chain';
 
+    public const KEY_FILE_CONTENT = 'file_content_pending';
+
     public const EXTENSION_KEY_PREFIX = 'extension:';
 
     public const REASON_HEALTH = 'health';
@@ -80,6 +82,12 @@ class ScheduledSecurityCheckMonitor
      * Admin menu key that gates who sees the banners.
      */
     public const MENU_KEY = 'settings.security.integrity';
+
+    /**
+     * Admin menu key that gates who sees the file content banner. Those
+     * changes are published from the front page editor, not from Integrity.
+     */
+    public const FILE_CONTENT_MENU_KEY = 'front';
 
     /**
      * Core manifest statuses that count as a failed check. MODIFIED is a
@@ -179,6 +187,50 @@ class ScheduledSecurityCheckMonitor
                 __('admin/settings/security/integrity.scheduled.audit_chain_message', [
                     'tampered' => $tampered,
                     'seals' => $invalidSeals,
+                ]),
+            );
+        }
+    }
+
+    /**
+     * Record how many records hold file changes waiting to be published.
+     *
+     * Raised, with one mail, when the count first goes above zero; cleared
+     * when it is back to zero. While it stays raised only the count moves.
+     */
+    public function recordFileContentPending(int $pending): void
+    {
+        $current = $this->alerts()[self::KEY_FILE_CONTENT] ?? null;
+        if (($pending === 0 && $current === null)
+            || ($pending > 0 && (int) ($current['count'] ?? -1) === $pending)) {
+            // Nothing changes. This runs on every save of such a record, so
+            // it must not take the lock and rewrite the state file for nothing.
+            return;
+        }
+
+        $raised = false;
+        $this->mutate(function (array $state) use ($pending, &$raised): array {
+            if ($pending === 0) {
+                unset($state['alerts'][self::KEY_FILE_CONTENT]);
+
+                return $state;
+            }
+
+            $raised = ! isset($state['alerts'][self::KEY_FILE_CONTENT]);
+            $state['alerts'][self::KEY_FILE_CONTENT] = [
+                'raised_at' => $state['alerts'][self::KEY_FILE_CONTENT]['raised_at'] ?? now()->toIso8601String(),
+                'count' => $pending,
+            ];
+
+            return $state;
+        });
+
+        if ($raised) {
+            $this->notify(
+                __('admin/settings/security/integrity.scheduled.file_content_title'),
+                __('admin/settings/security/integrity.scheduled.file_content_mail', [
+                    'count' => $pending,
+                    'url' => route('admin.dashboard'),
                 ]),
             );
         }
@@ -343,18 +395,24 @@ class ScheduledSecurityCheckMonitor
     /**
      * Banner provider for SystemWarningService.
      *
-     * Only members who can open Security → Integrity see these banners.
+     * Only members who can open Security → Integrity see the integrity
+     * banners, and only members who can open the front page editor see the
+     * file content banner.
      *
      * @return array<int, array<string, mixed>>
      */
     public function banners(): array
     {
         try {
+            $alerts = $this->alerts();
+
+            if (! AdminHelper::canAccessMenu(self::FILE_CONTENT_MENU_KEY)) {
+                unset($alerts[self::KEY_FILE_CONTENT]);
+            }
             if (! AdminHelper::canAccessMenu(self::MENU_KEY)) {
-                return [];
+                $alerts = array_intersect_key($alerts, [self::KEY_FILE_CONTENT => true]);
             }
 
-            $alerts = $this->alerts();
             if ($alerts === []) {
                 return [];
             }
@@ -406,6 +464,23 @@ class ScheduledSecurityCheckMonitor
                     'seals' => (int) ($alerts[self::KEY_AUDIT_CHAIN]['invalid_seals'] ?? 0),
                 ]),
                 'actions' => [$detailsAction],
+            ];
+        }
+
+        if (isset($alerts[self::KEY_FILE_CONTENT])) {
+            $banners[] = [
+                'level' => 'warning',
+                'icon' => 'fas fa-file-pen',
+                'title' => __($prefix.'file_content_title'),
+                'message' => __($prefix.'file_content_message', [
+                    'count' => (int) ($alerts[self::KEY_FILE_CONTENT]['count'] ?? 0),
+                ]),
+                'actions' => [[
+                    'label' => __($prefix.'file_content_review'),
+                    'url' => route('admin.dashboard'),
+                    'style' => 'primary',
+                    'method' => 'GET',
+                ]],
             ];
         }
 

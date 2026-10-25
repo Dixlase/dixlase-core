@@ -47,6 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             <x-form-help-text :text="__('admin/front.settings.publish_mode_help')" />
             <x-form-error name="publish_mode" />
+            <x-content.scheduler-notice :running="$schedulerRunning" />
         </div>
     </form>
 @endsection

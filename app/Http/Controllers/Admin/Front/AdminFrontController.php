@@ -420,6 +420,7 @@ class AdminFrontController extends AdminLoggedInController
             $this->frontSettingRepository->get(FrontPage::PUBLISH_MODE_SETTING)
         )->value;
         $this->viewParams['publishModeOptions'] = ContentPublishMode::options();
+        $this->viewParams['schedulerRunning'] = app(FileContentPublisher::class)->schedulerRunning();
 
         return view('admin::front/settings', $this->viewParams);
     }

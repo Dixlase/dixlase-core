@@ -38,7 +38,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach($siteHealth as $item)
-            @if($item['is_clickable'])
+            @if(! empty($item['records']))
+                {{-- A card that lists records holds links of its own, so it cannot be one link itself --}}
+                <div class="flex items-start gap-3 p-4 rounded-lg border {{ $item['border_bg_class'] }}">
+                    <span class="mt-0.5 text-lg {{ $item['icon_color_class'] }}">
+                        <i class="{{ $item['icon'] }}"></i>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                @if($item['is_clickable'])
+                                    <a href="{{ $item['url'] }}" class="hover:underline">{{ $item['label'] }}</a>
+                                @else
+                                    {{ $item['label'] }}
+                                @endif
+                            </h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $item['badge_class'] }}">
+                                {{ $item['badge_label'] }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ $item['description'] }}</p>
+                        <ul class="mt-2 space-y-1 text-xs">
+                            @foreach($item['records'] as $record)
+                                <li>
+                                    @if($record['is_clickable'])
+                                        <a href="{{ $record['url'] }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $record['label'] }}</a>
+                                    @else
+                                        <span class="text-gray-700 dark:text-gray-300">{{ $record['label'] }}</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                            @if($item['records_more'] > 0)
+                                <li class="text-gray-500 dark:text-gray-400">{{ __('admin/dashboard.file_content_more', ['count' => $item['records_more']]) }}</li>
+                            @endif
+                        </ul>
+                    </div>
+                </div>
+            @elseif($item['is_clickable'])
                 <a href="{{ $item['url'] }}" class="flex items-start gap-3 p-4 rounded-lg border {{ $item['border_bg_class'] }} hover:shadow-md transition-shadow no-underline">
                     <span class="mt-0.5 text-lg {{ $item['icon_color_class'] }}">
                         <i class="{{ $item['icon'] }}"></i>

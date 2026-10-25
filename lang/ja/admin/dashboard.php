@@ -78,6 +78,8 @@ return [
     'file_integrity_status' => 'ファイル整合性',
     'file_content_status' => 'ファイル保存のコンテンツ',
     'file_content_pending' => ':count 件に、公開していないファイルの変更があります。',
+    'file_content_more' => 'ほか :count 件',
+    'file_content_scheduler_stopped' => 'スケジューラ (cron) が動いていないため、ファイルの変更は、それを表示するページを開いたときにしか見つかりません。',
     'file_content_mode_status' => 'ファイルの保存で即時公開',
     'file_content_mode_file_save' => 'ファイルを書き換えると、誰も公開の操作をしなくてもこのサイトに出ます。スクリプトを含められる部分は、引き続き管理画面での公開を待ちます。',
     'file_integrity_ok' => '直近のスキャンでファイル整合性に問題はありませんでした。',

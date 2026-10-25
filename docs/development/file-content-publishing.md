@@ -101,14 +101,45 @@ setting otherwise says nowhere that review before publishing has been given up.
    publish route runs `App\Actions\Content\PublishFileContentAction` with the permission your
    edit screen requires.
 
+7. Implement `App\Contracts\Content\ProvidesFileContentEditLink` so that the dashboard can
+   list the record by name and link it to that edit screen. It is optional and separate from
+   `PublishesFileContent`; without it the record is listed by its model and key, without a
+   link. Return the URL regardless of who is asking: the dashboard links it only for members
+   who pass the route's `check.menu.access` middleware.
+
+8. Where your extension sets its publish mode, say when the scheduler is not running:
+
+   ```blade
+   <x-content.scheduler-notice :running="$schedulerRunning" />
+   ```
+
+   with `$schedulerRunning = app(FileContentPublisher::class)->schedulerRunning()` from the
+   controller. It renders nothing while the scheduler runs.
+
 ## Detection
 
 - **On render.** `resolve()` compares the files with the published copy whenever the content
   is read. The files are small and were already read on every request.
 - **Daily.** `dls:integrity:scan --scheduled`, which runs daily when cron is enabled, checks
-  every registered record, so a change to content nobody has viewed is found as well. The
-  dashboard lists the number of records with changes waiting to be published. There is no
-  separate setting: the scan runs or not with cron.
+  every registered record, so a change to content nobody has viewed is found as well. There
+  is no separate setting: the scan runs or not with cron.
+
+Without cron, a change is found only when a page or an edit screen that shows the record is
+read. The dashboard item and `<x-content.scheduler-notice>` say so when the scheduler's
+heartbeat is missing.
+
+## Being told
+
+- **Dashboard.** While changes wait to be published, the site health item lists the records
+  (the first five, then a count), each linking to its edit screen through
+  `ProvidesFileContentEditLink`. The item's title leads to the `file_changed` entries in the
+  audit log.
+- **Banner and mail.** When the first change is recorded, an admin-wide banner is raised and
+  one notification mail is sent, through the same monitor as the scheduled security checks.
+  The banner stays, with the current count, until nothing is pending; no further mail is
+  sent while it stays. Members who can open the front page editor see it. Everything that
+  moves the hashes — a recorded change, a publish, an admin save, a restore, the daily scan —
+  updates it, so it follows the records rather than a schedule.
 
 ## Audit actions
 
