@@ -99,6 +99,48 @@ class PluginSymlink extends Command
      * internal create/remove helpers are idempotent, so re-running is
      * always safe.
      */
+    /**
+     * The directory that holds the installed plugins.
+     *
+     * `config('plugins.plugins_directory')` is read relative to the application root in
+     * production, where it is 'plugins'. An absolute value is used as
+     * given, which is what lets a test point the bulk actions below at a
+     * throwaway tree instead of the checkout's own plugins/ (#653).
+     */
+    protected function extensionsRoot(): string
+    {
+        $configured = trim((string) config('plugins.plugins_directory', 'plugins'));
+
+        if ($configured === '') {
+            return base_path('plugins');
+        }
+
+        return str_starts_with($configured, DIRECTORY_SEPARATOR)
+            ? rtrim($configured, DIRECTORY_SEPARATOR)
+            : base_path(trim($configured, '/'));
+    }
+
+    /**
+     * The directory that holds the asset symlinks.
+     *
+     * `remove --all` unlinks every entry it finds here, so this is the one
+     * path a test must be able to move: pointed at the real assets/plugins/,
+     * a test takes the checkout's own links with it, and the directory is
+     * gitignored so nothing reports the loss (#653).
+     */
+    protected function assetLinksRoot(): string
+    {
+        $configured = trim((string) config('plugins.asset_links_directory', ''));
+
+        if ($configured === '') {
+            return public_path('assets/plugins');
+        }
+
+        return str_starts_with($configured, DIRECTORY_SEPARATOR)
+            ? rtrim($configured, DIRECTORY_SEPARATOR)
+            : public_path(trim($configured, '/'));
+    }
+
     protected function handleSingle(string $action, string $pluginDirName): int
     {
         if ($action === 'create') {
@@ -127,7 +169,7 @@ class PluginSymlink extends Command
     protected function handleAll(string $action): int
     {
         if ($action === 'create') {
-            $pluginsRoot = base_path('plugins');
+            $pluginsRoot = $this->extensionsRoot();
             if (! File::isDirectory($pluginsRoot)) {
                 $this->info(__('admin/command/plugin-symlink.all_summary_create', [
                     'created' => 0,
@@ -151,7 +193,7 @@ class PluginSymlink extends Command
                 // A working link is left alone; a missing, dangling or
                 // overwritten slot (a real directory from a dereferenced
                 // release payload) is relinked below.
-                $link = public_path("assets/plugins/{$pluginDirName}");
+                $link = $this->assetLinksRoot().DIRECTORY_SEPARATOR.$pluginDirName;
                 if (is_link($link) && File::exists($link)) {
                     $skipped++;
 
@@ -171,7 +213,7 @@ class PluginSymlink extends Command
         }
 
         // remove --all
-        $linksRoot = public_path('assets/plugins');
+        $linksRoot = $this->assetLinksRoot();
         if (! File::isDirectory($linksRoot)) {
             $this->info(__('admin/command/plugin-symlink.all_summary_remove', [
                 'removed' => 0,
@@ -225,8 +267,8 @@ class PluginSymlink extends Command
         // assets. See PublicAssetRelinker.
         $notices = [];
         PublicAssetRelinker::ensureLink(
-            base_path("plugins/{$pluginDirName}/resources/assets"),
-            public_path("assets/plugins/{$pluginDirName}"),
+            $this->extensionsRoot().DIRECTORY_SEPARATOR.$pluginDirName.'/resources/assets',
+            $this->assetLinksRoot().DIRECTORY_SEPARATOR.$pluginDirName,
             $notices,
         );
         foreach ($notices as $notice) {
@@ -241,7 +283,7 @@ class PluginSymlink extends Command
      */
     protected function removePluginSymlink(string $pluginDirName)
     {
-        $link = public_path("assets/plugins/{$pluginDirName}");
+        $link = $this->assetLinksRoot().DIRECTORY_SEPARATOR.$pluginDirName;
 
         if (is_link($link)) {
             @unlink($link);

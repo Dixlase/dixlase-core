@@ -99,6 +99,48 @@ class ThemeSymlink extends Command
      * internal create/remove helpers are idempotent, so re-running is
      * always safe.
      */
+    /**
+     * The directory that holds the installed themes.
+     *
+     * `config('themes.theme_directory')` is read relative to the application root in
+     * production, where it is 'themes'. An absolute value is used as
+     * given, which is what lets a test point the bulk actions below at a
+     * throwaway tree instead of the checkout's own themes/ (#653).
+     */
+    protected function extensionsRoot(): string
+    {
+        $configured = trim((string) config('themes.theme_directory', 'themes'));
+
+        if ($configured === '') {
+            return base_path('themes');
+        }
+
+        return str_starts_with($configured, DIRECTORY_SEPARATOR)
+            ? rtrim($configured, DIRECTORY_SEPARATOR)
+            : base_path(trim($configured, '/'));
+    }
+
+    /**
+     * The directory that holds the asset symlinks.
+     *
+     * `remove --all` unlinks every entry it finds here, so this is the one
+     * path a test must be able to move: pointed at the real assets/themes/,
+     * a test takes the checkout's own links with it, and the directory is
+     * gitignored so nothing reports the loss (#653).
+     */
+    protected function assetLinksRoot(): string
+    {
+        $configured = trim((string) config('themes.asset_links_directory', ''));
+
+        if ($configured === '') {
+            return public_path('assets/themes');
+        }
+
+        return str_starts_with($configured, DIRECTORY_SEPARATOR)
+            ? rtrim($configured, DIRECTORY_SEPARATOR)
+            : public_path(trim($configured, '/'));
+    }
+
     protected function handleSingle(string $action, string $themeDirName): int
     {
         if ($action === 'create') {
@@ -127,7 +169,7 @@ class ThemeSymlink extends Command
     protected function handleAll(string $action): int
     {
         if ($action === 'create') {
-            $themesRoot = base_path('themes');
+            $themesRoot = $this->extensionsRoot();
             if (! File::isDirectory($themesRoot)) {
                 $this->info(__('admin/command/theme-symlink.all_summary_create', [
                     'created' => 0,
@@ -151,7 +193,7 @@ class ThemeSymlink extends Command
                 // A working link is left alone; a missing, dangling or
                 // overwritten slot (a real directory from a dereferenced
                 // release payload) is relinked below.
-                $link = public_path("assets/themes/{$themeDirName}");
+                $link = $this->assetLinksRoot().DIRECTORY_SEPARATOR.$themeDirName;
                 if (is_link($link) && File::exists($link)) {
                     $skipped++;
 
@@ -171,7 +213,7 @@ class ThemeSymlink extends Command
         }
 
         // remove --all
-        $linksRoot = public_path('assets/themes');
+        $linksRoot = $this->assetLinksRoot();
         if (! File::isDirectory($linksRoot)) {
             $this->info(__('admin/command/theme-symlink.all_summary_remove', [
                 'removed' => 0,
@@ -221,8 +263,8 @@ class ThemeSymlink extends Command
         // then skipped the repair silently. See PublicAssetRelinker.
         $notices = [];
         PublicAssetRelinker::ensureLink(
-            base_path("themes/{$themeDirName}/resources/assets"),
-            public_path("assets/themes/{$themeDirName}"),
+            $this->extensionsRoot().DIRECTORY_SEPARATOR.$themeDirName.'/resources/assets',
+            $this->assetLinksRoot().DIRECTORY_SEPARATOR.$themeDirName,
             $notices,
         );
         foreach ($notices as $notice) {
@@ -237,7 +279,7 @@ class ThemeSymlink extends Command
      */
     protected function removeThemeSymlink(string $themeDirName)
     {
-        $link = public_path("assets/themes/{$themeDirName}");
+        $link = $this->assetLinksRoot().DIRECTORY_SEPARATOR.$themeDirName;
 
         if (is_link($link)) {
             @unlink($link);

@@ -35,4 +35,15 @@
 
 return [
     'plugins_directory' => 'plugins', // Plugins directory
+
+    /*
+     * Where the per-plugin asset symlinks live. null means
+     * public/assets/plugins, which is the answer everywhere but a test:
+     * `dls:plugin:symlink remove --all` unlinks every entry it finds there,
+     * so a test pointed at the real directory removes the checkout's own
+     * links — silently, because the directory is gitignored (#653). A test
+     * sets this to a throwaway directory instead. An absolute path is used
+     * as given; a relative one is read from the public directory.
+     */
+    'asset_links_directory' => null,
 ];

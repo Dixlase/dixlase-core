@@ -47,20 +47,58 @@ class PluginSymlinkAllTest extends TestCase
         '__test_symlink_all_stale_link__',
     ];
 
+    /**
+     * Throwaway stand-ins for the plugins and asset-links directories.
+     *
+     * The fixtures used to be written into the real ones, and
+     * `remove --all` unlinks every entry it finds in the links directory —
+     * not only the fixtures — so a run took the checkout's own extension
+     * asset links with it. That directory is gitignored, so nothing
+     * reported the loss (#653). The command reads both roots from config
+     * now, and this test points them here.
+     */
+    private ?string $pluginsRoot = null;
+
+    private ?string $linksRoot = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $unique = uniqid('', true);
+        $this->pluginsRoot = storage_path('framework/testing/symlink-plugins-'.$unique);
+        $this->linksRoot = storage_path('framework/testing/symlink-plugin-links-'.$unique);
+        File::ensureDirectoryExists($this->pluginsRoot);
+        File::ensureDirectoryExists($this->linksRoot);
+
+        config([
+            'plugins.plugins_directory' => $this->pluginsRoot,
+            'plugins.asset_links_directory' => $this->linksRoot,
+        ]);
+    }
+
     protected function tearDown(): void
     {
-        foreach (self::FIXTURE_NAMES as $name) {
-            $link = public_path("assets/plugins/{$name}");
-            if (is_link($link) || File::exists($link)) {
-                @unlink($link);
-            }
-            $pluginDir = base_path("plugins/{$name}");
-            if (File::isDirectory($pluginDir)) {
-                File::deleteDirectory($pluginDir);
+        // The links root goes first. File::deleteDirectory() unlinks a
+        // symlink rather than following it, but there is no reason to leave
+        // links pointing at a tree that is about to go.
+        foreach ([$this->linksRoot, $this->pluginsRoot] as $directory) {
+            if ($directory !== null && File::isDirectory($directory)) {
+                File::deleteDirectory($directory);
             }
         }
 
         parent::tearDown();
+    }
+
+    private function pluginPath(string $name): string
+    {
+        return $this->pluginsRoot.DIRECTORY_SEPARATOR.$name;
+    }
+
+    private function linkPath(string $name): string
+    {
+        return $this->linksRoot.DIRECTORY_SEPARATOR.$name;
     }
 
     public function test_create_all_links_plugins_with_resources_assets_and_skips_others(): void
@@ -70,24 +108,24 @@ class PluginSymlinkAllTest extends TestCase
             self::FIXTURE_NAMES[1],
         ];
 
-        File::ensureDirectoryExists(base_path("plugins/{$withAssets}/resources/assets"));
+        File::ensureDirectoryExists($this->pluginPath($withAssets).'/resources/assets');
         File::put(
-            base_path("plugins/{$withAssets}/resources/assets/thumbnail.png"),
+            $this->pluginPath($withAssets).'/resources/assets/thumbnail.png',
             'fixture-png',
         );
         // Second fixture has no resources/assets subtree at all — must
         // be silently skipped, not counted as a failure.
-        File::ensureDirectoryExists(base_path("plugins/{$withoutAssets}"));
+        File::ensureDirectoryExists($this->pluginPath($withoutAssets));
 
         $this->artisan('dls:plugin:symlink', ['action' => 'create', '--all' => true])
             ->assertExitCode(0);
 
         $this->assertTrue(
-            is_link(public_path("assets/plugins/{$withAssets}")),
+            is_link($this->linkPath($withAssets)),
             'plugin with resources/assets must get a symlink',
         );
         $this->assertFalse(
-            is_link(public_path("assets/plugins/{$withoutAssets}")),
+            is_link($this->linkPath($withoutAssets)),
             'plugin without resources/assets must not get a symlink',
         );
     }
@@ -96,22 +134,22 @@ class PluginSymlinkAllTest extends TestCase
     {
         $withAssets = self::FIXTURE_NAMES[0];
 
-        File::ensureDirectoryExists(base_path("plugins/{$withAssets}/resources/assets"));
+        File::ensureDirectoryExists($this->pluginPath($withAssets).'/resources/assets');
 
         $this->artisan('dls:plugin:symlink', ['action' => 'create', '--all' => true])
             ->assertExitCode(0);
-        $firstTarget = readlink(public_path("assets/plugins/{$withAssets}"));
+        $firstTarget = readlink($this->linkPath($withAssets));
 
         $this->artisan('dls:plugin:symlink', ['action' => 'create', '--all' => true])
             ->assertExitCode(0);
 
         $this->assertTrue(
-            is_link(public_path("assets/plugins/{$withAssets}")),
+            is_link($this->linkPath($withAssets)),
             'symlink must survive a second create --all run',
         );
         $this->assertSame(
             $firstTarget,
-            readlink(public_path("assets/plugins/{$withAssets}")),
+            readlink($this->linkPath($withAssets)),
             'idempotent re-run must not re-create the symlink with a different target',
         );
     }
@@ -122,8 +160,7 @@ class PluginSymlinkAllTest extends TestCase
 
         // Fabricate a stale link pointing at a plugin directory that
         // no longer exists. `remove --all` must clear it regardless.
-        File::ensureDirectoryExists(public_path('assets/plugins'));
-        $link = public_path("assets/plugins/{$stale}");
+        $link = $this->linkPath($stale);
         symlink('/nonexistent/plugin/path', $link);
 
         $this->artisan('dls:plugin:symlink', ['action' => 'remove', '--all' => true])
