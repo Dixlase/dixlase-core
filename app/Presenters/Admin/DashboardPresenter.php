@@ -35,6 +35,7 @@
 
 namespace App\Presenters\Admin;
 
+use App\Contracts\Content\ProvidesFileContentEditLink;
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\Contracts\PluginIntegration\DashboardNotificationProviderInterface;
 use App\Contracts\PluginIntegration\DashboardWidgetProviderInterface;
@@ -59,14 +60,19 @@ use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Models\Theme;
 use App\Services\AuditLogIntegrityService;
+use App\Services\Content\FileContentPublisher;
 use App\Services\Content\FileContentRegistry;
 use App\Services\Core\DependencyIntegrityService;
 use App\Services\Plugin\PluginServiceResolver;
 use App\Services\SafeModeService;
 use App\Services\TwoFa\TwoFaStatusService;
 use App\Support\HttpsEnforcement;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Route;
+use Throwable;
 
 /**
  * Presenter for dashboard display data
@@ -76,6 +82,11 @@ use Illuminate\Support\Facades\Route;
  */
 class DashboardPresenter
 {
+    /**
+     * The most records the file content item lists; the rest are counted
+     */
+    private const FILE_CONTENT_ROWS = 5;
+
     /**
      * Get display class set according to status
      *
@@ -140,6 +151,13 @@ class DashboardPresenter
                 $classes = array_merge(self::statusClasses('not_permitted'), ['badge_label' => $classes['badge_label']]);
             }
 
+            if (isset($item['records'])) {
+                $item['records'] = array_map(fn (array $record): array => array_merge($record, [
+                    'is_clickable' => ! empty($record['url']) && collect($record['menu_keys'] ?? [])
+                        ->every(fn (string $menuKey) => AdminHelper::canAccessMenu($menuKey)),
+                ]), $item['records']);
+            }
+
             return array_merge($item, [
                 'border_bg_class' => $classes['border_bg'],
                 'icon_color_class' => $classes['icon_color'],
@@ -161,16 +179,109 @@ class DashboardPresenter
      */
     private static function link(string $routeName, array $parameters = []): array
     {
+        return [
+            'url' => route($routeName, $parameters),
+            'menu_keys' => self::menuKeysOf(Route::getRoutes()->getByName($routeName)),
+        ];
+    }
+
+    /**
+     * The menu keys the route behind a URL checks
+     *
+     * For a URL an extension hands over, whose route name core does not know.
+     * A URL that matches no route has no keys; the page decides on opening.
+     *
+     * @return list<string>
+     */
+    private static function menuKeysForUrl(string $url): array
+    {
+        try {
+            return self::menuKeysOf(Route::getRoutes()->match(Request::create($url)));
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function menuKeysOf(?RoutingRoute $route): array
+    {
         $menuKeys = [];
-        foreach (Route::getRoutes()->getByName($routeName)?->gatherMiddleware() ?? [] as $middleware) {
+        foreach ($route?->gatherMiddleware() ?? [] as $middleware) {
             if (is_string($middleware) && str_starts_with($middleware, 'check.menu.access:')) {
                 $menuKeys[] = substr($middleware, strlen('check.menu.access:'));
             }
         }
 
+        return $menuKeys;
+    }
+
+    /**
+     * The site health item for file-stored content, or null when there is
+     * nothing to say
+     *
+     * While changes wait to be published (#555), it lists the records, each
+     * leading to the screen where the diff and the Publish button are
+     * (#746). Without the scheduler a change is found only when a page that
+     * shows the record is read, so the item says so — and, on a site that
+     * stores content in files, says it even when nothing is pending, since
+     * "nothing pending" then means only "nothing seen yet".
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function fileContentItem(): ?array
+    {
+        $registry = app(FileContentRegistry::class);
+        $pending = $registry->pendingCount();
+        $schedulerRunning = app(FileContentPublisher::class)->schedulerRunning();
+
+        if ($pending === 0 && ($schedulerRunning || ! $registry->hasFileStoredRecords())) {
+            return null;
+        }
+
+        $schedulerNote = $schedulerRunning ? '' : ' '.__('admin/dashboard.file_content_scheduler_stopped');
+
+        if ($pending === 0) {
+            return [
+                'key' => 'file_content',
+                'status' => 'recommendation',
+                'icon' => 'fas fa-file-pen',
+                'label' => __('admin/dashboard.file_content_status'),
+                'description' => trim($schedulerNote),
+                'url' => null,
+                'requires_advanced_mode' => false,
+            ];
+        }
+
+        $records = array_map(function (Model $record): array {
+            if ($record instanceof ProvidesFileContentEditLink) {
+                $url = $record->fileContentEditUrl();
+
+                return [
+                    'label' => $record->fileContentLabel(),
+                    'url' => $url,
+                    'menu_keys' => $url !== null ? self::menuKeysForUrl($url) : [],
+                ];
+            }
+
+            return [
+                'label' => class_basename($record).' #'.$record->getKey(),
+                'url' => null,
+                'menu_keys' => [],
+            ];
+        }, $registry->pendingRecords(self::FILE_CONTENT_ROWS));
+
         return [
-            'url' => route($routeName, $parameters),
-            'menu_keys' => $menuKeys,
+            'key' => 'file_content',
+            'status' => 'warning',
+            'icon' => 'fas fa-file-pen',
+            'label' => __('admin/dashboard.file_content_status'),
+            'description' => __('admin/dashboard.file_content_pending', ['count' => $pending]).$schedulerNote,
+            ...self::link('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db', 'search' => '.file_changed']),
+            'records' => $records,
+            'records_more' => max(0, $pending - count($records)),
+            'requires_advanced_mode' => false,
         ];
     }
 
@@ -393,20 +504,9 @@ class DashboardPresenter
             'requires_advanced_mode' => true,
         ];
 
-        // File-stored content with changes that are not published (#555).
-        // Listed only while there are some: a site that stores nothing in
-        // files has nothing to show here.
-        $pendingFileContent = app(FileContentRegistry::class)->pendingCount();
-        if ($pendingFileContent > 0) {
-            $items[] = [
-                'key' => 'file_content',
-                'status' => 'warning',
-                'icon' => 'fas fa-file-pen',
-                'label' => __('admin/dashboard.file_content_status'),
-                'description' => __('admin/dashboard.file_content_pending', ['count' => $pendingFileContent]),
-                ...self::link('admin.settings.systems.logs.index', ['type' => 'audit', 'view' => 'db', 'search' => '.file_changed']),
-                'requires_advanced_mode' => false,
-            ];
+        $fileContentItem = self::fileContentItem();
+        if ($fileContentItem !== null) {
+            $items[] = $fileContentItem;
         }
 
         // Publishing on file save gives up review before publishing, and the

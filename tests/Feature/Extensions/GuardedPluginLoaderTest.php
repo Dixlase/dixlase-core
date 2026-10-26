@@ -181,6 +181,59 @@ class GuardedPluginLoaderTest extends TestCase
     }
 
     /**
+     * The early path runs before later core providers have registered. A
+     * provider that fails there only for that reason must not be logged as
+     * disabled on every request when it registers a moment later (#768).
+     */
+    public function test_an_early_failure_is_held_and_retried_without_a_report(): void
+    {
+        Log::spy();
+        $loader = $this->loader();
+
+        FlakyProvider::$failNext = true;
+        $loader->load(FlakyProvider::class, 'FlakyPlugin', retryLater: true);
+        $this->assertSame([], $this->failures());
+
+        FlakyProvider::$failNext = false;
+        $loader->retryDeferred();
+        $loader->bootPending();
+
+        $this->assertTrue(FlakyProvider::$booted);
+        $this->assertSame([], $this->failures());
+        Log::shouldNotHaveReceived('error');
+    }
+
+    public function test_an_early_failure_that_fails_again_is_reported(): void
+    {
+        Log::spy();
+        $loader = $this->loader();
+
+        $loader->load(ThrowsFromRegisterProvider::class, 'ThrowingPlugin', retryLater: true);
+        $this->assertSame([], $this->failures());
+
+        $loader->retryDeferred();
+
+        $this->assertSame('register', $this->failures()['ThrowingPlugin']['phase'] ?? null);
+        Log::shouldHaveReceived('error')->once();
+    }
+
+    public function test_a_held_provider_registered_by_the_later_path_is_not_retried(): void
+    {
+        $loader = $this->loader();
+
+        FlakyProvider::$failNext = true;
+        $loader->load(FlakyProvider::class, 'FlakyPlugin', retryLater: true);
+        FlakyProvider::$failNext = false;
+        $loader->load(FlakyProvider::class, 'FlakyPlugin');
+
+        // Would throw again if retried; it must be skipped as already seen.
+        FlakyProvider::$failNext = true;
+        $loader->retryDeferred();
+
+        $this->assertSame([], $this->failures());
+    }
+
+    /**
      * Bindings and singletons declared as properties are applied by Laravel's
      * Application::register(). These providers do not go through it.
      */

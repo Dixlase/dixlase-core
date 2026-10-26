@@ -379,6 +379,9 @@ return [
         'part_content' => 'Content',
         'part_custom_css' => 'Custom CSS',
         'part_custom_js' => 'Custom JS',
+        'front_page' => 'Front page',
+        'scheduler_stopped_title' => 'The scheduler (cron) is not running',
+        'scheduler_stopped_message' => 'A change made to the files is found only when a page or an edit screen that shows it is opened, so the dashboard and the notification mail can lag behind the files. Set up cron to run `php artisan schedule:run` every minute.',
     ],
 
     'content_storage' => [

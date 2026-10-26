@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-10-23
+**Last Updated:** 2026-10-24
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -108,6 +108,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Backup\BackupServiceInterface` | Backup service interface |
 | `App\Contracts\Backup\RestoreServiceInterface` | Restore service interface |
 | `App\Contracts\Content\DeclaresScriptCapableParts` | Which of a record's file-stored parts may carry a script |
+| `App\Contracts\Content\ProvidesFileContentEditLink` | Where a record with file-stored content is reviewed and published |
 | `App\Contracts\Content\PublishesFileContent` | Content that can be stored as files and is published through the admin |
 | `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor's cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
@@ -135,6 +136,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\TwoFaInterface` | Interface for users with two-factor authentication functionality |
 | `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Contract for Passkey (WebAuthn) authentication service |
 | `App\Contracts\Verification\FileVerificationServiceInterface` | File integrity verification service interface |
+| `App\Contracts\ViewerTimezoneResolver` | Viewer Timezone Resolver Contract |
 
 ### 1.2 Licensing Contracts
 

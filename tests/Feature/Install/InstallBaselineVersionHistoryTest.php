@@ -49,30 +49,42 @@ class InstallBaselineVersionHistoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $originalVersionContent = '';
-
-    private bool $hadVersionFile = false;
+    /**
+     * A throwaway tree that stands in for the application root.
+     *
+     * The test used to write the repository's own tracked VERSION file,
+     * remove it, and restore it afterwards. The snapshot was taken after
+     * `parent::setUp()`, so a setUp that threw left tearDown() deleting a
+     * tracked file (#677). Nothing here touches the real one now:
+     * `core_update.version_base_path` points the read at this directory.
+     */
+    private ?string $versionRoot = null;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $path = base_path('VERSION');
-        if (file_exists($path)) {
-            $this->hadVersionFile = true;
-            $this->originalVersionContent = (string) @file_get_contents($path);
-        }
+
+        $this->versionRoot = storage_path('framework/testing/version-'.uniqid('', true));
+        File::ensureDirectoryExists($this->versionRoot);
+        config(['core_update.version_base_path' => $this->versionRoot]);
     }
 
     protected function tearDown(): void
     {
-        $path = base_path('VERSION');
-        if ($this->hadVersionFile) {
-            file_put_contents($path, $this->originalVersionContent);
-        } elseif (file_exists($path)) {
-            @unlink($path);
+        if ($this->versionRoot !== null) {
+            File::deleteDirectory($this->versionRoot);
         }
+
         Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
         parent::tearDown();
+    }
+
+    /**
+     * The stand-in version file, never the repository's own.
+     */
+    private function versionPath(): string
+    {
+        return $this->versionRoot.DIRECTORY_SEPARATOR.'VERSION';
     }
 
     /**
@@ -91,7 +103,7 @@ class InstallBaselineVersionHistoryTest extends TestCase
 
     public function test_baseline_history_row_is_written_when_version_file_exists_and_ledger_is_empty(): void
     {
-        File::put(base_path('VERSION'), "0.3.3-dryrun-8\n");
+        File::put($this->versionPath(), "0.3.3-dryrun-8\n");
         Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
         $this->assertSame(0, CoreVersionHistory::count());
 
@@ -111,7 +123,8 @@ class InstallBaselineVersionHistoryTest extends TestCase
         // Simulate a pre-VERSION-file release (dryrun-6 and earlier).
         // The guard must silently no-op so an old release install path
         // keeps working exactly as before (backward compat).
-        @unlink(base_path('VERSION'));
+        // The throwaway tree starts empty, so there is nothing to remove.
+        $this->assertFileDoesNotExist($this->versionPath());
         Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
         $this->assertSame(0, CoreVersionHistory::count());
 
@@ -127,7 +140,7 @@ class InstallBaselineVersionHistoryTest extends TestCase
         // endpoint is technically reachable) must not double-insert.
         // Guard by "ledger empty" so the initial baseline is never
         // overwritten by a later re-submit.
-        File::put(base_path('VERSION'), "0.3.3-dryrun-8\n");
+        File::put($this->versionPath(), "0.3.3-dryrun-8\n");
         CoreVersionHistory::create([
             'old_version' => null,
             'new_version' => '0.2.4',
@@ -158,7 +171,7 @@ class InstallBaselineVersionHistoryTest extends TestCase
         // it right after the write. Otherwise a stale null would linger
         // until the next cache clear, and the downgrade guard / drift
         // service would still see "no version" post-install.
-        File::put(base_path('VERSION'), "0.3.3-dryrun-8\n");
+        File::put($this->versionPath(), "0.3.3-dryrun-8\n");
         Cache::forget(CoreVersionHistory::CURRENT_VERSION_CACHE_KEY);
         $this->assertNull(CoreVersionHistory::currentVersion(), 'Precondition: ledger empty → currentVersion() null');
 

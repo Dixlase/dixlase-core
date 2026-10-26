@@ -42,6 +42,7 @@ namespace App\Services\Content;
 use App\Contracts\Content\PublishesFileContent;
 use App\Enums\ContentPublishMode;
 use App\Support\Content\FileContentColumns;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
@@ -108,7 +109,10 @@ class FileContentRegistry
             }
         }
 
-        return ['checked' => $checked, 'pending' => $this->pendingCount()];
+        $pending = $this->pendingCount();
+        $publisher->syncPendingAlert($pending);
+
+        return ['checked' => $checked, 'pending' => $pending];
     }
 
     /**
@@ -122,19 +126,76 @@ class FileContentRegistry
 
         foreach ($this->models as $modelClass) {
             try {
-                $count += $modelClass::fileStoredQuery()
-                    ->whereNotNull(FileContentColumns::FILE_HASH)
-                    ->where(function ($query) {
-                        $query->whereNull(FileContentColumns::PUBLISHED_HASH)
-                            ->orWhereColumn(FileContentColumns::FILE_HASH, '!=', FileContentColumns::PUBLISHED_HASH);
-                    })
-                    ->count();
+                $count += self::pendingQuery($modelClass)->count();
             } catch (Throwable $e) {
                 report($e);
             }
         }
 
         return $count;
+    }
+
+    /**
+     * The records that hold file changes that have not been published
+     *
+     * Like {@see pendingCount()}, this reflects the last check and reads no
+     * files. A model whose table cannot be read is skipped.
+     *
+     * @param  int  $limit  The most records to return, across all models
+     * @return list<PublishesFileContent&Model>
+     */
+    public function pendingRecords(int $limit): array
+    {
+        $records = [];
+
+        foreach ($this->models as $modelClass) {
+            if (count($records) >= $limit) {
+                break;
+            }
+
+            try {
+                foreach (self::pendingQuery($modelClass)->limit($limit - count($records))->get() as $record) {
+                    /** @var PublishesFileContent&Model $record */
+                    $records[] = $record;
+                }
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $records;
+    }
+
+    /**
+     * @param  class-string<PublishesFileContent&Model>  $modelClass
+     * @return Builder<Model>
+     */
+    private static function pendingQuery(string $modelClass): Builder
+    {
+        return $modelClass::fileStoredQuery()
+            ->whereNotNull(FileContentColumns::FILE_HASH)
+            ->where(function ($query) {
+                $query->whereNull(FileContentColumns::PUBLISHED_HASH)
+                    ->orWhereColumn(FileContentColumns::FILE_HASH, '!=', FileContentColumns::PUBLISHED_HASH);
+            });
+    }
+
+    /**
+     * Whether any registered model stores a record in files
+     */
+    public function hasFileStoredRecords(): bool
+    {
+        foreach ($this->models as $modelClass) {
+            try {
+                if ($modelClass::fileStoredQuery()->exists()) {
+                    return true;
+                }
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return false;
     }
 
     /**

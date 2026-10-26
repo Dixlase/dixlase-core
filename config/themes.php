@@ -41,6 +41,13 @@ return [
     'admin_theme' => 'admin', // Admin panel theme
 
     /*
+     * Where the per-theme asset symlinks live. null means
+     * public/assets/themes. See the same key in config/plugins.php for why
+     * it exists (#653).
+     */
+    'asset_links_directory' => null,
+
+    /*
      * Themes that the install wizard can fetch from GitHub when the user's
      * release ZIP does not bundle them. Add new entries here as more first-party
      * themes ship. Each entry:

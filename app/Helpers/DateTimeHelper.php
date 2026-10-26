@@ -37,9 +37,12 @@
 
 namespace App\Helpers;
 
+use App\Contracts\ViewerTimezoneResolver;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -105,6 +108,128 @@ class DateTimeHelper
     public static function displayTimezone(): string
     {
         return ConfigHelper::getDisplayTimezone();
+    }
+
+    /**
+     * Return the timezone to show the current viewer
+     *
+     * The site's display timezone is the right clock for an admin screen,
+     * but not for one that shows a member their own data. An extension that
+     * owns a profile screen registers a ViewerTimezoneResolver; with none
+     * registered this is the display timezone, so nothing changes for a
+     * site that has no such extension.
+     *
+     * A resolver that throws, or names a timezone PHP does not know, is
+     * ignored rather than allowed to break the page: a stored identifier
+     * can go stale, and a date on a screen is not worth a 500.
+     */
+    public static function viewerTimezone(): string
+    {
+        $fallback = self::displayTimezone();
+
+        if (! App::bound(ViewerTimezoneResolver::class)) {
+            return $fallback;
+        }
+
+        try {
+            $resolved = App::make(ViewerTimezoneResolver::class)->resolve();
+        } catch (Throwable $e) {
+            Log::warning('ViewerTimezoneResolver failed; using the display timezone', ['exception' => $e]);
+
+            return $fallback;
+        }
+
+        return self::isKnownTimezone($resolved) ? (string) $resolved : $fallback;
+    }
+
+    /**
+     * Resolve the timezone a datetime field is shown and read in
+     *
+     * @param  string|null  $timezone  An explicit identifier, which wins when given
+     * @param  string  $context  'site' for the site's display timezone, 'viewer' for the member's own
+     */
+    public static function fieldTimezone(?string $timezone = null, string $context = 'site'): string
+    {
+        if (self::isKnownTimezone($timezone)) {
+            return (string) $timezone;
+        }
+
+        return $context === 'viewer' ? self::viewerTimezone() : self::displayTimezone();
+    }
+
+    /**
+     * Render a stored UTC value as the wall clock a datetime-local field wants
+     *
+     * An <input type="datetime-local"> submits a wall clock with no offset,
+     * so it has to be given one deliberately in both directions. This is
+     * the display half; fromInput() is the other.
+     *
+     * Accepts what old() returns as readily as a model attribute, so a form
+     * redisplayed after a failed validation needs no second branch.
+     *
+     * @param  CarbonImmutable|DateTimeInterface|string|int|null  $value  Interpreted as UTC
+     * @param  string|null  $timezone  Defaults to the site's display timezone
+     */
+    public static function forInput(mixed $value, ?string $timezone = null): ?string
+    {
+        $carbon = self::toCarbon($value);
+
+        if ($carbon === null) {
+            return null;
+        }
+
+        return $carbon->setTimezone(self::fieldTimezone($timezone))->format('Y-m-d\TH:i');
+    }
+
+    /**
+     * Read a submitted wall clock in the field's timezone and return UTC
+     *
+     * The inverse of forInput(). Both must resolve the timezone the same
+     * way: a field shown in one timezone and saved as another stops
+     * round-tripping, and that failure is silent, because the form reads
+     * back the value it wrote and only the rendered page disagrees.
+     *
+     * Returns null both for an empty value and for one that cannot be
+     * parsed. A caller normalising submitted input must tell the two apart
+     * and leave an unparseable value exactly as it arrived, so its `date`
+     * rule reports it instead of `nullable` dropping it in silence.
+     *
+     * @param  string|null  $timezone  Defaults to the site's display timezone
+     */
+    public static function fromInput(mixed $value, ?string $timezone = null): ?string
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            // An explicit offset in the submitted value wins: Carbon honours
+            // it and ignores the second argument. Only a bare wall clock,
+            // which is what datetime-local sends, is read as field-local.
+            return CarbonImmutable::parse($value, self::fieldTimezone($timezone))
+                ->setTimezone((string) config('app.timezone', 'UTC'))
+                ->format('Y-m-d H:i:s');
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Whether PHP knows this timezone identifier
+     */
+    private static function isKnownTimezone(mixed $timezone): bool
+    {
+        if (! is_string($timezone) || $timezone === '') {
+            return false;
+        }
+
+        try {
+            new DateTimeZone($timezone);
+        } catch (Throwable) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

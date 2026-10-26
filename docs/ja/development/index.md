@@ -77,3 +77,4 @@ API署名、バックアップ、デプロイシステムです。
 - [予約された拡張ポイント](extension-points.md) - ゼロトラストロードマップ Phase 1 で予約されたフック（SecretProvider、RiskEvaluator、PolicyEvaluator、auth.iap、auth.mtls）
 - [キャッシュキー命名規約](cache-key-convention.md) - キャッシュキーの命名規約と Builder ヘルパー
 - [SDK トレイト依存関係](sdk-trait-dependencies.md) - SDK トレイト依存分析
+- [テストスイートがどのデータベースで走るか](test-database.md) - 手元は sqlite、CI は MySQL。`phpunit.xml` だけでは決められない理由と、`tests/TestCase.php` の 2 つの関門

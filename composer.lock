@@ -544,16 +544,16 @@
         },
         {
             "name": "dixlase/dixlase-onepage",
-            "version": "v0.4.1",
+            "version": "v0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Dixlase/theme-dixlase-onepage.git",
-                "reference": "67da0c5bc9f675b1de4e18369d58e5aaf41440f0"
+                "reference": "6a3be655b8b1b4288f2b28d3a126e8484a681aa4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/67da0c5bc9f675b1de4e18369d58e5aaf41440f0",
-                "reference": "67da0c5bc9f675b1de4e18369d58e5aaf41440f0",
+                "url": "https://api.github.com/repos/Dixlase/theme-dixlase-onepage/zipball/6a3be655b8b1b4288f2b28d3a126e8484a681aa4",
+                "reference": "6a3be655b8b1b4288f2b28d3a126e8484a681aa4",
                 "shasum": ""
             },
             "require": {
@@ -564,7 +564,7 @@
                 "dixlase": {
                     "type": "theme",
                     "slug": "dixlase-onepage",
-                    "version": "0.4.1"
+                    "version": "0.4.2"
                 }
             },
             "license": [
@@ -579,10 +579,10 @@
             ],
             "description": "Dixlase OnePage theme - Plugin-driven single page / landing page theme",
             "support": {
-                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/v0.4.1",
+                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/v0.4.2",
                 "issues": "https://github.com/Dixlase/theme-dixlase-onepage/issues"
             },
-            "time": "2026-10-15T16:37:01+00:00"
+            "time": "2026-10-23T16:41:35+00:00"
         },
         {
             "name": "doctrine/deprecations",

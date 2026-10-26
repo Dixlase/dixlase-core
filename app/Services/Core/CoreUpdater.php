@@ -968,7 +968,11 @@ class CoreUpdater
      */
     public static function readVersionFromDisk(?string $basePath = null): ?string
     {
-        $basePath ??= base_path();
+        // The configured tree, when one is set, instead of the application
+        // root. It is null everywhere but a test, which points it at a
+        // throwaway directory so the suite never writes the repository's
+        // own tracked VERSION file (#677).
+        $basePath ??= (string) (config('core_update.version_base_path') ?: base_path());
         $path = $basePath.DIRECTORY_SEPARATOR.'VERSION';
 
         if (! is_file($path)) {
