@@ -39,6 +39,7 @@ namespace App\Models;
 
 use App\Models\Traits\ReadsExtensionManifest;
 use App\Models\Traits\ResolvesExtensionDirectory;
+use App\Support\ExtensionDirectories;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -131,9 +132,7 @@ class Theme extends Model
             return null;
         }
 
-        $root = trim((string) config('themes.theme_directory', 'themes'), '/');
-
-        return base_path(($root !== '' ? $root : 'themes')."/{$directory}/theme.json");
+        return ExtensionDirectories::themesRoot($directory).DIRECTORY_SEPARATOR.'theme.json';
     }
 
     /**
@@ -193,9 +192,9 @@ class Theme extends Model
     /**
      * {@inheritDoc}
      */
-    protected static function extensionRootDirectory(): string
+    protected static function extensionRootPath(): string
     {
-        return 'themes';
+        return ExtensionDirectories::themesRoot();
     }
 
     /**

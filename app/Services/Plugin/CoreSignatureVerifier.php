@@ -37,6 +37,7 @@ namespace App\Services\Plugin;
 
 use App\Contracts\Plugin\SignatureVerifierInterface;
 use App\DTO\Plugin\SignatureVerificationResult;
+use App\Helpers\PluginHelper;
 use App\Support\PinnedPublicKeys;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -135,7 +136,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             return SignatureVerificationResult::unsigned(__('services/plugin/core_signature_verifier.plugin_json_not_found'));
         }
 
-        return $this->verifyExtensionDirectory(base_path("plugins/{$pluginName}"), 'plugin.json');
+        return $this->verifyExtensionDirectory(PluginHelper::pluginsPath($pluginName), 'plugin.json');
     }
 
     /**

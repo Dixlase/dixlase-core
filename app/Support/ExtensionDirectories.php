@@ -64,6 +64,48 @@ namespace App\Support;
 final class ExtensionDirectories
 {
     /**
+     * The directory that holds the installed plugins, or one plugin in it.
+     *
+     * `config('plugins.plugins_directory')` is a path relative to the
+     * application root in production, where it is `plugins`. An absolute
+     * value is used as given, so a test can point every reader of the root
+     * at a throwaway tree instead of the checkout's own plugins/ (#653).
+     * Every caller in core comes through here or through
+     * {@see \App\Helpers\PluginHelper::pluginsPath()}, which delegates to
+     * it, so one config override moves them all.
+     */
+    public static function pluginsRoot(?string $directory = null): string
+    {
+        return self::root(config('plugins.plugins_directory'), 'plugins', $directory);
+    }
+
+    /**
+     * The directory that holds the installed themes, or one theme in it.
+     *
+     * The same rule as {@see self::pluginsRoot()}, for
+     * `config('themes.theme_directory')`.
+     */
+    public static function themesRoot(?string $directory = null): string
+    {
+        return self::root(config('themes.theme_directory'), 'themes', $directory);
+    }
+
+    private static function root(mixed $configured, string $default, ?string $directory): string
+    {
+        $configured = is_string($configured) ? trim($configured) : '';
+
+        $root = match (true) {
+            $configured === '' => base_path($default),
+            str_starts_with($configured, DIRECTORY_SEPARATOR) => rtrim($configured, DIRECTORY_SEPARATOR),
+            default => base_path(trim($configured, '/')),
+        };
+
+        return $directory === null || $directory === ''
+            ? $root
+            : $root.DIRECTORY_SEPARATOR.$directory;
+    }
+
+    /**
      * Whether `$basename` can be the directory name of an installed
      * extension. Leading `.` and `_` are excluded as well: both mark a
      * directory as hidden or set-aside by convention, and neither is a

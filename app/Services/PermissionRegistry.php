@@ -40,6 +40,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\MemberRole;
+use App\Helpers\PluginHelper;
 use App\Models\Plugin;
 use App\Models\RolePermissionOverride;
 use App\Support\Cache\CacheKey;
@@ -204,7 +205,7 @@ class PermissionRegistry
      */
     public static function resolvePluginRolesPath(string $pluginSlug): ?string
     {
-        $path = base_path("plugins/{$pluginSlug}/config/admin/roles.php");
+        $path = PluginHelper::pluginsPath($pluginSlug).'/config/admin/roles.php';
 
         return file_exists($path) ? $path : null;
     }
@@ -515,7 +516,7 @@ class PermissionRegistry
      */
     public static function installedPluginDirectories(?string $pluginsPath = null): array
     {
-        $pluginsPath ??= base_path('plugins');
+        $pluginsPath ??= PluginHelper::pluginsPath();
         if (! is_dir($pluginsPath)) {
             return [];
         }

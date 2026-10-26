@@ -39,6 +39,7 @@ namespace App\Models;
 
 use App\Models\Traits\ReadsExtensionManifest;
 use App\Models\Traits\ResolvesExtensionDirectory;
+use App\Support\ExtensionDirectories;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Schema;
@@ -167,9 +168,7 @@ class Plugin extends Model
             return null;
         }
 
-        $root = trim((string) config('plugins.plugins_directory', 'plugins'), '/');
-
-        return base_path(($root !== '' ? $root : 'plugins')."/{$directory}/plugin.json");
+        return ExtensionDirectories::pluginsRoot($directory).DIRECTORY_SEPARATOR.'plugin.json';
     }
 
     /**
@@ -239,8 +238,8 @@ class Plugin extends Model
     /**
      * {@inheritDoc}
      */
-    protected static function extensionRootDirectory(): string
+    protected static function extensionRootPath(): string
     {
-        return 'plugins';
+        return ExtensionDirectories::pluginsRoot();
     }
 }

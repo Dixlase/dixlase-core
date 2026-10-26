@@ -39,6 +39,7 @@ namespace App\Helpers;
 
 use App\Http\Middleware\EnsurePluginActiveOnSite;
 use App\Models\Plugin;
+use App\Support\ExtensionDirectories;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -269,7 +270,7 @@ class PluginHelper
         }
 
         $map = [];
-        $pluginsDir = base_path('plugins');
+        $pluginsDir = self::pluginsPath();
         if (! File::isDirectory($pluginsDir)) {
             return self::$installedCapabilityCache = $map;
         }
@@ -332,19 +333,28 @@ class PluginHelper
     }
 
     /**
-     * Get plugin path
+     * The directory that holds the installed plugins, or one plugin in it
      *
-     * The plugins root is `config('plugins.plugins_directory')` relative to
-     * the application base path (default `plugins`), so tests can point the
-     * route loaders at a throwaway directory instead of the real plugins/.
+     * `config('plugins.plugins_directory')` is a path relative to the
+     * application root in production, where it is `plugins`. An absolute
+     * value is used as given, which is what lets a test point code that
+     * reads or writes a plugin directory at a throwaway tree instead of the
+     * checkout's own plugins/ (#653). Every caller in core resolves the root
+     * through here, so one override moves them all.
+     */
+    public static function pluginsPath(?string $directory = null): string
+    {
+        return ExtensionDirectories::pluginsRoot($directory);
+    }
+
+    /**
+     * Get plugin path
      *
      * @param  string  $directory  Plugin directory name
      */
     public static function getPluginPath(string $directory): string
     {
-        $root = trim((string) config('plugins.plugins_directory', 'plugins'), '/');
-
-        return base_path(($root !== '' ? $root : 'plugins')."/{$directory}");
+        return self::pluginsPath($directory);
     }
 
     /**
