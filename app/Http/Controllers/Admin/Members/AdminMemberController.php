@@ -58,7 +58,7 @@ class AdminMemberController extends AdminLoggedInController
         $roleFilter = $request->input('role', '');
 
         $statusFilter = $request->input('status');
-        if ($statusFilter === null && ! $request->hasAny(['search', 'role', 'page', 'per_page'])) {
+        if (! $request->has('status') && ! $request->hasAny(['search', 'role', 'page', 'per_page'])) {
             $statusFilter = '1';
         }
 
@@ -89,10 +89,10 @@ class AdminMemberController extends AdminLoggedInController
             ->when($roleFilter, function ($query, $roleFilter) {
                 $query->where('role', $roleFilter);
             })
-            // The status <select> submits '' for "all", which must not become
-            // `status = ''`; only a concrete value ('0' / '1') filters. null is
-            // still distinguished above so the very first page load can
-            // default to active members.
+            // The status <select> submits '' for "all", which arrives as null
+            // (ConvertEmptyStringsToNull) and must not filter; only a concrete
+            // value ('0' / '1') does. Whether the key was sent at all is what
+            // lets the very first page load default to active members above.
             ->when($statusFilter !== null && $statusFilter !== '', function ($query) use ($statusFilter) {
                 $query->where('status', $statusFilter);
             })

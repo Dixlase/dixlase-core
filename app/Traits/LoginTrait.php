@@ -236,7 +236,7 @@ trait LoginTrait
     public function store(\Illuminate\Http\Request $request)
     {
         $lockoutService = app($this->getLockoutServiceClass());
-        $login = $request->login;
+        $login = (string) $request->input('login');
 
         // Determine if input value is email address or account name
         $isEmail = str_contains($login, '@');

@@ -347,7 +347,7 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function preview(Request $request): JsonResponse
     {
-        $content = $request->input('content', '');
+        $content = (string) $request->input('content');
         $editorTypeSlug = $request->input('editor_type', 'html');
 
         $renderedHtml = $this->previewService->renderFromSlug($content, $editorTypeSlug);
