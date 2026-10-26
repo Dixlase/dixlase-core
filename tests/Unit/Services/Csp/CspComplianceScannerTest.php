@@ -39,6 +39,9 @@ class CspComplianceScannerTest extends TestCase
     /** @var string テスト用一時ディレクトリ */
     protected string $tmpDir;
 
+    /** @var string|null A throwaway plugins root; see setUp(). */
+    protected ?string $pluginsRoot = null;
+
     /** @var string テスト用プラグインスラッグ */
     protected string $testSlug = 'test-csp-plugin';
 
@@ -48,16 +51,23 @@ class CspComplianceScannerTest extends TestCase
 
         $this->scanner = new CspComplianceScanner();
 
-        // テスト用一時ディレクトリを plugins/ 配下に作成
-        $this->tmpDir = base_path("plugins/{$this->testSlug}");
+        // A throwaway plugins root, so the fixture is never written into the
+        // checkout's own plugins/ where core's extension scan would find it
+        // after an interrupted run (#653). The scanner resolves the root
+        // through PluginHelper::pluginsPath(), which reads it from config.
+        $this->pluginsRoot = storage_path('framework/testing/csp-plugins-'.uniqid('', true));
+        File::ensureDirectoryExists($this->pluginsRoot);
+        config(['plugins.plugins_directory' => $this->pluginsRoot]);
+
+        $this->tmpDir = $this->pluginsRoot.DIRECTORY_SEPARATOR.$this->testSlug;
         File::makeDirectory("{$this->tmpDir}/resources/views", 0755, true, true);
     }
 
     protected function tearDown(): void
     {
-        // テスト用一時ディレクトリを削除
-        if (File::isDirectory($this->tmpDir)) {
-            File::deleteDirectory($this->tmpDir);
+        // Remove the throwaway root, fixture and all.
+        if ($this->pluginsRoot !== null && File::isDirectory($this->pluginsRoot)) {
+            File::deleteDirectory($this->pluginsRoot);
         }
 
         parent::tearDown();

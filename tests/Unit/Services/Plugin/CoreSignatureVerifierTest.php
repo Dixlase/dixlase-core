@@ -32,9 +32,33 @@ class CoreSignatureVerifierTest extends TestCase
 {
     protected CoreSignatureVerifier $verifier;
 
+    /**
+     * A throwaway plugins root.
+     *
+     * These tests write a plugin.json fixture for the directory the verifier
+     * reads. That used to be the checkout's own plugins/TestPlugin, which an
+     * interrupted run leaves behind for core's extension scan to find
+     * (#653). The verifier resolves the root through
+     * `PluginHelper::pluginsPath()`, which reads it from config.
+     */
+    protected ?string $pluginsRoot = null;
+
+    protected function tearDown(): void
+    {
+        if ($this->pluginsRoot !== null && File::isDirectory($this->pluginsRoot)) {
+            File::deleteDirectory($this->pluginsRoot);
+        }
+
+        parent::tearDown();
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->pluginsRoot = storage_path('framework/testing/signature-plugins-'.uniqid('', true));
+        File::ensureDirectoryExists($this->pluginsRoot);
+        config(['plugins.plugins_directory' => $this->pluginsRoot]);
 
         // Pin the app locale to ja so the Japanese substrings these tests
         // assert on (署名ファイル, 解析) match regardless of the CI env's
@@ -213,7 +237,7 @@ class CoreSignatureVerifierTest extends TestCase
     public function test_verify_returns_error_for_invalid_json(): void
     {
         $pluginName = 'TestPlugin';
-        $pluginDir = base_path("plugins/{$pluginName}");
+        $pluginDir = $this->pluginsRoot.DIRECTORY_SEPARATOR.$pluginName;
 
         // 一時的にディレクトリを作成
         if (! File::isDirectory($pluginDir)) {
@@ -236,7 +260,7 @@ class CoreSignatureVerifierTest extends TestCase
     public function test_verify_returns_error_for_invalid_signature_json(): void
     {
         $pluginName = 'TestPlugin';
-        $pluginDir = base_path("plugins/{$pluginName}");
+        $pluginDir = $this->pluginsRoot.DIRECTORY_SEPARATOR.$pluginName;
 
         if (! File::isDirectory($pluginDir)) {
             File::makeDirectory($pluginDir, 0755, true);
@@ -273,7 +297,7 @@ class CoreSignatureVerifierTest extends TestCase
         $pluginJson['files'] ??= [];
 
         $pluginName = 'TestPlugin';
-        $pluginDir = base_path("plugins/{$pluginName}");
+        $pluginDir = $this->pluginsRoot.DIRECTORY_SEPARATOR.$pluginName;
 
         if (! File::isDirectory($pluginDir)) {
             File::makeDirectory($pluginDir, 0755, true);

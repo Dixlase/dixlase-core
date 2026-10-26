@@ -45,7 +45,7 @@ use Illuminate\Support\Str;
  * Resolves an extension's on-disk directory name from its slug.
  *
  * Shared by the Plugin and Theme models. Using models must implement
- * extensionRootDirectory() and have `slug` and `directory` columns.
+ * extensionRootPath() and have `slug` and `directory` columns.
  */
 trait ResolvesExtensionDirectory
 {
@@ -53,7 +53,12 @@ trait ResolvesExtensionDirectory
      * Directory under base_path() that holds this extension type
      * (e.g. `plugins` or `themes`).
      */
-    abstract protected static function extensionRootDirectory(): string;
+    /**
+     * The absolute directory that holds the installed extensions of this
+     * kind. It comes from config, so a test can point it at a throwaway
+     * tree instead of the checkout's own plugins/ or themes/ (#653).
+     */
+    abstract protected static function extensionRootPath(): string;
 
     /**
      * Resolve the on-disk extension directory name from a slug.
@@ -90,7 +95,7 @@ trait ResolvesExtensionDirectory
             return null;
         }
 
-        $base = base_path(static::extensionRootDirectory());
+        $base = static::extensionRootPath();
         $actualDirs = [];
         foreach (glob("{$base}/*", GLOB_ONLYDIR) ?: [] as $dir) {
             $name = basename($dir);
