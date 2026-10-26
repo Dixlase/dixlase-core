@@ -42,42 +42,74 @@ class ThemeSymlinkAllTest extends TestCase
         '__test_theme_symlink_all_without_assets__',
     ];
 
+    /**
+     * Throwaway stand-ins for the themes and asset-links directories.
+     *
+     * The fixtures used to be written into the real ones, where core's
+     * extension scan finds them if a run is interrupted before tearDown
+     * (#653). The command reads both roots from config now.
+     */
+    private ?string $themesRoot = null;
+
+    private ?string $linksRoot = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $unique = uniqid('', true);
+        $this->themesRoot = storage_path('framework/testing/symlink-themes-'.$unique);
+        $this->linksRoot = storage_path('framework/testing/symlink-theme-links-'.$unique);
+        File::ensureDirectoryExists($this->themesRoot);
+        File::ensureDirectoryExists($this->linksRoot);
+
+        config([
+            'themes.theme_directory' => $this->themesRoot,
+            'themes.asset_links_directory' => $this->linksRoot,
+        ]);
+    }
+
     protected function tearDown(): void
     {
-        foreach (self::FIXTURE_NAMES as $name) {
-            $link = public_path("assets/themes/{$name}");
-            if (is_link($link) || File::exists($link)) {
-                @unlink($link);
-            }
-            $themeDir = base_path("themes/{$name}");
-            if (File::isDirectory($themeDir)) {
-                File::deleteDirectory($themeDir);
+        foreach ([$this->linksRoot, $this->themesRoot] as $directory) {
+            if ($directory !== null && File::isDirectory($directory)) {
+                File::deleteDirectory($directory);
             }
         }
 
         parent::tearDown();
     }
 
+    private function themePath(string $name): string
+    {
+        return $this->themesRoot.DIRECTORY_SEPARATOR.$name;
+    }
+
+    private function linkPath(string $name): string
+    {
+        return $this->linksRoot.DIRECTORY_SEPARATOR.$name;
+    }
+
     public function test_create_all_links_themes_with_resources_assets_and_skips_others(): void
     {
         [$withAssets, $withoutAssets] = self::FIXTURE_NAMES;
 
-        File::ensureDirectoryExists(base_path("themes/{$withAssets}/resources/assets"));
+        File::ensureDirectoryExists($this->themePath($withAssets).'/resources/assets');
         File::put(
-            base_path("themes/{$withAssets}/resources/assets/thumbnail.png"),
+            $this->themePath($withAssets).'/resources/assets/thumbnail.png',
             'fixture-png',
         );
-        File::ensureDirectoryExists(base_path("themes/{$withoutAssets}"));
+        File::ensureDirectoryExists($this->themePath($withoutAssets));
 
         $this->artisan('dls:theme:symlink', ['action' => 'create', '--all' => true])
             ->assertExitCode(0);
 
         $this->assertTrue(
-            is_link(public_path("assets/themes/{$withAssets}")),
+            is_link($this->linkPath($withAssets)),
             'theme with resources/assets must get a symlink',
         );
         $this->assertFalse(
-            is_link(public_path("assets/themes/{$withoutAssets}")),
+            is_link($this->linkPath($withoutAssets)),
             'theme without resources/assets must not get a symlink',
         );
     }
