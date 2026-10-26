@@ -101,6 +101,21 @@ window.copyMediaUrl = function (url, button) {
 };
 
 /**
+ * Replace a form's ids[] with the selected ids.
+ */
+function fillIds(form, ids) {
+    form.querySelectorAll('input[data-bulk-id]').forEach((el) => el.remove());
+    ids.forEach((id) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = String(id);
+        input.dataset.bulkId = '1';
+        form.appendChild(input);
+    });
+}
+
+/**
  * Media index bulk-selection state (iPhone Photos-style).
  *
  * Selection mode is a page-wide toggle; while it is on, tapping a card
@@ -196,15 +211,7 @@ document.addEventListener('alpine:init', () => {
 
             const form = document.getElementById('bulkDeleteForm');
             if (form) {
-                form.querySelectorAll('input[data-bulk-id]').forEach((el) => el.remove());
-                this.selectedIds.forEach((id) => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'ids[]';
-                    input.value = String(id);
-                    input.dataset.bulkId = '1';
-                    form.appendChild(input);
-                });
+                fillIds(form, this.selectedIds);
             }
 
             if (typeof window.openModal === 'function') {
@@ -212,6 +219,33 @@ document.addEventListener('alpine:init', () => {
             } else {
                 console.error('[Media Index] openModal function not found');
             }
+        },
+
+        /**
+         * Bulk tagging (#766): "add" or "remove". The modal's tag input
+         * starts empty, and the selected ids go in as ids[] like the bulk
+         * delete's.
+         */
+        openBulkTagModal(mode) {
+            if (this.selectedIds.length === 0) {
+                return;
+            }
+
+            const prefix = mode === 'remove' ? 'bulkTagRemove' : 'bulkTagAdd';
+            const modal = document.getElementById(prefix + 'Modal');
+            const form = document.getElementById(prefix + 'Form');
+            if (!modal || !form) {
+                return;
+            }
+
+            const message = modal.querySelector('[data-bulk-tag-message]');
+            if (message) {
+                message.innerHTML = message.dataset.bulkTagMessage.replace(':count', String(this.selectedIds.length));
+            }
+
+            fillIds(form, this.selectedIds);
+            document.getElementById(prefix + 'Input')?.dispatchEvent(new CustomEvent('media-tag-input-reset'));
+            window.openModal(prefix + 'Modal');
         },
     }));
 });

@@ -127,6 +127,7 @@ window.openMediaSelector = function (modalId, inputId, previewId, multiple = fal
         currentPage: 1,
         search: '',
         type: '',
+        tag: '',
         requestId: 0,
         searchTimer: null
     };
@@ -175,6 +176,92 @@ function bindSelectorFilters(modalId) {
             loadMediaForSelector(modalId, 1);
         };
     }
+
+    loadSelectorTags(modalId);
+}
+
+/**
+ * Fetch the site's tags and show them as filter chips (#766). The row
+ * stays hidden while there are none.
+ */
+async function loadSelectorTags(modalId) {
+    const modal = document.getElementById(modalId);
+    const row = document.getElementById(`${modalId}-tags`);
+    const wrapper = document.getElementById(`${modalId}-tags-row`);
+    if (!modal || !row || !wrapper || !modal.dataset.tagsUrl) return;
+
+    row.replaceChildren();
+    wrapper.classList.add('hidden');
+
+    try {
+        const response = await fetch(modal.dataset.tagsUrl, {
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const data = await response.json();
+        if (!window.mediaSelectorData[modalId] || !Array.isArray(data.tags) || data.tags.length === 0) return;
+
+        row.dataset.tags = JSON.stringify(data.tags);
+        renderSelectorTags(modalId);
+        wrapper.classList.remove('hidden');
+    } catch (error) {
+        console.error('[Media Selector] Failed to load tags:', error);
+    }
+}
+
+/**
+ * Draw the chips: "all" first, then each tag with its count. The chosen
+ * one is pressed. Built with textContent, so a tag name is never markup.
+ */
+function renderSelectorTags(modalId) {
+    const modal = document.getElementById(modalId);
+    const row = document.getElementById(`${modalId}-tags`);
+    const state = window.mediaSelectorData[modalId];
+    if (!modal || !row || !state) return;
+
+    let tags = [];
+    try {
+        tags = JSON.parse(row.dataset.tags || '[]');
+    } catch (error) {
+        tags = [];
+    }
+
+    const chip = function (value, label, count) {
+        const button = document.createElement('button');
+        const pressed = String(state.tag) === String(value);
+        button.type = 'button';
+        button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+        button.className = 'inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-xs '
+            + (pressed
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700');
+
+        const name = document.createElement('span');
+        name.className = 'truncate';
+        name.textContent = label;
+        button.appendChild(name);
+
+        if (count !== null) {
+            const number = document.createElement('span');
+            number.className = pressed ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400';
+            number.textContent = String(count);
+            button.appendChild(number);
+        }
+
+        button.onclick = function () {
+            const current = window.mediaSelectorData[modalId];
+            if (!current) return;
+            current.tag = String(value);
+            renderSelectorTags(modalId);
+            loadMediaForSelector(modalId, 1);
+        };
+
+        return button;
+    };
+
+    row.replaceChildren(
+        chip('', modal.dataset.allTagsLabel || 'All', null),
+        ...tags.map(tag => chip(tag.id, tag.name, tag.count)),
+    );
 }
 
 /**
@@ -213,6 +300,7 @@ async function loadMediaForSelector(modalId, page = 1) {
     const params = new URLSearchParams({ page: String(page), per_page: '20' });
     if (state?.search) params.set('search', state.search);
     if (state?.type) params.set('type', state.type);
+    if (state?.tag) params.set('tag', state.tag);
 
     try {
         const response = await fetch(`${apiUrl}?${params.toString()}`);
@@ -260,8 +348,8 @@ function selectionMarker(data, mediaId) {
 /**
  * Show and select what was just uploaded inside the modal.
  *
- * The list is newest first, so the new items are on page 1 once the search
- * and the type filter are cleared. In multiple mode every uploaded item is
+ * The list is newest first, so the new items are on page 1 once the search,
+ * the type filter and the tag filter are cleared. In multiple mode every uploaded item is
  * added to the selection; in single mode the last one is selected. An item
  * that is not on page 1 (more than a page was uploaded at once) is simply
  * not selected.
@@ -273,6 +361,8 @@ window.mediaSelectorUploaded = async function (modalId, ids) {
     clearTimeout(state.searchTimer);
     state.search = '';
     state.type = '';
+    state.tag = '';
+    renderSelectorTags(modalId);
     const search = document.getElementById(`${modalId}-search`);
     const typeFilter = document.getElementById(`${modalId}-type-filter`);
     if (search) search.value = '';

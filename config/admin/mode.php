@@ -78,6 +78,7 @@ return [
         'media' => MenuVisibility::Partial,
         'media.index' => MenuVisibility::Full,
         'media.upload' => MenuVisibility::Full,
+        'media.tags' => MenuVisibility::Full,
         'media.settings' => MenuVisibility::Hidden,
 
         // Profile settings

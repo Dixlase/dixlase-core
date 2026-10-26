@@ -54,6 +54,7 @@ return [
         'text' => 'Media Management',
         'index' => 'Media Master',
         'upload' => 'Media Upload',
+        'tags' => 'Tags',
         'settings' => 'Media Settings',
     ],
     'profile' => [

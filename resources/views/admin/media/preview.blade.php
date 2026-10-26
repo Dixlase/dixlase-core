@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
             <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->display_name ?? __('admin/media/preview.unknown') }}</p>
             
-            <!-- メディア情報編集フォーム -->
+            <!-- Media information edit form -->
             <form action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
                 @csrf
                 @method('PUT')
@@ -95,6 +95,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <div>
+                    <x-media.tag-input
+                        id="mediaTags"
+                        :label="__('admin/media/tags.label')"
+                        :selected="old('tags', $media->tags->pluck('name')->all())"
+                    />
+                    {{-- Tells updateMedia() the tags were sent, so an emptied
+                         input clears them --}}
+                    <input type="hidden" name="tags_submitted" value="1">
+                    @error('tags')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                    @error('tags.*')
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {{ __('common.description') }}
                     </label>
@@ -118,7 +135,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </form>
             
-            <!-- メディアURL表示 -->
+            <!-- Media URL -->
             <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">{{ __('admin/media/preview.media_url') }}</h3>
                 <div class="flex items-center gap-2">
@@ -157,13 +174,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    <!-- 削除用フォーム -->
+    <!-- Delete form -->
     <form id="deleteMediaForm" action="{{ route('admin.media.delete', $media->id) }}" method="POST" style="display: none;">
         @csrf
         @method('DELETE')
     </form>
 
-    <!-- 削除確認モーダル -->
+    <!-- Delete confirmation modal -->
     <x-ui-modal
         id="deleteModal"
         :title="__('admin/media/preview.delete_confirmation')"

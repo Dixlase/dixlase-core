@@ -56,6 +56,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div id="{{ $id }}" 
      class="fixed inset-0 z-50 hidden overflow-y-auto bg-gray-900/50 dark:bg-gray-900/70"
      data-api-url="{{ route('admin.media.api') }}"
+     data-tags-url="{{ route('admin.media.tags.list') }}"
+     data-all-tags-label="{{ __('components/media-selector.all_tags') }}"
      data-error-message="{{ __('common.error_loading_media') }}"
      data-no-media-message="{{ __('common.no_media_found') }}"
      data-previous-label="{{ __('common.previous') }}"
@@ -163,6 +165,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             <option value="document">{{ __('common.documents') }}</option>
                         </select>
                     </div>
+                </div>
+                <div id="{{ $id }}-tags-row" class="hidden mt-3">
+                    <div id="{{ $id }}-tags"
+                         role="group"
+                         aria-label="{{ __('admin/media/tags.label') }}"
+                         class="flex flex-wrap gap-1.5"></div>
                 </div>
             </div>
 

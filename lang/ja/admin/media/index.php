@@ -70,7 +70,7 @@ return [
     ],
 
     'search' => [
-        'file_name_placeholder' => 'ファイル名で検索',
+        'file_name_placeholder' => 'ファイル名・代替テキスト・タグで検索',
         'date_from' => '開始日',
         'date_to' => '終了日',
     ],

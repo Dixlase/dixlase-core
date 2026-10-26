@@ -54,6 +54,7 @@ return [
         'text' => 'メディア管理',
         'index' => 'メディアマスター',
         'upload' => 'メディアアップロード',
+        'tags' => 'タグ管理',
         'settings' => 'メディア設定',
     ],
     'profile' => [

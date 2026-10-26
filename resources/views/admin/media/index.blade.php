@@ -77,6 +77,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ __('admin/media/index.bulk.clear') }}
                     </button>
                     <button type="button"
+                            @click="openBulkTagModal('add')"
+                            :disabled="selectedIds.length === 0"
+                            class="media-bulk-toolbar__link">
+                        <i class="fas fa-tag" aria-hidden="true"></i>
+                        {{ __('admin/media/tags.bulk.add') }}
+                    </button>
+                    @if($tags->isNotEmpty())
+                        <button type="button"
+                                @click="openBulkTagModal('remove')"
+                                :disabled="selectedIds.length === 0"
+                                class="media-bulk-toolbar__link">
+                            {{ __('admin/media/tags.bulk.remove') }}
+                        </button>
+                    @endif
+                    <button type="button"
                             @click="openBulkDeleteModal()"
                             :disabled="selectedIds.length === 0"
                             class="media-bulk-toolbar__delete">
@@ -91,8 +106,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    <!-- 検索フォーム -->
-    <section>        
+    <!-- Search form -->
+    <section>
         <form method="GET" action="{{ route('admin.media.index') }}">
             <fieldset>
                 <legend>{{ __('common.file_name') }}</legend>
@@ -104,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :placeholder="__('admin/media/index.search.file_name_placeholder')"
                 />
             </fieldset>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <fieldset>
                     <legend>{{ __('common.file_type') }}</legend>
                     <x-form-select
@@ -119,6 +134,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         ]"
                         :value="$fileType ?? ''"
                     />
+                </fieldset>
+
+                {{-- A plain select, not x-form-select: that component passes each
+                     label through __(), and a tag name is the site's own text. --}}
+                <fieldset>
+                    <legend class="flex w-full items-center justify-between gap-2">
+                        <span>{{ __('admin/media/tags.label') }}</span>
+                        <a href="{{ route('admin.media.tags') }}" class="text-xs font-normal text-blue-600 hover:underline dark:text-blue-400">
+                            <i class="fas fa-cog mr-0.5" aria-hidden="true"></i>{{ __('admin/media/tags.filter.manage') }}
+                        </a>
+                    </legend>
+                    <select id="tag"
+                            name="tag"
+                            class="input-common block w-full max-w-full p-2 pr-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white">
+                        <option value="">{{ __('admin/media/tags.filter.all') }}</option>
+                        @foreach($tags as $tag)
+                            <option value="{{ $tag->id }}" @selected((int) $currentTagId === (int) $tag->id)>{{ __('admin/media/tags.filter.option', ['name' => $tag->name, 'count' => $tag->media_count]) }}</option>
+                        @endforeach
+                    </select>
                 </fieldset>
 
                 {{-- !my-0 on both dates: x-form-text adds my-2 for stacked forms,
@@ -166,7 +200,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </form>
     </section>
 
-    <!-- 上部のページネーションと表示件数設定 -->
+    <!-- Top pagination and per-page setting -->
     @if($media->hasPages() || $media->count() > 0)
         <div class="media-controls">
             <x-ui-pagination-controls
@@ -218,7 +252,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    <!-- 下部のページネーション -->
+    <!-- Bottom pagination -->
     @if($media->hasPages())
         <div class="media-controls media-controls--bottom">
             <x-ui-pagination
@@ -234,7 +268,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-<!-- 削除確認モーダル -->
+<!-- Delete confirmation modal -->
 <x-ui-modal
     id="deleteModal"
     data-delete-message="{{ __('admin/media/index.delete_message') }}"
@@ -247,14 +281,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     form="deleteForm"
 />
 
-<!-- 削除用フォーム -->
+<!-- Delete form -->
 <form id="deleteForm" data-base-url="{{ route('admin.media.delete', ['media' => '__ID__']) }}" method="POST" style="display: none;">
     @csrf
     @method('DELETE')
 </form>
 
 @if($bulkEditable)
-    <!-- 一括削除確認モーダル -->
+    <!-- Bulk delete confirmation modal -->
     <x-ui-modal
         id="bulkDeleteModal"
         data-confirm-message="{{ __('admin/media/index.bulk.confirm_message', ['count' => ':count']) }}"
@@ -267,13 +301,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="bulkDeleteForm"
     />
 
-    <!-- 一括削除フォーム: ids[] は Alpine が動的に注入 -->
+    <!-- Bulk delete form: Alpine injects ids[] -->
     <form id="bulkDeleteForm"
           action="{{ route('admin.media.bulk-delete') }}"
           method="POST"
           style="display: none;">
         @csrf
     </form>
+
+    @include('admin.media.partials.tag-modals', ['tags' => $tags])
 @endif
 
 </div>

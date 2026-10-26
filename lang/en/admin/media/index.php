@@ -70,7 +70,7 @@ return [
     ],
 
     'search' => [
-        'file_name_placeholder' => 'Search by file name',
+        'file_name_placeholder' => 'Search by file name, alt text or tag',
         'date_from' => 'Upload Date (From)',
         'date_to' => 'Upload Date (To)',
     ],

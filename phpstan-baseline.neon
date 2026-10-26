@@ -1537,6 +1537,12 @@ parameters:
 			path: app/Models/MediaSetting.php
 
 		-
+			message: '#^Unsafe access to private property App\\Models\\MediaTag\:\:\$belongsToSiteSuspendDepth through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 3
+			path: app/Models/MediaTag.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Member\:\:\$account_name\.$#'
 			identifier: property.notFound
 			count: 2
