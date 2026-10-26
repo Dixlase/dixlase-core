@@ -41,4 +41,5 @@ return [
     'upload_network_error' => 'アップロードが中断されました。接続を確認して、もう一度お試しください。',
     'upload_clear_list' => '完了したものを消す',
     'upload_close_panel' => '閉じる',
+    'all_tags' => 'すべてのタグ',
 ];

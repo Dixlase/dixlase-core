@@ -23,6 +23,7 @@ import './layout';
 //import './layout-vanilla';
 import './login-flow';
 import '../media/js/index';
+import '../media/js/tags';
 import '../media/js/preview';
 import '../media/js/upload';
 import '../profile/js/appearance-mode';

@@ -46,6 +46,7 @@ use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
 use App\Http\Controllers\Admin\Front\AdminFrontController;
 use App\Http\Controllers\Admin\Front\AdminFrontRevisionController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
+use App\Http\Controllers\Admin\Media\AdminMediaTagController;
 use App\Http\Controllers\Admin\Members;
 use App\Http\Controllers\Admin\Profile\AdminProfileAppearanceController;
 use App\Http\Controllers\Admin\Profile\AdminProfileBasicController;
@@ -204,6 +205,21 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::post('/media/bulk-delete', [AdminMediaController::class, 'bulkDelete'])
                     ->middleware('check.menu.edit:media')
                     ->name('media.bulk-delete');
+                // Media tags (#766)
+                Route::get('/media/tags', [AdminMediaTagController::class, 'index'])->name('media.tags');
+                Route::get('/media/tags/list', [AdminMediaTagController::class, 'list'])->name('media.tags.list');
+                Route::post('/media/tags', [AdminMediaTagController::class, 'store'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.tags.store');
+                Route::post('/media/tags/bulk', [AdminMediaTagController::class, 'bulk'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.tags.bulk');
+                Route::put('/media/tags/{mediaTag}', [AdminMediaTagController::class, 'rename'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.tags.rename');
+                Route::delete('/media/tags/{mediaTag}', [AdminMediaTagController::class, 'destroy'])
+                    ->middleware('check.menu.edit:media')
+                    ->name('media.tags.destroy');
                 // Media download
                 Route::get('/media/download/{media}', [AdminMediaController::class, 'download'])->name('media.download');
                 // Media preview

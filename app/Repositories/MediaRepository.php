@@ -106,18 +106,17 @@ class MediaRepository implements MediaRepositoryInterface
 
         // Search filter
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('alt_text', 'like', "%{$search}%")
-                    ->orWhere('caption', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+            $this->applySearch($query, $filters['search']);
         }
 
         // Type filter
         if (! empty($filters['type'])) {
             $this->applyTypeFilter($query, $filters['type']);
+        }
+
+        // Tag filter
+        if (! empty($filters['tag'])) {
+            $this->applyTagFilter($query, (int) $filters['tag']);
         }
 
         // Uploader filter
@@ -208,14 +207,10 @@ class MediaRepository implements MediaRepositoryInterface
      */
     public function search(string $search, array $relations = ['member']): Collection
     {
-        return Media::with($relations)
-            ->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('alt_text', 'like', "%{$search}%")
-                    ->orWhere('caption', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            })
-            ->get();
+        $query = Media::with($relations);
+        $this->applySearch($query, $search);
+
+        return $query->get();
     }
 
     /**
@@ -274,17 +269,15 @@ class MediaRepository implements MediaRepositoryInterface
 
         // Apply filters
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('alt_text', 'like', "%{$search}%")
-                    ->orWhere('caption', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+            $this->applySearch($query, $filters['search']);
         }
 
         if (! empty($filters['type'])) {
             $this->applyTypeFilter($query, $filters['type']);
+        }
+
+        if (! empty($filters['tag'])) {
+            $this->applyTagFilter($query, (int) $filters['tag']);
         }
 
         if (! empty($filters['uploaded_by'])) {
@@ -292,6 +285,37 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         return $query->count();
+    }
+
+    /**
+     * Match a search term against the name, the alt text, the caption,
+     * the description and the names of the file's tags.
+     *
+     * @param  Builder<Media>  $query
+     */
+    private function applySearch(Builder $query, string $search): void
+    {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('alt_text', 'like', "%{$search}%")
+                ->orWhere('caption', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhereHas('tags', function ($tags) use ($search) {
+                    $tags->where('name', 'like', "%{$search}%");
+                });
+        });
+    }
+
+    /**
+     * Narrow a query to the files that carry one tag.
+     *
+     * @param  Builder<Media>  $query
+     */
+    private function applyTagFilter(Builder $query, int $tagId): void
+    {
+        $query->whereHas('tags', function ($tags) use ($tagId) {
+            $tags->whereKey($tagId);
+        });
     }
 
     /**

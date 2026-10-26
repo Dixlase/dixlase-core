@@ -41,6 +41,7 @@ use App\Models\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -109,5 +110,16 @@ class Media extends Model
     public function member()
     {
         return $this->belongsTo(Member::class, 'uploaded_by');
+    }
+
+    /**
+     * Tags of the media library (#766), in name order.
+     *
+     * @return BelongsToMany<MediaTag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(MediaTag::class, 'media_media_tag', 'media_id', 'media_tag_id')
+            ->orderBy('name');
     }
 }

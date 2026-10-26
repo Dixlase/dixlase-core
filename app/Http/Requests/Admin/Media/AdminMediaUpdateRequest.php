@@ -35,6 +35,7 @@
 
 namespace App\Http\Requests\Admin\Media;
 
+use App\Models\MediaTag;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminMediaUpdateRequest extends FormRequest
@@ -58,6 +59,12 @@ class AdminMediaUpdateRequest extends FormRequest
             'caption' => 'nullable|string|max:255',
             'alt_text' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
+            // The tag input sends tags_submitted with its tags[], so a form
+            // without the input leaves the tags alone, and an emptied input
+            // clears them
+            'tags_submitted' => 'nullable|boolean',
+            'tags' => 'nullable|array|max:'.MediaTag::MAX_TAGS_PER_REQUEST,
+            'tags.*' => 'string|max:'.MediaTag::MAX_NAME_LENGTH,
         ];
     }
 }

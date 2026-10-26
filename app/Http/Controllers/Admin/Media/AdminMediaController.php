@@ -38,6 +38,7 @@ namespace App\Http\Controllers\Admin\Media;
 use App\Actions\Media\DeleteMediaAction;
 use App\Actions\Media\UpdateMediaMetadataAction;
 use App\Actions\Media\UpdateMediaSettingsAction;
+use App\Actions\Media\UpdateMediaTagsAction;
 use App\Actions\Media\UploadMediaAction;
 use App\Actors\MemberActor;
 use App\Contracts\Repositories\MediaRepositoryInterface;
@@ -49,6 +50,7 @@ use App\Http\Requests\Admin\Media\AdminMediaSettingsUpdateRequest;
 use App\Http\Requests\Admin\Media\AdminMediaStoreRequest;
 use App\Http\Requests\Admin\Media\AdminMediaUpdateRequest;
 use App\Models\Media;
+use App\Models\MediaTag;
 use App\Services\Media\MediaSecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -119,6 +121,7 @@ class AdminMediaController extends AdminLoggedInController
         $uploadedBy = $request->get('uploaded_by');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
+        $tagId = (int) $request->get('tag');
 
         // Build filter array
         $filters = [];
@@ -137,6 +140,9 @@ class AdminMediaController extends AdminLoggedInController
         if ($dateTo) {
             $filters['date_to'] = $dateTo;
         }
+        if ($tagId > 0) {
+            $filters['tag'] = $tagId;
+        }
 
         // Execute pagination using repository
         $media = $this->mediaRepository->paginate($perPage, $filters, $sort, $order)
@@ -150,6 +156,8 @@ class AdminMediaController extends AdminLoggedInController
         $this->viewParams['uploadedBy'] = $uploadedBy;
         $this->viewParams['dateFrom'] = $dateFrom;
         $this->viewParams['dateTo'] = $dateTo;
+        $this->viewParams['tags'] = MediaTag::withMediaCount()->get();
+        $this->viewParams['currentTagId'] = $tagId > 0 ? $tagId : null;
 
         return view('admin.media.index', $this->viewParams);
     }
@@ -329,8 +337,8 @@ class AdminMediaController extends AdminLoggedInController
 
     public function preview(Media $media)
     {
-        // Preload member information
-        $media->load('member');
+        // Preload member information and the tags
+        $media->load('member', 'tags');
 
         // Consider cases where path field contains only filename or full path
         $mediaPath = config('admin.files.mediaPath', 'media');
@@ -364,7 +372,13 @@ class AdminMediaController extends AdminLoggedInController
     public function updateMedia(AdminMediaUpdateRequest $request, Media $media)
     {
         $actor = new MemberActor(AdminHelper::getMember());
-        (new UpdateMediaMetadataAction($media, $this->mediaRepository))->execute($actor, $request->validated());
+        $validated = $request->validated();
+        (new UpdateMediaMetadataAction($media, $this->mediaRepository))
+            ->execute($actor, array_intersect_key($validated, array_flip(['caption', 'alt_text', 'description'])));
+
+        if ($request->boolean('tags_submitted')) {
+            (new UpdateMediaTagsAction($media))->execute($actor, ['tags' => $validated['tags'] ?? []]);
+        }
 
         return redirect()->route('admin.media.preview', $media->id)
             ->with('success', __('http/controllers/admin/media/admin_media_controller.media_info_updated'));
@@ -410,6 +424,7 @@ class AdminMediaController extends AdminLoggedInController
         $perPage = $request->get('per_page', 12);
         $search = $request->get('search');
         $type = $request->get('type');
+        $tagId = (int) $request->get('tag');
 
         // Build filter array
         $filters = [];
@@ -418,6 +433,9 @@ class AdminMediaController extends AdminLoggedInController
         }
         if ($type) {
             $filters['type'] = $type;
+        }
+        if ($tagId > 0) {
+            $filters['tag'] = $tagId;
         }
 
         // Execute pagination using repository

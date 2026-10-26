@@ -41,4 +41,5 @@ return [
     'upload_network_error' => 'The upload was interrupted. Check the connection and try again.',
     'upload_clear_list' => 'Clear finished',
     'upload_close_panel' => 'Close',
+    'all_tags' => 'All tags',
 ];

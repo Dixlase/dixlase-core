@@ -75,6 +75,11 @@ return [
                 'route' => 'admin.media.upload',
                 'icon' => 'fas fa-fw fa-upload',
             ],
+            'tags' => [
+                'text' => 'admin/navigation.media.tags',
+                'route' => 'admin.media.tags',
+                'icon' => 'fas fa-fw fa-tags',
+            ],
             'settings' => [
                 'text' => 'admin/navigation.media.settings',
                 'route' => 'admin.media.settings',
