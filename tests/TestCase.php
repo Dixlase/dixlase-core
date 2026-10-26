@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 
@@ -108,12 +109,17 @@ abstract class TestCase extends BaseTestCase
      * inherits DB_CONNECTION pointing at one of these, every test would
      * drop and recreate the live database.
      *
-     * The guard runs BEFORE parent::setUp() so RefreshDatabase's
-     * setUpTraits()-driven migration call never fires.
+     * Two checks consult this list, and both run before RefreshDatabase's
+     * setUpTraits()-driven migration call: guardAgainstNonSqliteConnection()
+     * reads the environment before the app exists, and
+     * guardAgainstNonSqliteDefaultConnection() reads the booted
+     * configuration. The second is the authoritative one -- see its
+     * docblock for why an environment read is not enough (#541).
      *
      * Escape hatch: set DLS_TESTS_ALLOW_NON_SQLITE=1 when you really do
      * want to run against a non-sqlite driver (e.g. a dedicated
-     * disposable MySQL test container). Use sparingly.
+     * disposable MySQL test container, which is what CI uses). Use
+     * sparingly.
      */
     private const FORBIDDEN_TEST_DRIVERS = ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'oci'];
 
@@ -213,6 +219,8 @@ abstract class TestCase extends BaseTestCase
     protected function refreshApplication()
     {
         parent::refreshApplication();
+
+        self::guardAgainstNonSqliteDefaultConnection();
 
         Event::listen(MigrationsEnded::class, function (): void {
             static::migratePluginsUnderTest();
@@ -325,11 +333,14 @@ abstract class TestCase extends BaseTestCase
      * `parent::setUp()` so the destructive migration call is never
      * reached.
      *
-     * The check reads the env directly (getenv() / $_SERVER / $_ENV)
-     * instead of `config('database.default')` because the Laravel app
-     * is not yet booted at this point — that's precisely the order we
-     * want, since `parent::setUp()` is what boots it AND triggers
-     * RefreshDatabase.
+     * This is the first of two checks, and the cheap one: it reads the
+     * environment before the app exists, so it can refuse the run without
+     * booting anything. It cannot be the only one. The environment is not
+     * what the application connects with -- a cached config, a connection
+     * named in config rather than in the environment, or a `.env` value
+     * phpunit did not override all reach the database and not this check.
+     * guardAgainstNonSqliteDefaultConnection() reads the booted config and
+     * still runs before RefreshDatabase (#541).
      *
      * Escape hatch: `DLS_TESTS_ALLOW_NON_SQLITE=1`. Intended for a
      * dedicated disposable test database — never for shared/production
@@ -368,22 +379,81 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Read an env var from the same sources Laravel's env() helper uses,
-     * without requiring the Laravel app to be booted.
+     * Refuse the run when the booted application's default connection
+     * names a driver that holds real data.
+     *
+     * This is the authoritative check, because it reads what the
+     * application will actually connect with rather than what the
+     * environment suggests. The two differ more often than it looks: a
+     * `bootstrap/cache/config.php` left behind by `config:cache` is read
+     * instead of the environment entirely, a connection can be named in
+     * `config/database.php` with no environment variable involved, and
+     * phpunit's own `<env force="true">` cannot overwrite a real process
+     * environment variable (#541).
+     *
+     * It runs from refreshApplication(), which Laravel calls from
+     * setUpTheTestEnvironment() ahead of setUpTraits() -- so the app is
+     * booted and RefreshDatabase has not migrated yet.
+     *
+     * Escape hatch: DLS_TESTS_ALLOW_NON_SQLITE=1, the same one the
+     * pre-boot guard honours.
+     */
+    private static function guardAgainstNonSqliteDefaultConnection(): void
+    {
+        if (self::readEnv('DLS_TESTS_ALLOW_NON_SQLITE') === '1') {
+            return;
+        }
+
+        $connection = (string) Config::get('database.default');
+        if ($connection === '') {
+            return;
+        }
+
+        $driver = strtolower((string) Config::get("database.connections.{$connection}.driver", $connection));
+        if (! in_array($driver, self::FORBIDDEN_TEST_DRIVERS, true)) {
+            return;
+        }
+
+        throw new \RuntimeException(sprintf(
+            "Refusing to run tests: the booted application's default connection \"%s\" uses the %s driver.\n\n".
+            "Tests use RefreshDatabase, which runs `migrate:fresh` against that connection —\n".
+            "every table it holds would be destroyed and rebuilt.\n\n".
+            "This check reads config('database.default') after the application booted, so it\n".
+            "sees what the application connects with. Where it can come from:\n".
+            "  • a bootstrap/cache/config.php left behind by `config:cache` (clear it)\n".
+            "  • DB_CONNECTION in the real process environment, which phpunit.xml cannot\n".
+            "    override (a container's environment:, an exported shell variable, a CI step env)\n".
+            "  • a default named in config/database.php itself\n\n".
+            "Escape hatch (use sparingly, NEVER against shared/production data):\n".
+            '  DLS_TESTS_ALLOW_NON_SQLITE=1 php artisan test …',
+            $connection,
+            $driver,
+        ));
+    }
+
+    /**
+     * Read an env var the way Laravel's env() helper does, without
+     * requiring the Laravel app to be booted.
+     *
+     * The order matters, and it is not the obvious one.
+     * `Illuminate\Support\Env` builds its repository from $_SERVER, then
+     * $_ENV, then putenv — so a variable in the real process environment
+     * wins over everything `phpunit.xml` sets, because phpunit writes
+     * putenv() and $_ENV and never $_SERVER. Reading getenv() first made
+     * this guard report the value phpunit asked for while the application
+     * connected with the one from the process environment, which is how a
+     * suite pinned to sqlite ran on MySQL in CI for months (#541).
      */
     private static function readEnv(string $key): ?string
     {
-        $value = getenv($key);
-        if ($value !== false && $value !== '') {
-            return $value;
-        }
-
-        foreach ([$_SERVER ?? [], $_ENV ?? []] as $bag) {
+        foreach ([$_SERVER, $_ENV] as $bag) {
             if (array_key_exists($key, $bag) && $bag[$key] !== '') {
                 return (string) $bag[$key];
             }
         }
 
-        return null;
+        $value = getenv($key);
+
+        return $value !== false && $value !== '' ? $value : null;
     }
 }
