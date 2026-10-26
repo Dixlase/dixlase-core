@@ -130,7 +130,6 @@ return [
     'Extract ZIP' => 'ZIPを解凍',
     'Get correct directory name from plugin.json and rename' => 'plugin.json から正しいディレクトリ名を取得してリネーム',
     'Check for existence of composer.json' => 'composer.jsonの存在確認',
-    'Update Git exclusion rules and composer.local.json' => 'Git除外ルールとcomposer.local.jsonを更新',
     'Audit is executed at install time (skipped at download time)' => '監査はインストール時に実行する（ダウンロード時はスキップ）',
     'Plugin files are not executed just by being placed in plugins/' => 'プラグインファイルは plugins/ に配置されただけでは実行されない。',
     'Audited at the appropriate timing in the 2-stage modal (scan → confirm) during installation' => 'インストール時の2段階モーダル（scan → confirm）で適切なタイミングで監査される。',
@@ -163,6 +162,7 @@ return [
     'Initial release: not calculated' => '初期リリース: 未計算',
     'Log signing key changes and owner changes to audit log (approval flow etc. to be implemented in Phase 2)' => '署名鍵変更・オーナー変更は監査ログに記録（承認フロー等は Phase 2 で実装）',
     'Log supply chain defense events to audit log' => 'サプライチェーン防御のイベントを監査ログに記録',
+    'Update composer.local.json' => 'composer.local.jsonを更新',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
@@ -295,7 +295,6 @@ return [
         'Extract ZIP' => 'machine',
         'Get correct directory name from plugin.json and rename' => 'machine',
         'Check for existence of composer.json' => 'machine',
-        'Update Git exclusion rules and composer.local.json' => 'machine',
         'Audit is executed at install time (skipped at download time)' => 'machine',
         'Plugin files are not executed just by being placed in plugins/' => 'machine',
         'Audited at the appropriate timing in the 2-stage modal (scan → confirm) during installation' => 'machine',
@@ -328,5 +327,6 @@ return [
         'Initial release: not calculated' => 'machine',
         'Log signing key changes and owner changes to audit log (approval flow etc. to be implemented in Phase 2)' => 'machine',
         'Log supply chain defense events to audit log' => 'machine',
+        'Update composer.local.json' => 'machine',
     ],
 ];

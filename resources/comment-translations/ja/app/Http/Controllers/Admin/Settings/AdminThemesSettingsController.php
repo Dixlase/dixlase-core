@@ -41,7 +41,6 @@ return [
     'Discard past audit results and return to unscanned state on new placement' => '新規配置時は過去の監査結果を破棄し未スキャン状態に戻す',
     'Install uninstalled theme' => 'アンインストール済みテーマをインストール',
     'Execute Artisan command to install theme (with --force option)' => 'Artisanコマンドを実行してテーマをインストール（--forceオプション付き）',
-    'Add theme exclusion rules to .git/info/exclude and .gitignore' => '.git/info/excludeと.gitignoreにテーマの除外ルールを追加',
     'Get installed themes and perform audit and notification' => 'インストールされたテーマを取得して監査・通知',
     'Run audit after installation' => 'インストール後に監査を実行',
     'Uninstall theme' => 'テーマをアンインストール',
@@ -58,7 +57,6 @@ return [
     'Check if DB record exists' => 'DBレコードが存在するか確認',
     'If DB record exists, uninstall first' => 'DBレコードが存在する場合は先にアンインストール',
     'Delete theme directory' => 'テーマディレクトリを削除',
-    'Remove theme exclusion rules from .git/info/exclude and .gitignore' => '.git/info/excludeと.gitignoreからテーマの除外ルールを削除',
     'Convert PHP size notation to bytes' => 'PHPのサイズ表記をバイト数に変換',
     'Check if theme has settings functionality' => 'テーマに設定機能があるかチェック',
     'Check if route file exists' => 'ルートファイルの存在確認',
@@ -98,7 +96,6 @@ return [
     'Check if exists' => '既存チェック',
     'Rename extracted directory (if necessary)' => '解凍されたディレクトリをリネーム（必要な場合）',
     'Check theme.json existence' => 'theme.jsonの存在確認',
-    'Update Git exclusion rules and composer.local.json' => 'Git除外ルールとcomposer.local.jsonを更新',
     'Get display name from theme.json' => 'theme.json から表示用の名前を取得',
     'Sequentially update all updatable themes' => '更新可能な全テーマを順次アップデート',
     'Update check (AJAX)' => 'アップデートチェック（AJAX）',
@@ -117,6 +114,7 @@ return [
     'Prioritize explicit package field first' => '明示された package フィールドを最優先',
     'Prioritize final segment of namespace' => 'namespace の最終セグメントを優先',
     'Fallback: last part of package_name' => 'フォールバック: package_name の最後の部分',
+    'Update composer.local.json' => 'composer.local.jsonを更新',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
@@ -160,7 +158,6 @@ return [
         'Discard past audit results and return to unscanned state on new placement' => 'machine',
         'Install uninstalled theme' => 'machine',
         'Execute Artisan command to install theme (with --force option)' => 'machine',
-        'Add theme exclusion rules to .git/info/exclude and .gitignore' => 'machine',
         'Get installed themes and perform audit and notification' => 'machine',
         'Run audit after installation' => 'machine',
         'Uninstall theme' => 'machine',
@@ -177,7 +174,6 @@ return [
         'Check if DB record exists' => 'machine',
         'If DB record exists, uninstall first' => 'machine',
         'Delete theme directory' => 'machine',
-        'Remove theme exclusion rules from .git/info/exclude and .gitignore' => 'machine',
         'Convert PHP size notation to bytes' => 'machine',
         'Check if theme has settings functionality' => 'machine',
         'Check if route file exists' => 'machine',
@@ -217,7 +213,6 @@ return [
         'Check if exists' => 'machine',
         'Rename extracted directory (if necessary)' => 'machine',
         'Check theme.json existence' => 'machine',
-        'Update Git exclusion rules and composer.local.json' => 'machine',
         'Get display name from theme.json' => 'machine',
         'Sequentially update all updatable themes' => 'machine',
         'Update check (AJAX)' => 'machine',
@@ -236,5 +231,6 @@ return [
         'Prioritize explicit package field first' => 'machine',
         'Prioritize final segment of namespace' => 'machine',
         'Fallback: last part of package_name' => 'machine',
+        'Update composer.local.json' => 'machine',
     ],
 ];
