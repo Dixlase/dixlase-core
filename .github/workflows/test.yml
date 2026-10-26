@@ -141,6 +141,15 @@ jobs:
       - name: Build frontend assets (Vite manifest)
         run: npm run build
 
+      # Which driver the suite runs on is a decision, not an accident
+      # (dixlase-core#541). Here it is MySQL: production runs MySQL/MariaDB,
+      # and this is the only place the suite is exercised on it. phpunit.xml
+      # pins sqlite, which is what a local run gets — so a test has to pass
+      # on both, and nothing in it may be driver-specific. The step `env:`
+      # below is what the application actually connects with: it reaches
+      # $_SERVER, and Laravel's env() reads $_SERVER before the values
+      # phpunit.xml sets. docs/development/test-database.md has the whole
+      # picture.
       - name: Configure test database
         run: |
           echo "DB_CONNECTION=mysql" >> .env
@@ -155,12 +164,18 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
       - name: Run Core Feature Tests
         run: php artisan test --testsuite=Feature
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
       - name: Run Custom Tests (if custom files exist)
         if: hashFiles('custom/app/**/*.php') != ''
@@ -168,6 +183,9 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
   # ============================================
   # PHPUnit Tests (Plugins)
@@ -257,6 +275,8 @@ jobs:
           php scripts/sync-local-autoload.php
           composer dump-autoload --no-interaction --no-scripts
 
+      # MySQL here too, for the same reason as the core job above
+      # (dixlase-core#541, docs/development/test-database.md).
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -283,6 +303,9 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
       - name: Run Plugin Tests (Tier 2 - Moderate)
         run: |
@@ -290,6 +313,9 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
       # Tier 3 holds no publicly distributed extension, so every suite it
       # runs comes from EXTRA_SUITES_TIER3. Naming one literally is what
@@ -308,6 +334,9 @@ jobs:
         env:
           DB_CONNECTION: mysql
           DB_DATABASE: dixlase_test
+          # Opts into the non-sqlite guards in tests/TestCase (#541). The
+          # database is a disposable service container, never real data.
+          DLS_TESTS_ALLOW_NON_SQLITE: 1
 
   # ============================================
   # Code Style (Laravel Pint)
