@@ -54,6 +54,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | The tree whose VERSION file reports the installed core version
+    |--------------------------------------------------------------------------
+    |
+    | `CoreUpdater::readVersionFromDisk()` reads `VERSION` from the application
+    | root, which is the right answer everywhere but a test: `VERSION` is a
+    | tracked file, so a test that writes or removes it changes the working
+    | tree, and a run that fails half-way leaves it changed (#677). A test
+    | points this at a throwaway directory under storage/framework/testing/
+    | instead, and nothing in the suite touches the repository's own file.
+    |
+    | null means the application root. There is no environment variable on
+    | purpose: a deployment has no reason to move it, and a wrong value here
+    | would make a site misreport the version it runs.
+    |
+    */
+
+    'version_base_path' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | PHP-FPM cache reload hook (Round 5 Finding D residual mitigation)
     |--------------------------------------------------------------------------
     |
