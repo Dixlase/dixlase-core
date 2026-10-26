@@ -35,12 +35,35 @@ class PermissionRegistryResolveRolesPathTest extends TestCase
     /** @var list<string> */
     private array $created = [];
 
+    /**
+     * A throwaway plugins root.
+     *
+     * The fixtures used to be written into the checkout's own plugins/,
+     * where core's extension scan finds one that an interrupted run left
+     * behind (#653). `PermissionRegistry` resolves the root through
+     * `PluginHelper::pluginsPath()`, which reads it from config.
+     */
+    private ?string $pluginsRoot = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->pluginsRoot = storage_path('framework/testing/roles-plugins-'.uniqid('', true));
+        mkdir($this->pluginsRoot, 0777, true);
+        config(['plugins.plugins_directory' => $this->pluginsRoot]);
+    }
+
     protected function tearDown(): void
     {
         foreach (array_reverse($this->created) as $dir) {
             $this->rmrf($dir);
         }
         $this->created = [];
+
+        if ($this->pluginsRoot !== null && is_dir($this->pluginsRoot)) {
+            $this->rmrf($this->pluginsRoot);
+        }
 
         parent::tearDown();
     }
@@ -50,7 +73,7 @@ class PermissionRegistryResolveRolesPathTest extends TestCase
         $slug = $this->makePluginWith(['config/admin/roles.php' => '<?php return [];']);
 
         $this->assertSame(
-            base_path("plugins/{$slug}/config/admin/roles.php"),
+            $this->pluginsRoot.'/'.$slug.'/config/admin/roles.php',
             PermissionRegistry::resolvePluginRolesPath($slug),
         );
     }
@@ -75,7 +98,7 @@ class PermissionRegistryResolveRolesPathTest extends TestCase
     private function makePluginWith(array $files): string
     {
         $slug = '_PRRT_'.uniqid();
-        $pluginDir = base_path("plugins/{$slug}");
+        $pluginDir = $this->pluginsRoot.'/'.$slug;
         mkdir($pluginDir, 0777, true);
         $this->created[] = $pluginDir;
 

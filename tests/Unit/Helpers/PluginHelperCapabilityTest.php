@@ -27,18 +27,31 @@ class PluginHelperCapabilityTest extends TestCase
      */
     private array $tempPluginPaths = [];
 
+    /**
+     * A throwaway plugins root.
+     *
+     * The fixtures used to be written into the checkout's own plugins/,
+     * where core's extension scan finds one that an interrupted run left
+     * behind (#653). `PluginHelper::pluginsPath()` reads the root from
+     * config, so pointing it here keeps the fixtures out of the tree.
+     */
+    private ?string $pluginsRoot = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->pluginsRoot = storage_path('framework/testing/capability-plugins-'.uniqid('', true));
+        File::ensureDirectoryExists($this->pluginsRoot);
+        config(['plugins.plugins_directory' => $this->pluginsRoot]);
+
         PluginHelper::clearCapabilityCache();
     }
 
     protected function tearDown(): void
     {
-        foreach ($this->tempPluginPaths as $path) {
-            if (File::isDirectory($path)) {
-                File::deleteDirectory($path);
-            }
+        if ($this->pluginsRoot !== null && File::isDirectory($this->pluginsRoot)) {
+            File::deleteDirectory($this->pluginsRoot);
         }
         PluginHelper::clearCapabilityCache();
         parent::tearDown();
@@ -89,7 +102,7 @@ class PluginHelperCapabilityTest extends TestCase
      */
     private function createTempPlugin(string $directoryName, array $jsonOverride = []): string
     {
-        $path = base_path("plugins/{$directoryName}");
+        $path = PluginHelper::pluginsPath($directoryName);
         File::ensureDirectoryExists($path);
 
         $json = array_merge([

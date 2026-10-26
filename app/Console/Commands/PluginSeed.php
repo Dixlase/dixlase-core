@@ -36,6 +36,8 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -43,6 +45,7 @@ use Illuminate\Support\Facades\Artisan;
 class PluginSeed extends Command
 {
     use PluginManagementTrait;
+    use RecordsExtensionStep;
 
     /**
      * Artisan command signature
@@ -98,6 +101,7 @@ class PluginSeed extends Command
 
             $this->info(Artisan::output()); // Display seeder execution result
             $this->info("Seeding for plugin [{$plugin}] completed successfully.");
+            $this->recordExtensionStep(AuditLog::ACTION_PLUGIN_SEEDED, 'plugin', $plugin, ['seeder' => $seederClassName]);
 
             return Command::SUCCESS;
         } catch (\Exception $e) {

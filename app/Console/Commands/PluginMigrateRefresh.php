@@ -36,12 +36,15 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 
 class PluginMigrateRefresh extends Command
 {
     use PluginManagementTrait;
+    use RecordsExtensionStep;
 
     /**
      * The name and signature of the console command.
@@ -100,7 +103,12 @@ class PluginMigrateRefresh extends Command
         $this->info("Rolling back all migrations for plugin [{$plugin}]...");
 
         try {
-            $this->pluginMigrator->rollback($plugin, $options);
+            // One row per half, as dls:theme:migrate:refresh leaves through
+            // the two commands it calls
+            $rolledBack = $this->pluginMigrator->rollback($plugin, $options);
+            if ($rolledBack !== []) {
+                $this->recordExtensionStep(AuditLog::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK, 'plugin', $plugin, ['migrations' => $rolledBack], AuditLog::SEVERITY_WARNING);
+            }
 
             $this->info("Re-running migrations for plugin [{$plugin}]...");
             $migrated = $this->pluginMigrator->migrate($plugin, null, $options);
@@ -112,6 +120,7 @@ class PluginMigrateRefresh extends Command
                     $this->info('Migrated: '.$file);
                 }
                 $this->info("Migrations for plugin [{$plugin}] refreshed successfully.");
+                $this->recordExtensionStep(AuditLog::ACTION_PLUGIN_MIGRATED, 'plugin', $plugin, ['migrations' => $migrated]);
             }
 
             return Command::SUCCESS;

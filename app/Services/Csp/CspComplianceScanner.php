@@ -35,6 +35,7 @@
 
 namespace App\Services\Csp;
 
+use App\Support\ExtensionDirectories;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use RecursiveDirectoryIterator;
@@ -117,25 +118,31 @@ class CspComplianceScanner
             'themes' => \App\Models\Theme::resolveDirectoryFromSlug($slug),
             default => null,
         };
+
+        // The root comes from config, so a test can point it at a throwaway
+        // tree instead of the checkout's own plugins/ (#653).
+        $parentDir = $baseDir === 'plugins'
+            ? ExtensionDirectories::pluginsRoot()
+            : ExtensionDirectories::themesRoot();
+
         if ($resolved !== null) {
-            return base_path("{$baseDir}/{$resolved}");
+            return $parentDir.DIRECTORY_SEPARATOR.$resolved;
         }
 
         // Try StudlyCase conversion (my-plugin → MyPlugin)
         $studlyName = Str::studly(str_replace('-', '_', $slug));
-        $path = base_path("{$baseDir}/{$studlyName}");
+        $path = $parentDir.DIRECTORY_SEPARATOR.$studlyName;
         if (File::isDirectory($path)) {
             return $path;
         }
 
         // Try slug as-is
-        $path = base_path("{$baseDir}/{$slug}");
+        $path = $parentDir.DIRECTORY_SEPARATOR.$slug;
         if (File::isDirectory($path)) {
             return $path;
         }
 
         // Search from directory list by kebab-case comparison
-        $parentDir = base_path($baseDir);
         if (File::isDirectory($parentDir)) {
             foreach (File::directories($parentDir) as $dir) {
                 if (Str::kebab(basename($dir)) === $slug) {
@@ -145,7 +152,7 @@ class CspComplianceScanner
         }
 
         // If not found, return path with slug as-is (will become unknown on scan() side)
-        return base_path("{$baseDir}/{$slug}");
+        return $parentDir.DIRECTORY_SEPARATOR.$slug;
     }
 
     /**
@@ -437,8 +444,8 @@ class CspComplianceScanner
     ): array {
         // Also check plugin.json declarations
         $metaFile = $type === 'plugin'
-            ? base_path("plugins/{$slug}/plugin.json")
-            : base_path("themes/{$slug}/theme.json");
+            ? ExtensionDirectories::pluginsRoot($slug).DIRECTORY_SEPARATOR.'plugin.json'
+            : ExtensionDirectories::themesRoot($slug).DIRECTORY_SEPARATOR.'theme.json';
 
         $hasCspConfig = false;
         if (File::exists($metaFile)) {

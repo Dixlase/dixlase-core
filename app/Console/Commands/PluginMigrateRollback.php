@@ -36,12 +36,15 @@
 namespace App\Console\Commands;
 
 use App\Console\Traits\PluginManagementTrait;
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Services\PluginMigrator;
 use Illuminate\Console\Command;
 
 class PluginMigrateRollback extends Command
 {
     use PluginManagementTrait;
+    use RecordsExtensionStep;
 
     /**
      * The name and signature of the console command.
@@ -109,6 +112,7 @@ class PluginMigrateRollback extends Command
                     $this->info('Rolled back: '.$file);
                 }
                 $this->info("Rollback for plugin [{$plugin}] completed successfully.");
+                $this->recordExtensionStep(AuditLog::ACTION_PLUGIN_MIGRATIONS_ROLLED_BACK, 'plugin', $plugin, ['migrations' => $rolledBack], AuditLog::SEVERITY_WARNING);
             }
 
             return Command::SUCCESS;
