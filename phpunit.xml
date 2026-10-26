@@ -78,12 +78,22 @@
         </include>
     </source>
     <php>
-        <!-- force="true" makes phpunit OVERWRITE values already present in   -->
-        <!-- the process env (i.e. .env / docker compose env_file). Without   -->
-        <!-- it, a stray DB_CONNECTION=mysql in .env would survive into the   -->
-        <!-- test run and RefreshDatabase would migrate:fresh the real DB.    -->
-        <!-- The TestCase MySQL guard is a second-line defence — both must   -->
-        <!-- be present to fail safe.                                        -->
+        <!-- force="true" makes phpunit overwrite a value .env would       -->
+        <!-- otherwise supply: Dotenv is immutable and skips a key that is   -->
+        <!-- already set, so without it a DB_CONNECTION=mysql in .env would  -->
+        <!-- survive into the run and RefreshDatabase would rebuild the      -->
+        <!-- real database from scratch.                                     -->
+        <!--                                                                 -->
+        <!-- What it cannot do: override a REAL process environment          -->
+        <!-- variable. phpunit writes putenv() and $_ENV; Laravel's env()    -->
+        <!-- reads $_SERVER first, and the CLI SAPI fills $_SERVER from the  -->
+        <!-- process environment. So an exported DB_CONNECTION, a            -->
+        <!-- container's environment: block or a CI step's env: beats every  -->
+        <!-- line below, silently (#541). The two guards in tests/TestCase   -->
+        <!-- are what catch that: one before the app boots, one on the       -->
+        <!-- booted config. CI runs against MySQL on purpose and opts in     -->
+        <!-- with DLS_TESTS_ALLOW_NON_SQLITE=1; see                          -->
+        <!-- docs/development/test-database.md.                              -->
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
         <env name="BCRYPT_ROUNDS" value="4" force="true"/>

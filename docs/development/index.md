@@ -77,3 +77,4 @@ API signatures, backup, and deployment systems.
 - [Reserved Extension Points](extension-points.md) - Phase 1 reserved hooks for the Zero Trust roadmap (SecretProvider, RiskEvaluator, PolicyEvaluator, auth.iap, auth.mtls)
 - [Cache Key Convention](cache-key-convention.md) - Naming convention and Builder helper for cache keys
 - [SDK Trait Dependencies](sdk-trait-dependencies.md) - SDK trait dependency analysis
+- [Which Database the Test Suite Runs On](test-database.md) - sqlite locally, MySQL in CI, why `phpunit.xml` cannot settle it alone, and the two guards in `tests/TestCase.php`
