@@ -35,6 +35,8 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Traits\RecordsExtensionStep;
+use App\Models\AuditLog;
 use App\Models\Theme;
 use App\Services\ThemeMigrator;
 use Illuminate\Console\Command;
@@ -45,6 +47,8 @@ use Illuminate\Support\Str;
 
 class ThemeMigrate extends Command
 {
+    use RecordsExtensionStep;
+
     /**
      * The name and signature of the console command.
      *
@@ -129,6 +133,9 @@ class ThemeMigrate extends Command
         }
 
         $this->info("Migrations completed for theme: {$themeName} (".count($migrated).' applied)');
+        if ($migrated !== []) {
+            $this->recordExtensionStep(AuditLog::ACTION_THEME_MIGRATED, 'theme', $themeName, ['migrations' => $migrated]);
+        }
 
         return 0;
     }

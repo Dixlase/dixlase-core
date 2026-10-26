@@ -41,6 +41,7 @@ use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Exceptions\ExtensionUpdateBlockedException;
 use App\Models\Theme;
+use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\Extension\ExtensionUpdateRecorder;
@@ -247,11 +248,12 @@ class ThemeUpdate extends Command
             $updateSeederClass = "Themes\\{$theme->directory}\\Database\\Seeders\\UpdateSeeder";
             if (class_exists($updateSeederClass)) {
                 $this->info('Running theme UpdateSeeder...');
-                $this->call('dls:theme:seed', [
+                // The update row covers the seeder (#749)
+                ExtensionAuditScope::run(fn () => $this->call('dls:theme:seed', [
                     'theme' => $theme->directory,
                     '--class' => 'UpdateSeeder',
                     '--force' => true,
-                ]);
+                ]));
             }
 
             $theme->update([

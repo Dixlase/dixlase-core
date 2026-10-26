@@ -38,6 +38,7 @@ namespace App\Console\Commands;
 use App\Console\Traits\AutoScansExtensionAfterUpdate;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Models\Plugin;
+use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionSourceSnapshot;
 use App\Services\Extension\ExtensionUpdateRecorder;
 use App\Services\PluginMigrationRepository;
@@ -199,7 +200,8 @@ class PluginRollback extends Command
                 "Backup '%s' has no migration metadata (older format). Delegating a whole-batch schema rollback; verify dls_plugin_migrations after the operation.",
                 basename($backupPath),
             ));
-            Artisan::call('dls:plugin:migrate:rollback', ['plugin' => $directoryName, '--force' => true]);
+            // The rollback row covers the schema half (#749)
+            ExtensionAuditScope::run(fn () => Artisan::call('dls:plugin:migrate:rollback', ['plugin' => $directoryName, '--force' => true]));
 
             return;
         }
@@ -217,11 +219,12 @@ class PluginRollback extends Command
             return;
         }
 
-        Artisan::call('dls:plugin:migrate:rollback', [
+        // The rollback row covers the schema half (#749)
+        ExtensionAuditScope::run(fn () => Artisan::call('dls:plugin:migrate:rollback', [
             'plugin' => $directoryName,
             '--step' => $stepsBack,
             '--force' => true,
-        ]);
+        ]));
     }
 
     /**

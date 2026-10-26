@@ -42,6 +42,7 @@ use App\Console\Traits\PluginManagementTrait;
 use App\Console\Traits\RecordsExtensionOperation;
 use App\Helpers\ComposerLocalHelper;
 use App\Models\Plugin;
+use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionDownloadFreshness;
 use App\Services\Extension\ExtensionRefusalReport;
 use App\Services\Extension\ExtensionScanPolicy;
@@ -325,10 +326,11 @@ class PluginInstall extends Command
         $seederClass = "Plugins\\{$pluginName}\\Database\\Seeders\\DatabaseSeeder";
         if (class_exists($seederClass)) {
             $this->info(__('admin/command/plugin-install.seeding'));
-            $this->call('dls:plugin:seed', [
+            // The install row covers the seeder (#749)
+            ExtensionAuditScope::run(fn () => $this->call('dls:plugin:seed', [
                 'plugin' => $pluginName,
                 '--force' => true,
-            ]);
+            ]));
         }
 
         // Build front-end assets if the plugin ships its own npm pipeline.
