@@ -1,11 +1,9 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/dixlase-mark-dark.svg">
-    <img src=".github/assets/dixlase-mark-light.svg" alt="Dixlase" width="96">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/dixlase-logo-dark.svg">
+    <img src=".github/assets/dixlase-logo-light.svg" alt="Dixlase — Open Source CMS" width="380">
   </picture>
 </p>
-
-<h1 align="center">Dixlase</h1>
 
 <p align="center"><strong>A security-first, plugin-based open-source CMS.</strong></p>
 
@@ -23,9 +21,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.3+">
-  <img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" alt="Laravel 13">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4">
+  <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.3+"></a>
+  <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" alt="Laravel 13"></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4"></a>
 </p>
 
 **Dixlase** is an open-source CMS developed by [exc-D inc.](https://exc-d.com)
