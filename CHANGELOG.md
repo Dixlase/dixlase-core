@@ -11,13 +11,24 @@ repository to be notified of changes.
 
 ## Versioning and the Plugin API
 
-- Releases follow semantic versioning (`MAJOR.MINOR.PATCH`).
+The full policy is in [`docs/development/versioning.md`](./docs/development/versioning.md)
+([日本語](./docs/ja/development/versioning.md)). In short:
+
+- Releases follow semantic versioning (`MAJOR.MINOR.PATCH`). A PATCH carries fixes only;
+  **new features, changed defaults and new settings ship in a MINOR release**, including
+  during the 0.x series. `1.0.0` is reached when Dixlase can be recommended for production
+  use.
+- **Extension compatibility is decided by `requires.dixlase_api`, not by the core
+  version.** An extension declaring `dixlase_api: ^0.1` is unaffected by a core release
+  that does not move `ExtensionApi::CURRENT_VERSION` — a core `0.1` → `0.2` included.
+  `requires.dixlase` states the *oldest* core the extension works on and is written as a
+  floor (`>=0.1.0`), never as a caret.
 - During the 0.x beta series the Plugin API — the elements (interfaces, DTOs, services,
   events, Blade components, etc.) enumerated in `PLUGIN-API.md` — is **published but not
   frozen**. Elements may still change in backward-incompatible ways while the design settles.
 - Breaking changes to the Plugin API ship only in a MINOR release (e.g. `0.1` → `0.2`),
-  never in a PATCH release. An extension that declares `^0.1` is not affected by any
-  `0.1.x` update.
+  never in a PATCH release. A MINOR release is **not** required to contain one, and most
+  do not.
 - Every breaking change is listed in this file under a **"Plugin API — Breaking"** heading
   with migration notes. Where practical, the old symbol is kept for one release and marked
   `@deprecated`.
