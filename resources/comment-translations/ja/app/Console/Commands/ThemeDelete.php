@@ -8,8 +8,6 @@ return [
     'Confirmation prompt' => '確認プロンプト',
     'Delete directory' => 'ディレクトリを削除',
     'Delete theme record from database as well (if exists)' => 'データベースからもテーマレコードを削除（存在する場合）',
-    'Remove theme exclusion rule from .git/info/exclude' => '.git/info/excludeからテーマの除外ルールを削除',
-    'Remove theme exclusion rule from .gitignore' => '.gitignoreからテーマの除外ルールを削除',
     'Update composer.local.json' => 'composer.local.jsonを更新',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
@@ -21,8 +19,6 @@ return [
         'Confirmation prompt' => 'machine',
         'Delete directory' => 'machine',
         'Delete theme record from database as well (if exists)' => 'machine',
-        'Remove theme exclusion rule from .git/info/exclude' => 'machine',
-        'Remove theme exclusion rule from .gitignore' => 'machine',
         'Update composer.local.json' => 'machine',
     ],
 ];
