@@ -149,15 +149,54 @@ class PluginServiceProvider extends ServiceProvider
 
                 if (isset($manifest['providers']) && is_array($manifest['providers'])) {
                     foreach ($manifest['providers'] as $provider) {
+                        if (! is_string($provider) || ! $this->providerBelongsToPlugin($provider, $pluginDirectory)) {
+                            Log::warning('Plugin manifest names a provider outside its own namespace', [
+                                'plugin' => $pluginDirectory,
+                                'provider' => is_string($provider) ? $provider : get_debug_type($provider),
+                            ]);
+
+                            continue;
+                        }
+
                         if (class_exists($provider)) {
                             $this->registerGuarded($provider, $pluginDirectory);
                         }
                     }
                 }
             } catch (\Throwable $e) {
-                // Failed to load plugin manifest
+                // A manifest that cannot be read registers nothing, which is
+                // the safe outcome. It used to be silent, so a plugin whose
+                // providers never loaded looked identical to one that has
+                // none (#634).
+                Log::warning('Failed to read a plugin manifest', [
+                    'plugin' => $pluginDirectory,
+                    'manifest' => $manifestPath,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
+    }
+
+    /**
+     * Is this provider class inside the plugin's own namespace?
+     *
+     * The conventional loader registers exactly one provider per plugin, the
+     * one named after its directory. A manifest's `providers` list is the
+     * only way to register more, and it used to be checked with nothing but
+     * `class_exists()` -- so a manifest could name any autoloadable class in
+     * the application, core's own included, and have it registered at boot
+     * (#634). A plugin may still list several providers; they have to be its
+     * own.
+     *
+     * The comparison is case-insensitive because PHP class names are, and it
+     * requires the separator so that `Plugins\FooBar\...` is not accepted
+     * for the plugin directory `Foo`.
+     */
+    protected function providerBelongsToPlugin(string $provider, string $pluginDirectory): bool
+    {
+        $prefix = 'Plugins\\'.$pluginDirectory.'\\';
+
+        return strncasecmp(ltrim($provider, '\\'), $prefix, strlen($prefix)) === 0;
     }
 
     /**
