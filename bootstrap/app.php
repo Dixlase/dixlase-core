@@ -74,9 +74,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Middleware\ValidatePathEncoding;
+use Illuminate\Http\Middleware\ValidatePostSize;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
@@ -136,21 +141,30 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register global middlewares.
         //
+        // `use([...])` REPLACES Laravel's default global stack rather than
+        // adding to it, so every default Dixlase still wants is listed here
+        // explicitly (#642). Leaving them out once dropped TrimStrings and
+        // ConvertEmptyStringsToNull, so an empty input reached controllers
+        // as '' and every extension worked around it on its own.
+        //
         // PreventRequestsDuringMaintenance MUST be at the top of the
         // stack: it short-circuits every request when
         // storage/framework/maintenance.php exists so the rest of the
         // middleware (session, CSP, source-code header, …) never runs
-        // against a mid-swap tree. Round 5 root cause for Finding D:
-        // Dixlase's custom `use([...])` replaces Laravel's default
-        // global stack, which historically dropped this middleware —
-        // so `Artisan::call('down')` from the CoreUpdater / CoreRollback
-        // wrote the maintenance sentinel but nothing observed it, and
-        // the "maintenance window" was effectively non-existent. That
-        // let requests reach a half-swapped source tree and produced
-        // the transient 500s (`Session driver [guard-aware-database] is
-        // not supported`, `require(AssetHelper): No such file`,
-        // half-written composer/installed.php parse errors) the sandbox
-        // caught during dryrun-10 verification.
+        // against a mid-swap tree. Without it, `Artisan::call('down')` from
+        // the CoreUpdater / CoreRollback wrote the maintenance sentinel but
+        // nothing observed it, and requests reached a half-swapped source
+        // tree (transient 500s such as `Session driver
+        // [guard-aware-database] is not supported` or half-written
+        // composer/installed.php parse errors).
+        //
+        // Dropped on purpose:
+        //  - HandleCors. Core ships no config/cors.php, so the framework
+        //    default would apply, and it allows every origin on `api/*`.
+        //    The API is called server to server with an API key; opening it
+        //    to browsers on other origins is a decision for the operator,
+        //    not a side effect of restoring the defaults.
+        //  - TrustHosts. Off in Laravel's defaults as well.
         //
         // Note: Dixlase also has its own `CheckMaintenanceMode`
         // middleware (bootstrap/app.php `appendToGroup('web', …)`
@@ -158,14 +172,35 @@ return Application::configure(basePath: dirname(__DIR__))
         // the operator-facing site UI — a totally different concept
         // from `Artisan::call('down')`. Both coexist safely.
         $middleware->use([
-            PreventRequestsDuringMaintenance::class, // Round 5 Finding D root fix: make `Artisan::call('down')` actually block requests
+            PreventRequestsDuringMaintenance::class, // Make `Artisan::call('down')` actually block requests; must come first
+            ValidatePathEncoding::class, // Laravel default: reject a path that is not valid UTF-8
+            InvokeDeferredCallbacks::class, // Laravel default: run defer() callbacks after the response
             TrustProxies::class, // Apply config/trustedproxy.php to incoming forwarded headers
+            ValidatePostSize::class, // Laravel default: refuse a body over post_max_size with 413 instead of an empty request
+            TrimStrings::class, // Laravel default: trim input strings (see the except list below)
+            ConvertEmptyStringsToNull::class, // Laravel default: an empty input arrives as null
             CheckInstallationReady::class, // Check installation readiness + installation status
             ResolveSiteContext::class, // Resolve current site for multi-site support (fixed to primary site in v0.1.0)
             ForceHttps::class, // Force HTTPS redirect when FORCE_SSL is enabled
             ApplySessionConfig::class, // Apply session settings dynamically
             ContentSecurityPolicy::class, // Add CSP headers
             AppendSourceCodeHeader::class, // AGPL §13: attach X-Source-Code header
+        ]);
+
+        // Fields whose leading or trailing whitespace is part of the value.
+        // Laravel already leaves password, password_confirmation and
+        // current_password alone; these are the other secrets a form takes,
+        // and the bodies of content editors, where the first line's
+        // indentation can be Markdown and trimming would also make an
+        // unchanged file-stored page look edited.
+        $middleware->trimStrings(except: [
+            'admin_password',
+            'admin_password_confirmation',
+            'db_password',
+            'mail_password',
+            'content',
+            'custom_css',
+            'custom_js',
         ]);
 
         // Exclude CSP report endpoint from CSRF verification. The

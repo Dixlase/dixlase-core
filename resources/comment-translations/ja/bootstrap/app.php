@@ -33,6 +33,14 @@ return [
     'Enforce authentication' => '認証を強制',
     'To add error handling' => 'エラー処理を追加する場合',
     '});' => '});',
+    'Make `Artisan::call(\'down\')` actually block requests; must come first' => '`Artisan::call(\'down\')` で実際にリクエストを止める。先頭に置くこと',
+    'Laravel default: reject a path that is not valid UTF-8' => 'Laravel の既定: UTF-8 として正しくないパスを拒む',
+    'Laravel default: run defer() callbacks after the response' => 'Laravel の既定: defer() のコールバックをレスポンスのあとに実行する',
+    'Apply config/trustedproxy.php to incoming forwarded headers' => '受け取った転送ヘッダーに config/trustedproxy.php を適用する',
+    'Laravel default: refuse a body over post_max_size with 413 instead of an empty request' => 'Laravel の既定: post_max_size を超える本文を、空のリクエストにせず 413 で拒む',
+    'Laravel default: trim input strings (see the except list below)' => 'Laravel の既定: 入力の文字列の前後の空白を取る（除外は下の一覧）',
+    'Laravel default: an empty input arrives as null' => 'Laravel の既定: 空の入力を null にする',
+    'AGPL §13: attach X-Source-Code header' => 'AGPL 第13条: X-Source-Code ヘッダーを付ける',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [
@@ -68,5 +76,13 @@ return [
         'Enforce authentication' => 'machine',
         'To add error handling' => 'machine',
         '});' => 'machine',
+        'Make `Artisan::call(\'down\')` actually block requests; must come first' => 'machine',
+        'Laravel default: reject a path that is not valid UTF-8' => 'machine',
+        'Laravel default: run defer() callbacks after the response' => 'machine',
+        'Apply config/trustedproxy.php to incoming forwarded headers' => 'machine',
+        'Laravel default: refuse a body over post_max_size with 413 instead of an empty request' => 'machine',
+        'Laravel default: trim input strings (see the except list below)' => 'machine',
+        'Laravel default: an empty input arrives as null' => 'machine',
+        'AGPL §13: attach X-Source-Code header' => 'machine',
     ],
 ];
