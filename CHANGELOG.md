@@ -11,13 +11,24 @@ repository to be notified of changes.
 
 ## Versioning and the Plugin API
 
-- Releases follow semantic versioning (`MAJOR.MINOR.PATCH`).
+The full policy is in [`docs/development/versioning.md`](./docs/development/versioning.md)
+([日本語](./docs/ja/development/versioning.md)). In short:
+
+- Releases follow semantic versioning (`MAJOR.MINOR.PATCH`). A PATCH carries fixes only;
+  **new features, changed defaults and new settings ship in a MINOR release**, including
+  during the 0.x series. `1.0.0` is reached when Dixlase can be recommended for production
+  use.
+- **Extension compatibility is decided by `requires.dixlase_api`, not by the core
+  version.** An extension declaring `dixlase_api: ^0.1` is unaffected by a core release
+  that does not move `ExtensionApi::CURRENT_VERSION` — a core `0.1` → `0.2` included.
+  `requires.dixlase` states the *oldest* core the extension works on and is written as a
+  floor (`>=0.1.0`), never as a caret.
 - During the 0.x beta series the Plugin API — the elements (interfaces, DTOs, services,
   events, Blade components, etc.) enumerated in `PLUGIN-API.md` — is **published but not
   frozen**. Elements may still change in backward-incompatible ways while the design settles.
 - Breaking changes to the Plugin API ship only in a MINOR release (e.g. `0.1` → `0.2`),
-  never in a PATCH release. An extension that declares `^0.1` is not affected by any
-  `0.1.x` update.
+  never in a PATCH release. A MINOR release is **not** required to contain one, and most
+  do not.
 - Every breaking change is listed in this file under a **"Plugin API — Breaking"** heading
   with migration notes. Where practical, the old symbol is kept for one release and marked
   `@deprecated`.
@@ -29,6 +40,93 @@ repository to be notified of changes.
   least one full MINOR cycle of deprecation.
 
 ---
+
+## [0.1.20] — 2026-10-30
+
+### Added
+- Media files can be tagged (#766). Tags are flat and many-to-many, and belong to the media
+  library: no file moves and no URL changes. Edit them on the file page next to the alt text,
+  add or remove them in bulk from selection mode, and filter the library by tag — the search
+  box matches tag names too. *Media → Tags* lists every tag with its count, and members who can
+  edit media add, rename and delete tags there; deleting a tag leaves its files. The media
+  selector shows tags as filter chips. **Two new tables, `media_tags` and `media_media_tag`,
+  are created by `migrate`.** An update from the admin panel runs it; a site that receives core
+  by a git deploy runs `php artisan migrate` itself
+- File-stored content with changes waiting to be published is listed on the dashboard, and
+  administrators are told about it (#746). The dashboard names the first five pending records
+  and links each to its edit screen for members who can open it. The first recorded change
+  raises a banner and sends one mail; the banner clears when nothing is pending. When the
+  scheduler is not running, the dashboard and the front page settings say that detection then
+  depends on someone reading the page
+- The content editor can offer the CSS tab for Markdown (#761). It is opt-in for the page that
+  hosts the editor, so nothing changes where it is not asked for; the JS tab stays with the
+  HTML editor
+- `<x-form-datetime>`, a datetime field that is shown and saved in the timezone it displays,
+  and names that timezone under the field (#763)
+
+### Changed
+- Installing, uninstalling, enabling, disabling and deleting a plugin, and installing,
+  uninstalling, deleting and switching a theme, are recorded in the audit log when run from
+  the command line (#630). The commands now write the entry themselves, so a run from the
+  command line is recorded with actor source `cli`, and one from the admin panel is
+  recorded once, as before, with the member who asked for it. Deleting an extension's files
+  is recorded for the first time (`plugin_deleted` / `theme_deleted`), from the admin panel
+  too. An install or enable that `--force` pushed past the license check or the health check
+  records what was overridden. `dls:plugin:install` no longer claims to record a refusal it
+  did not record
+- Running an extension's migrations, rolling them back, running its seeder and building a
+  theme are recorded in the audit log (#749). A migration rollback is recorded as a warning,
+  because it can drop data. A run that changes nothing writes nothing, and the steps that an
+  install, update or rollback runs on its way are not recorded a second time
+- An audit entry for a file-stored content change says where the change came from (#745): it
+  was made outside the admin, how it was found (a page render or the daily scan), and the hash
+  of the published copy before it and of the files as found. The audit log view explains that
+  the system is named because Dixlase recorded the change, not because it made it
+- New installations get the official theme's v0.4.2 release
+
+### Fixed
+- The maintenance window's start and release times are read and saved in the display timezone
+  (#763). The fields showed and stored UTC while the rest of the screen used the display
+  timezone, so a window typed for 10:00 on a site displaying `Asia/Tokyo` opened at 19:00
+- A plugin that fails while it starts no longer stops the whole application (#755). A plugin
+  that threw from its provider's `boot()` used to take down every page and every artisan
+  command, including the ones an operator would use to disable it. The failure is now
+  contained and recorded, and the rest of the site keeps running. A plugin that registers on a
+  later pass is no longer reported as failed (#768)
+- An extension whose `requires.dixlase` or `requires.php` is not met by the site is reported
+  in its health score (#756). Those requirements were checked only by the install and update
+  commands, so an extension placed as files — a git checkout, an rsync, a restored backup —
+  was never checked. An unmet requirement is a critical finding; a constraint that cannot be
+  parsed is a warning
+
+### Security
+- `symfony/mime` is updated to 7.4.22. 7.4.19 is affected by CVE-2026-45070, an email header
+  injection through non-token characters in MIME parameter names, published by Symfony on
+  2026-10-28. Only `composer.lock` changes
+
+### Plugin API — Added
+- `App\Contracts\Content\ProvidesFileContentEditLink` (`@api`), optional next to
+  `PublishesFileContent`: a record's name and edit-screen URL, so the dashboard's list of
+  pending file changes can link to it (#746). An implementation without it is listed with no
+  link
+- `App\Contracts\ViewerTimezoneResolver` (`@api`). An extension that keeps a member's own
+  timezone binds it, and `<x-form-datetime context="viewer">` then shows that member's clock.
+  With nothing bound, the field uses the site's display timezone (#763)
+- `<x-form-content-editor>` takes `markdownCss` (default `false`); with `assetTabs`, the
+  Markdown editor shows the CSS tab (#761)
+- `FileContentPublisher::check()` takes an optional `$detectedBy` (`render` by default), so an
+  existing caller needs no change (#745)
+
+### Internal
+- Tests no longer reach the real working tree: the extension roots are decided in one place,
+  the symlink tests leave the real asset links alone, and the install test leaves the tracked
+  `VERSION` file alone (#653, #677). The suite reports which database it runs on (#541)
+- The rules shared by every contributor live in this repository
+  (`resources/ai/shared-rules-{en,ja}.md`), and `CLAUDE.md` is regenerated for the `next`
+  branch. Pull requests against `next` run the checks
+- How releases are numbered is written down in `docs/development/versioning.md` (#616)
+- The README has a header with the mark, links and badges (#787), and the fallback OGP image
+  follows the current design (#793)
 
 ## [0.1.19] — 2026-10-23
 
@@ -73,15 +171,6 @@ repository to be notified of changes.
   (#679). The action ends every session of the account, like a force logout, but left no
   entry; it now writes `email_verification_reset` with who sent it and how many sessions
   ended
-- Installing, uninstalling, enabling, disabling and deleting a plugin, and installing,
-  uninstalling, deleting and switching a theme, are recorded in the audit log when run from
-  the command line (#630). The commands now write the entry themselves, so a run from the
-  command line is recorded with actor source `cli`, and one from the admin panel is
-  recorded once, as before, with the member who asked for it. Deleting an extension's files
-  is recorded for the first time (`plugin_deleted` / `theme_deleted`), from the admin panel
-  too. An install or enable that `--force` pushed past the license check or the health check
-  records what was overridden. `dls:plugin:install` no longer claims to record a refusal it
-  did not record
 
 - The media selector's page navigation stays in view (#729). It sat at the bottom of the
   scrolling grid, so with more than one page an author had to scroll to the end to find it

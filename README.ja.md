@@ -1,6 +1,30 @@
-# Dixlase
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/dixlase-logo-dark.svg">
+    <img src=".github/assets/dixlase-logo-light.svg" alt="Dixlase — Open Source CMS" width="380">
+  </picture>
+</p>
 
-For English, see [README.md](./README.md).
+<p align="center"><strong>セキュリティを核に据えた、プラグイン拡張型のオープンソース CMS。</strong></p>
+
+<p align="center">
+  <a href="https://dixlase.org/">公式サイト</a> ·
+  <a href="docs/ja/index.md">ドキュメント</a> ·
+  <a href="CHANGELOG.ja.md">変更履歴</a> ·
+  <a href="README.md">English</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Dixlase/dixlase-core/releases/latest"><img src="https://img.shields.io/github/v/release/Dixlase/dixlase-core?label=release" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Dixlase/dixlase-core" alt="License: AGPL-3.0"></a>
+  <a href="https://github.com/Dixlase/dixlase-core/actions/workflows/test.yml?query=branch%3Anext"><img src="https://github.com/Dixlase/dixlase-core/actions/workflows/test.yml/badge.svg?branch=next" alt="Tests"></a>
+</p>
+
+<p align="center">
+  <a href="https://www.php.net/"><img src="https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.3+"></a>
+  <a href="https://laravel.com/"><img src="https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white" alt="Laravel 13"></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS 4"></a>
+</p>
 
 **Dixlase(ディクセイラス)** は [exc-D inc.(エクシーディー)](https://exc-d.com) が開発する、オープンソース CMS です。
 
