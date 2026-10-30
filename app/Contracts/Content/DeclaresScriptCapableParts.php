@@ -46,9 +46,14 @@ namespace App\Contracts\Content;
  * admin panel. The file save mode of {@see PublishesFileContent} would let a
  * change reach the site without passing that limit, because `storage/` is
  * writable by the application by design — it can be writable where the code
- * directories are not. So under that mode the shared code takes in only the
- * parts that cannot carry a script; the rest wait to be published from the
- * admin, exactly as everything does under the admin mode.
+ * directories are not. So under that mode the shared code took in only the
+ * parts that cannot carry a script (#744).
+ *
+ * Since #786 the file save mode takes effect only in a local environment,
+ * where it takes every part in, and nowhere else, where nothing is taken in.
+ * What this declares therefore no longer changes what goes live; the
+ * contract is kept so that existing implementations keep working, and so a
+ * screen can say which parts carry a script.
  *
  * Implementing this is optional. Without it,
  * {@see \App\Services\Content\FileContentPublisher::scriptCapableParts()}

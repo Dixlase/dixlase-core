@@ -47,6 +47,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             />
             <x-form-help-text :text="__('admin/front.settings.publish_mode_help')" />
             <x-form-error name="publish_mode" />
+            {{-- Which mode takes effect here: the file save mode applies only in a local environment (#786) --}}
+            <div class="mt-4">
+                @if($fileSaveModeAvailable)
+                    <x-ui-message type="info" :message="__('common.content_publish_mode.in_effect_local')" />
+                @else
+                    <x-ui-message type="warning" :message="__('common.content_publish_mode.not_in_effect')" />
+                @endif
+            </div>
             <x-content.scheduler-notice :running="$schedulerRunning" />
         </div>
     </form>
