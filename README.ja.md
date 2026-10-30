@@ -1,8 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/dixlase-logo-dark.svg">
-    <img src=".github/assets/dixlase-logo-light.svg" alt="Dixlase — Open Source CMS" width="380">
-  </picture>
+  <img src=".github/assets/social-preview.png" alt="Dixlase — Open Source CMS" width="640">
 </p>
 
 <p align="center"><strong>セキュリティを核に据えた、プラグイン拡張型のオープンソース CMS。</strong></p>
