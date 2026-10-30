@@ -2,7 +2,7 @@
     "name": "Dixlase",
     "package_name": "dixlase/dixlase-core",
     "slug": "dixlase",
-    "version": "0.1.20-dev",
+    "version": "0.1.20",
     "description": {
         "ja": "オープンソース CMS。守りはコアで固め、表現はプラグイン・テーマで自由に伸ばす、長期運用向けの設計。",
         "en": "Open-source CMS. Hardened defenses in the core, free expression through plugins and themes, designed around long-term operation."
