@@ -27,8 +27,10 @@ How to write, label and close GitHub issues, and how they link to releases.
 
 ## Releasing
 
-Steps to take before tagging a core release, including updating the bundled theme.
+How releases are numbered, and the steps to take before tagging a core release,
+including updating the bundled theme.
 
+- [Versioning](versioning.md) - What MAJOR / MINOR / PATCH mean here, which field decides extension compatibility, and why a released number is never re-cut
 - [Releasing Core](releasing.md)
 
 ## Revisions
