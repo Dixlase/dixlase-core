@@ -57,7 +57,8 @@ use Throwable;
  * The published copy of file-stored content is the one in the database. This
  * service compares it with the files, records a change made to the files
  * outside the admin, takes the files in when they are published (or at once,
- * under {@see \App\Enums\ContentPublishMode::FILE_SAVE}), and writes the
+ * under {@see \App\Enums\ContentPublishMode::FILE_SAVE} in a local
+ * environment, see {@see fileSaveModeAvailable()}), and writes the
  * files back from the database after a revision restore.
  *
  * Every part is compared as a string; a missing file counts as empty.
@@ -361,6 +362,11 @@ class FileContentPublisher
      * whether it can carry a script depends on its editor type, which only
      * the owner knows.
      *
+     * Since #786 this no longer decides what the file save mode takes in:
+     * that mode takes every part in a local environment and nothing
+     * elsewhere. It is kept for owners that already declare their parts and
+     * for screens that say which parts can carry a script.
+     *
      * @param  PublishesFileContent&Model  $model
      * @return list<string>
      */
@@ -378,12 +384,48 @@ class FileContentPublisher
     }
 
     /**
+     * Whether the file save mode takes effect in this environment
+     *
+     * Taking file changes in without anyone publishing them is a development
+     * convenience, so it applies only in a local environment (#786). There
+     * whoever can write the files runs the code as well. Anywhere else --
+     * staging, production, a mistyped APP_ENV -- a change to the files waits
+     * to be published, whatever the owner's setting says. The check is "is
+     * local", never "is not production", so an unknown value stays closed.
+     */
+    public static function fileSaveModeAvailable(): bool
+    {
+        return app()->environment('local');
+    }
+
+    /**
+     * The publish mode that takes effect for this record here
+     *
+     * The owner's setting, except that the file save mode falls back to the
+     * admin mode outside a local environment. The setting itself is left as
+     * chosen, so a copy of the site in a local environment picks it up again.
+     *
+     * @param  PublishesFileContent&Model  $model
+     */
+    public function effectivePublishMode(PublishesFileContent $model): ContentPublishMode
+    {
+        $mode = $model->fileContentPublishMode();
+
+        if ($mode === ContentPublishMode::FILE_SAVE && ! self::fileSaveModeAvailable()) {
+            return ContentPublishMode::ADMIN;
+        }
+
+        return $mode;
+    }
+
+    /**
      * The changed parts this record's publish mode may take in by itself
      *
-     * Empty under the admin mode: nothing is taken in without someone
-     * publishing it. Under the file save mode it is the changed parts that
-     * cannot carry a script — the rest wait to be published, so that "only
-     * ADMIN and above can put a script on the site" holds for the files too.
+     * Empty unless the file save mode is in effect, which is only in a local
+     * environment ({@see fileSaveModeAvailable()}): nothing is taken in
+     * without someone publishing it. Where it is in effect every changed part
+     * is taken in, script-capable ones included -- the files there are the
+     * developer's own, and holding a part back would only get in the way.
      *
      * @param  PublishesFileContent&Model  $model
      * @param  array<string, string>  $files
@@ -391,13 +433,11 @@ class FileContentPublisher
      */
     public function takeableParts(PublishesFileContent $model, array $files): array
     {
-        if ($model->fileContentPublishMode() !== ContentPublishMode::FILE_SAVE) {
+        if ($this->effectivePublishMode($model) !== ContentPublishMode::FILE_SAVE) {
             return [];
         }
 
-        $scriptCapable = $this->scriptCapableParts($model);
-
-        return array_values(array_diff($this->changedParts($model, $files), $scriptCapable));
+        return $this->changedParts($model, $files);
     }
 
     /**
