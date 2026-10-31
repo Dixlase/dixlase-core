@@ -491,7 +491,7 @@ class PermissionRegistry
             $result[$pluginSlug] = self::getAllPluginPermissions($pluginSlug);
         }
 
-        foreach (self::installedPluginDirectories() as $pluginSlug) {
+        foreach (self::enabledPluginDirectories() as $pluginSlug) {
             if (isset($result[$pluginSlug])) {
                 continue;
             }
@@ -504,25 +504,57 @@ class PermissionRegistry
     }
 
     /**
-     * Directory names of the installed plugins whose config may be loaded.
+     * Directory names of the installed plugins.
      *
-     * Reading a plugin's roles.php or navigation.php means `require`-ing its
-     * PHP, so only directories with a row in `plugins` qualify. A directory
-     * that was uploaded but not installed yet (pending-install marker), one
-     * that has no row at all, and a move-aside copy (Foo.stale.*, Foo.bak)
-     * are skipped: none of them has passed the pre-install scan.
+     * Only directories with a row in `plugins` qualify. A directory that was
+     * uploaded but not installed yet (pending-install marker), one that has
+     * no row at all, and a move-aside copy (Foo.stale.*, Foo.bak) are
+     * skipped: none of them has passed the pre-install scan.
+     *
+     * **This is not the list to load configuration from.** Reading a
+     * plugin's roles.php or navigation.php means `require`-ing its PHP, and
+     * an installed plugin may be disabled. Use enabledPluginDirectories()
+     * for that.
      *
      * @return list<string>
      */
     public static function installedPluginDirectories(?string $pluginsPath = null): array
+    {
+        return self::pluginDirectories($pluginsPath, onlyEnabled: false);
+    }
+
+    /**
+     * Directory names of the enabled plugins, whose config may be loaded.
+     *
+     * Disabling a plugin has to stop its code from running. Its roles.php and
+     * navigation.php are PHP files loaded with `require`, so a list that
+     * ignored the enabled state would keep executing a plugin the operator
+     * disabled -- which operators do precisely when they distrust one (#634).
+     *
+     * @return list<string>
+     */
+    public static function enabledPluginDirectories(?string $pluginsPath = null): array
+    {
+        return self::pluginDirectories($pluginsPath, onlyEnabled: true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function pluginDirectories(?string $pluginsPath, bool $onlyEnabled): array
     {
         $pluginsPath ??= PluginHelper::pluginsPath();
         if (! is_dir($pluginsPath)) {
             return [];
         }
 
+        $query = Plugin::query();
+        if ($onlyEnabled) {
+            $query->whereNotNull('enabled_at');
+        }
+
         $directories = [];
-        foreach (Plugin::query()->pluck('directory') as $directory) {
+        foreach ($query->pluck('directory') as $directory) {
             if (! is_string($directory) || $directory === '' || ! ExtensionDirectories::isInstalledName($directory)) {
                 continue;
             }
