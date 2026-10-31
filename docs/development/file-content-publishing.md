@@ -162,6 +162,13 @@ php artisan dls:content:publish-files --model=FrontPage --id=1 --publish
 - `--fail-if-pending` makes a deploy stop on content nobody published. With `--publish` it
   fails only when a publish failed.
 
+> **On production, do not use `--publish`.** It publishes everything that is waiting
+> without showing it — a file changed on the server by someone else included. Use it only
+> where every file is known to come from your own repository (a development or staging
+> copy). On production, list what is waiting, check that each record is one you deployed,
+> read its diff on the edit screen and publish it there. A record you did not deploy means
+> a file was changed on the server: do not publish it; read its `file_changed` audit entry.
+
 ## Audit actions
 
 | Action | Category | Written when |
