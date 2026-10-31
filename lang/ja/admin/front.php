@@ -62,6 +62,7 @@ return [
     ],
 
     'create' => [
+        'script_authoring_denied' => 'HTML のエディタは管理者が使えます。Markdown を選ぶか、管理者に依頼してください。',
         'heading' => 'フロントページ作成',
         'description' => '言語とエディタータイプを選んでフロントページのコンテンツを作成します。',
 
@@ -96,6 +97,7 @@ return [
     ],
 
     'edit' => [
+        'script_authoring_denied' => 'このフロントページは HTML のエディタを使っています。変更できるのは管理者だけです。内容・CSS・JavaScript はそのままにしました。',
         'heading' => 'フロントページ編集',
         'description' => 'フロントページのコンテンツを編集します。',
 
