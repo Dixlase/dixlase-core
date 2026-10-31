@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             previewRender="server"
             :previewFrameUrl="$previewFrameUrl"
             :previewUrl="$previewUrl"
-            :assetTabs="$isHtmlEditor"
+            :assetTabs="$isHtmlEditor && ($mayAuthorScripts ?? false)"
             :customCss="$customCss ?? ''"
             :customJs="$customJs ?? ''"
             :cssPlaceholder="__('admin/front.edit.custom_css_placeholder')"
