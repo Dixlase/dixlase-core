@@ -96,3 +96,75 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           exit 1
+
+  comment-translation:
+    name: Comment Translation Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          # The base commit has to be present for the VERSION comparison.
+          fetch-depth: 0
+
+      - name: Decide whether this pull request bumps the version
+        id: bump
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA" HEAD -- VERSION; then
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+            echo "VERSION is unchanged, so this pull request is not a release bump."
+            echo "VERSION is unchanged; nothing to check." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+            printf 'VERSION: %s -> %s\n' \
+              "$(git show "$BASE_SHA":VERSION 2>/dev/null | tr -d '\n')" \
+              "$(tr -d '\n' < VERSION)"
+          fi
+
+      - name: Setup PHP 8.3
+        if: steps.bump.outputs.bumped == 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install Composer dependencies
+        if: steps.bump.outputs.bumped == 'true'
+        # The same form the coverage job in test.yml uses. The command needs
+        # the framework booted; no plugins are cloned here, which is what
+        # keeps this gate to core.
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: No comment-translation entry may be left pending
+        if: steps.bump.outputs.bumped == 'true'
+        run: |
+          # Core's dictionaries only. An extension's dictionaries ship with
+          # that extension's release, and core cannot fix them -- gating a
+          # core release on a plugin's coverage would block a release nobody
+          # here can unblock. The warning job in `test.yml` still reports
+          # plugins and themes on every pull request.
+          if php artisan dls:comment:status --strict; then
+            exit 0
+          fi
+
+          {
+            echo '### Comment translation is incomplete'
+            echo
+            echo 'This pull request bumps `VERSION`, and the dictionaries still hold'
+            echo 'pending entries. List them with:'
+            echo
+            echo '```'
+            echo 'php artisan dls:comment:status --filter=untranslated'
+            echo '```'
+            echo
+            echo 'Translate them with `dls:comment:translate`, replace the Japanese in the'
+            echo 'source with the English keys, and commit both (dixlase-core#527).'
+            echo
+            echo 'An entry that is punctuation rather than a comment is an extraction'
+            echo 'artefact: remove it instead of translating it.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit 1
