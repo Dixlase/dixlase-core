@@ -57,6 +57,8 @@ class AuditLogDatetimeDisplayTest extends TestCase
 
     private int $logId;
 
+    private mixed $serverInstalled;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -71,6 +73,7 @@ class AuditLogDatetimeDisplayTest extends TestCase
         // INSTALLED is true, so all three channels are overridden.
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
+        $this->serverInstalled = $_SERVER['INSTALLED'] ?? null;
         $_SERVER['INSTALLED'] = 'true';
 
         // The service provider registers the admin view namespace only on an
@@ -94,7 +97,14 @@ class AuditLogDatetimeDisplayTest extends TestCase
         SiteSetting::query()->where('name', 'display_timezone')->delete();
         putenv('INSTALLED=false');
         $_ENV['INSTALLED'] = 'false';
-        $_SERVER['INSTALLED'] = 'false';
+        // Laravel reads $_SERVER before $_ENV, and phpunit.xml leaves it
+        // unset; leaving 'false' behind would override later tests that
+        // set only $_ENV.
+        if ($this->serverInstalled === null) {
+            unset($_SERVER['INSTALLED']);
+        } else {
+            $_SERVER['INSTALLED'] = $this->serverInstalled;
+        }
 
         parent::tearDown();
     }
