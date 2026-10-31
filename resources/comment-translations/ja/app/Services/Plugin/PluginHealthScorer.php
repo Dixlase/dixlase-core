@@ -55,8 +55,6 @@ return [
     '_optional permissions are exempt from penalties even when unused' => '_optional に含まれる権限は未使用でもペナルティなし',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_optional 権限を取得（未検出でもペナルティなし）' => '',
-    '_optional に含まれる権限は未使用でもペナルティなし' => '',
     '_review_status' => [
         'Sole source of plugin health score calculation' => 'machine',
         'Uses PluginHealthStatus::getDeductionRules() as the deduction table,' => 'machine',

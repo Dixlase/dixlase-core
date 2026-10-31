@@ -21,11 +21,11 @@ return [
     'Resolve plugin directory' => 'プラグインディレクトリを解決',
     'Get list of PHP files' => 'PHPファイル一覧を取得',
     'Auto-generate or update' => '自動生成または更新します。',
-    '_optional と _notes を保持' => '',
+    'Preserve _optional and _notes' => '_optional と _notes を保持',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_optional と _notes を保持' => '',
     '_review_status' => [
+        'Preserve _optional and _notes' => 'machine',
         'Plugin permission auto-generation command' => 'machine',
         'Scans plugin code and auto-generates or updates the permissions and declares sections' => 'machine',
         'Generate declares' => 'machine',
