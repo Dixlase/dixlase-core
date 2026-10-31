@@ -296,7 +296,8 @@ class CommentBuilderService
         $pairs = [];
 
         foreach ($translations as $en => $localeText) {
-            if (! is_string($en) || $en === '' || $en[0] === '_') {
+            $en = (string) $en;
+            if ($en === '' || TranslationFileService::isMetaKey($en)) {
                 continue;
             }
             if (! is_string($localeText) || $localeText === '') {
@@ -324,7 +325,8 @@ class CommentBuilderService
     {
         $pending = 0;
         foreach ($translations as $key => $value) {
-            if (! is_string($key) || $key === '' || $key[0] === '_') {
+            $key = (string) $key;
+            if ($key === '' || TranslationFileService::isMetaKey($key)) {
                 continue;
             }
             if ($value === '') {
