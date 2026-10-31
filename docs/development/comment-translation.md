@@ -317,16 +317,26 @@ The `dls:comment:extract` / `:translate` pipeline was originally designed for th
 
 ## CI Enforcement
 
-| Trigger | Workflow | Mode | Effect |
-|---|---|---|---|
-| PR / push | `.github/workflows/test.yml` (job: Comment Translation Coverage) | warning | Coverage printed to job log; PR not failed even if pending entries exist |
+| Trigger | Workflow | Scope | Mode | Effect |
+|---|---|---|---|---|
+| Every pull request and push | `test.yml` (job: Comment Translation Coverage) | core, plugins, themes | warning | Coverage printed to the job log; the pull request is not failed |
+| A pull request that changes `VERSION` | `release-preflight.yml` (job: Comment Translation Gate) | core | **strict** | `dls:comment:status --strict` must exit 0, or the pull request fails |
 
-A release is not gated on coverage today. The strict gate used to live in a second
-release workflow that fired on `v*` tags; it failed on every tag it ran for, the
-releases were published through the other workflow regardless, and the workflow has
-been removed (dixlase-core#526). Putting a strict gate on the release path is
-tracked in dixlase-core#527, because it can only be turned on once the remaining
-pending entries are translated.
+**The gate sits before the merge, not on the release.** `release.yml` runs on
+`release: published`, so a refusal there would arrive after the release is already
+public — which is how v0.1.10 came out with no archives at all. The bundled-theme
+check is split the same way, and for the same reason (dixlase-core#557).
+
+**The strict gate covers core only.** An extension's dictionaries ship with that
+extension's release, and core cannot fix them; gating a core release on a plugin's
+coverage would block a release nobody in this repository can unblock. The warning
+job still reports plugins and themes on every pull request.
+
+An earlier strict gate fired on `v*` tags in a second release workflow. It failed on
+every tag it ever ran for while the releases were published through the other
+workflow regardless, so it was removed rather than relocated (dixlase-core#526); the
+gap it left is what dixlase-core#527 closed, once the pending entries it would have
+blocked on turned out to be extraction artefacts rather than untranslated comments.
 
 ---
 
