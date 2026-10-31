@@ -9,12 +9,17 @@ front page in core, and any extension that offers file storage — publishes it 
 
 The database always holds the **published copy**. The files are the **working copy**.
 
-> **Immediate publishing on file save works only in development (`APP_ENV=local`).**
+> **Showing file changes at once works only in development (`APP_ENV=local`).**
 > On staging and production, a changed file never goes live by itself, whatever the
 > setting says — not when it is edited on the server, and not when it arrives by a deploy.
 > It goes live only after someone publishes it: read its diff on the edit screen and press
 > **Publish**. Until then the site keeps serving the published copy, and the admin's
 > banner counts the change as waiting to be published.
+>
+> **In development too, a change waits to be published.** The site shows the files at once,
+> but the published copy in the database moves only when someone presses **Publish**, and
+> the banner counts the change until then — so a change nobody published is visible before
+> a deploy (#808).
 
 ## Publish modes
 
@@ -24,13 +29,13 @@ Settings*). The default is `admin`.
 | Mode | What the site shows | A change made to the file |
 |---|---|---|
 | `admin` (default) | The published copy in the database | Recorded once in the audit log, listed on the edit screen with a diff, and goes live when someone with edit permission presses **Publish** |
-| `file_save` | The file — **only in a local environment** (`APP_ENV=local`) | Taken in as the published copy at once, every part included, recorded as an `auto` revision, and recorded in the audit log. Anywhere else the mode does not take effect, and a change waits for **Publish** exactly as under `admin` |
+| `file_save` | The files — **only in a local environment** (`APP_ENV=local`) | Shown at once, every part included, but not taken in: recorded once in the audit log, listed on the edit screen with a diff, counted in the banner, and taken in with a `manual` revision when someone presses **Publish**, exactly as under `admin`. Anywhere else the mode does not take effect, and the site shows the published copy |
 
 `App\Enums\ContentPublishMode` holds the two values.
 
 ### The file save mode works only in a local environment
 
-Taking file changes in without anyone publishing them is a development convenience. On
+Showing file changes without anyone publishing them is a development convenience. On
 staging and production it would only mean that whoever can write the files can change the
 site — `storage/` is writable by the application by design, so it can be writable where the
 code directories are not. So (#786):
@@ -40,13 +45,19 @@ code directories are not. So (#786):
   stay closed.
 - `FileContentPublisher::effectivePublishMode($model)` is the owner's setting, except that
   `file_save` falls back to `admin` where it is not available. Everything in the layer —
-  what is taken in, `FileContentRegistry::usesFileSaveMode()`, the audit entry — follows
-  the mode in effect. The stored setting is kept as chosen, so a copy of the site in a
+  what `resolve()` returns, `FileContentRegistry::usesFileSaveMode()`, the audit entry —
+  follows the mode in effect. The stored setting is kept as chosen, so a copy of the site in a
   local environment picks it up again.
-- In a local environment every changed part is taken in, script-capable parts included:
-  the files there are the developer's own. Anywhere else nothing is, and the change counts
-  towards the admin's banner of changes waiting to be published — which is also how a
-  deploy that carries files edited locally shows up on the receiving site.
+- In a local environment `FileContentPublisher::resolve()` returns the files, every part
+  included, script-capable parts too: the files there are the developer's own. Anywhere
+  else it returns the published copy.
+- **No mode takes a change in by itself** (#808). Before it, the file save mode wrote the
+  files into the published copy at once with an `auto` revision, so nothing was pending
+  and the banner went quiet exactly while files were being edited. Now the change counts
+  towards the admin's banner of changes waiting to be published in every environment —
+  a reminder before a deploy locally, and on the receiving site the sign that a deploy
+  carried files nobody has published there yet. `takeableParts()` always returns `[]`
+  and is deprecated.
 - A settings screen that offers the mode says which applies on this site
   (`common.content_publish_mode.in_effect_local` / `not_in_effect`).
 
@@ -203,8 +214,8 @@ php artisan dls:content:publish-files --model=FrontPage --id=1 --publish
 | `publish_mode` | The mode in effect: `admin`, or `file_save` in a local environment |
 | `selected_publish_mode` | The mode the owner chose, which outside a local environment may be `file_save` while `admin` is in effect |
 | `parts` | The parts whose files differ from the published copy |
-| `held` | The parts not taken in, which wait to be published. Every changed part unless the file save mode is in effect; then empty |
-| `published` | True only when the whole change went live |
+| `held` | The parts waiting to be published: every changed part since #808. Before it, empty when the file save mode took the change in |
+| `published` | Whether the change went live without being published: always false since #808 |
 
 `published_from_file` carries `parts` and `published_hash` — the hash the record now publishes, which is the `file_hash` of the `file_changed` entry the approval answered. The approver is the entry's actor, and the publish is also recorded as a `manual` revision.
 

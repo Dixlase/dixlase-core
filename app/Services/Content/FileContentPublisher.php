@@ -56,10 +56,12 @@ use Throwable;
  *
  * The published copy of file-stored content is the one in the database. This
  * service compares it with the files, records a change made to the files
- * outside the admin, takes the files in when they are published (or at once,
- * under {@see \App\Enums\ContentPublishMode::FILE_SAVE} in a local
- * environment, see {@see fileSaveModeAvailable()}), and writes the
- * files back from the database after a revision restore.
+ * outside the admin, takes the files in when they are published, and writes
+ * the files back from the database after a revision restore. Nothing is taken
+ * in without someone publishing it: under
+ * {@see \App\Enums\ContentPublishMode::FILE_SAVE} in a local environment
+ * ({@see fileSaveModeAvailable()}) the site shows the files at once, but the
+ * change still waits to be published (#808).
  *
  * Every part is compared as a string; a missing file counts as empty.
  */
@@ -92,15 +94,25 @@ class FileContentPublisher
      *
      * Looks at the files first, so a change made outside the admin is
      * recorded on the first read that sees it. Under the admin mode the
-     * published copy is returned whatever the files hold; under the file
-     * save mode the files have been taken in by then, so the column holds
-     * them.
+     * published copy is returned whatever the files hold. Under the file save
+     * mode, in effect only in a local environment, the files are returned, so
+     * an edit shows at once -- while the published copy stays as it was and
+     * the change waits to be published like any other (#808).
      *
      * @param  PublishesFileContent&Model  $model
      */
     public function resolve(PublishesFileContent $model, string $part): ?string
     {
         $this->check($model);
+
+        if ($model->usesFileStorage()
+            && $this->effectivePublishMode($model) === ContentPublishMode::FILE_SAVE) {
+            $files = $this->readFiles($model);
+
+            if (array_key_exists($part, $files)) {
+                return $files[$part];
+            }
+        }
 
         $column = $model->fileContentParts()[$part] ?? $part;
         $value = $model->getAttributes()[$column] ?? null;
@@ -140,18 +152,10 @@ class FileContentPublisher
             return;
         }
 
-        if ($model->getAttribute(FileContentColumns::FILE_HASH) === $fileHash
-            && $this->takeableParts($model, $files) === []) {
-            // Already recorded, and nothing here this mode may take in, so
-            // there is nothing new to say. What is takeable is re-asked
-            // rather than decided by the mode alone, for two reasons:
-            //
-            //  - the owner may have switched to the file save mode since the
-            //    change was recorded, and the change should then be taken in
-            //  - a part held for review keeps the two hashes apart for as
-            //    long as it is held. A mode-only guard would therefore let
-            //    every later check record the same change again, and check()
-            //    runs on every render of the page.
+        if ($model->getAttribute(FileContentColumns::FILE_HASH) === $fileHash) {
+            // Already recorded, so there is nothing new to say. The change
+            // keeps the two hashes apart until it is published, and check()
+            // runs on every render of the page.
             return;
         }
 
@@ -386,11 +390,12 @@ class FileContentPublisher
     /**
      * Whether the file save mode takes effect in this environment
      *
-     * Taking file changes in without anyone publishing them is a development
+     * Showing the files without anyone publishing them is a development
      * convenience, so it applies only in a local environment (#786). There
      * whoever can write the files runs the code as well. Anywhere else --
-     * staging, production, a mistyped APP_ENV -- a change to the files waits
-     * to be published, whatever the owner's setting says. The check is "is
+     * staging, production, a mistyped APP_ENV -- the site shows the published
+     * copy, whatever the owner's setting says. In every environment a change
+     * to the files waits to be published (#808). The check is "is
      * local", never "is not production", so an unknown value stays closed.
      */
     public static function fileSaveModeAvailable(): bool
@@ -421,11 +426,12 @@ class FileContentPublisher
     /**
      * The changed parts this record's publish mode may take in by itself
      *
-     * Empty unless the file save mode is in effect, which is only in a local
-     * environment ({@see fileSaveModeAvailable()}): nothing is taken in
-     * without someone publishing it. Where it is in effect every changed part
-     * is taken in, script-capable ones included -- the files there are the
-     * developer's own, and holding a part back would only get in the way.
+     * Always empty since #808: no mode takes a change in without someone
+     * publishing it. The file save mode shows the files instead
+     * ({@see resolve()}), and the change waits to be published.
+     *
+     * @deprecated Kept for callers outside core; it no longer depends on its
+     *             arguments.
      *
      * @param  PublishesFileContent&Model  $model
      * @param  array<string, string>  $files
@@ -433,11 +439,7 @@ class FileContentPublisher
      */
     public function takeableParts(PublishesFileContent $model, array $files): array
     {
-        if ($this->effectivePublishMode($model) !== ContentPublishMode::FILE_SAVE) {
-            return [];
-        }
-
-        return $this->changedParts($model, $files);
+        return [];
     }
 
     /**
