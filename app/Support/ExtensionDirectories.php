@@ -37,6 +37,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use InvalidArgumentException;
+
 /**
  * Tells an installed extension directory apart from a leftover copy of one.
  *
@@ -100,9 +102,40 @@ final class ExtensionDirectories
             default => base_path(trim($configured, '/')),
         };
 
-        return $directory === null || $directory === ''
-            ? $root
-            : $root.DIRECTORY_SEPARATOR.$directory;
+        if ($directory === null || $directory === '') {
+            return $root;
+        }
+
+        self::assertSegment($directory);
+
+        return $root.DIRECTORY_SEPARATOR.$directory;
+    }
+
+    /**
+     * Refuse anything that is not a single extension directory name.
+     *
+     * The segment is appended to a trusted root and the result is read,
+     * and in one case `require`d -- a plugin's `config/admin/roles.php`.
+     * Validating here covers every caller at once, rather than asking
+     * each to remember; `isInstalledName()` was already the project's
+     * test for a usable name and simply was not consulted on this path.
+     *
+     * A separator is refused as well. `isInstalledName()` allows one,
+     * because it is asked about a basename that cannot contain one.
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function assertSegment(string $directory): void
+    {
+        $invalid = str_contains($directory, '/')
+            || str_contains($directory, '\\')
+            || ! self::isInstalledName($directory);
+
+        if ($invalid) {
+            throw new InvalidArgumentException(
+                'Not an extension directory name: '.$directory
+            );
+        }
     }
 
     /**
