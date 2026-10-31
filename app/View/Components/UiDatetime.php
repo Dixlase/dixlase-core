@@ -38,6 +38,7 @@
 namespace App\View\Components;
 
 use App\Helpers\DateTimeHelper;
+use Carbon\CarbonImmutable;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
@@ -70,7 +71,11 @@ class UiDatetime extends Component
     ) {
         $this->display = DateTimeHelper::display($value, $format);
         $this->isoUtc = DateTimeHelper::toIsoUtc($value);
-        $this->titleText = DateTimeHelper::display($value, 'full');
+        // The title is the same instant in UTC, so it can be matched against
+        // server logs; the view labels it as such.
+        $this->titleText = $this->isoUtc === null
+            ? null
+            : CarbonImmutable::parse($this->isoUtc)->format(DateTimeHelper::FORMATS['full']);
     }
 
     public function render(): View
