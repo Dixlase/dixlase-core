@@ -57,6 +57,30 @@ class TranslationFileService
     /** Metadata key under which review status is stored. */
     public const META_REVIEW_STATUS = '_review_status';
 
+    /**
+     * The keys that are metadata rather than translatable content.
+     *
+     * This is an exact list, not a prefix rule. Treating every key that
+     * starts with `_` as metadata hid real comments: a comment such as
+     * `_optional と _notes を保持` is content, and it disappeared from the
+     * coverage figure, from `--filter` and from the substitution the build
+     * performs -- so it was never reported as pending and never replaced in
+     * the source (#527).
+     */
+    public const META_KEYS = [self::META_REVIEW_STATUS];
+
+    /**
+     * Is this key metadata rather than a translatable entry?
+     *
+     * Keys arrive as `int` when the dictionary holds a numeric string:
+     * PHP casts `'1' => ''` to the integer key `1`. Those are entries like
+     * any other, so they are cast back rather than discarded.
+     */
+    public static function isMetaKey(int|string $key): bool
+    {
+        return in_array((string) $key, self::META_KEYS, true);
+    }
+
     /** Allowed review status values. */
     public const REVIEW_STATUSES = ['untranslated', 'machine', 'reviewed', 'human'];
 
@@ -155,7 +179,7 @@ class TranslationFileService
     }
 
     /**
-     * Load only the translation entries (excludes underscore-prefixed metadata).
+     * Load only the translation entries (excludes the metadata keys).
      *
      * @return array<string, string>
      */
@@ -163,7 +187,8 @@ class TranslationFileService
     {
         $entries = [];
         foreach ($this->load($translationFile) as $key => $value) {
-            if (! is_string($key) || $key === '' || $key[0] === '_') {
+            $key = (string) $key;
+            if ($key === '' || self::isMetaKey($key)) {
                 continue;
             }
             $entries[$key] = is_string($value) ? $value : '';
@@ -173,7 +198,7 @@ class TranslationFileService
     }
 
     /**
-     * Load only the metadata entries (underscore-prefixed keys).
+     * Load only the metadata entries (the reserved keys).
      *
      * @return array<string, mixed>
      */
@@ -181,8 +206,8 @@ class TranslationFileService
     {
         $meta = [];
         foreach ($this->load($translationFile) as $key => $value) {
-            if (is_string($key) && $key !== '' && $key[0] === '_') {
-                $meta[$key] = $value;
+            if (self::isMetaKey($key)) {
+                $meta[(string) $key] = $value;
             }
         }
 
@@ -282,10 +307,11 @@ class TranslationFileService
         $existingTranslations = [];
         $existingMeta = [];
         foreach ($existing as $key => $value) {
-            if (! is_string($key) || $key === '') {
+            $key = (string) $key;
+            if ($key === '') {
                 continue;
             }
-            if ($key[0] === '_') {
+            if (self::isMetaKey($key)) {
                 $existingMeta[$key] = $value;
             } else {
                 $existingTranslations[$key] = is_string($value) ? $value : '';
