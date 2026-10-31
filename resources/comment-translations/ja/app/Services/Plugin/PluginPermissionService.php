@@ -84,7 +84,6 @@ return [
     'Use calculateUnifiedRiskLevel() instead.' => 'calculateUnifiedRiskLevel() を使用してください。',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_optional と _notes はメタデータのため、マージ対象から除外します。' => '',
     '_review_status' => [
         'Plugin permission management service' => 'machine',
         'Reads the permissions section of plugin.json' => 'machine',
