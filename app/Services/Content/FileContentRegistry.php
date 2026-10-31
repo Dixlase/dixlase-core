@@ -199,7 +199,7 @@ class FileContentRegistry
     }
 
     /**
-     * Whether any registered model publishes on file save here
+     * Whether any registered model shows its files on file save here
      *
      * The publish mode is a setting of the owner, not of the record — a front
      * page reads one front setting, an extension reads its own — so the first
