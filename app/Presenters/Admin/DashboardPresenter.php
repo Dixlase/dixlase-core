@@ -509,21 +509,6 @@ class DashboardPresenter
             $items[] = $fileContentItem;
         }
 
-        // Publishing on file save gives up review before publishing, and the
-        // setting says so nowhere else. Shown on a production site only:
-        // choosing it in development is the ordinary way to work (#744).
-        if (app()->isProduction() && app(FileContentRegistry::class)->usesFileSaveMode()) {
-            $items[] = [
-                'key' => 'file_content_mode',
-                'status' => 'warning',
-                'icon' => 'fas fa-file-circle-exclamation',
-                'label' => __('admin/dashboard.file_content_mode_status'),
-                'description' => __('admin/dashboard.file_content_mode_file_save'),
-                ...self::link('admin.front.settings'),
-                'requires_advanced_mode' => false,
-            ];
-        }
-
         // Audit log integrity (hash chain + daily seals)
         $auditHealth = app(AuditLogIntegrityService::class)->getHealthCached();
         $auditStatus = match ($auditHealth['state']) {

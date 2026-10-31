@@ -363,7 +363,9 @@ return [
         'admin' => 'Publish from the admin',
         'admin_description' => 'The site shows the last published version. A change made to the file is listed on the edit screen and goes live when it is published there. Recommended.',
         'file_save' => 'Publish on file save',
-        'file_save_description' => 'The site shows the file as it is. A change made to the file goes live at once and is recorded in the audit log. Parts that can carry a script — the custom CSS and JS, and an HTML body — still wait to be published from the admin.',
+        'file_save_description' => 'For a development environment. The site shows the file as it is: a change made to the file goes live at once, the custom CSS and JS and an HTML body included, and is recorded in the audit log. Takes effect only when APP_ENV is "local"; anywhere else changes wait to be published, as under publishing from the admin.',
+        'in_effect_local' => 'This is a development environment (APP_ENV is "local"). Under publishing on file save, every change to the files goes live at once, the custom CSS and JS and an HTML body included. In any other environment the same setting makes changes wait to be published.',
+        'not_in_effect' => 'This is not a development environment (APP_ENV is not "local"), so changes to the files wait to be published whatever is chosen here. Publishing on file save takes effect only in a development environment.',
     ],
 
     'file_changes' => [

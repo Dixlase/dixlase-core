@@ -40,7 +40,6 @@ namespace App\Services\Auth;
 use App\Models\Member;
 use App\Session\GuardAwareDatabaseSessionHandler;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Resolve the member signed in to the admin panel, from anywhere.
@@ -149,14 +148,25 @@ class SignedInMemberResolver
      */
     private function fromMemberSession(string $sessionId): ?Member
     {
-        $table = $this->memberSessionTable();
+        $handler = $this->guardAwareHandler();
+
+        if ($handler === null) {
+            return null;
+        }
+
+        $table = $handler->tableForGuard(self::GUARD);
 
         if ($table === null) {
             return null;
         }
 
         try {
-            $row = DB::table($table)
+            // Read on the connection the session handler writes to, not the
+            // application default: the two differ when session.connection
+            // names a non-default connection, and the member row then lives
+            // only on the former.
+            $row = $handler->connection()
+                ->table($table)
                 ->where('id', $sessionId)
                 ->first(['member_id', 'last_activity']);
         } catch (\Throwable) {
@@ -185,10 +195,11 @@ class SignedInMemberResolver
     }
 
     /**
-     * The table the member guard's sessions live in, asked of the handler
-     * that owns the mapping rather than repeated here.
+     * The guard-aware session handler, which owns both the table the
+     * member guard's sessions live in and the connection they live on, or
+     * null when the configured driver is not the guard-aware one.
      */
-    private function memberSessionTable(): ?string
+    private function guardAwareHandler(): ?GuardAwareDatabaseSessionHandler
     {
         try {
             $handler = app('session.guard-aware');
@@ -196,9 +207,7 @@ class SignedInMemberResolver
             return null;
         }
 
-        return $handler instanceof GuardAwareDatabaseSessionHandler
-            ? $handler->tableForGuard(self::GUARD)
-            : null;
+        return $handler instanceof GuardAwareDatabaseSessionHandler ? $handler : null;
     }
 
     /**

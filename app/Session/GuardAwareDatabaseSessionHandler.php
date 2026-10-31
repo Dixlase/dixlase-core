@@ -36,6 +36,7 @@
 namespace App\Session;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Session\DatabaseSessionHandler;
 
 class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
@@ -102,6 +103,20 @@ class GuardAwareDatabaseSessionHandler extends DatabaseSessionHandler
     public function tableForGuard(string $guard): ?string
     {
         return $this->guardTables[$guard] ?? null;
+    }
+
+    /**
+     * The connection the guard session rows are stored on.
+     *
+     * A reader such as SignedInMemberResolver must query this connection,
+     * not the application default: the two differ when `session.connection`
+     * names a connection other than `database.default`, and the session
+     * rows then live only on this one. Set once, in SessionServiceProvider,
+     * from `config('session.connection')`.
+     */
+    public function connection(): ConnectionInterface
+    {
+        return $this->connection;
     }
 
     /**
