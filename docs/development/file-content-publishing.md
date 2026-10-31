@@ -157,6 +157,34 @@ heartbeat is missing.
   moves the hashes — a recorded change, a publish, an admin save, a restore, the daily scan —
   updates it, so it follows the records rather than a schedule.
 
+## Publishing from the command line
+
+`dls:content:publish-files` is the command-line counterpart of the **Publish** button, for a
+site whose content files arrive by deployment (#805). It looks at every model registered
+with `FileContentRegistry`, so an extension's records are covered without code of its own.
+
+```bash
+php artisan dls:content:publish-files                    # list what is waiting; publish nothing
+php artisan dls:content:publish-files --publish          # publish everything that is waiting
+php artisan dls:content:publish-files --fail-if-pending  # exit non-zero if anything is waiting
+php artisan dls:content:publish-files --model=FrontPage --id=1 --publish
+```
+
+- It first checks each record as the scheduled scan does, so a change nobody has seen is
+  recorded (`file_changed`, `detected_by: scan`) before it is listed or published.
+- `--publish` runs `PublishFileContentAction` for each record: the same `manual` revision and
+  `published_from_file` audit entry as the button, with `console` as the actor.
+- `--model` takes a registered class name, with or without its namespace; `--id` needs it.
+- `--fail-if-pending` makes a deploy stop on content nobody published. With `--publish` it
+  fails only when a publish failed.
+
+> **On production, do not use `--publish`.** It publishes everything that is waiting
+> without showing it — a file changed on the server by someone else included. Use it only
+> where every file is known to come from your own repository (a development or staging
+> copy). On production, list what is waiting, check that each record is one you deployed,
+> read its diff on the edit screen and publish it there. A record you did not deploy means
+> a file was changed on the server: do not publish it; read its `file_changed` audit entry.
+
 ## Audit actions
 
 | Action | Category | Written when |
