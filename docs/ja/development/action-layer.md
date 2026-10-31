@@ -99,8 +99,8 @@ Action である。`AbstractAction::execute()` は `handle()` の成功後に `a
 ### やり方が 1 つだけである理由
 
 `App\Traits\AuditableTrait` は、モデル層にもう 1 つの仕組みを提供していた
-（`created` / `updated` / `deleted` から行を書く）。**これは非推奨で、v0.2.0 で
-削除する。**コア・公式プラグイン・テーマのどこからも一度も使われておらず、
+（`created` / `updated` / `deleted` から行を書く）。**これは v0.2.0 で削除した**
+（0.1.8 から非推奨）。コア・公式プラグイン・テーマのどこからも一度も使われておらず、
 コードベースが守っていない約束として読めてしまっていた — このトレイトを見つけた
 読み手は「モデルへの書き込みは自動で監査される」と考えるのが自然だが、そうは
 なっていない。
@@ -108,6 +108,8 @@ Action である。`AbstractAction::execute()` は `handle()` の成功後に `a
 かわりに全面採用しても安くはならない。Action の内と外の両方で触られるモデルは、
 1 つの操作に対して 2 行を書いてしまう。だからこそ旧来の規約には `withoutAudit()`
 の手当てと責務の表が必要だった。守る側にとって、答えは 2 つより 1 つのほうが安い。
+このトレイトをまだ使っている拡張機能は v0.2.0 では読み込めない。監査する操作を、
+下のように Action に移すこと。
 
 ### ではどう書くか
 
@@ -117,14 +119,42 @@ Action である。`AbstractAction::execute()` は `handle()` の成功後に `a
 | ジョブやコマンドが行うこと | そこにも Action を用意する。または、コマンドが呼ぶサービスから `Audit` ファサードを呼ぶ |
 | サービスの奥にある書き込み | サービスではなく、その操作を所有する Action に説明させる |
 
-プラグインのモデルが非推奨のトレイトを使ったままで、かつ `handle()` の中でも
-触られる場合は、Action のエントリだけが残るように保存を包む:
+短い例 — 監査のための配線は Action だけで済む:
 
 ```php
-$page->withoutAudit(fn () => $page->update([
-    'status' => PageStatus::Published->value,
-]));
+final class PublishPageAction extends AbstractAction
+{
+    protected function handle(Actor $actor, array $data): ActionResult
+    {
+        $page = DixlasePagesPage::query()->findOrFail($data['page_id']);
+        $before = $page->only('status');
+        $page->update(['status' => PageStatus::Published->value]);
+
+        // これが返ったあと execute() が audit() を呼び、行を書く
+        return ActionResult::success($page, metadata: [
+            'before' => $before,
+            'after' => $page->only('status'),
+        ]);
+    }
+}
 ```
+
+### 唯一の例外: サインイン
+
+サインインは Action ではない。すべての認証の経路が合流するのは Laravel の `Login`
+イベントだけなので、`AuditAuthEventSubscriber::handleLogin()` がそこから `login` の
+行を書く。イベントはメンバーが*何で*認証したかを持たないので、各経路はメンバーを
+ログインさせる直前に、その要素を監査サービスに渡す:
+
+```php
+Audit::setAuthFactor(AuditLog::AUTH_FACTOR_PASSKEY);
+Auth::guard('member')->login($member, $remember);
+```
+
+サブスクライバーはその要素を読んで消す。この呼び出しが Action ではなく認証の
+トレイト（`LoginTrait`、`PasskeyLoginTrait`、`TwoFaAuthenticationTrait`）にあるのは
+そのためである。`Auth::login()` より後のどこかへ移すと、行を書く時点で要素はもう
+消えている。
 
 ### 行に入るもの
 
@@ -153,7 +183,6 @@ Eloquent モデルでない対象も名指しできる。モデル無しで `tar
 - `App\DTO\Action\ActionResult`
 - `App\Contracts\Action\ActionInterface`
 - `App\Contracts\Action\Actor`
-- `App\Traits\AuditableTrait` — **非推奨**、v0.2.0 で削除
 
 実装クラス（`App\Services\Audit\*`、`App\Models\AuditLog`、`App\Facades\Audit`
 など）は Plugin API ではない。上記のコントラクトを使うこと。
