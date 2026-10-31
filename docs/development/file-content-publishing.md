@@ -9,6 +9,13 @@ front page in core, and any extension that offers file storage — publishes it 
 
 The database always holds the **published copy**. The files are the **working copy**.
 
+> **Immediate publishing on file save works only in development (`APP_ENV=local`).**
+> On staging and production, a changed file never goes live by itself, whatever the
+> setting says — not when it is edited on the server, and not when it arrives by a deploy.
+> It goes live only after someone publishes it: read its diff on the edit screen and press
+> **Publish**. Until then the site keeps serving the published copy, and the admin's
+> banner counts the change as waiting to be published.
+
 ## Publish modes
 
 Each owner sets its own mode in its own settings screen (the core front page: *Front Page →
