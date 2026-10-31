@@ -325,7 +325,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @endif
                     </div>
                     <div class="flex flex-col items-end gap-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ $log->occurred_at?->format('Y-m-d H:i:s') }}</span>
+                        <x-ui-datetime :value="$log->occurred_at" format="full" />
                         @if($log->ip_address)
                         <span class="font-mono">{{ $log->ip_address }}</span>
                         @endif

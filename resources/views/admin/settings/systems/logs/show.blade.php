@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 {{ __('admin/settings/systems/logs/index.occurred_at') }}
                             </dt>
                             <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                                {{ $auditLog->occurred_at?->format('Y-m-d H:i:s') }}
+                                <x-ui-datetime :value="$auditLog->occurred_at" format="full" />
                             </dd>
                         </div>
                         <div>
@@ -319,7 +319,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-900 dark:text-white">{{ $related->action }}</span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ $related->occurred_at?->format('H:i:s') }}
+                                <x-ui-datetime :value="$related->occurred_at" format="H:i:s" />
                             </span>
                         </div>
                         <div class="mt-1">
@@ -352,7 +352,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created At</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $auditLog->created_at?->format('Y-m-d H:i:s') }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><x-ui-datetime :value="$auditLog->created_at" format="full" /></dd>
                         </div>
                         {{-- Integrity (read-only; maintained by `audit:integrity`) --}}
                         <div>
@@ -373,7 +373,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/logs/index.last_verified_at') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $auditLog->last_verified_at?->format('Y-m-d H:i:s') ?? '-' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-white"><x-ui-datetime :value="$auditLog->last_verified_at" format="full" empty-label="-" /></dd>
                         </div>
                     </dl>
                 </div>
