@@ -205,6 +205,19 @@ class PermissionRegistry
      */
     public static function resolvePluginRolesPath(string $pluginSlug): ?string
     {
+        // The file this resolves to is `require`d by getPluginDefault(),
+        // and the name reaches here from the role-permission form, whose
+        // `plugin_permissions` keys are whatever the request carried. A
+        // name that is not an extension directory has no file to find, so
+        // it answers "no definition" rather than raising -- the caller
+        // already treats null as "this plugin declares nothing", which
+        // fails closed to ADMIN.
+        if (! ExtensionDirectories::isInstalledName($pluginSlug)
+            || str_contains($pluginSlug, '/')
+            || str_contains($pluginSlug, '\\')) {
+            return null;
+        }
+
         $path = PluginHelper::pluginsPath($pluginSlug).'/config/admin/roles.php';
 
         return file_exists($path) ? $path : null;

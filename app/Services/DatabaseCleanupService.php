@@ -37,6 +37,7 @@
 
 namespace App\Services;
 
+use App\Support\ExtensionDirectories;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -118,6 +119,14 @@ class DatabaseCleanupService
      */
     private function pluginConfigPath(string $directory): ?string
     {
+        // Built here rather than through ExtensionDirectories, because the
+        // root is overridden in tests, so the segment is checked here too.
+        if (! ExtensionDirectories::isInstalledName($directory)
+            || str_contains($directory, '/')
+            || str_contains($directory, '\\')) {
+            return null;
+        }
+
         foreach (self::PLUGIN_CONFIG_FILES as $file) {
             $path = $this->pluginsRoot()."/{$directory}/{$file}";
 
