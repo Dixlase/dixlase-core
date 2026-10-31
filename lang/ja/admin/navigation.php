@@ -38,6 +38,8 @@ return [
     'edit_menu' => 'メニュー編集',
     'done_editing' => '完了',
     'reset_menu' => 'リセット',
+    'show_labels' => 'メニューの文字を表示する',
+    'show_icons_only' => 'アイコンだけ表示する',
     'reset_confirm_title' => 'メニューをリセット',
     'reset_confirm_message' => '表示/非表示と並び順の設定をすべてリセットします。この操作は取り消せません。',
     'reset_confirm_button' => 'リセットする',

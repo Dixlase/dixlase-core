@@ -23,6 +23,9 @@
 
 @use 'admin';
 
+// Admin sidebar display modes (icon rail / full width)
+@use 'sidebar-modes';
+
 // Page-specific styles
 @use '../members/settings/scss/roles';
 

@@ -1,0 +1,182 @@
+/*
+ * This file is part of Dixlase.
+ *
+ * Copyright (C) 2026 exc-D inc.
+ * https://exc-d.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Admin sidebar display modes (#819).
+ *
+ * Above the mobile breakpoint the sidebar has two shapes: a narrow icon rail
+ * and the full-width menu. `html.dls-sidebar-rail-active` means the rail is
+ * the one showing right now. The head script in layouts/admin.blade.php sets
+ * that class before the first paint and adminLayout() keeps it in step, so
+ * the widths below never have to wait for Alpine to boot.
+ *
+ * The viewport decides what the full width does to the content:
+ *
+ *   640-1279px   the full width sits over the content, which keeps the
+ *                rail's inset. The tab button therefore reveals the labels
+ *                without reflowing the page.
+ *   1280px up    the full width pushes the content aside, as it always has.
+ *
+ * Below 640px neither class is set: the drawer in
+ * components/ui-admin-bar.blade.php owns that band and is left alone.
+ */
+
+:root {
+    --dls-sidebar-rail-width: 6rem;
+    --dls-sidebar-full-width: 16rem;
+    --dls-sidebar-width: var(--dls-sidebar-full-width);
+}
+
+html.dls-sidebar-rail-active {
+    --dls-sidebar-width: var(--dls-sidebar-rail-width);
+}
+
+.dls-admin-sidebar {
+    width: var(--dls-sidebar-width);
+}
+
+/* The tab button docks to the sidebar's right edge, whichever width it is. */
+#admin-sidebar-toggle {
+    transform: translateX(var(--dls-sidebar-width));
+}
+
+/*
+ * The content's inset only starts where the sidebar becomes fixed (768px).
+ * Below that the sidebar is still a flex child and takes its own room.
+ */
+@media (min-width: 768px) {
+    #admin-main-content {
+        margin-left: var(--dls-sidebar-rail-width);
+    }
+}
+
+/* From 1280px the full width pushes rather than overlays. */
+@media (min-width: 1280px) {
+    #admin-main-content {
+        margin-left: var(--dls-sidebar-width);
+    }
+}
+
+/* The panel heading only exists for the rail; the full menu has the row. */
+.dls-sidebar-panel-title {
+    display: none;
+}
+
+html.dls-sidebar-rail-active {
+
+    /*
+     * A backdrop-filter establishes a containing block for fixed descendants,
+     * which would trap the submenu panel inside the scrolling rail and let
+     * the rail's own overflow clip it. The frosted pane is dropped while the
+     * rail is showing; at 96px wide it reads as a solid strip either way.
+     */
+    .dls-sidebar-body {
+        backdrop-filter: none;
+    }
+
+    .dls-sidebar-nav {
+        padding-inline: 0.5rem;
+    }
+
+    /* Top-level rows stack the icon above a small label. */
+    .dls-sidebar-top-link {
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.125rem;
+        padding-inline: 0.25rem;
+        text-align: center;
+
+        > i:first-child {
+            margin-right: 0;
+            font-size: 1.125rem;
+            line-height: 1.5rem;
+        }
+
+        /*
+         * The read-only / guide-only / view-only badges sit after the label
+         * and carry `ml-auto`, which would shove the label off centre in a
+         * column. They are the only other <i> children, so position tells
+         * them apart from the leading icon without a class of their own.
+         */
+        > i:not(:first-child) {
+            display: none;
+        }
+
+        /* The accordion chevron has no room, and the panel says it instead. */
+        > svg {
+            display: none;
+        }
+
+        .dls-sidebar-label {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            font-size: 0.625rem;
+            line-height: 0.875rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    /*
+     * The submenu leaves the rail and opens beside it, over the content.
+     * --dls-sidebar-panel-top is written by togglePanel() from the pressed
+     * button's position, so the panel opens next to the icon that opened it.
+     */
+    .dls-sidebar-panel {
+        position: fixed;
+        top: var(--dls-sidebar-panel-top, 6rem);
+        left: var(--dls-sidebar-rail-width);
+        z-index: 46;
+        width: var(--dls-sidebar-full-width);
+        max-height: calc(100dvh - var(--dls-sidebar-panel-top, 6rem) - 1rem);
+        margin-left: 0;
+        padding: 0.5rem;
+        overflow-y: auto;
+        border: 1px solid var(--color-gray-300);
+        border-left: 0;
+        border-radius: 0 0.5rem 0.5rem 0;
+        background-color: var(--color-white);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    .dls-sidebar-panel-title {
+        display: block;
+        margin-bottom: 0.25rem;
+        padding: 0.25rem 0.5rem 0.5rem;
+        border-bottom: 1px solid var(--color-gray-200);
+        color: var(--color-gray-500);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1rem;
+    }
+
+    &:where(.dark) {
+        .dls-sidebar-panel {
+            border-color: var(--color-gray-600);
+            background-color: var(--color-gray-900);
+        }
+
+        .dls-sidebar-panel-title {
+            border-bottom-color: var(--color-gray-700);
+            color: var(--color-gray-400);
+        }
+    }
+}

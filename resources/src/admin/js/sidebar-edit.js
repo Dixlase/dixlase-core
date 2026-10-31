@@ -52,9 +52,81 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
     },
 
     enterEditMode() {
+        // The eye toggles, the drag handles and the labels have no room in a
+        // 96px rail, so ask the layout for the full menu before editing.
+        window.dispatchEvent(new CustomEvent('dls-sidebar-expand'));
         this.editMode = true;
         // Wait for DOM to fully update (x-show, x-cloak removal)
         setTimeout(() => this.initSortables(), 100);
+    },
+
+    /**
+     * Whether the icon rail is the shape on screen. adminLayout() publishes
+     * that as a class on <html>, which is what the stylesheet reads too, so
+     * there is one answer rather than two that can disagree.
+     *
+     * @returns {boolean}
+     */
+    railActive() {
+        return document.documentElement.classList.contains('dls-sidebar-rail-active');
+    },
+
+    /**
+     * Open or close a top-level submenu.
+     *
+     * In the full menu this is the accordion it has always been, and several
+     * sections may stay open at once. While the rail is showing, the submenu
+     * is a panel beside the icons instead: it is anchored to the button that
+     * opened it, and any other open panel closes, because two panels would
+     * sit on top of each other.
+     *
+     * @param {Object} scope the item's own Alpine scope
+     * @param {string} key   that scope's open flag, e.g. 'open_systems'
+     * @param {Event} event  the click, used for the button's position
+     */
+    togglePanel(scope, key, event) {
+        const willOpen = ! scope[key];
+        scope[key] = willOpen;
+
+        if (! willOpen || ! this.railActive()) {
+            return;
+        }
+
+        const button = event.currentTarget;
+        const item = button.closest('[data-menu-key]');
+        const panel = item ? item.querySelector(':scope > .dls-sidebar-panel') : null;
+        if (panel) {
+            const top = Math.round(button.getBoundingClientRect().top);
+            panel.style.setProperty('--dls-sidebar-panel-top', top + 'px');
+        }
+
+        window.dispatchEvent(new CustomEvent('dls-sidebar-panel', { detail: { key } }));
+    },
+
+    /**
+     * Close this item's panel because another one just opened.
+     *
+     * @param {Object} scope
+     * @param {string} key
+     * @param {CustomEvent} event
+     */
+    syncPanel(scope, key, event) {
+        if (this.railActive() && event.detail && event.detail.key !== key) {
+            scope[key] = false;
+        }
+    },
+
+    /**
+     * Close this item's panel on a click elsewhere or on Escape. In the full
+     * menu an open section is left exactly as the member put it.
+     *
+     * @param {Object} scope
+     * @param {string} key
+     */
+    closeIfRail(scope, key) {
+        if (this.railActive()) {
+            scope[key] = false;
+        }
     },
 
     exitEditMode() {

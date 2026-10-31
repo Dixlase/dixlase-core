@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <div class="flex h-full">
     {{-- Sidebar body --}}
-    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
+    <div class="dls-sidebar-body flex flex-col w-64 sm:w-full h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
          x-ref="sidebarRoot"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', '{{ route('admin.profile.sidebar.reset') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
 
@@ -51,7 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
              changing the desktop density. The lg cut-off matches the
              touch/mouse boundary the button padding uses (py-2.5 lg:py-2).
              Nested menu levels below use the same gap. --}}
-        <nav class="flex-1 px-4 py-4 space-y-2 lg:space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
+        <nav class="dls-sidebar-nav flex-1 px-4 py-4 space-y-2 lg:space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
@@ -107,6 +107,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }" data-menu-key="{{ $key }}"
+                 class="dls-sidebar-item"
+                 @click.outside="closeIfRail($data, '{{ $open_key }}')"
+                 @keydown.escape.window="closeIfRail($data, '{{ $open_key }}')"
+                 @dls-sidebar-panel.window="syncPanel($data, '{{ $open_key }}', $event)"
                  @unless ($__isProtected)
                  x-show="editMode || !isHidden('{{ $key }}')"
                  x-transition:enter="transition ease-out duration-200"
@@ -193,11 +197,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
                             <a href="{{ route($item['route']) }}"
-                            class="{{ $button_class }} {{ $key === 'dashboard' ? 'mr-3' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            class="dls-sidebar-top-link {{ $button_class }} {{ $key === 'dashboard' ? 'mr-3' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             :class="{ 'pointer-events-none': editMode }"
                             role="menuitem">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true" x-show="!editMode"></i>
-                                <span>{{ __($item['text']) }}</span>
+                                <span class="dls-sidebar-label">{{ __($item['text']) }}</span>
                                 @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
                                     <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -238,12 +242,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @else
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
-                            <button @click="{{ $open_key }} = !{{ $open_key }}"
-                            class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            <button @click="togglePanel($data, '{{ $open_key }}', $event)"
+                            class="dls-sidebar-top-link {{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             aria-expanded="false"
                             :aria-expanded="{{ $open_key }}.toString()">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true" x-show="!editMode"></i>
-                                <span>{{ __($item['text']) }}</span>
+                                <span class="dls-sidebar-label">{{ __($item['text']) }}</span>
                                 @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
                                     <i class="fas fa-lock text-xs text-gray-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -277,7 +281,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             $__children = \App\Helpers\AdminHelper::reorderByKeys($__children, $__savedOrder[$key]);
                         }
                     @endphp
-                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1" role="menu" data-sortable-group="{{ $key }}">
+                    <div x-show="{{ $open_key }}" x-collapse class="dls-sidebar-panel ml-2 space-y-2 lg:space-y-1" role="menu" data-sortable-group="{{ $key }}">
+                        {{-- Shown only while the icon rail is the shape on
+                             screen; in the full menu the row right above the
+                             submenu already names it. It carries no
+                             data-menu-key, so SortableJS neither drags it nor
+                             counts it when it reads the new order. --}}
+                        <div class="dls-sidebar-panel-title">{{ __($item['text']) }}</div>
                         @foreach ($__children as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
