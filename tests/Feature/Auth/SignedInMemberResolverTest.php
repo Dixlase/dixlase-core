@@ -39,9 +39,11 @@ namespace Tests\Feature\Auth;
 use App\Enums\MemberStatus;
 use App\Models\Member;
 use App\Services\Auth\SignedInMemberResolver;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Tests\TestCase;
 
@@ -90,6 +92,29 @@ class SignedInMemberResolverTest extends TestCase
         $this->assertInstanceOf(Member::class, $resolved);
         $this->assertSame($member->id, $resolved->id);
         $this->assertTrue($this->resolver()->check());
+    }
+
+    public function test_it_reads_the_session_on_the_session_store_connection_not_the_default(): void
+    {
+        // The member lives in the default database; the admin session row
+        // lives only on a second connection that `session.connection` points
+        // at -- the shape of a deployment that pins sessions to a dedicated
+        // connection while the request's default connection is another
+        // database. The resolver must look where the session handler writes,
+        // not on the default, or it never sees the signed-in member.
+        $member = Member::factory()->create();
+
+        $this->pinSessionStoreToSecondConnection();
+        $this->writeAdminSessionOn('session_store', $member->id);
+
+        // The row is absent from the default connection on purpose: that is
+        // exactly the state in which the old default-connection read failed.
+        $this->assertSame(0, DB::table('members_sessions')->count());
+
+        $resolved = $this->resolver()->resolve();
+
+        $this->assertInstanceOf(Member::class, $resolved);
+        $this->assertSame($member->id, $resolved->id);
     }
 
     public function test_it_answers_null_with_no_admin_session(): void
@@ -211,7 +236,15 @@ class SignedInMemberResolverTest extends TestCase
      */
     private function writeAdminSession(?int $memberId, ?int $lastActivity = null): void
     {
-        DB::table('members_sessions')->insert([
+        $this->writeAdminSessionOn(DB::getDefaultConnection(), $memberId, $lastActivity);
+    }
+
+    /**
+     * Write the member guard's session row on a named connection.
+     */
+    private function writeAdminSessionOn(string $connection, ?int $memberId, ?int $lastActivity = null): void
+    {
+        DB::connection($connection)->table('members_sessions')->insert([
             'id' => self::SESSION_ID,
             'member_id' => $memberId,
             'ip_address' => '127.0.0.1',
@@ -219,5 +252,36 @@ class SignedInMemberResolverTest extends TestCase
             'payload' => base64_encode(serialize([])),
             'last_activity' => $lastActivity ?? time(),
         ]);
+    }
+
+    /**
+     * Point `session.connection` at a second, in-memory connection that
+     * carries its own `members_sessions`, and rebuild the guard-aware
+     * handler the way SessionServiceProvider builds it from config, so the
+     * session store and the default connection are different databases.
+     */
+    private function pinSessionStoreToSecondConnection(): void
+    {
+        config()->set('database.connections.session_store', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => false,
+        ]);
+
+        Schema::connection('session_store')->create('members_sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->unsignedBigInteger('member_id')->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity');
+        });
+
+        config()->set('session.connection', 'session_store');
+
+        // Drop the cached singleton so the next resolution rebuilds it from
+        // the connection just configured.
+        $this->app->forgetInstance('session.guard-aware');
     }
 }

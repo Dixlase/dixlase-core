@@ -199,15 +199,15 @@ class FileContentRegistry
     }
 
     /**
-     * Whether any registered model publishes on file save
+     * Whether any registered model publishes on file save here
      *
      * The publish mode is a setting of the owner, not of the record — a front
      * page reads one front setting, an extension reads its own — so the first
      * file-stored record of a model answers for that model, and this costs
      * one row per model rather than a walk over all of them.
      *
-     * Used to warn in the admin that, on this site, a change made to the
-     * files reaches it without anyone publishing it.
+     * Answers with the mode in effect, so it is false outside a local
+     * environment whatever is chosen (#786).
      */
     public function usesFileSaveMode(): bool
     {
@@ -221,7 +221,7 @@ class FileContentRegistry
             }
 
             if ($record instanceof PublishesFileContent
-                && $record->fileContentPublishMode() === ContentPublishMode::FILE_SAVE) {
+                && app(FileContentPublisher::class)->effectivePublishMode($record) === ContentPublishMode::FILE_SAVE) {
                 return true;
             }
         }

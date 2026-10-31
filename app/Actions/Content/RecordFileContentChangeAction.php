@@ -69,7 +69,11 @@ class RecordFileContentChangeAction extends AbstractAction
      */
     public const SOURCE_OUTSIDE_ADMIN = 'outside_admin';
 
+    /** The mode in effect here; see {@see FileContentPublisher::effectivePublishMode()} */
     private ContentPublishMode $mode;
+
+    /** The mode the owner chose, which may not be in effect here */
+    private ContentPublishMode $selectedMode;
 
     /** @var list<string> */
     private array $parts = [];
@@ -93,7 +97,8 @@ class RecordFileContentChangeAction extends AbstractAction
         protected readonly string $detectedBy = FileContentPublisher::DETECTED_BY_RENDER,
         protected readonly string $publishedHash = '',
     ) {
-        $this->mode = $model->fileContentPublishMode();
+        $this->selectedMode = $model->fileContentPublishMode();
+        $this->mode = $publisher->effectivePublishMode($model);
     }
 
     protected function requiredPermission(): ?Permission
@@ -181,12 +186,14 @@ class RecordFileContentChangeAction extends AbstractAction
             // files held when it was found.
             'published_hash' => $this->publishedHash,
             'file_hash' => FileContentPublisher::hash($this->files),
+            // The mode in effect, and the one chosen: the file save mode
+            // falls back to the admin mode outside a local environment.
             'publish_mode' => $this->mode->value,
+            'selected_publish_mode' => $this->selectedMode->value,
             'parts' => $this->parts,
             // The parts that were not taken in and are waiting to be
-            // published from the admin. Under the admin mode that is every
-            // changed part; under the file save mode, the ones that may
-            // carry a script.
+            // published from the admin: every changed part, unless the file
+            // save mode is in effect, which takes them all in.
             'held' => $this->held,
             // True only when the whole change went live. It used to be "the
             // mode is file save", which stopped being the same thing once a

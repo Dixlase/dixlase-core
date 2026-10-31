@@ -160,10 +160,14 @@ class AdminMemberRolesController extends AdminLoggedInController
 
         $pluginsPath = base_path('plugins');
 
-        // Installed plugins only: the loop below `require`s each plugin's
-        // config files, which must never run for an uploaded-but-not-installed
-        // directory that has not passed the pre-install scan.
-        foreach (PermissionRegistry::installedPluginDirectories($pluginsPath) as $directory) {
+        // Enabled plugins only: the loop below `require`s each plugin's config
+        // files. That must never run for an uploaded-but-not-installed
+        // directory that has not passed the pre-install scan, and it must not
+        // run for a plugin the operator disabled -- disabling one is how an
+        // operator stops code they distrust (#634). A disabled plugin is
+        // therefore absent from this screen; enabling it brings its
+        // permissions back.
+        foreach (PermissionRegistry::enabledPluginDirectories($pluginsPath) as $directory) {
             $pluginDir = $pluginsPath.'/'.$directory;
             $pluginJsonPath = $pluginDir.'/plugin.json';
             $dixlaseJsonPath = $pluginDir.'/dixlase.json';

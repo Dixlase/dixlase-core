@@ -9,6 +9,13 @@ front page in core, and any extension that offers file storage — publishes it 
 
 The database always holds the **published copy**. The files are the **working copy**.
 
+> **Immediate publishing on file save works only in development (`APP_ENV=local`).**
+> On staging and production, a changed file never goes live by itself, whatever the
+> setting says — not when it is edited on the server, and not when it arrives by a deploy.
+> It goes live only after someone publishes it: read its diff on the edit screen and press
+> **Publish**. Until then the site keeps serving the published copy, and the admin's
+> banner counts the change as waiting to be published.
+
 ## Publish modes
 
 Each owner sets its own mode in its own settings screen (the core front page: *Front Page →
@@ -17,36 +24,45 @@ Settings*). The default is `admin`.
 | Mode | What the site shows | A change made to the file |
 |---|---|---|
 | `admin` (default) | The published copy in the database | Recorded once in the audit log, listed on the edit screen with a diff, and goes live when someone with edit permission presses **Publish** |
-| `file_save` | The file, **except for the parts that can carry a script** | Taken in as the published copy at once, recorded as an `auto` revision, and recorded in the audit log. A script-capable part is held and waits for **Publish**, as under `admin` |
+| `file_save` | The file — **only in a local environment** (`APP_ENV=local`) | Taken in as the published copy at once, every part included, recorded as an `auto` revision, and recorded in the audit log. Anywhere else the mode does not take effect, and a change waits for **Publish** exactly as under `admin` |
 
 `App\Enums\ContentPublishMode` holds the two values.
 
+### The file save mode works only in a local environment
+
+Taking file changes in without anyone publishing them is a development convenience. On
+staging and production it would only mean that whoever can write the files can change the
+site — `storage/` is writable by the application by design, so it can be writable where the
+code directories are not. So (#786):
+
+- `FileContentPublisher::fileSaveModeAvailable()` is true only when `APP_ENV` is `local`.
+  The check is "is `local`", never "is not `production`", so staging and a mistyped value
+  stay closed.
+- `FileContentPublisher::effectivePublishMode($model)` is the owner's setting, except that
+  `file_save` falls back to `admin` where it is not available. Everything in the layer —
+  what is taken in, `FileContentRegistry::usesFileSaveMode()`, the audit entry — follows
+  the mode in effect. The stored setting is kept as chosen, so a copy of the site in a
+  local environment picks it up again.
+- In a local environment every changed part is taken in, script-capable parts included:
+  the files there are the developer's own. Anywhere else nothing is, and the change counts
+  towards the admin's banner of changes waiting to be published — which is also how a
+  deploy that carries files edited locally shows up on the receiving site.
+- A settings screen that offers the mode says which applies on this site
+  (`common.content_publish_mode.in_effect_local` / `not_in_effect`).
+
 ### Parts that can carry a script
 
-Writing a script into the site is an ADMIN-and-above capability in the admin panel. The
-file save mode would otherwise be a second way in that does not pass that limit —
-`storage/` is writable by the application by design, so it can be writable where the code
-directories are not. So under `file_save` the shared code takes in only the parts that
-cannot carry a script; the rest wait to be published, and `context.held` on the audit entry
-names them.
-
-Which parts those are is the owner's to say:
+Before #786, the file save mode took effect everywhere and took in only the parts that
+cannot carry a script (#744). Which parts those are is still the owner's to say, and
+`FileContentPublisher::scriptCapableParts()` still answers it, but it no longer changes what
+goes live:
 
 - **Without doing anything**, the answer comes from the part's name:
   `FileContentPublisher::DEFAULT_SCRIPT_CAPABLE_PARTS` covers the conventional `custom_css`
   and `custom_js`.
 - **Implement `App\Contracts\Content\DeclaresScriptCapableParts`** when a part's name does
-  not describe it — most often a body, where the editor type decides. It is a separate,
-  optional interface, so `PublishesFileContent` did not change and an existing
-  implementation keeps working. Returning an empty array is a statement that no part of the
-  record can carry a script, and switches the name-based default off.
-
-The core front page declares its body script-capable under the HTML editor, where
-`<script>` is part of what the author writes. A Markdown or GUI body cannot carry one, so
-it still goes live at once under `file_save`.
-
-A production site whose publish mode is `file_save` is warned on the dashboard, because the
-setting otherwise says nowhere that review before publishing has been given up.
+  not describe it — most often a body, where the editor type decides. It is optional, and
+  an existing implementation keeps working.
 
 ## What is not covered
 
@@ -184,9 +200,10 @@ php artisan dls:content:publish-files --model=FrontPage --id=1 --publish
 | `detected_by` | `render` (a page or an edit screen was read) or `scan` (the scheduled integrity scan). With cron off, only `render` ever happens |
 | `published_hash` | The hash of the published copy **before** this change |
 | `file_hash` | The hash of the files **as found** |
-| `publish_mode` | `admin` or `file_save` |
+| `publish_mode` | The mode in effect: `admin`, or `file_save` in a local environment |
+| `selected_publish_mode` | The mode the owner chose, which outside a local environment may be `file_save` while `admin` is in effect |
 | `parts` | The parts whose files differ from the published copy |
-| `held` | The parts kept back for review (see above). Empty when the whole change went live |
+| `held` | The parts not taken in, which wait to be published. Every changed part unless the file save mode is in effect; then empty |
 | `published` | True only when the whole change went live |
 
 `published_from_file` carries `parts` and `published_hash` — the hash the record now publishes, which is the `file_hash` of the `file_changed` entry the approval answered. The approver is the entry's actor, and the publish is also recorded as a `manual` revision.
