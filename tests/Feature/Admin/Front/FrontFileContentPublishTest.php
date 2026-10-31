@@ -184,27 +184,30 @@ class FrontFileContentPublishTest extends TestCase
         $this->assertSame(0, AuditLog::where('action', 'front_page.published_from_file')->count());
     }
 
-    public function test_under_the_file_save_mode_a_markdown_body_goes_live_locally(): void
+    public function test_under_the_file_save_mode_a_markdown_body_shows_locally_and_waits(): void
     {
         FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
         $page = $this->createMarkdownFilePage();
         $this->useLocalEnvironment();
         Storage::disk('local')->put('core/front/content.md', '# Edited on disk');
 
+        // Shown at once, but the published copy stays as it was (#808).
         $this->assertSame('# Edited on disk', $this->content($page));
-        $this->assertSame('# Edited on disk', $page->fresh()->content);
+        $this->assertSame('# Published', $page->fresh()->content);
 
         $log = AuditLog::where('action', 'front_page.file_changed')->sole();
         $this->assertSame(['content'], $log->context['parts']);
-        $this->assertSame([], $log->context['held']);
-        $this->assertTrue($log->context['published']);
-        $this->assertSame(0, app(FileContentRegistry::class)->pendingCount());
+        $this->assertSame(['content'], $log->context['held']);
+        $this->assertFalse($log->context['published']);
+        // Counted for the admin's banner, so it is not forgotten before a deploy.
+        $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
+        $this->assertTrue(app(FileContentRegistry::class)->usesFileSaveMode());
 
-        $revision = FrontPageRevision::where('front_page_id', $page->id)->latest('id')->first();
-        $this->assertSame(FrontPageRevision::TYPE_AUTO, $revision->type);
+        $this->assertSame(0, FrontPageRevision::where('front_page_id', $page->id)
+            ->where('type', FrontPageRevision::TYPE_AUTO)->count());
     }
 
-    public function test_under_the_file_save_mode_every_part_goes_live_locally(): void
+    public function test_under_the_file_save_mode_every_part_shows_locally_and_waits(): void
     {
         FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
         $page = $this->createFilePage();
@@ -213,18 +216,38 @@ class FrontFileContentPublishTest extends TestCase
         Storage::disk('local')->put('core/front/style.css', 'body { color: blue; }');
         Storage::disk('local')->put('core/front/script.js', 'console.log(3);');
 
+        $service = app(FrontPageContentService::class);
         $this->assertSame('<h1>Edited on disk</h1><script>console.log(2);</script>', $this->content($page));
+        $this->assertSame('body { color: blue; }', $service->getCssContent($page));
+        $this->assertSame('console.log(3);', $service->getJsContent($page));
+
         $fresh = $page->fresh();
-        $this->assertSame('body { color: blue; }', $fresh->custom_css);
-        $this->assertSame('console.log(3);', $fresh->custom_js);
+        $this->assertSame('body { color: red; }', $fresh->custom_css);
+        $this->assertSame('console.log(1);', $fresh->custom_js);
 
         $log = AuditLog::where('action', 'front_page.file_changed')->sole();
         $this->assertSame(ContentPublishMode::FILE_SAVE->value, $log->context['publish_mode']);
         $this->assertSame(ContentPublishMode::FILE_SAVE->value, $log->context['selected_publish_mode']);
         $this->assertEqualsCanonicalizing(['content', 'custom_css', 'custom_js'], $log->context['parts']);
-        $this->assertSame([], $log->context['held']);
-        $this->assertTrue($log->context['published']);
+        $this->assertEqualsCanonicalizing(['content', 'custom_css', 'custom_js'], $log->context['held']);
+        $this->assertFalse($log->context['published']);
+        $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
+    }
+
+    public function test_under_the_file_save_mode_publishing_locally_takes_the_change_in(): void
+    {
+        FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
+        $page = $this->createMarkdownFilePage();
+        $this->useLocalEnvironment();
+        Storage::disk('local')->put('core/front/content.md', '# Edited on disk');
+        $this->content($page);
+
+        $this->artisan('dls:content:publish-files', ['--publish' => true])->assertSuccessful();
+
+        $this->assertSame('# Edited on disk', $page->fresh()->content);
         $this->assertSame(0, app(FileContentRegistry::class)->pendingCount());
+        $revision = FrontPageRevision::where('front_page_id', $page->id)->latest('id')->first();
+        $this->assertSame(FrontPageRevision::TYPE_MANUAL, $revision->type);
     }
 
     /**
@@ -309,7 +332,7 @@ class FrontFileContentPublishTest extends TestCase
         $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
     }
 
-    public function test_switching_to_the_file_save_mode_locally_takes_in_a_waiting_markdown_body(): void
+    public function test_switching_to_the_file_save_mode_locally_shows_a_waiting_markdown_body(): void
     {
         $page = $this->createMarkdownFilePage();
         $this->useLocalEnvironment();
@@ -319,6 +342,9 @@ class FrontFileContentPublishTest extends TestCase
         FrontSetting::setValue(FrontPage::PUBLISH_MODE_SETTING, ContentPublishMode::FILE_SAVE->value);
 
         $this->assertSame('# Edited on disk', $this->content($page->fresh()));
+        // Still waiting, and recorded only once.
+        $this->assertSame(1, app(FileContentRegistry::class)->pendingCount());
+        $this->assertSame(1, AuditLog::where('action', 'front_page.file_changed')->count());
     }
 
     public function test_a_production_site_on_the_file_save_mode_is_not_warned_on_the_dashboard(): void
