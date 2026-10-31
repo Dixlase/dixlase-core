@@ -24,11 +24,6 @@ return [
     'Check if all steps up to the current step are completed' => '現在のステップまでの全ステップが完了しているか確認',
     'If there are incomplete steps, redirect to the first incomplete step' => '未完了のステップがある場合は、最初の未完了ステップにリダイレクト',
     'Redirect only if different from the current route' => '現在のルートと異なる場合のみリダイレクト',
-    '1' => '',
-    '2' => '',
-    '3' => '',
-    '4' => '',
-    '5' => '',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
     '_review_status' => [

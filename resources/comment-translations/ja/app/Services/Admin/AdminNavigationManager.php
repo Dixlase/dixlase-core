@@ -27,7 +27,6 @@ return [
     'Data to insert' => '挿入するデータ',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_insert_before / _insert_after による順序制御、children のマージをサポートする。' => '',
     '_review_status' => [
         '@internal Core use only. Do not reference from plugins/themes' => 'machine',
         'Concrete implementation of admin panel navigation management' => 'machine',
