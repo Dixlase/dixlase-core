@@ -119,11 +119,11 @@ class MyPluginServiceProvider extends ServiceProvider
 }
 ```
 
-## Model-level auditing is deprecated
+## There is no model-level auditing
 
 `App\Traits\AuditableTrait` wrote an audit entry from a model's `created` /
-`updated` / `deleted` events. **It is deprecated and will be removed in v0.2.0.**
-Nothing in core, the official plugins or the themes uses it.
+`updated` / `deleted` events. **It was removed in v0.2.0** (deprecated since
+0.1.8). Nothing in core, the official plugins or the themes used it.
 
 Audit the **operation** instead of the table write: put it in an
 `App\Actions\AbstractAction` subclass and let `audit()` write the row, or call the
@@ -145,10 +145,8 @@ final class PublishPostAction extends AbstractAction
 }
 ```
 
-See [Action Layer](../../development/action-layer.md) for the full lifecycle. If a
-model in your plugin still uses the trait and is also touched inside an action, wrap
-the save with `$model->withoutAudit(...)` so only the action's entry survives; the
-trait's remaining options are documented in its own source file.
+See [Action Layer](../../development/action-layer.md) for the full lifecycle, and for
+sign-ins, the one audited event that is not an action.
 
 ## Logging Settings Changes
 
