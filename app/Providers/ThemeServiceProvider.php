@@ -171,7 +171,8 @@ class ThemeServiceProvider extends ServiceProvider
                 'core_api' => $compat->coreVersion,
                 'message' => $compat->message,
             ]);
-            // v0.1 advisory: continue registration. v0.2 will return here.
+            // Advisory: registration continues. The refusal is planned for
+            // v0.3.0, and what it has to decide is in #791.
         }
 
         if (! isset($themeJson['providers']) || ! is_array($themeJson['providers'])) {

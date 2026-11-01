@@ -52,7 +52,11 @@ namespace App\Extension;
  *   "requires": { "dixlase_api": "^0.1" }
  *
  * v0.1.0 enforcement: advisory only (warning log + health deduction).
- * v0.2.0 enforcement: hard refusal to register incompatible extensions.
+ * v0.3.0 enforcement: hard refusal to register incompatible extensions.
+ *   Moved here from v0.2.0: a refusal needs a deprecation path first, because
+ *   MissingDeclaration is not compatible, so an extension that declares no
+ *   requires.dixlase_api at all would stop being registered. What has to be
+ *   decided before the refusal lands is recorded in #791.
  * v1.0.0 enforcement: also drives WASM PHP interpreter image selection.
  */
 final class ExtensionApi
