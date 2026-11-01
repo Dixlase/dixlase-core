@@ -321,11 +321,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @endif
 
-                {{-- Right sidebar overlay on mobile --}}
+                {{-- Right sidebar overlay on mobile. Matches the left admin
+                     drawer's backdrop in ui-admin-bar.blade.php (same tint,
+                     same blur, same fade timing) so both drawers feel like
+                     one system. --}}
                 <div x-show="!rightSidebarCollapsed"
+                     x-transition:enter="transition-all ease-out duration-300"
+                     x-transition:enter-start="opacity-0 backdrop-blur-none"
+                     x-transition:leave="transition-all ease-in duration-200"
+                     x-transition:leave-end="opacity-0 backdrop-blur-none"
                      @click="rightSidebarCollapsed = true"
                      x-cloak
-                     class="fixed inset-0 bg-black/50 dark:bg-black/60 z-40 lg:hidden"
+                     class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
                      aria-hidden="true"></div>
 
                 </main>
