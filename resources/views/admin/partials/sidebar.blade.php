@@ -110,7 +110,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }" data-menu-key="{{ $key }}"
-                 class="dls-sidebar-item"
+                 {{-- An open section is painted as one block, from this row down
+                      through everything it reveals. The marker is static so the
+                      tint can fade back out when the section closes; the state
+                      class only adds the tint. --}}
+                 class="dls-sidebar-item dls-sidebar-section"
+                 :class="{{ $open_key }} ? 'dls-sidebar-section-open' : ''"
                  @unless ($__isProtected)
                  x-show="editMode || !isHidden('{{ $key }}')"
                  x-transition:enter="transition ease-out duration-200"
@@ -398,7 +403,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @endphp
 
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
-                                    <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
+                                    <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }"
+                                         class="dls-sidebar-section"
+                                         :class="{{ $open_child_key }} ? 'dls-sidebar-section-open' : ''">
                                         <div class="flex items-center group">
                                             <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="dls-sidebar-child-link {{ $button_class }} sidebar-link">
                                                 <i class="{{ $child_item['icon'] }} mr-3" x-show="!editMode"></i>
@@ -482,7 +489,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                 }
                                                             }
                                                         @endphp
-                                                        <div x-data="{ {{ $open_grand_child_key }}: {{ $is_open_grand_child ? 'true' : 'false' }} }">
+                                                        <div x-data="{ {{ $open_grand_child_key }}: {{ $is_open_grand_child ? 'true' : 'false' }} }"
+                                                             class="dls-sidebar-section"
+                                                             :class="{{ $open_grand_child_key }} ? 'dls-sidebar-section-open' : ''">
                                                             <button @click="{{ $open_grand_child_key }} = !{{ $open_grand_child_key }}" class="dls-sidebar-child-link {{ $button_class }} sidebar-link">
                                                                 <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
                                                                 <span class="dls-sidebar-label">{{ __($grand_child_item['text']) }}</span>

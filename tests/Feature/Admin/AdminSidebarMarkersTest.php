@@ -121,6 +121,7 @@ class AdminSidebarMarkersTest extends TestCase
             'dls-sidebar-label',
             'dls-sidebar-panel',
             'dls-sidebar-child-link',
+            'dls-sidebar-section',
         ] as $marker) {
             $this->assertMatchesRegularExpression(
                 '/class="[^"]*\b'.preg_quote($marker, '/').'(?![\w-])/',
@@ -128,6 +129,22 @@ class AdminSidebarMarkersTest extends TestCase
                 "Marker class {$marker} is missing from the sidebar."
             );
         }
+    }
+
+    public function test_an_open_section_binds_the_class_its_tint_keys_off(): void
+    {
+        $html = $this->dashboardHtml();
+
+        // The tint that encloses an open section is bound on the accordion's
+        // own wrapper -- the element that holds the open state -- so it never
+        // appears in a static class attribute. Dropping the binding would
+        // leave the rows a section reveals untinted, with nothing tying them
+        // to the row that opened them (#832).
+        $this->assertMatchesRegularExpression(
+            '/:class="open_\w+ \? \x27dls-sidebar-section-open\x27 : \x27\x27"/',
+            $html,
+            'No accordion wrapper binds dls-sidebar-section-open.'
+        );
     }
 
     public function test_the_retired_collapse_state_is_only_read_for_migration(): void
