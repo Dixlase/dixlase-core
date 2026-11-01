@@ -143,29 +143,14 @@ html.dls-sidebar-rail-active {
 
     /*
      * A submenu opens inside the rail, as the same accordion as in the full
-     * menu. A tinted block groups its rows under the section that opened
-     * them, since there is no room to indent. Several sections may be open;
+     * menu. There is no room to indent it, so the tint on the open section
+     * below is the only thing that groups it. Several sections may be open;
      * the sidebar body scrolls when they do not fit.
      */
-    .dls-sidebar-panel {
-        margin-top: 0.25rem;
-        margin-left: 0;
-        padding: 0.25rem;
-        border-radius: 0.5rem;
-        background-color: var(--color-gray-100);
-    }
-
-    /*
-     * A grandchild block steps one shade further from the sidebar than its
-     * parent block: darker in the light theme, lighter in the dark one. In
-     * the light theme it stops short of gray-200, the current page's row.
-     */
+    .dls-sidebar-panel,
     .dls-sidebar-subpanel {
         margin-top: 0.25rem;
         margin-left: 0;
-        padding: 0.25rem;
-        border-radius: 0.5rem;
-        background-color: color-mix(in oklab, var(--color-gray-100), var(--color-gray-200));
     }
 
     .dls-sidebar-panel > :not(:last-child),
@@ -182,13 +167,61 @@ html.dls-sidebar-rail-active {
             line-height: 1.125rem;
         }
     }
+}
 
-    &:where(.dark) .dls-sidebar-panel {
-        background-color: var(--color-gray-800);
-    }
+/*
+ * An open section (#832).
+ *
+ * The rows a section reveals used to be the tinted part, which left the row
+ * that opened them outside the tint, on the sidebar's own background: a block
+ * floating under an unrelated-looking item. The tint now starts at that row
+ * and encloses everything below it, so one block is one section.
+ *
+ * The class is bound by the accordion's own wrapper in
+ * admin/partials/sidebar.blade.php -- the element that already owns the open
+ * state, at every depth -- so nesting the selector is what steps the shade.
+ *
+ * The padding is what insets each nested block from the one around it, and it
+ * appears with the tint, so it is transitioned alongside: otherwise the rows
+ * would jump sideways while @alpinejs/collapse is still animating the height.
+ */
+.dls-sidebar-section-open {
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-gray-100);
+    transition:
+        background-color 200ms ease-in-out,
+        padding 200ms ease-in-out;
+}
 
-    &:where(.dark) .dls-sidebar-subpanel {
-        background-color: var(--color-gray-700);
+/*
+ * A nested section steps one shade further from the sidebar than the one
+ * around it: darker in the light theme, lighter in the dark one. In the light
+ * theme the steps stop short of gray-200, which the current page's row uses.
+ */
+.dls-sidebar-section-open .dls-sidebar-section-open {
+    background-color: color-mix(in oklab, var(--color-gray-100), var(--color-gray-200));
+}
+
+.dls-sidebar-section-open .dls-sidebar-section-open .dls-sidebar-section-open {
+    background-color: color-mix(in oklab, var(--color-gray-100) 25%, var(--color-gray-200));
+}
+
+html.dark .dls-sidebar-section-open {
+    background-color: var(--color-gray-800);
+}
+
+html.dark .dls-sidebar-section-open .dls-sidebar-section-open {
+    background-color: var(--color-gray-700);
+}
+
+html.dark .dls-sidebar-section-open .dls-sidebar-section-open .dls-sidebar-section-open {
+    background-color: color-mix(in oklab, var(--color-gray-700), var(--color-gray-600));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dls-sidebar-section-open {
+        transition: none;
     }
 }
 
