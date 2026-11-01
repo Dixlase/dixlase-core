@@ -72,7 +72,7 @@ Enforcement schedule:
 | Phase | Behavior |
 |---|---|
 | **v0.1.0** (current) | Advisory only — missing or incompatible declarations log a warning and lower the extension's health score, but registration proceeds. |
-| **v0.2.0** | Strict — extensions without a satisfying declaration are refused at load time and shown as `Incompatible` in the admin extension list. |
+| **v0.3.0** (planned) | Strict — extensions without a satisfying declaration are refused at load time and shown as `Incompatible` in the admin extension list. Moved here from v0.2.0: a refusal needs a deprecation path first, because an extension that declares no `requires.dixlase_api` at all counts as not compatible and would stop being registered. See [dixlase-core#791](https://github.com/Dixlase/dixlase-core/issues/791). |
 | **v1.0.0** | Strict + the field drives WASM PHP interpreter image selection when the in-process boundary is replaced by per-extension WASM sandboxes. |
 
 The existing `requires.dixlase` field tracks the **whole core product** version range and is separate from `requires.dixlase_api`. Bumping core for an unrelated bug fix does not bump the API contract version; only changes to the documented Plugin API surface (this document) bump it.
