@@ -24,11 +24,12 @@
  * Above the phone breakpoint the sidebar has two shapes: a narrow icon rail
  * and the full-width menu.
  *
- * `sidebarRail` is the member's choice for the desktop band, and it is the
- * only part that is remembered. `sidebarOverlay` is the tablet band's
- * transient reveal: there the full menu comes out over the content until it
- * is dismissed, the way the phone drawer does, so storing it would mean a
- * later visit started with the menu covering the page.
+ * `sidebarRail` is the member's choice for the desktop band, where the full
+ * menu is the default. `sidebarTabletExpanded` is the choice for the tablet
+ * band, where the rail is the default because the screen is narrower. Both
+ * are remembered, separately, and in both bands the full menu pushes the
+ * content aside rather than covering it: the member asked for it, and the
+ * page stays readable beside it.
  *
  * The two collapse into one fact -- whether the rail is the shape on screen
  * right now -- which is published as a class on <html>. The stylesheet acts
@@ -38,7 +39,13 @@
  */
 const SIDEBAR_MODE_KEY = 'adminSidebarMode';
 const SIDEBAR_LEGACY_KEY = 'sidebarCollapsed';
+const SIDEBAR_TABLET_KEY = 'adminSidebarTabletMode';
 const SIDEBAR_RAIL_CLASS = 'dls-sidebar-rail-active';
+const SIDEBAR_SWITCHING_CLASS = 'dls-sidebar-switching';
+// Keep in step with _sidebar-modes.scss: the content's fade, and the
+// sidebar's width transition (duration-300 on the <aside>).
+const SIDEBAR_FADE_MS = 150;
+const SIDEBAR_RESIZE_MS = 300;
 const SIDEBAR_TABLET_MIN = 640;
 const SIDEBAR_DESKTOP_MIN = 1280;
 
@@ -78,6 +85,31 @@ function readStoredRail() {
 }
 
 /**
+ * Read the stored tablet preference. The rail is the tablet default, so
+ * only an explicit 'expanded' brings the full menu.
+ *
+ * @returns {boolean} true when the full menu is the stored preference
+ */
+function readStoredTabletExpanded() {
+    try {
+        return localStorage.getItem(SIDEBAR_TABLET_KEY) === 'expanded';
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * @param {boolean} expanded
+ */
+function writeStoredTabletExpanded(expanded) {
+    try {
+        localStorage.setItem(SIDEBAR_TABLET_KEY, expanded ? 'expanded' : 'rail');
+    } catch (e) {
+        // A viewer with site data blocked keeps the mode for this page only.
+    }
+}
+
+/**
  * @param {boolean} rail
  */
 function writeStoredRail(rail) {
@@ -99,9 +131,10 @@ window.adminLayout = function() {
         openSidebar: false,
         openUserMenu: false,
         sidebarRail: readStoredRail(),
-        sidebarOverlay: false,
+        sidebarTabletExpanded: readStoredTabletExpanded(),
         sidebarBand: sidebarBandFor(window.innerWidth),
         sidebarReady: false,
+        sidebarSwitching: false,
 
         // 右サイドバー（ページエディタ等で使用）
         rightSidebarActive: false,
@@ -151,7 +184,8 @@ window.adminLayout = function() {
                 this.applySidebarMode();
             });
 
-            this.$watch('sidebarOverlay', () => {
+            this.$watch('sidebarTabletExpanded', value => {
+                writeStoredTabletExpanded(value);
                 this.applySidebarMode();
             });
 
@@ -171,20 +205,10 @@ window.adminLayout = function() {
          */
         sidebarRailActive() {
             if (this.sidebarBand === 'tablet') {
-                return ! this.sidebarOverlay;
+                return ! this.sidebarTabletExpanded;
             }
 
             return this.sidebarBand === 'desktop' ? this.sidebarRail : false;
-        },
-
-        /**
-         * Whether the full menu is currently covering the content, which is
-         * the only state that needs a backdrop to dismiss it.
-         *
-         * @returns {boolean}
-         */
-        sidebarOverlayOpen() {
-            return this.sidebarBand === 'tablet' && this.sidebarOverlay;
         },
 
         /**
@@ -198,9 +222,8 @@ window.adminLayout = function() {
         },
 
         /**
-         * Follow the viewport across a band boundary. A tablet reveal is
-         * dropped on the way out, so a window dragged wider does not land on
-         * the desktop with the menu stuck over the page.
+         * Follow the viewport across a band boundary: each band shows its
+         * own remembered shape.
          */
         syncSidebarBand() {
             const band = sidebarBandFor(window.innerWidth);
@@ -209,46 +232,79 @@ window.adminLayout = function() {
             }
 
             this.sidebarBand = band;
-            if (band !== 'tablet') {
-                this.sidebarOverlay = false;
-            }
-
             this.applySidebarMode();
         },
 
         /**
-         * The tab button. On a tablet it reveals the labels over the content
-         * without remembering the choice; on a desktop it switches the
-         * remembered shape and the content moves with it.
+         * The tab button: switch the current band's remembered shape. The
+         * content moves with it.
          */
         toggleSidebar() {
-            if (this.sidebarBand === 'tablet') {
-                this.sidebarOverlay = ! this.sidebarOverlay;
+            this.switchSidebarShape(() => {
+                if (this.sidebarBand === 'tablet') {
+                    this.sidebarTabletExpanded = ! this.sidebarTabletExpanded;
+
+                    return;
+                }
+
+                this.sidebarRail = ! this.sidebarRail;
+            });
+        },
+
+        /**
+         * Change the sidebar's shape behind a fade.
+         *
+         * The rail and the full menu lay their rows out differently, so
+         * while the width animates the rows reflow through shapes that are
+         * neither. The content fades out first, the width changes, and it
+         * fades back in once the width has settled. A viewer who asked for
+         * reduced motion gets the change at once.
+         *
+         * @param {Function} change mutates the shape state
+         */
+        switchSidebarShape(change) {
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduced || ! this.sidebarReady) {
+                change();
 
                 return;
             }
 
-            this.sidebarRail = ! this.sidebarRail;
-        },
+            if (this.sidebarSwitching) {
+                return;
+            }
 
-        /**
-         * Dismiss the tablet reveal (the backdrop and Escape both land here).
-         */
-        closeSidebarOverlay() {
-            this.sidebarOverlay = false;
+            const root = document.documentElement;
+            this.sidebarSwitching = true;
+            root.classList.add(SIDEBAR_SWITCHING_CLASS);
+
+            setTimeout(() => {
+                change();
+
+                setTimeout(() => {
+                    root.classList.remove(SIDEBAR_SWITCHING_CLASS);
+                    this.sidebarSwitching = false;
+                }, SIDEBAR_RESIZE_MS);
+            }, SIDEBAR_FADE_MS);
         },
 
         /**
          * Show the full menu whichever band we are in.
          */
         expandSidebar() {
-            if (this.sidebarBand === 'tablet') {
-                this.sidebarOverlay = true;
-
+            if (! this.sidebarRailActive()) {
                 return;
             }
 
-            this.sidebarRail = false;
+            this.switchSidebarShape(() => {
+                if (this.sidebarBand === 'tablet') {
+                    this.sidebarTabletExpanded = true;
+
+                    return;
+                }
+
+                this.sidebarRail = false;
+            });
         }
     };
 };

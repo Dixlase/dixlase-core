@@ -120,7 +120,7 @@ class AdminSidebarMarkersTest extends TestCase
             'dls-sidebar-top-link',
             'dls-sidebar-label',
             'dls-sidebar-panel',
-            'dls-sidebar-panel-title',
+            'dls-sidebar-child-link',
         ] as $marker) {
             $this->assertMatchesRegularExpression(
                 '/class="[^"]*\b'.preg_quote($marker, '/').'(?![\w-])/',

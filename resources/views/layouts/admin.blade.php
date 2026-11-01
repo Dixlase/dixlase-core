@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @media(min-width:768px){
                 #admin-layout-flex > aside { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             }
-            #admin-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+            #admin-sidebar-toggle { top: calc(3.75rem + var(--admin-banner-offset, 0px)); }
             /* Mobile sidebar tab (the ">" handle inside the mobile drawer): its
                mt-[56px] must also clear the demo banner or it overlaps the banner.
                Scoped by the drawer id so the desktop aside's hidden copy is untouched. */
@@ -83,7 +83,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
              The stylesheet owns every width and inset from this one class
              (see resources/src/admin/scss/_sidebar-modes.scss), so the only
              thing that cannot wait for Alpine is the class itself. Keep this
-             in step with sidebarBandFor() / readStoredRail() in
+             in step with sidebarBandFor() / readStoredRail() /
+             readStoredTabletExpanded() in
              resources/src/admin/js/layout.js. --}}
         <script @cspNonce>
             (function(){
@@ -96,7 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     }
                     rail=m==='rail';
                 }else if(w>=640){
-                    rail=true;
+                    try{rail=localStorage.getItem('adminSidebarTabletMode')!=='expanded';}catch(e){rail=true;}
                 }
                 if(rail){document.documentElement.classList.add('dls-sidebar-rail-active');}
             })();
@@ -169,7 +170,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <button type="button"
                         id="admin-sidebar-toggle"
                         @click="toggleSidebar()"
-                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        class="hidden sm:flex fixed top-[3.75rem] left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
                         :style="sidebarReady ? 'transition: transform 300ms ease-in-out' : ''"
                         aria-controls="admin-sidebar"
                         :aria-expanded="(! sidebarRailActive()).toString()"
@@ -183,18 +184,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :aria-label="sidebarRailActive() ? $el.dataset.labelExpand : $el.dataset.labelCollapse">
                     <i class="fas text-sm lg:text-xs" :class="sidebarRailActive() ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
-
-                {{-- Backdrop for the tablet reveal. Between 640px and 1279px
-                     the full menu comes out over the content rather than
-                     moving it, so it needs somewhere to click to dismiss it.
-                     Hidden from 1280px up, where the menu pushes instead and
-                     nothing is covered. --}}
-                <div x-show="sidebarOverlayOpen()"
-                     x-cloak
-                     @click="closeSidebarOverlay()"
-                     @keydown.escape.window="closeSidebarOverlay()"
-                     class="hidden sm:block xl:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[35]"
-                     aria-hidden="true"></div>
 
                 {{-- Main Content Area.
                      No left padding on <main> itself: the page header
@@ -258,16 +247,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                          left indent lives on the <h1> and only exists to
                          keep the heading clear of the sidebar toggle tab
                          that overlaps this row:
-                           - below sm: pl-8 (32px) — the 44px mobile drawer
-                             tab sits at x=0, heading lands at 64px.
-                           - sm..lg: sm:pl-5 (20px) — the ~32px tablet
-                             tab docks to the sidebar edge (open) or x=0
-                             (collapsed); the heading clears it.
+                           - below lg: pl-5 (20px) — the ~32px tab (the
+                             mobile drawer tab and the tablet tab are the
+                             same size) docks to the sidebar edge (open) or
+                             x=0 (collapsed); the heading clears it.
                            - lg+: lg:pl-0 — the slim desktop tab needs no
                              extra clearance, so the original indent is
                              restored. --}}
                     <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
-                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white pl-8 sm:pl-5 lg:pl-0">
+                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white pl-5 lg:pl-0">
                             {{ __($heading ?? '') }}
                         </h1>
                     </header>

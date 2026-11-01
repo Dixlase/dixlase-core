@@ -21,6 +21,27 @@
 import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
 
+const RAIL_TOOLTIP_ID = 'dls-sidebar-tooltip';
+
+/**
+ * The one tooltip element the rail shares, created on first use.
+ *
+ * @returns {HTMLElement}
+ */
+function railTooltipElement() {
+    let tooltip = document.getElementById(RAIL_TOOLTIP_ID);
+    if (! tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = RAIL_TOOLTIP_ID;
+        tooltip.className = 'dls-sidebar-tooltip';
+        tooltip.setAttribute('aria-hidden', 'true');
+        tooltip.hidden = true;
+        document.body.appendChild(tooltip);
+    }
+
+    return tooltip;
+}
+
 Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) => ({
     editMode: false,
     hiddenMenus: initialHidden || [],
@@ -72,60 +93,51 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
     },
 
     /**
-     * Open or close a top-level submenu.
-     *
-     * In the full menu this is the accordion it has always been, and several
-     * sections may stay open at once. While the rail is showing, the submenu
-     * is a panel beside the icons instead: it is anchored to the button that
-     * opened it, and any other open panel closes, because two panels would
-     * sit on top of each other.
+     * Open or close a top-level submenu. It is the same accordion in the
+     * full menu and in the rail, and several sections may stay open at once;
+     * when they no longer fit, the sidebar body scrolls.
      *
      * @param {Object} scope the item's own Alpine scope
      * @param {string} key   that scope's open flag, e.g. 'open_systems'
-     * @param {Event} event  the click, used for the button's position
      */
-    togglePanel(scope, key, event) {
-        const willOpen = ! scope[key];
-        scope[key] = willOpen;
+    togglePanel(scope, key) {
+        scope[key] = ! scope[key];
+    },
 
-        if (! willOpen || ! this.railActive()) {
+    /**
+     * Show a row's full name beside the rail when its label is cut off.
+     *
+     * Bound on the nav for mouseover and focusin, so one listener covers
+     * every row at every depth. A row whose label fits gets nothing: the
+     * label already says it. The tooltip lives on <body> rather than inside
+     * the sidebar, because the sidebar body scrolls and is frosted with a
+     * backdrop-filter, either of which would clip it. It is aria-hidden:
+     * the label it repeats is already the row's accessible name.
+     *
+     * @param {Event} event
+     */
+    showRailTooltip(event) {
+        const row = event.target.closest('.dls-sidebar-top-link, .dls-sidebar-child-link');
+        const label = row ? row.querySelector('.dls-sidebar-label') : null;
+        if (! label || ! this.railActive() || label.scrollWidth <= label.clientWidth) {
+            this.hideRailTooltip();
+
             return;
         }
 
-        const button = event.currentTarget;
-        const item = button.closest('[data-menu-key]');
-        const panel = item ? item.querySelector(':scope > .dls-sidebar-panel') : null;
-        if (panel) {
-            const top = Math.round(button.getBoundingClientRect().top);
-            panel.style.setProperty('--dls-sidebar-panel-top', top + 'px');
-        }
+        const tooltip = railTooltipElement();
+        tooltip.textContent = label.textContent.trim();
 
-        window.dispatchEvent(new CustomEvent('dls-sidebar-panel', { detail: { key } }));
+        const rect = row.getBoundingClientRect();
+        tooltip.style.top = Math.round(rect.top + rect.height / 2) + 'px';
+        tooltip.style.left = Math.round(rect.right + 8) + 'px';
+        tooltip.hidden = false;
     },
 
-    /**
-     * Close this item's panel because another one just opened.
-     *
-     * @param {Object} scope
-     * @param {string} key
-     * @param {CustomEvent} event
-     */
-    syncPanel(scope, key, event) {
-        if (this.railActive() && event.detail && event.detail.key !== key) {
-            scope[key] = false;
-        }
-    },
-
-    /**
-     * Close this item's panel on a click elsewhere or on Escape. In the full
-     * menu an open section is left exactly as the member put it.
-     *
-     * @param {Object} scope
-     * @param {string} key
-     */
-    closeIfRail(scope, key) {
-        if (this.railActive()) {
-            scope[key] = false;
+    hideRailTooltip() {
+        const tooltip = document.getElementById(RAIL_TOOLTIP_ID);
+        if (tooltip) {
+            tooltip.hidden = true;
         }
     },
 
