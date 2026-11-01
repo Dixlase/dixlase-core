@@ -41,6 +41,10 @@ A front page can offer an edit link for its content by setting Blade
 sections in its view, only when the signed-in member may edit it:
   @section('admin_bar_edit_url', route('...edit', $item))
   @section('admin_bar_edit_label', __('...'))   (optional; "Edit")
+
+Core's own front page sets no sections — a theme renders it — so the bar
+offers that page's link itself, below. A view that sets the sections
+still wins.
 --}}
 @props(['isAdminLayout' => false])
 
@@ -78,6 +82,24 @@ sections in its view, only when the signed-in member may edit it:
     }
     $editLabel = html_entity_decode(trim(\Illuminate\Support\Facades\View::yieldContent('admin_bar_edit_label')), ENT_QUOTES | ENT_HTML5)
         ?: __('components/ui-admin-bar.edit');
+
+    // The site's own front page is rendered by the active theme, so no
+    // core view is in a position to set the sections above for it. The
+    // bar therefore offers that one link itself, as a default only: a
+    // view that set the sections keeps them. The second route name is
+    // the locale-prefixed mount of the same controller, which a
+    // multilingual provider registers. A site where another extension
+    // serves `/` matches neither, which is right — core's front page is
+    // not what renders there. `front` is the menu key the editor sits
+    // behind, so a member who may not open it is offered nothing.
+    if ($editUrl === '' && ! $isAdminLayout && request()->routeIs('welcome', 'welcome.localized')) {
+        $frontRole = $signedInMember?->getMemberRole();
+
+        if ($frontRole !== null && \App\Services\PermissionRegistry::canAccess('front', $frontRole)) {
+            $editUrl = route('admin.front.edit');
+            $editLabel = __('components/ui-admin-bar.edit_front_page');
+        }
+    }
 @endphp
 
 @if($isAuthenticated)
@@ -127,27 +149,22 @@ sections in its view, only when the signed-in member may edit it:
                         <span class="hidden lg:inline">{{ __('components/ui-admin-bar.dashboard') }}</span>
                     </a>
 
-                    {{-- Front page design --}}
-                    <a href="{{ route('admin.front.edit') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
-                        <i class="fas fa-paint-brush mr-1"></i>
-                        <span class="hidden lg:inline">{{ __('common.design') }}</span>
-                    </a>
+                    {{-- Edit the content on this page (admin_bar_edit_url) --}}
+                    @if($editUrl !== '')
+                        {{-- The label shows from sm up, earlier than the other
+                             links: it names what this page offers, not a fixed
+                             place. --}}
+                        <a href="{{ $editUrl }}" aria-label="{{ $editLabel }}" title="{{ $editLabel }}" data-admin-bar-edit class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
+                            <i class="fas fa-pen-to-square mr-1" aria-hidden="true"></i>
+                            <span class="hidden sm:inline">{{ $editLabel }}</span>
+                        </a>
+                    @endif
 
                     {{-- Theme settings (displayed only when route exists) --}}
                     @if(Route::has('admin.settings.themes.settings'))
                         <a href="{{ route('admin.settings.themes.settings') }}" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
                             <i class="fas fa-palette mr-1"></i>
                             <span class="hidden lg:inline">{{ __('components/ui-admin-bar.theme_settings') }}</span>
-                        </a>
-                    @endif
-
-                    {{-- Edit the content on this page (admin_bar_edit_url) --}}
-                    @if($editUrl !== '')
-                        {{-- The label shows from sm up, earlier than the links above:
-                             it names what this page offers, not a fixed place. --}}
-                        <a href="{{ $editUrl }}" aria-label="{{ $editLabel }}" title="{{ $editLabel }}" data-admin-bar-edit class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
-                            <i class="fas fa-pen-to-square mr-1" aria-hidden="true"></i>
-                            <span class="hidden sm:inline">{{ $editLabel }}</span>
                         </a>
                     @endif
                 </nav>

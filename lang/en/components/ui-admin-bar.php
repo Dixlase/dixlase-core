@@ -37,6 +37,7 @@ return [
     'dashboard' => 'Dashboard',
     'theme_settings' => 'Theme Settings',
     'edit' => 'Edit',
+    'edit_front_page' => 'Edit the front page',
     'profile' => 'Profile Settings',
 
     // Environment badges
