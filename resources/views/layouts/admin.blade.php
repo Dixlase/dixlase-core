@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                mt-[56px] must also clear the demo banner or it overlaps the banner.
                Scoped by the drawer id so the desktop aside's hidden copy is untouched. */
             #admin-mobile-sidebar .js-mobile-sidebar-tab { margin-top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
-            #admin-right-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+            #admin-right-sidebar-toggle { top: calc(3.75rem + var(--admin-banner-offset, 0px)); }
             #admin-right-sidebar-panel { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             .modal { padding-top: var(--admin-banner-offset, 0px); }
             .modal .modal-container { max-height: calc(100vh - 6rem - var(--admin-banner-offset, 0px)); }
