@@ -138,7 +138,7 @@ class PluginHealthScorerRequirementsTest extends TestCase
 
     public function test_a_requirement_the_site_meets_is_not_reported(): void
     {
-        $result = $this->scoreWith(['dixlase' => '^0.1', 'php' => '>=8.3']);
+        $result = $this->scoreWith(['dixlase' => '>=0.1.0', 'php' => '>=8.3']);
 
         $this->assertSame([], $this->issuesOfType($result, 'unmet_requirement'));
         $this->assertFalse($result->hasCriticalIssue);
