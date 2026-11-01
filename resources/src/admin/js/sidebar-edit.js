@@ -21,6 +21,27 @@
 import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
 
+const RAIL_TOOLTIP_ID = 'dls-sidebar-tooltip';
+
+/**
+ * The one tooltip element the rail shares, created on first use.
+ *
+ * @returns {HTMLElement}
+ */
+function railTooltipElement() {
+    let tooltip = document.getElementById(RAIL_TOOLTIP_ID);
+    if (! tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = RAIL_TOOLTIP_ID;
+        tooltip.className = 'dls-sidebar-tooltip';
+        tooltip.setAttribute('aria-hidden', 'true');
+        tooltip.hidden = true;
+        document.body.appendChild(tooltip);
+    }
+
+    return tooltip;
+}
+
 Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) => ({
     editMode: false,
     hiddenMenus: initialHidden || [],
@@ -52,9 +73,72 @@ Alpine.data('sidebarEditor', (saveUrl, resetUrl, initialHidden, initialOrder) =>
     },
 
     enterEditMode() {
+        // The eye toggles, the drag handles and the labels have no room in a
+        // 96px rail, so ask the layout for the full menu before editing.
+        window.dispatchEvent(new CustomEvent('dls-sidebar-expand'));
         this.editMode = true;
         // Wait for DOM to fully update (x-show, x-cloak removal)
         setTimeout(() => this.initSortables(), 100);
+    },
+
+    /**
+     * Whether the icon rail is the shape on screen. adminLayout() publishes
+     * that as a class on <html>, which is what the stylesheet reads too, so
+     * there is one answer rather than two that can disagree.
+     *
+     * @returns {boolean}
+     */
+    railActive() {
+        return document.documentElement.classList.contains('dls-sidebar-rail-active');
+    },
+
+    /**
+     * Open or close a top-level submenu. It is the same accordion in the
+     * full menu and in the rail, and several sections may stay open at once;
+     * when they no longer fit, the sidebar body scrolls.
+     *
+     * @param {Object} scope the item's own Alpine scope
+     * @param {string} key   that scope's open flag, e.g. 'open_systems'
+     */
+    togglePanel(scope, key) {
+        scope[key] = ! scope[key];
+    },
+
+    /**
+     * Show a row's full name beside the rail when its label is cut off.
+     *
+     * Bound on the nav for mouseover and focusin, so one listener covers
+     * every row at every depth. A row whose label fits gets nothing: the
+     * label already says it. The tooltip lives on <body> rather than inside
+     * the sidebar, because the sidebar body scrolls and is frosted with a
+     * backdrop-filter, either of which would clip it. It is aria-hidden:
+     * the label it repeats is already the row's accessible name.
+     *
+     * @param {Event} event
+     */
+    showRailTooltip(event) {
+        const row = event.target.closest('.dls-sidebar-top-link, .dls-sidebar-child-link');
+        const label = row ? row.querySelector('.dls-sidebar-label') : null;
+        if (! label || ! this.railActive() || label.scrollWidth <= label.clientWidth) {
+            this.hideRailTooltip();
+
+            return;
+        }
+
+        const tooltip = railTooltipElement();
+        tooltip.textContent = label.textContent.trim();
+
+        const rect = row.getBoundingClientRect();
+        tooltip.style.top = Math.round(rect.top + rect.height / 2) + 'px';
+        tooltip.style.left = Math.round(rect.right + 8) + 'px';
+        tooltip.hidden = false;
+    },
+
+    hideRailTooltip() {
+        const tooltip = document.getElementById(RAIL_TOOLTIP_ID);
+        if (tooltip) {
+            tooltip.hidden = true;
+        }
     },
 
     exitEditMode() {

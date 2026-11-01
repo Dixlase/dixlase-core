@@ -61,10 +61,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 document.documentElement.classList.add(d?'dark':'light');
             })();
         </script>
-        {{-- Prevent FOUC: Apply margin and sidebar display immediately based on sidebar state --}}
-        <style @cspNonce id="fouc-sidebar">
-            @media(min-width:768px){#admin-main-content{margin-left:16rem}}
-        </style>
         {{-- Propagate banner stack height to offset of admin bar, sidebar, and main content --}}
         <style @cspNonce>
             :root { --admin-banner-offset: 0px; }
@@ -73,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @media(min-width:768px){
                 #admin-layout-flex > aside { top: calc(3rem + var(--admin-banner-offset, 0px)); }
             }
-            #admin-sidebar-toggle { top: calc(3.5rem + var(--admin-banner-offset, 0px)); }
+            #admin-sidebar-toggle { top: calc(3.75rem + var(--admin-banner-offset, 0px)); }
             /* Mobile sidebar tab (the ">" handle inside the mobile drawer): its
                mt-[56px] must also clear the demo banner or it overlaps the banner.
                Scoped by the drawer id so the desktop aside's hidden copy is untouched. */
@@ -83,11 +79,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             .modal { padding-top: var(--admin-banner-offset, 0px); }
             .modal .modal-container { max-height: calc(100vh - 6rem - var(--admin-banner-offset, 0px)); }
         </style>
+        {{-- Prevent FOUC: decide the sidebar's shape before the first paint.
+             The stylesheet owns every width and inset from this one class
+             (see resources/src/admin/scss/_sidebar-modes.scss), so the only
+             thing that cannot wait for Alpine is the class itself. Keep this
+             in step with sidebarBandFor() / readStoredRail() /
+             readStoredTabletExpanded() in
+             resources/src/admin/js/layout.js. --}}
         <script @cspNonce>
             (function(){
-                if(localStorage.getItem('sidebarCollapsed')==='true'){
-                    document.getElementById('fouc-sidebar').textContent='@media(min-width:640px){.admin aside{transform:translateX(-16rem)}}';
+                var w=window.innerWidth,rail=false;
+                if(w>=1280){
+                    var m=null;
+                    try{m=localStorage.getItem('adminSidebarMode');}catch(e){}
+                    if(m===null){
+                        try{m=localStorage.getItem('sidebarCollapsed')==='true'?'rail':'expanded';}catch(e){m='expanded';}
+                    }
+                    rail=m==='rail';
+                }else if(w>=640){
+                    try{rail=localStorage.getItem('adminSidebarTabletMode')!=='expanded';}catch(e){rail=true;}
                 }
+                if(rail){document.documentElement.classList.add('dls-sidebar-rail-active');}
             })();
         </script>
 
@@ -135,11 +147,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
             <div id="admin-layout-flex" class="min-h-screen flex relative">
                 <!-- Navigation Sidebar (Desktop only) -->
-                <aside class="md:fixed md:top-12 md:bottom-0 hidden sm:block w-64 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-transform duration-300 @endif"
-                       :class="{
-                           '-translate-x-64': sidebarCollapsed,
-                           'translate-x-0': !sidebarCollapsed
-                       }"
+                <aside id="admin-sidebar"
+                       class="md:fixed md:top-12 md:bottom-0 hidden sm:block dls-admin-sidebar z-40 flex-shrink-0 border-gray-300 @if($transitionEnabled ?? false) transition-all duration-[300ms] @else transition-[width] duration-300 @endif"
                        role="navigation" aria-label="Main navigation">
                     @include('admin.partials.sidebar', [
                         'transitionEnabled' => $transitionEnabled ?? null,
@@ -160,15 +169,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                      tab legible against busy page backgrounds. --}}
                 <button type="button"
                         id="admin-sidebar-toggle"
-                        @click="sidebarCollapsed = !sidebarCollapsed; var fs=document.getElementById('fouc-sidebar'); if(fs) fs.textContent=''"
-                        class="hidden sm:flex fixed top-14 left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        :class="{
-                            'translate-x-0': sidebarCollapsed,
-                            'translate-x-64': !sidebarCollapsed
-                        }"
-                        :style="sidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
-                        aria-label="Toggle sidebar menu">
-                    <i class="fas text-sm lg:text-xs" :class="sidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+                        @click="toggleSidebar()"
+                        class="hidden sm:flex fixed top-[3.75rem] left-0 z-40 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        :style="sidebarReady ? 'transition: transform 300ms ease-in-out' : ''"
+                        aria-controls="admin-sidebar"
+                        :aria-expanded="(! sidebarRailActive()).toString()"
+                        {{-- The two labels are handed over as data attributes
+                             rather than quoted inside the expression: a
+                             translation may contain either quote character,
+                             and Blade's escaping only protects the attribute
+                             when the text is the whole value. --}}
+                        data-label-expand="{{ __('admin/navigation.show_labels') }}"
+                        data-label-collapse="{{ __('admin/navigation.show_icons_only') }}"
+                        :aria-label="sidebarRailActive() ? $el.dataset.labelExpand : $el.dataset.labelCollapse">
+                    <i class="fas text-sm lg:text-xs" :class="sidebarRailActive() ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
                 </button>
 
                 {{-- Main Content Area.
@@ -183,8 +197,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       id="admin-main-content"
                       class="ml-0 flex-1 bg-white text-gray-900 dark:bg-black dark:text-white"
                       :class="{
-                          'md:ml-0': sidebarCollapsed,
-                          'md:ml-64': !sidebarCollapsed,
                           'lg:mr-80': rightSidebarActive && !rightSidebarCollapsed
                       }"
                       x-init="
@@ -235,16 +247,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                          left indent lives on the <h1> and only exists to
                          keep the heading clear of the sidebar toggle tab
                          that overlaps this row:
-                           - below sm: pl-8 (32px) — the 44px mobile drawer
-                             tab sits at x=0, heading lands at 64px.
-                           - sm..lg: sm:pl-5 (20px) — the ~32px tablet
-                             tab docks to the sidebar edge (open) or x=0
-                             (collapsed); the heading clears it.
+                           - below lg: pl-5 (20px) — the ~32px tab (the
+                             mobile drawer tab and the tablet tab are the
+                             same size) docks to the sidebar edge (open) or
+                             x=0 (collapsed); the heading clears it.
                            - lg+: lg:pl-0 — the slim desktop tab needs no
                              extra clearance, so the original indent is
                              restored. --}}
                     <header class="mx-auto pt-6 pb-6 px-8 bg-white text-gray-800 border-b border-gray-300 dark:border-gray-700 dark:bg-black dark:text-white @if($transitionEnabled ?? false) transition-colors duration-[500ms] @endif">
-                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white pl-8 sm:pl-5 lg:pl-0">
+                        <h1 class="font-semibold text-xl leading-tight text-gray-800 dark:text-white pl-5 lg:pl-0">
                             {{ __($heading ?? '') }}
                         </h1>
                     </header>

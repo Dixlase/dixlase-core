@@ -32,26 +32,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    // py-2.5 below lg and py-2 from lg upward — the extra 4px of vertical
-    // padding on mobile and tablet pushes each item row above the Apple HIG
-    // 44px touch target minimum. Real desktop (lg+) keeps the tighter
-    // density because it is a mouse-primary surface.
-    'button_class' => '!flex text-left items-center px-4 py-2.5 lg:py-2 text-sm font-medium rounded-md focus:outline-none w-full',
+    // py-2.5 at every width: the extra vertical padding lifts each row of
+    // the full menu to the 44px touch target, and the full menu reads the
+    // same on a desktop as on a tablet. The icon rail sets its own, tighter
+    // padding (resources/src/admin/scss/_sidebar-modes.scss).
+    'button_class' => '!flex text-left items-center px-4 py-2.5 text-sm font-medium rounded-md focus:outline-none w-full',
     'arrow_class' => 'w-4 h-4 ml-auto shrink-0 transform'
 ])
 
 <div class="flex h-full">
     {{-- Sidebar body --}}
-    <div class="flex flex-col w-64 h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
+    <div class="dls-sidebar-body flex flex-col w-64 sm:w-full h-full overflow-y-auto bg-white/75 dark:bg-gray-900/75 border-r border-gray-200 dark:border-gray-600 backdrop-blur-sm shadow-md"
          x-ref="sidebarRoot"
+         @scroll="hideRailTooltip()"
          x-data="sidebarEditor('{{ route('admin.profile.sidebar.update') }}', '{{ route('admin.profile.sidebar.reset') }}', {{ json_encode($sidebar_hidden_menus ?? []) }}, {{ json_encode($sidebar_menu_order ?? new \stdClass) }})">
 
-        {{-- space-y-2 below lg, space-y-1 from lg upward: gives mobile and
-             tablet taps a little breathing room between items without
-             changing the desktop density. The lg cut-off matches the
-             touch/mouse boundary the button padding uses (py-2.5 lg:py-2).
-             Nested menu levels below use the same gap. --}}
-        <nav class="flex-1 px-4 py-4 space-y-2 lg:space-y-1" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top">
+        {{-- space-y-2 at every width, to go with the button padding above:
+             the full menu keeps the touch spacing on a desktop too. Nested
+             menu levels below use the same gap; the icon rail sets its own. --}}
+        <nav class="dls-sidebar-nav flex-1 px-4 py-4 space-y-2" role="navigation" aria-label="Admin navigation menu" data-sortable-group="_top"
+             @mouseover="showRailTooltip($event)"
+             @mouseleave="hideRailTooltip()"
+             @focusin="showRailTooltip($event)"
+             @focusout="hideRailTooltip()">
         @php
             // モード表示設定を一度だけ取得
             $__isSimpleMode = \App\Helpers\AdminModeHelper::isSimpleMode();
@@ -107,6 +110,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
             <div x-cloak x-data="{ {{ $open_key }} : {{ $is_open ? 'true' : 'false' }} }" data-menu-key="{{ $key }}"
+                 class="dls-sidebar-item"
                  @unless ($__isProtected)
                  x-show="editMode || !isHidden('{{ $key }}')"
                  x-transition:enter="transition ease-out duration-200"
@@ -193,11 +197,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if (isset($item['route']) && is_string($item['route']) && Route::has($item['route']))
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
                             <a href="{{ route($item['route']) }}"
-                            class="{{ $button_class }} {{ $key === 'dashboard' ? 'mr-3' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            class="dls-sidebar-top-link {{ $button_class }} {{ $key === 'dashboard' ? 'mr-3' : '' }} {{ $item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             :class="{ 'pointer-events-none': editMode }"
                             role="menuitem">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true" x-show="!editMode"></i>
-                                <span>{{ __($item['text']) }}</span>
+                                <span class="dls-sidebar-label">{{ __($item['text']) }}</span>
                                 @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
                                     <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -238,12 +242,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </div>
                     @else
                         <div class="flex items-center group" :class="{ 'opacity-50': editMode && isHidden('{{ $key }}') }">
-                            <button @click="{{ $open_key }} = !{{ $open_key }}"
-                            class="{{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                            <button @click="togglePanel($data, '{{ $open_key }}')"
+                            class="dls-sidebar-top-link {{ $button_class }} text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                             aria-expanded="false"
                             :aria-expanded="{{ $open_key }}.toString()">
                                 <i class="{{ $item['icon'] }} mr-3" aria-hidden="true" x-show="!editMode"></i>
-                                <span>{{ __($item['text']) }}</span>
+                                <span class="dls-sidebar-label">{{ __($item['text']) }}</span>
                                 @if ($__menuVis === \App\Enums\MenuVisibility::ReadOnly)
                                     <i class="fas fa-lock text-xs text-gray-400 ml-1" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                 @elseif ($__menuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -277,7 +281,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             $__children = \App\Helpers\AdminHelper::reorderByKeys($__children, $__savedOrder[$key]);
                         }
                     @endphp
-                    <div x-show="{{ $open_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1" role="menu" data-sortable-group="{{ $key }}">
+                    <div x-show="{{ $open_key }}" x-collapse class="dls-sidebar-panel ml-2 space-y-2" role="menu" data-sortable-group="{{ $key }}">
                         @foreach ($__children as $child_key => $child_item)
                             @php
                                 // 子項目の権限キーを生成（親キー.子キー）
@@ -335,11 +339,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @if (isset($child_item['route']) && is_string($child_item['route']) && Route::has($child_item['route']))
                                     <div class="flex items-center group">
                                         <a href="{{ route($child_item['route']) }}"
-                                        class="{{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
+                                        class="dls-sidebar-child-link {{ $button_class }} {{ $child_item['route'] === $route_name ? 'bg-gray-200 text-gray-900 font-bold border-blue-500 pl-3 rounded-md hover:bg-gray-300 hover:text-black dark:bg-gray-100 dark:text-black dark:hover:bg-gray-600' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white' }} {{ empty($transitionEnabled) ? '' : 'transition-colors duration-500' }}"
                                         :class="{ 'pointer-events-none': editMode }"
                                         role="menuitem">
                                             <i class="{{ $child_item['icon'] }} mr-3" aria-hidden="true" x-show="!editMode"></i>
-                                            <span>{{ __($child_item['text']) }}</span>
+                                            <span class="dls-sidebar-label">{{ __($child_item['text']) }}</span>
                                             @if ($__childMenuVis === \App\Enums\MenuVisibility::ReadOnly)
                                                 <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                             @elseif ($__childMenuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -396,9 +400,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @if(isset($child_item['icon']) && is_string($child_item['icon']) && isset($child_item['text']) && is_string($child_item['text']))
                                     <div x-data="{ {{ $open_child_key }}: {{ $is_open_child ? 'true' : 'false' }} }">
                                         <div class="flex items-center group">
-                                            <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="{{ $button_class }} sidebar-link">
+                                            <button @click="{{ $open_child_key }} = !{{ $open_child_key }}" class="dls-sidebar-child-link {{ $button_class }} sidebar-link">
                                                 <i class="{{ $child_item['icon'] }} mr-3" x-show="!editMode"></i>
-                                                <span>{{ __($child_item['text']) }}</span>
+                                                <span class="dls-sidebar-label">{{ __($child_item['text']) }}</span>
                                                 <svg class="{{ $arrow_class }} mr-1" :class="{ 'rotate-180': {{ $open_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                 </svg>
@@ -425,7 +429,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                     $__grandChildren = \App\Helpers\AdminHelper::reorderByKeys($__grandChildren, $__savedOrder[$__childOrderKey]);
                                                 }
                                             @endphp
-                                            <div x-show="{{ $open_child_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1" data-sortable-group="{{ $__childOrderKey }}">
+                                            <div x-show="{{ $open_child_key }}" x-collapse class="dls-sidebar-subpanel ml-2 space-y-2" data-sortable-group="{{ $__childOrderKey }}">
                                                 @foreach ($__grandChildren as $grand_child_key => $grand_child_item)
                                                     @php
                                                         // 孫項目の権限キーを生成（親キー.子キー.孫キー）
@@ -442,10 +446,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                              :class="{ 'opacity-50': editMode && isHidden('{{ $grand_child_role_key }}') }">
                                                             <div class="flex items-center group">
                                                                 <a href="{{ route($grand_child_item['route']) }}"
-                                                                class="{{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}"
+                                                                class="dls-sidebar-child-link {{ $button_class }} {{ $grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}"
                                                                 :class="{ 'pointer-events-none': editMode }">
                                                                     <i class="{{ $grand_child_item['icon'] }} mr-3" x-show="!editMode"></i>
-                                                                    <span>{{ __($grand_child_item['text']) }}</span>
+                                                                    <span class="dls-sidebar-label">{{ __($grand_child_item['text']) }}</span>
                                                                     @if ($__gcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
                                                                         <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                                                     @elseif ($__gcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -479,14 +483,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                             }
                                                         @endphp
                                                         <div x-data="{ {{ $open_grand_child_key }}: {{ $is_open_grand_child ? 'true' : 'false' }} }">
-                                                            <button @click="{{ $open_grand_child_key }} = !{{ $open_grand_child_key }}" class="{{ $button_class }} sidebar-link">
+                                                            <button @click="{{ $open_grand_child_key }} = !{{ $open_grand_child_key }}" class="dls-sidebar-child-link {{ $button_class }} sidebar-link">
                                                                 <i class="{{ $grand_child_item['icon'] }} mr-3"></i>
-                                                                <span>{{ __($grand_child_item['text']) }}</span>
+                                                                <span class="dls-sidebar-label">{{ __($grand_child_item['text']) }}</span>
                                                                 <svg class="{{ $arrow_class }} mr-1" :class="{ 'rotate-180': {{ $open_grand_child_key }} }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                                 </svg>
                                                             </button>
-                                                            <div x-show="{{ $open_grand_child_key }}" x-collapse class="ml-2 space-y-2 lg:space-y-1">
+                                                            <div x-show="{{ $open_grand_child_key }}" x-collapse class="dls-sidebar-subpanel ml-2 space-y-2">
                                                                 @foreach ($grand_child_item['children'] as $great_grand_child_key => $great_grand_child_item)
                                                                     @php
                                                                         $great_grand_child_role_key = $key . '.' . $child_key . '.' . $grand_child_key . '.' . $great_grand_child_key;
@@ -498,9 +502,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                                                     @endphp
                                                                     @if (!$__ggcMenuHidden && isset($great_grand_child_item['route']) && Route::has($great_grand_child_item['route']) && isset($great_grand_child_item['icon']) && isset($great_grand_child_item['text']) && (\App\Helpers\AdminHelper::canEditMenu($great_grand_child_role_key) || \App\Helpers\AdminHelper::canViewMenu($great_grand_child_role_key)))
                                                                         <a href="{{ route($great_grand_child_item['route']) }}"
-                                                                        class="{{ $button_class }} {{ $great_grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
+                                                                        class="dls-sidebar-child-link {{ $button_class }} {{ $great_grand_child_item['route'] === $route_name ? 'sidebar-link-active' : 'sidebar-link' }}">
                                                                             <i class="{{ $great_grand_child_item['icon'] }} mr-3"></i>
-                                                                            <span>{{ __($great_grand_child_item['text']) }}</span>
+                                                                            <span class="dls-sidebar-label">{{ __($great_grand_child_item['text']) }}</span>
                                                                             @if ($__ggcMenuVis === \App\Enums\MenuVisibility::ReadOnly)
                                                                                 <i class="fas fa-lock text-xs text-gray-400 ml-auto" title="{{ __('admin/settings/base/mode.visibility.read_only') }}"></i>
                                                                             @elseif ($__ggcMenuVis === \App\Enums\MenuVisibility::GuideOnly)
@@ -540,22 +544,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     {{-- Tab button (mobile only, right end of sidebar).
-         mt-[56px] visually aligns the tab with the page heading (h1) — this
-         clears the admin bar h-12 (48px) with a small breathing gap, so the
-         tab's vertical center sits near the h1's baseline rather than
-         hugging the admin bar. (The concrete margin-top is set by CSS in
-         admin.blade.php so it can pick up the mobile banner offset.)
-         Sized for a comfortable touch target: min-w-11 (44px) meets the
-         Apple HIG recommended minimum, px-3.5 keeps the icon centred with
-         breathing room, and text-base scales the chevron above the previous
-         text-sm so the affordance reads at a glance. bg-white/90 (was /75)
-         is slightly more opaque so the tab does not fade into a busy page
-         background. The heading in admin.blade.php picks up a matching
-         mobile-only left padding to keep clear of the wider tab. --}}
+         mt-[56px] centres the tab on the page heading (h1) after the admin
+         bar h-12 (48px). It sits 4px higher than the tablet tab, which
+         measured centred at 60px.
+         (The concrete margin-top is set by CSS in admin.blade.php so it can
+         pick up the mobile banner offset.) Sized like the tablet tab
+         (px-2, text-sm chevron, ~32px wide by 52px tall), which is still a
+         comfortable thumb target without crowding a narrow heading.
+         bg-white/90 keeps the tab legible against a busy page background.
+         The heading's pl-5 in admin.blade.php clears it. --}}
     <button @click="openSidebar = !openSidebar"
-            class="js-mobile-sidebar-tab sm:hidden backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-500 dark:text-blue-400 px-3.5 py-4 min-w-11 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
+            class="js-mobile-sidebar-tab sm:hidden backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-500 dark:text-blue-400 px-2 py-4 rounded-r-lg shadow-md border border-l-0 border-gray-300 dark:border-gray-500 transition-colors self-start mt-[56px]"
             aria-label="Toggle sidebar menu">
-        <i class="fas text-base" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+        <i class="fas text-sm" :class="openSidebar ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
     </button>
 </div>
 

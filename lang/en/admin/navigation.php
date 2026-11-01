@@ -38,6 +38,8 @@ return [
     'edit_menu' => 'Edit Menu',
     'done_editing' => 'Done',
     'reset_menu' => 'Reset',
+    'show_labels' => 'Show the menu labels',
+    'show_icons_only' => 'Show the icons only',
     'reset_confirm_title' => 'Reset Menu',
     'reset_confirm_message' => 'All visibility and ordering settings will be reset. This action cannot be undone.',
     'reset_confirm_button' => 'Reset',
