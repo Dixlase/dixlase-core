@@ -37,6 +37,7 @@ return [
     'dashboard' => 'ダッシュボード',
     'theme_settings' => 'テーマ設定',
     'edit' => '編集',
+    'edit_front_page' => 'フロントページを編集',
     'profile' => 'プロフィール設定',
 
     // 環境バッジ
