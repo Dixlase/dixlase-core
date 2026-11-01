@@ -55,6 +55,7 @@ use App\Models\FrontPage;
 use App\Presenters\Admin\ContentEditorPresenter;
 use App\Presenters\Admin\RevisionDiffPresenter;
 use App\Services\Content\FileContentPublisher;
+use App\Services\Content\ScriptAuthoringPolicy;
 use App\Services\ContentPreviewService;
 use App\Services\Editor\EditorManager;
 use App\Services\FrontPageContentService;
@@ -62,6 +63,7 @@ use App\Services\FrontPageRevisionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AdminFrontController extends AdminLoggedInController
@@ -143,7 +145,18 @@ class AdminFrontController extends AdminLoggedInController
         $guiEditorInfo = ContentEditorPresenter::guiEditorInfo();
 
         $this->viewParams['languages'] = $languages;
-        $this->viewParams['editorCardOptions'] = ContentEditorType::radioCardOptions(ContentStorageType::DATABASE, [], $enabledByPlugin);
+        // Offer only what this member may actually save: the create and
+        // update actions refuse an HTML body from anyone below ADMIN, and a
+        // control that is certain to be refused should not be on the form.
+        $member = Auth::guard('member')->user();
+        $mayAuthorScripts = ScriptAuthoringPolicy::canAuthorScripts($member);
+        $creatableSlugs = ScriptAuthoringPolicy::creatableEditorSlugs($member);
+
+        $this->viewParams['mayAuthorScripts'] = $mayAuthorScripts;
+        $this->viewParams['editorCardOptions'] = array_values(array_filter(
+            ContentEditorType::radioCardOptions(ContentStorageType::DATABASE, [], $enabledByPlugin),
+            static fn (array $option): bool => in_array($option['value'] ?? '', $creatableSlugs, true),
+        ));
         $this->viewParams['editorOptions'] = ContentEditorType::optionsFor(ContentStorageType::DATABASE);
         $this->viewParams['storageOptions'] = ContentStorageType::optionsWithDescription();
         $this->viewParams['templates'] = $templates;
@@ -235,6 +248,12 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['customJs'] = old('custom_js', $customJs);
         $this->viewParams['customCss'] = old('custom_css', $customCss);
         $this->viewParams['isHtmlEditor'] = $isHtmlEditor;
+        // An HTML front page is script-capable, so only ADMIN and above may
+        // change it. The update action refuses the save; this keeps the
+        // editor from presenting fields whose contents would be discarded.
+        $this->viewParams['mayAuthorScripts'] = ScriptAuthoringPolicy::canAuthorScripts(
+            Auth::guard('member')->user()
+        );
         $this->viewParams['editorType'] = $frontPage->editor_type->slug();
         $this->viewParams['editorTypeLabel'] = $editorTypeLabel;
         $this->viewParams['editorTypeIcon'] = $frontPage->editor_type->iconClass();
@@ -421,6 +440,7 @@ class AdminFrontController extends AdminLoggedInController
         )->value;
         $this->viewParams['publishModeOptions'] = ContentPublishMode::options();
         $this->viewParams['schedulerRunning'] = app(FileContentPublisher::class)->schedulerRunning();
+        $this->viewParams['fileSaveModeAvailable'] = FileContentPublisher::fileSaveModeAvailable();
 
         return view('admin::front/settings', $this->viewParams);
     }

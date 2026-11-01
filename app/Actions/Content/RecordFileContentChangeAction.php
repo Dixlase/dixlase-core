@@ -40,24 +40,21 @@ namespace App\Actions\Content;
 use App\Actions\AbstractAction;
 use App\Contracts\Action\Actor;
 use App\Contracts\Content\PublishesFileContent;
-use App\Contracts\Revisionable;
 use App\DTO\Action\ActionResult;
 use App\Enums\ContentPublishMode;
 use App\Enums\Permission;
 use App\Facades\Audit;
 use App\Models\AuditLog;
 use App\Services\Content\FileContentPublisher;
-use App\Services\RevisionService;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Record a change made to file-stored content outside the admin
  *
  * Run by {@see FileContentPublisher::check()} when the files differ from the
- * published copy and from what was last seen. Under the file save mode the
- * files are taken in as the published copy and recorded as a revision; under
- * the admin mode they wait to be published. Either way the change is
- * audited once.
+ * published copy and from what was last seen. The change is audited once and
+ * waits to be published, whatever the mode: since #808 the file save mode
+ * shows the files in a local environment but takes nothing in.
  */
 class RecordFileContentChangeAction extends AbstractAction
 {
@@ -69,12 +66,16 @@ class RecordFileContentChangeAction extends AbstractAction
      */
     public const SOURCE_OUTSIDE_ADMIN = 'outside_admin';
 
+    /** The mode in effect here; see {@see FileContentPublisher::effectivePublishMode()} */
     private ContentPublishMode $mode;
+
+    /** The mode the owner chose, which may not be in effect here */
+    private ContentPublishMode $selectedMode;
 
     /** @var list<string> */
     private array $parts = [];
 
-    /** @var list<string> The changed parts this mode did not take in */
+    /** @var list<string> The changed parts waiting to be published: all of them since #808 */
     private array $held = [];
 
     /**
@@ -93,7 +94,8 @@ class RecordFileContentChangeAction extends AbstractAction
         protected readonly string $detectedBy = FileContentPublisher::DETECTED_BY_RENDER,
         protected readonly string $publishedHash = '',
     ) {
-        $this->mode = $model->fileContentPublishMode();
+        $this->selectedMode = $model->fileContentPublishMode();
+        $this->mode = $publisher->effectivePublishMode($model);
     }
 
     protected function requiredPermission(): ?Permission
@@ -116,30 +118,13 @@ class RecordFileContentChangeAction extends AbstractAction
         $this->parts = $this->publisher->changedParts($this->model, $this->files);
         $fileHash = FileContentPublisher::hash($this->files);
 
-        $taken = $this->publisher->takeableParts($this->model, $this->files);
-        $this->held = array_values(array_diff($this->parts, $taken));
+        // Nothing is taken in: the published copy stays as it was until
+        // someone publishes the change, so the record counts as pending and
+        // shows in the admin's banner -- under the file save mode too (#808).
+        $this->held = $this->parts;
 
-        if ($taken !== []) {
-            // Only the parts this mode may take in. A part that can carry a
-            // script is left on the record as it was published, so the site
-            // keeps rendering the reviewed copy until someone publishes the
-            // new one from the admin.
-            $columns = $this->model->fileContentParts();
-            $values = [];
-            foreach ($taken as $part) {
-                $values[$columns[$part]] = $this->files[$part];
-            }
-            $this->model->forceFill($values)->save();
-
-            if ($this->model instanceof Revisionable) {
-                app(RevisionService::class)->record($this->model, RevisionService::TYPE_AUTO);
-            }
-        }
-
-        // The published hash comes from the columns as they now stand -- a
-        // mix of what was just taken in and what was held -- and the file
-        // hash from the files. The two are equal only when nothing was held,
-        // so a held part keeps the record pending without being asked to.
+        // The published hash comes from the columns, untouched, and the file
+        // hash from the files, so the two stay apart until it is published.
         $this->publisher->storeHashes(
             $this->model,
             FileContentPublisher::hash($this->publisher->publishedParts($this->model)),
@@ -181,16 +166,17 @@ class RecordFileContentChangeAction extends AbstractAction
             // files held when it was found.
             'published_hash' => $this->publishedHash,
             'file_hash' => FileContentPublisher::hash($this->files),
+            // The mode in effect, and the one chosen: the file save mode
+            // falls back to the admin mode outside a local environment.
             'publish_mode' => $this->mode->value,
+            'selected_publish_mode' => $this->selectedMode->value,
             'parts' => $this->parts,
-            // The parts that were not taken in and are waiting to be
-            // published from the admin. Under the admin mode that is every
-            // changed part; under the file save mode, the ones that may
-            // carry a script.
+            // The parts waiting to be published from the admin: every
+            // changed part, under either mode, since #808. Kept, with
+            // `published`, so readers of older entries need no second path.
             'held' => $this->held,
-            // True only when the whole change went live. It used to be "the
-            // mode is file save", which stopped being the same thing once a
-            // part can be held.
+            // Whether the change went live without being published. Always
+            // false since #808; true in entries written before it.
             'published' => $this->held === [],
         ];
     }

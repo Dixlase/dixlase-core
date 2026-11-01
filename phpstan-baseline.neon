@@ -2355,12 +2355,6 @@ parameters:
 			path: app/Traits/AdminLoggedInTrait.php
 
 		-
-			message: '#^Trait App\\Traits\\AuditableTrait is used zero times and is not analysed\.$#'
-			identifier: trait.unused
-			count: 1
-			path: app/Traits/AuditableTrait.php
-
-		-
 			message: '#^Trait App\\Traits\\FrontActivityLogTrait is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1

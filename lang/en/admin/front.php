@@ -61,6 +61,7 @@ return [
     ],
 
     'create' => [
+        'script_authoring_denied' => 'The HTML editor is available to administrators. Choose Markdown, or ask an administrator.',
         'heading' => 'Create Front Page',
         'description' => 'Set up the front page content with your preferred language and editor type.',
 
@@ -95,6 +96,7 @@ return [
     ],
 
     'edit' => [
+        'script_authoring_denied' => 'This front page uses the HTML editor, which only an administrator may change. Its content, CSS and JavaScript are left as they are.',
         'heading' => 'Edit Front Page',
         'description' => 'Edit the front page content.',
 

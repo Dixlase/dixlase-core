@@ -35,7 +35,9 @@
 
 namespace App\Http\Requests\Admin\Front;
 
+use App\Services\Content\ScriptAuthoringPolicy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class AdminFrontCreateRequest extends FormRequest
@@ -59,7 +61,7 @@ class AdminFrontCreateRequest extends FormRequest
 
         return [
             'lang' => ['required', 'string', Rule::in($languageKeys)],
-            'editor_type' => ['required', 'string', Rule::in(['html', 'markdown'])],
+            'editor_type' => ['required', 'string', Rule::in(ScriptAuthoringPolicy::creatableEditorSlugs(Auth::guard('member')->user()))],
             'storage_type' => ['required', 'string', Rule::in(['database', 'file'])],
             'content' => ['nullable', 'string', 'max:500000'],
             'custom_js' => ['nullable', 'string', 'max:500000'],

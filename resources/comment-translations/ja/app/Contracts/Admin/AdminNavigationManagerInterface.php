@@ -13,7 +13,6 @@ return [
     'Supports ordering via _insert_before / _insert_after.' => '_insert_before / _insert_after による順序制御をサポートする。',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_insert_before / _insert_after による順序制御をサポートする。' => '',
     '_review_status' => [
         'Admin panel navigation manager interface' => 'machine',
         'Abstraction layer for merging plugin navigation settings into Core navigation' => 'machine',

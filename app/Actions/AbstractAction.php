@@ -73,11 +73,8 @@ use Illuminate\Support\Facades\DB;
  *
  * Actions are the only audit producer in Dixlase. Anything that should leave an
  * `audit_logs` row goes through an action, or through a shared service an action
- * calls — there is no model-level mechanism. {@see \App\Traits\AuditableTrait} used
- * to offer one; it is deprecated, unused, and will be removed in v0.2.0. Until it is
- * gone, a model that still uses it and is touched inside {@see handle()} writes a
- * second row, so wrap such saves with `$model->withoutAudit(fn () => $model->save())`.
- * See `docs/development/action-layer.md`.
+ * calls — there is no model-level mechanism (the unused AuditableTrait that offered
+ * one was removed in v0.2.0). See `docs/development/action-layer.md`.
  */
 abstract class AbstractAction implements ActionInterface
 {

@@ -92,9 +92,6 @@ return [
     'Handle _insert_after' => '_insert_after の処理',
 
     // ----- metadata (underscore-prefixed; ignored as translation entries) -----
-    '_insert_after や _insert_before を削除' => '',
-    '_insert_before の処理' => '',
-    '_insert_after の処理' => '',
     '_review_status' => [
         'Navigation settings cache' => 'machine',
         'Managed with static variable because Laravel\'s config() is not reliable' => 'machine',

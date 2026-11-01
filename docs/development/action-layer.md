@@ -102,15 +102,16 @@ action is where an operation lives. `AbstractAction::execute()` calls
 ### Why there is only one way
 
 `App\Traits\AuditableTrait` offered a second, model-level mechanism: it wrote
-a row from `created` / `updated` / `deleted`. **It is deprecated and will be
-removed in v0.2.0.** Nothing in core, the official plugins or the themes ever
-used it, so it read as a promise the codebase did not keep — a reader who
+a row from `created` / `updated` / `deleted`. **It was removed in v0.2.0**
+(deprecated since 0.1.8). Nothing in core, the official plugins or the themes
+ever used it, so it read as a promise the codebase did not keep — a reader who
 found it reasonably concluded that model writes are audited automatically.
 
 Adopting it instead would not have been cheaper: a model touched both inside
 and outside an action produces two rows for one operation, which is why the
 old convention needed a `withoutAudit()` call and a responsibility table. One
-answer is cheaper to follow than two.
+answer is cheaper to follow than two. An extension that still uses the trait
+fails to load on v0.2.0; move each audited operation into an action as below.
 
 ### What to do instead
 
@@ -120,14 +121,43 @@ answer is cheaper to follow than two.
 | something a job or a command does | give it an action too, or call the `Audit` facade from the service the command invokes |
 | a write deep inside a service | have the action that owns the operation describe it, not the service |
 
-If a model in your plugin still uses the deprecated trait and is also touched
-inside `handle()`, wrap the save so only the action's entry survives:
+A short example — the action is the whole audit wiring:
 
 ```php
-$page->withoutAudit(fn () => $page->update([
-    'status' => PageStatus::Published->value,
-]));
+final class PublishPageAction extends AbstractAction
+{
+    protected function handle(Actor $actor, array $data): ActionResult
+    {
+        $page = DixlasePagesPage::query()->findOrFail($data['page_id']);
+        $before = $page->only('status');
+        $page->update(['status' => PageStatus::Published->value]);
+
+        // execute() calls audit() after this returns, which writes the row
+        return ActionResult::success($page, metadata: [
+            'before' => $before,
+            'after' => $page->only('status'),
+        ]);
+    }
+}
 ```
+
+### The one exception: sign-ins
+
+A sign-in is not an action. Laravel's `Login` event is the single place every
+authentication path meets, so `AuditAuthEventSubscriber::handleLogin()` writes
+the `login` row from it. The event does not say *how* the member
+authenticated, so each path names the factor on the audit service just before
+it logs the member in:
+
+```php
+Audit::setAuthFactor(AuditLog::AUTH_FACTOR_PASSKEY);
+Auth::guard('member')->login($member, $remember);
+```
+
+The subscriber reads the factor and clears it. That is why the call sits in
+the authentication traits (`LoginTrait`, `PasskeyLoginTrait`,
+`TwoFaAuthenticationTrait`) and not in an action: moved anywhere after
+`Auth::login()`, the factor would be gone by the time the row is written.
 
 ### What a row carries
 
@@ -158,7 +188,6 @@ The following Action-layer symbols are `@api` (Plugin API):
 - `App\DTO\Action\ActionResult`
 - `App\Contracts\Action\ActionInterface`
 - `App\Contracts\Action\Actor`
-- `App\Traits\AuditableTrait` — **deprecated**, removed in v0.2.0
 
 Implementation classes (`App\Services\Audit\*`, `App\Models\AuditLog`,
 `App\Facades\Audit`, etc.) are not part of the Plugin API; use the contracts

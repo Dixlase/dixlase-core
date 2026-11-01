@@ -46,6 +46,7 @@ use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
 use App\Services\Content\FileContentPublisher;
+use App\Services\Content\ScriptAuthoringPolicy;
 use App\Services\FrontPageContentService;
 use App\Services\FrontPageRevisionService;
 
@@ -85,6 +86,18 @@ class CreateFrontPageAction extends AbstractAction
         $content = $data['content'] ?? '';
         $customJs = $data['custom_js'] ?? null;
         $customCss = $data['custom_css'] ?? null;
+
+        // The HTML editor and the custom CSS / JS are served from the site's
+        // own origin, so an author of them can run script in any visitor's
+        // browser -- an administrator's included, with their session. Only
+        // ADMIN and above may choose them; the Pages and Blog extensions
+        // apply the same rule to their own content.
+        if ($editorTypeEnum === ContentEditorType::HTML
+            && ! $actor->hasRole(ScriptAuthoringPolicy::MINIMUM_ROLE)) {
+            return ActionResult::failure(
+                __('admin/front.create.script_authoring_denied')
+            );
+        }
 
         // Ignore JS/CSS for non-HTML editors
         if ($editorTypeEnum !== ContentEditorType::HTML) {

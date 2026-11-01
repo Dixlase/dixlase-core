@@ -197,7 +197,6 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 |---|---|
 | `App\Traits\AdminInterfaceTrait` | Trait for initializing common admin panel interface |
 | `App\Traits\AdminLoggedInTrait` | Trait for common initialization after admin panel login |
-| `App\Traits\AuditableTrait` | Trait for automatic audit logging of models |
 | `App\Traits\ConfigLoaderTrait` | Settings file loading utility |
 | `App\Traits\CustomFilesLoaderTrait` | Custom file override loading |
 | `App\Traits\EmailVerificationTrait` | Trait that provides common logic for email verification |

@@ -362,8 +362,10 @@ return [
         'label' => 'How file changes are published',
         'admin' => 'Publish from the admin',
         'admin_description' => 'The site shows the last published version. A change made to the file is listed on the edit screen and goes live when it is published there. Recommended.',
-        'file_save' => 'Publish on file save',
-        'file_save_description' => 'The site shows the file as it is. A change made to the file goes live at once and is recorded in the audit log. Parts that can carry a script — the custom CSS and JS, and an HTML body — still wait to be published from the admin.',
+        'file_save' => 'Show on file save',
+        'file_save_description' => 'For a development environment. The site shows the files as they are, so a change made to a file shows at once, the custom CSS and JS and an HTML body included. The change still waits to be published: it counts in the banner of changes waiting to be published until it is published from the edit screen. Takes effect only when APP_ENV is "local"; anywhere else the site shows the last published version, as under publishing from the admin.',
+        'in_effect_local' => 'This is a development environment (APP_ENV is "local"). Under showing on file save, the site shows every change to the files at once, the custom CSS and JS and an HTML body included. Each change still has to be published from the edit screen, and the banner of changes waiting to be published counts it until then. In any other environment the site shows the last published version.',
+        'not_in_effect' => 'This is not a development environment (APP_ENV is not "local"), so the site shows the last published version whatever is chosen here, and changes to the files wait to be published. Showing on file save takes effect only in a development environment.',
     ],
 
     'file_changes' => [

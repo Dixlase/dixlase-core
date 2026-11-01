@@ -88,7 +88,7 @@ class PermissionRegistryResolveRolesPathTest extends TestCase
     public function test_returns_null_when_plugin_directory_does_not_exist(): void
     {
         $this->assertNull(
-            PermissionRegistry::resolvePluginRolesPath('_PRRT_no_such_'.uniqid()),
+            PermissionRegistry::resolvePluginRolesPath('PRRTnosuch'.uniqid()),
         );
     }
 
@@ -97,7 +97,11 @@ class PermissionRegistryResolveRolesPathTest extends TestCase
      */
     private function makePluginWith(array $files): string
     {
-        $slug = '_PRRT_'.uniqid();
+        // No leading underscore and no dot: isInstalledName() refuses both,
+        // and resolvePluginRolesPath() consults it, so a fixture using one
+        // would be testing a name core treats as not installed anywhere
+        // else -- pluginDirectories() already filters it out.
+        $slug = 'PRRT'.uniqid();
         $pluginDir = $this->pluginsRoot.'/'.$slug;
         mkdir($pluginDir, 0777, true);
         $this->created[] = $pluginDir;

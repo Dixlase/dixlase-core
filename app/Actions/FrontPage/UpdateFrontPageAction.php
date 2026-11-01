@@ -45,6 +45,7 @@ use App\Enums\ContentStorageType;
 use App\Enums\Permission;
 use App\Models\FrontPage;
 use App\Services\Content\FileContentPublisher;
+use App\Services\Content\ScriptAuthoringPolicy;
 use App\Services\FrontPageContentService;
 use App\Services\FrontPageRevisionService;
 
@@ -85,6 +86,20 @@ class UpdateFrontPageAction extends AbstractAction
         $locale = $this->frontPage->lang;
         $content = $data['content'] ?? '';
         $isHtmlEditor = $this->frontPage->editor_type === ContentEditorType::HTML;
+
+        // The HTML body and the custom CSS / JS are served from the site's
+        // own origin, so an author of them can run script in any visitor's
+        // browser -- an administrator's included, with their session. Only
+        // ADMIN and above may write them; the Pages and Blog extensions
+        // apply the same rule to their own content.
+        $mayAuthorScripts = $actor->hasRole(ScriptAuthoringPolicy::MINIMUM_ROLE);
+
+        if ($isHtmlEditor && ! $mayAuthorScripts) {
+            return ActionResult::failure(
+                __('admin/front.edit.script_authoring_denied')
+            );
+        }
+
         $customJs = $isHtmlEditor ? ($data['custom_js'] ?? null) : null;
         $customCss = $isHtmlEditor ? ($data['custom_css'] ?? null) : null;
 

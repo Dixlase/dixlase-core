@@ -119,11 +119,11 @@ class MyPluginServiceProvider extends ServiceProvider
 }
 ```
 
-## モデル層の自動監査は非推奨
+## モデル層の自動監査はありません
 
 `App\Traits\AuditableTrait` は、モデルの `created` / `updated` / `deleted` から
-監査ログを書く仕組みでした。**これは非推奨で、v0.2.0 で削除します。**コア・
-公式プラグイン・テーマのどこからも使われていません。
+監査ログを書く仕組みでした。**これは v0.2.0 で削除しました**（0.1.8 から非推奨）。
+コア・公式プラグイン・テーマのどこからも使われていませんでした。
 
 テーブルへの書き込みではなく**操作**を監査してください。`App\Actions\AbstractAction`
 のサブクラスに置いて `audit()` に行を書かせるか、Action が呼ぶサービスから `Audit`
@@ -145,11 +145,8 @@ final class PublishPostAction extends AbstractAction
 }
 ```
 
-ライフサイクルの全体は [Action レイヤー](../../development/action-layer.md) を
-参照してください。プラグインのモデルがまだトレイトを使っており、かつ Action の
-中でも触られる場合は、`$model->withoutAudit(...)` で保存を包み、Action の
-エントリだけを残します。トレイトに残っている設定項目は、トレイト自身の
-ソースファイルに書いてあります。
+ライフサイクルの全体と、Action ではない唯一の監査対象であるサインインについては
+[Action レイヤー](../../development/action-layer.md) を参照してください。
 
 ## 設定変更のログ
 
