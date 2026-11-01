@@ -41,18 +41,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{-- Toggle button --}}
 {{-- top offset is applied in layouts/admin.blade.php via #admin-right-sidebar-toggle
-     so it clears the admin bar AND any demo banner (--admin-banner-offset). --}}
+     so it clears the admin bar AND any demo banner (--admin-banner-offset).
+     Padding, icon size, background and offset match the left sidebar's
+     #admin-sidebar-toggle, so the two tabs facing each other are the same
+     size and at the same height (#827). --}}
 <button type="button"
         id="admin-right-sidebar-toggle"
         @click="toggleRightSidebar()"
-        class="flex fixed right-0 z-50 items-center backdrop-blur-sm dark:bg-gray-900/75 bg-white/75 text-blue-400 dark:text-white px-1.5 py-4 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+        class="flex fixed right-0 z-50 items-center justify-center backdrop-blur-sm dark:bg-gray-900/90 bg-white/90 text-blue-400 dark:text-white px-2 py-4 lg:px-1 rounded-l-lg shadow-md border border-r-0 border-gray-300 dark:border-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
         :class="{
             'translate-x-0': rightSidebarCollapsed,
             '-translate-x-80': !rightSidebarCollapsed
         }"
         :style="rightSidebarReady ? 'transition: translate 300ms ease-in-out, transform 300ms ease-in-out' : ''"
         :aria-label="rightSidebarCollapsed ? '{{ $openLabel }}' : '{{ $closeLabel }}'">
-    <i class="fas text-sm" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+    <i class="fas text-sm lg:text-xs" :class="rightSidebarCollapsed ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
 </button>
 
 {{-- Sidebar panel --}}
