@@ -741,6 +741,71 @@ export function contentEditorInsertImage() {
     };
 }
 
+/**
+ * The Alpine side of <x-content-editor.sidebar-section>.
+ *
+ * The Blade component decides the initial state (data-open) and whether a
+ * validation error forces the section open (data-force-open). With a
+ * data-remember-key, the viewer's last choice is kept in localStorage and
+ * wins over data-open, except when an error forces it open. Storage can be
+ * unavailable (private windows, blocked site data), so every access is
+ * guarded and the section then just starts from data-open.
+ */
+const SIDEBAR_SECTION_STORAGE_PREFIX = 'dixlase.sidebarSection.';
+
+function readSidebarSectionState(key) {
+    try {
+        return window.localStorage.getItem(SIDEBAR_SECTION_STORAGE_PREFIX + key);
+    } catch {
+        return null;
+    }
+}
+
+function writeSidebarSectionState(key, open) {
+    try {
+        window.localStorage.setItem(SIDEBAR_SECTION_STORAGE_PREFIX + key, open ? '1' : '0');
+    } catch {
+        // Not remembered; the section still opens and closes.
+    }
+}
+
+export function contentEditorSidebarSection() {
+    return {
+        open: false,
+
+        init() {
+            const data = this.$el.dataset;
+            this._key = data.rememberKey || '';
+            this.open = data.open === '1';
+
+            if (data.forceOpen === '1' || this._key === '') {
+                return;
+            }
+
+            const remembered = readSidebarSectionState(this._key);
+            if (remembered === '1' || remembered === '0') {
+                this.open = remembered === '1';
+            }
+        },
+
+        toggle() {
+            this.open = !this.open;
+            if (this._key !== '') {
+                writeSidebarSectionState(this._key, this.open);
+            }
+        },
+
+        expanded() {
+            return this.open ? 'true' : 'false';
+        },
+
+        chevronClass() {
+            return this.open ? 'rotate-180' : '';
+        },
+    };
+}
+
 Alpine.data('contentEditor', contentEditor);
 Alpine.data('contentEditorInsertImage', contentEditorInsertImage);
 Alpine.data('contentEditorStorageInfo', contentEditorStorageInfo);
+Alpine.data('contentEditorSidebarSection', contentEditorSidebarSection);
