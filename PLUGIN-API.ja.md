@@ -801,8 +801,6 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 | `@pageTitle` | `<title>` 要素全体を出力する。描画中のページの `title` セクション、または明示的な引数 (`@pageTitle($post->title)`) を読む。テーマがタイトルを出力する際の標準手段で、内部で `dls_page_title()` を呼び、結果を 1 度だけエスケープする。旧バージョンのコアでも動かす必要があるテーマは `@if(function_exists('dls_page_title'))` でガードする(未登録のディレクティブはコンパイルエラーにならず、そのまま文字列として残るため) |
 | `@cspNonce` | script タグにそのリクエストの CSP nonce を付けます: `<script @cspNonce>`。ポリシーは `script-src-attr 'none'` を設定し、インラインのスクリプトを nonce でのみ許可するため、プラグインやテーマが出すインラインのスクリプトには必ず必要です |
 
----
-
 ### 11.2 Alpine の magic とデータプロバイダ
 
 コアが `Alpine.start()` の前に Alpine へ登録するので、プラグインやテーマの

@@ -803,8 +803,6 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 | `@pageTitle` | Render the whole `<title>` element. Reads the `title` section of the page being rendered, or an explicit argument: `@pageTitle($post->title)`. This is how a theme emits its title; it wraps `dls_page_title()` and escapes the result once. A theme that also has to run on an older core guards it with `@if(function_exists('dls_page_title'))`, since an unregistered directive is left as literal text rather than failing the compile |
 | `@cspNonce` | Add the request's CSP nonce to a script tag: `<script @cspNonce>`. The policy sets `script-src-attr 'none'` and allows an inline script only by nonce, so every inline script a plugin or theme emits needs this |
 
----
-
 ### 11.2 Alpine Magics and Data Providers
 
 Core registers these on Alpine before `Alpine.start()`, so a plugin's or theme's
