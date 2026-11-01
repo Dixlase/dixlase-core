@@ -69,7 +69,9 @@ import '../../admin/js/login-flow';
 import '../../admin/js/getting-started-card';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
+import { registerCspBridge } from './alpine-csp-bridge';
 
 Alpine.plugin(collapse)
+registerCspBridge(Alpine);
 window.Alpine = Alpine;
 Alpine.start();
