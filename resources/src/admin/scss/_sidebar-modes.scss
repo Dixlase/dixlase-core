@@ -184,14 +184,22 @@ html.dls-sidebar-rail-active {
  * The padding is what insets each nested block from the one around it, and it
  * appears with the tint, so it is transitioned alongside: otherwise the rows
  * would jump sideways while @alpinejs/collapse is still animating the height.
+ *
+ * The transition sits on the marker, not on the state class. A transition is
+ * read from the element's state at the moment a property changes, so one
+ * declared only while the section is open is gone by the time the class comes
+ * off -- the tint would fade in and then snap away.
  */
+.dls-sidebar-section {
+    transition:
+        background-color 200ms ease-in-out,
+        padding 200ms ease-in-out;
+}
+
 .dls-sidebar-section-open {
     padding: 0.25rem;
     border-radius: 0.5rem;
     background-color: var(--color-gray-100);
-    transition:
-        background-color 200ms ease-in-out,
-        padding 200ms ease-in-out;
 }
 
 /*
@@ -220,7 +228,7 @@ html.dark .dls-sidebar-section-open .dls-sidebar-section-open .dls-sidebar-secti
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dls-sidebar-section-open {
+    .dls-sidebar-section {
         transition: none;
     }
 }
