@@ -41,6 +41,101 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.0] — 2026-11-01
+
+### Added
+- The admin sidebar collapses to a rail of icons with a label under each (#821). Between 640px
+  and 1279px wide it starts as the rail and from 1280px as the full menu, and the tab button
+  switches between the two; under 640px it still slides in over the content. Submenus open as
+  the same accordion in both shapes, and an open submenu is tinted together with the row that
+  opened it (#833)
+- A content editor's right sidebar can be grouped into sections that open and close (#826). A
+  closed section shows a summary next to its title, a validation error inside it opens it, and
+  the viewer's choice can be remembered. The right sidebar's toggle now matches the left
+  sidebar's (#828), and on a phone the page behind the open sidebar fades and blurs as it does
+  behind the left drawer (#835)
+- On the site's front page, the admin bar offers *Edit the front page* to a member who may open
+  the front page settings (#831). It replaces the **Design** button, which was shown on every
+  page with no permission check of its own
+- `php artisan dls:content:publish-files` lists the file-stored content waiting to be published
+  and, with `--publish`, publishes it as the **Publish** button does, with a revision and an
+  audit entry (#807). `--fail-if-pending` exits non-zero while anything is waiting, for use
+  after a deploy
+
+### Changed
+- The "publish on file save" mode for file-stored content takes effect only in a local
+  environment (`APP_ENV=local`) (#806). Anywhere else it behaves as "publish from the admin",
+  whatever is selected, and the settings card says which mode is in effect. The dashboard
+  warning for a production site on that mode is gone, since the mode can no longer take effect
+  there. **A site that relied on it elsewhere, such as staging, now publishes from the admin or
+  with `dls:content:publish-files`**
+- In a local environment the file save mode still shows a file change at once, but no longer
+  takes it in as the published copy (#809). The change stays pending — counted in the banner
+  and shown as a diff on the edit screen — until someone publishes it, so an unpublished change
+  can no longer be deployed unnoticed. The mode is now called *Show on file save*
+- The front page's create screen offers only the editor types the member may save, and the edit
+  screen shows the CSS and JavaScript tabs only to a member who may write them (#818). An
+  editor could open the HTML editor and lose everything typed when the save was refused. This
+  changes what the form offers, not who may save: saving already required an administrator
+- Laravel's default global middleware runs again (#783). Surrounding whitespace is trimmed from
+  input, an empty input arrives as `null`, and oversized posts and malformed paths are refused.
+  Passwords and content bodies keep their whitespace. **An extension that reads an empty input
+  as `''` has to accept `null` as well**; Blog 0.2.0, Menus 0.1.8, Pages 0.3.0 and Inquiry
+  0.5.9 already do, so update those before core
+- New installations get the official theme's v0.5.2 release (#836)
+
+### Removed
+- `public/assets/images/logo.svg`, an old placeholder logo (#802). A custom template that still
+  points at `assets/images/logo.svg` should use `assets/images/brand/dixlase-logo.svg`
+
+### Fixed
+- Front-side features that recognise a signed-in member, the admin bar on a theme page among
+  them, work when sessions are stored on a database connection other than the default (#801)
+- Audit log times on the log list and on an entry's page are shown in the display timezone
+  (#815)
+
+### Security
+- A disabled plugin no longer contributes configuration (#804). Its role and navigation config
+  files are not loaded, so disabling a plugin stops its code running from there. A disabled
+  plugin is absent from the role-editing screen until it is enabled again; its stored
+  permissions are kept. The `providers` a plugin manifest names must lie inside that plugin
+- The directory name used to build an extension's path is checked to be a single extension
+  directory name, in the one place every caller goes through (#820)
+
+### Plugin API — Breaking
+- `App\Traits\AuditableTrait`, deprecated since 0.1.8, is removed (#816). Nothing in core, the
+  official extensions or the theme used it; it made model writes look audited without auditing
+  them. Record an operation by putting it in a subclass of `App\Actions\AbstractAction` — see
+  `docs/development/action-layer.md`. `dixlase_api` stays at 0.1.0: raising it would mark every
+  extension that declares `^0.1` incompatible, although none of them uses the removed trait
+
+### Plugin API — Added
+- `<x-content-editor.sidebar-section>`: `title`, `icon`, `open`, `summary`, `errorFields`
+  (wildcards allowed), `rememberKey` and `divider` (#826)
+- `resources/src/common/js/alpine-csp-bridge.js`: the magics `$openModal`, `$closeModal`,
+  `$openMediaSelector` and `$closeMediaSelector`, and the global x-data factories registered
+  with `Alpine.data()` under their own names, so a template can stop reaching `window` before
+  the bundle moves to `@alpinejs/csp` (#823). `@alpinejs/csp` is now `^3.17.4`
+- `FileContentPublisher::fileSaveModeAvailable()` and `effectivePublishMode()`, and the lang
+  keys `common.content_publish_mode.in_effect_local` and `not_in_effect` (#806)
+
+### Plugin API — Deprecated
+- `FileContentPublisher::takeableParts()` always returns `[]` (#809), and
+  `DeclaresScriptCapableParts` still compiles but no longer holds anything back (#806). An
+  extension implementing `PublishesFileContent` needs no code change; one whose tests assert
+  the old local take-in has to update them
+
+### Documentation
+- The load-time refusal of incompatible extensions, announced for 0.2.0, moves to 0.3.0 (#824).
+  In 0.2.0 an incompatible extension still registers, with a warning
+
+### Internal
+- A pull request that changes `VERSION` fails while comment translation entries are pending
+  (#812). Dictionary entries are counted whatever their key, and the extraction artefacts and
+  the duplicates they hid are removed (#810, #811, #784)
+- The README opens with the social preview image (#797), and `PLUGIN-API.md` is regenerated
+  (#829)
+
 ## [0.1.20] — 2026-10-30
 
 ### Added
