@@ -407,7 +407,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 `x-content-editor.tabs`, `x-content-editor.preview-tabs`,
 `x-content-editor.preview-pane`, `x-content-editor.new-tab-preview`,
 `x-content-editor.scroll-buttons`, `x-content-editor.storage-info`,
-`x-content-editor.type-badge`
+`x-content-editor.type-badge`、`x-content-editor.sidebar-section`
 
 ### 6.6 セキュリティ・認証コンポーネント
 
@@ -800,6 +800,24 @@ Dixlase の命名規約 `dixlase:{scope}:{owner}:{domain}:{key}` に従って
 |---|---|
 | `@pageTitle` | `<title>` 要素全体を出力する。描画中のページの `title` セクション、または明示的な引数 (`@pageTitle($post->title)`) を読む。テーマがタイトルを出力する際の標準手段で、内部で `dls_page_title()` を呼び、結果を 1 度だけエスケープする。旧バージョンのコアでも動かす必要があるテーマは `@if(function_exists('dls_page_title'))` でガードする(未登録のディレクティブはコンパイルエラーにならず、そのまま文字列として残るため) |
 | `@cspNonce` | script タグにそのリクエストの CSP nonce を付けます: `<script @cspNonce>`。ポリシーは `script-src-attr 'none'` を設定し、インラインのスクリプトを nonce でのみ許可するため、プラグインやテーマが出すインラインのスクリプトには必ず必要です |
+
+### 11.2 Alpine の magic とデータプロバイダ
+
+コアが `Alpine.start()` の前に Alpine へ登録するので、プラグインやテーマの
+テンプレートからディレクティブの中で呼べます。それぞれ対応する `window.*` の
+補助関数を包んだもので、これが厳格版の `@alpinejs/csp` でテンプレートを動かす
+仕掛けです。厳格版は、裸の名前を Alpine 自身のスコープでだけ解決し、`window`
+は見ません。
+
+| 名前 | 使い方 |
+|---|---|
+| `$openModal`、`$closeModal` | `@click="$openModal('delete-modal')"` — コアのモーダルを id で開閉する |
+| `$openMediaSelector`、`$closeMediaSelector` | `@click="$openMediaSelector()"` — メディアの選択を開閉する |
+| データプロバイダ | `x-data="modal()"`、`x-data="colorPicker('#fff')"` ほかコアのファクトリ（`adminBar`、`adminLayout`、`appearanceMode`、`emailInput`、`installTheme`、`paginationControls`、`passwordTools`、`tooltip`、パスキーと 2 段階認証の補助）。名前は `window.*` のファクトリと同じなので、既存のテンプレートは直す必要がありません |
+
+`window.*` の補助関数がそのページに無い名前は、黙って失敗せず
+`[alpine-csp-bridge]` の警告を出します。元は
+`resources/src/common/js/alpine-csp-bridge.js` です。
 
 ---
 

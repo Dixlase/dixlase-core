@@ -408,7 +408,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 `x-content-editor.tabs`, `x-content-editor.preview-tabs`,
 `x-content-editor.preview-pane`, `x-content-editor.new-tab-preview`,
 `x-content-editor.scroll-buttons`, `x-content-editor.storage-info`,
-`x-content-editor.type-badge`
+`x-content-editor.type-badge`, `x-content-editor.sidebar-section`
 
 ### 6.6 Security & Auth Components
 
@@ -802,6 +802,24 @@ Facades are wired via the standard Laravel facade pattern; see each facade file 
 |---|---|
 | `@pageTitle` | Render the whole `<title>` element. Reads the `title` section of the page being rendered, or an explicit argument: `@pageTitle($post->title)`. This is how a theme emits its title; it wraps `dls_page_title()` and escapes the result once. A theme that also has to run on an older core guards it with `@if(function_exists('dls_page_title'))`, since an unregistered directive is left as literal text rather than failing the compile |
 | `@cspNonce` | Add the request's CSP nonce to a script tag: `<script @cspNonce>`. The policy sets `script-src-attr 'none'` and allows an inline script only by nonce, so every inline script a plugin or theme emits needs this |
+
+### 11.2 Alpine Magics and Data Providers
+
+Core registers these on Alpine before `Alpine.start()`, so a plugin's or theme's
+template can call them from a directive. Each one wraps the matching `window.*`
+helper, which is what makes a template work under the strict `@alpinejs/csp`
+build: that build resolves a bare name only in Alpine's own scope, never on
+`window`.
+
+| Name | Usage |
+|---|---|
+| `$openModal`, `$closeModal` | `@click="$openModal('delete-modal')"` — open or close a core modal by id |
+| `$openMediaSelector`, `$closeMediaSelector` | `@click="$openMediaSelector()"` — open or close the media selector |
+| Data providers | `x-data="modal()"`, `x-data="colorPicker('#fff')"`, and the other core factories (`adminBar`, `adminLayout`, `appearanceMode`, `emailInput`, `installTheme`, `paginationControls`, `passwordTools`, `tooltip`, and the passkey and two-factor helpers). The names are unchanged from the `window.*` factories, so an existing template needs no edit |
+
+A name whose `window.*` helper is not on the page logs a `[alpine-csp-bridge]`
+warning rather than failing the expression silently. The source is
+`resources/src/common/js/alpine-csp-bridge.js`.
 
 ---
 
