@@ -477,7 +477,10 @@ class InstallRunner
      */
     protected function initializeDatabase(array $data, string $adminPassword)
     {
-        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_started_admin_email').$data['admin_email'].', admin_account_name='.$data['admin_account_name']);
+        // The administrator's e-mail and account name are not logged: this
+        // channel is an unrotated file that the backup service copies into
+        // every archive.
+        Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_started'));
 
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_site_settings_update'));
 
@@ -549,7 +552,8 @@ class InstallRunner
 
         // Admin panel URL (admin_url is Global scope so goes to global_settings)
         $resolver->set('admin_url', $data['admin_url']);
-        Log::channel('install')->info('initializeDatabase - admin_url: '.$data['admin_url']);
+        // The admin URL is not logged; that it was stored is what matters here.
+        Log::channel('install')->info('initializeDatabase - admin_url stored');
 
         // Save mail test results (PerSite scope)
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.initialize_database_mail_test_save'));

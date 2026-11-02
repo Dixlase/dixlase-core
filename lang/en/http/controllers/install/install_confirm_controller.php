@@ -71,7 +71,7 @@ return [
     'initialize_database_members_total_count' => 'initializeDatabase - members table total record count: ',
     'initialize_database_new_admin_started' => 'initializeDatabase - new administrator creation started',
     'initialize_database_site_settings_update' => 'initializeDatabase - site_settings update started',
-    'initialize_database_started_admin_email' => 'initializeDatabase - started: admin_email=',
+    'initialize_database_started' => 'initializeDatabase - started',
     'installation_completed' => '=== Installation Completed ===',
     'installation_error' => '=== Installation Error ===',
     'installation_started' => '=== Installation Started ===',

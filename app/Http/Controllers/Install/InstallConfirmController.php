@@ -210,10 +210,15 @@ class InstallConfirmController extends BaseInstallController
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.installation_started'));
 
             $data = session('install_data');
+            // The key list is the level of detail this log needs. The array
+            // itself holds the admin URL, the administrator's e-mail and
+            // account name, the database and mail usernames, and the
+            // ciphertexts of three passwords -- and this channel is a single
+            // unrotated file that the backup service copies into every
+            // archive.
             Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.session_data_retrieved'), [
                 'keys' => array_keys($data ?? []),
                 'session_id' => session()->getId(),
-                'full_data' => $data,
             ]);
 
             // Redirect to confirmation screen if session data is empty
