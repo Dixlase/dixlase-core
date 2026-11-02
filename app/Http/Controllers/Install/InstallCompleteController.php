@@ -153,7 +153,10 @@ class InstallCompleteController extends BaseInstallController
         // Delete session data
         session()->forget('install_data');
 
-        Log::channel('install')->info('Display completion screen: appUrl='.$appUrl.', adminLoginUrl='.$adminLoginUrl.', isSimpleMode='.($isSimpleMode ? 'true' : 'false'));
+        // The admin login URL is not logged: the admin URL is a secret this
+        // project keeps out of every written record, and this channel ends up
+        // inside backup archives.
+        Log::channel('install')->info('Display completion screen: appUrl='.$appUrl.', isSimpleMode='.($isSimpleMode ? 'true' : 'false'));
         Log::channel('install')->info('APP_URL retrieval result: '.$envAppUrl);
         Log::channel('install')->info('Redirect flag cleared');
 
@@ -206,9 +209,11 @@ class InstallCompleteController extends BaseInstallController
         // Get redirect destination
         $redirectTo = $request->input('redirect_to');
 
+        // Neither the redirect target nor the request body is logged: the
+        // target carries the admin URL and the body carries the CSRF token.
+        // Whether a target was supplied is the part worth recording.
         Log::channel('install')->info('finalize: Redirect destination', [
-            'redirect_to' => $redirectTo,
-            'request_all' => $request->all(),
+            'has_redirect_to' => $redirectTo !== null && $redirectTo !== '',
             'has_session' => $request->hasSession(),
             'session_id' => $request->hasSession() ? $request->session()->getId() : 'no session',
         ]);
@@ -217,7 +222,9 @@ class InstallCompleteController extends BaseInstallController
             // If redirect destination is specified
             // The value comes from the client: follow it only on this host.
             $redirectTo = FinalizeRedirectTarget::for($request);
-            Log::channel('install')->info('finalize: Executing redirect', ['url' => $redirectTo]);
+            // The resolved target is not logged either: on a normal install it
+            // is the admin login URL.
+            Log::channel('install')->info('finalize: Executing redirect');
 
             return redirect($redirectTo)->with('message', __('http/controllers/install/install_complete_controller.install_completed'));
         } else {
