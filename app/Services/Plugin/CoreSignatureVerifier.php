@@ -80,6 +80,15 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      * If the exclusion sets differ between signing and verification, it will result in false positives for "extra"/"missing"
      * and be treated as tampering.
      */
+    /**
+     * A name used only to ask whether a directory's contents are skipped.
+     *
+     * Never read from disk; it is handed to the pattern matcher so a rule
+     * written against a directory's children can be recognised from the
+     * directory.
+     */
+    private const BOUNDARY_PROBE = '__dixlase_boundary_probe__';
+
     private const DEFAULT_EXCLUDE_PATTERNS = [
         // VCS / CI
         '.git',
@@ -457,7 +466,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
                 continue;
             }
 
-            $dir = str_contains($relPath, '/') ? dirname($relPath).'/' : '';
+            $dir = $this->shallowestExcludedAncestor($relPath, $excludePatterns, $gitignore['include']);
 
             if ($dir !== '' && ! in_array($dir, $dirs, true)) {
                 $dirs[] = $dir;
@@ -465,6 +474,50 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         }
 
         return $dirs;
+    }
+
+    /**
+     * The highest directory above this path that the rules also skip.
+     *
+     * Taking the path's own directory would make the covered area depend on
+     * which file the signer happened to list. An extension whose build output
+     * holds `assets/manifest.json` would have the whole tree compared, because
+     * the prefix match reaches everything below it; one whose output starts a
+     * level down, at `assets/js/app.js`, would have only `assets/js/` compared,
+     * and a directory added beside it would stay outside.
+     *
+     * Walking up to the shallowest ancestor the rules skip removes that
+     * difference: the covered area is the ignored tree, whichever file inside
+     * it was listed. Walking stops where the rules stop, so a listed path under
+     * a directory the rules keep contributes only its own directory, and
+     * nothing the rules already compare is widened.
+     *
+     * @param  list<string>  $excludes
+     * @param  list<string>  $includes
+     * @return string a prefix ending in "/", or "" when the path has no directory
+     */
+    protected function shallowestExcludedAncestor(string $relPath, array $excludes, array $includes): string
+    {
+        if (! str_contains($relPath, '/')) {
+            return '';
+        }
+
+        $segments = explode('/', dirname($relPath));
+        $walked = '';
+
+        foreach ($segments as $segment) {
+            $walked = $walked === '' ? $segment : $walked.'/'.$segment;
+
+            // Ask about a file inside the directory, not about the directory
+            // itself. `/resources/assets/*` -- how every official extension
+            // writes it -- never matches `resources/assets`; it matches what
+            // is under it. Probing a child is what finds the boundary.
+            if ($this->shouldExclude($walked.'/'.self::BOUNDARY_PROBE, $excludes, $includes)) {
+                return $walked.'/';
+            }
+        }
+
+        return dirname($relPath).'/';
     }
 
     /**

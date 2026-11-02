@@ -194,4 +194,44 @@ class SignatureCoversSignedBuildOutputTest extends TestCase
         $this->assertFalse($result['valid']);
         $this->assertContains('resources/assets/js/app.js', $result['mismatched']);
     }
+
+    public function test_the_whole_ignored_tree_is_covered_even_with_nothing_signed_at_its_root(): void
+    {
+        // Some extensions ship no file directly in the build output root --
+        // their output starts a level down. The covered area must not depend
+        // on that, or a directory added beside the listed one stays outside.
+        File::delete($this->plugin.'/resources/assets/manifest.json');
+
+        $verifier = $this->verifier();
+        $signed = $verifier->signedFiles($this->plugin);
+        $signed['resources/assets/js/app.js'] = 'sha256:'.hash_file('sha256', $this->plugin.'/resources/assets/js/app.js');
+        ksort($signed);
+
+        $this->assertTrue($verifier->check($this->plugin, $signed)['valid']);
+
+        File::ensureDirectoryExists($this->plugin.'/resources/assets/css');
+        File::put($this->plugin.'/resources/assets/css/added.css', "body{}\n");
+
+        $result = $verifier->check($this->plugin, $signed);
+
+        $this->assertFalse($result['valid']);
+        $this->assertContains('resources/assets/css/added.css', $result['extra']);
+    }
+
+    public function test_a_listed_path_the_rules_keep_does_not_widen_the_comparison(): void
+    {
+        // app/ is not ignored, so listing a file there must contribute nothing:
+        // walking up must stop where the rules stop.
+        $verifier = $this->verifier();
+        $signed = $verifier->signedFiles($this->plugin);
+
+        $this->assertArrayHasKey('app/Provider.php', $signed);
+
+        File::append($this->plugin.'/.gitignore', "/node_modules\n");
+        File::ensureDirectoryExists($this->plugin.'/node_modules/pkg');
+        File::put($this->plugin.'/node_modules/pkg/index.js', "module.exports={};\n");
+
+        // node_modules stays out, as it always has.
+        $this->assertTrue($verifier->check($this->plugin, $signed)['valid']);
+    }
 }
