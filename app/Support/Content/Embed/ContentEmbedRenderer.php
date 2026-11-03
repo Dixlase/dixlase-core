@@ -37,6 +37,7 @@ declare(strict_types=1);
 
 namespace App\Support\Content\Embed;
 
+use InvalidArgumentException;
 use League\CommonMark\Node\Node;
 use League\CommonMark\Renderer\ChildNodeRendererInterface;
 use League\CommonMark\Renderer\NodeRendererInterface;
@@ -61,7 +62,9 @@ class ContentEmbedRenderer implements NodeRendererInterface
 
     public function render(Node $node, ChildNodeRendererInterface $childRenderer): string
     {
-        ContentEmbed::assertInstanceOf($node);
+        if (! $node instanceof ContentEmbed) {
+            throw new InvalidArgumentException('Incompatible node type: '.$node::class);
+        }
 
         $url = $this->parse($node->url);
         if ($url === null) {
@@ -94,7 +97,7 @@ class ContentEmbedRenderer implements NodeRendererInterface
         return [
             'url' => $url,
             'host' => (string) preg_replace('/^(www|m|mobile)\./', '', strtolower($parts['host'])),
-            'segments' => array_values(array_filter(explode('/', $parts['path'] ?? ''), 'strlen')),
+            'segments' => array_values(array_filter(explode('/', $parts['path'] ?? ''), fn (string $segment): bool => $segment !== '')),
             'query' => $query,
         ];
     }
