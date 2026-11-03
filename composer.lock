@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "86b4d1f8a52742d105bbc6ab6c682874",
+    "content-hash": "291ec05828af48878e647f153be3ed52",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -562,11 +562,12 @@
             "type": "dixlase-theme",
             "extra": {
                 "dixlase": {
-                    "type": "theme",
                     "slug": "dixlase-onepage",
+                    "type": "theme",
                     "version": "0.5.2"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0-or-later"
             ],
@@ -579,8 +580,8 @@
             ],
             "description": "Dixlase OnePage theme - Plugin-driven single page / landing page theme",
             "support": {
-                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/v0.5.2",
-                "issues": "https://github.com/Dixlase/theme-dixlase-onepage/issues"
+                "issues": "https://github.com/Dixlase/theme-dixlase-onepage/issues",
+                "source": "https://github.com/Dixlase/theme-dixlase-onepage/tree/v0.5.2"
             },
             "time": "2026-11-01T14:40:09+00:00"
         },
