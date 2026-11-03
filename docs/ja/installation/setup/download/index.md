@@ -10,4 +10,4 @@ Dixlaseのソースコードの入手方法を選択してください。
 
 - [Git Clone](git-clone.md) — バージョン管理付きでリポジトリをクローン
 - [ZIPダウンロード](zip-download.md) — GitHubや公式サイトからZIPアーカイブをダウンロード
-- [Composer](composer.md) — Composer create-projectでインストール（準備中）
+- [Composer](composer.md) — Composer create-project で Packagist からインストール
