@@ -43,6 +43,7 @@ use App\Http\Middleware\AuthenticateApiKey;
 use App\Http\Middleware\AuthenticateIap;
 use App\Http\Middleware\AuthenticateMtls;
 use App\Http\Middleware\BlockPluginRoutes;
+use App\Http\Middleware\CheckExtensionThumbnailAccess;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\CheckInstallationSteps;
 use App\Http\Middleware\CheckLockdown;
@@ -252,6 +253,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.admin.activity' => LogAdminActivity::class, // Admin panel operation log
             'check.menu.access' => CheckMenuAccess::class, // Admin panel menu access permission
             'check.menu.edit' => CheckMenuEdit::class, // Admin panel menu edit permission
+            'check.extension-thumbnail' => CheckExtensionThumbnailAccess::class, // Online extension thumbnail: the key depends on {type}
             'plugin.admin.access' => EnsurePluginAdminAccess::class, // Plugin admin route authorization
             'install.steps' => CheckInstallationSteps::class, // Installation step check
             'auth.api' => AuthenticateApiKey::class, // API key authentication

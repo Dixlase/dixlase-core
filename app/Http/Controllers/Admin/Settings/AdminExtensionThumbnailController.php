@@ -176,6 +176,7 @@ class AdminExtensionThumbnailController extends Controller
         if ($slug === '' || ! preg_match('/^[a-z0-9-]+$/', $slug)) {
             abort(404);
         }
+
         if (! $source->is_enabled) {
             return $this->fallbackThumbnail($type);
         }
