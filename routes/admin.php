@@ -624,11 +624,14 @@ Route::prefix($adminUrl)->name('admin.')
             // because raw.githubusercontent.com would 404 for a private
             // repo from an unauthenticated browser request.
             //
-            // Gated inside the controller rather than here: the menu key
-            // depends on {type} (settings.plugins.add vs
+            // Gated, unlike its sibling above: it reaches the network on
+            // behalf of the "Add plugin" / "Add theme" pages, so it answers
+            // to the same key they do. The gate is its own middleware
+            // because the key depends on {type} (settings.plugins.add vs
             // settings.themes.add), which a static middleware argument
             // cannot express (#855).
             Route::get('/settings/extension-thumbnail-online/{source}/{type}/{slug}', [AdminExtensionThumbnailController::class, 'showOnline'])
+                ->middleware('check.extension-thumbnail')
                 ->where('source', '[0-9]+')
                 ->where('type', 'plugin|theme')
                 ->where('slug', '[a-z0-9-]+')
