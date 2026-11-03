@@ -8,12 +8,6 @@
         "laravel"
     ],
     "license": "AGPL-3.0-only OR LicenseRef-Dixlase-Commercial",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/Dixlase/theme-dixlase-onepage"
-        }
-    ],
     "require": {
         "php": "^8.3",
         "composer/installers": "^2.0",
