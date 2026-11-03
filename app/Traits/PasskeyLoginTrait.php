@@ -130,6 +130,57 @@ trait PasskeyLoginTrait
     }
 
     /**
+     * Refuse the challenge while this identifier or IP is locked out, or null
+     * when it is not.
+     *
+     * The challenge follows the same sequence as the password login and the
+     * identifier check, which both consult the lockout before they answer.
+     * Each consumer of this trait keeps its own attempt store, so it supplies
+     * this check and the recorder below; the default supplies neither.
+     */
+    protected function passkeyChallengeLockoutRefusal(Request $request, string $login): ?\Illuminate\Http\JsonResponse
+    {
+        return null;
+    }
+
+    /**
+     * Count a refused challenge towards the lockout.
+     *
+     * @see passkeyChallengeLockoutRefusal()
+     */
+    protected function recordRefusedPasskeyChallenge(Request $request, string $login): void
+    {
+        // Nothing by default.
+    }
+
+    /**
+     * Refuse a challenge with the generic failure.
+     *
+     * Every refusal that depends on the identifier answers alike; which
+     * account state caused it goes to the audit log, where the operator reads
+     * it.
+     */
+    private function refusePasskeyChallenge(Request $request, string $login, string $reason): \Illuminate\Http\JsonResponse
+    {
+        $this->recordRefusedPasskeyChallenge($request, $login);
+
+        AuditLog::logSecurity(AuditLog::ACTION_PASSKEY_AUTH_FAILED, [
+            'severity' => AuditLog::SEVERITY_WARNING,
+            'outcome' => AuditLog::OUTCOME_FAILURE,
+            'context' => [
+                'stage' => 'challenge',
+                'reason' => $reason,
+                'login_identifier' => $login,
+            ],
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error' => __($this->getTranslationPrefix().'.failed'),
+        ], 422);
+    }
+
+    /**
      * Get passkey authentication challenge
      *
      * @return \Illuminate\Http\JsonResponse
@@ -143,36 +194,32 @@ trait PasskeyLoginTrait
         $login = $request->input('login');
         $userModelClass = $this->getUserModelClass();
 
+        // The same constant 100-300 ms wait the identifier check applies, so
+        // both endpoints take the same time to answer.
+        usleep(random_int(100, 300) * 1000);
+
+        $lockedOut = $this->passkeyChallengeLockoutRefusal($request, $login);
+
+        if ($lockedOut !== null) {
+            return $lockedOut;
+        }
+
         // Search user
         $user = $this->findUserByLogin($login, $userModelClass);
 
         if (! $user) {
-            $errorMessage = __($this->getTranslationPrefix().'.failed');
-
-            return response()->json([
-                'success' => false,
-                'error' => $errorMessage,
-            ], 422);
+            return $this->refusePasskeyChallenge($request, $login, 'identifier_not_found');
         }
 
         // The account state gates passkey login exactly as it gates password
-        // login. Answer with the generic failure so the challenge endpoint does
-        // not reveal that the account exists but is disabled.
+        // login: deactivating an account must stop a holder of its passkey.
         if (! $this->isPasskeyLoginAllowed($user)) {
-            return response()->json([
-                'success' => false,
-                'error' => __($this->getTranslationPrefix().'.failed'),
-            ], 422);
+            return $this->refusePasskeyChallenge($request, $login, 'login_not_allowed');
         }
 
         // Check if passkey is registered
         if (! $this->passkeyService->hasCredentials($user)) {
-            $errorMessage = __($this->getTranslationPrefix().'.no_passkey_registered');
-
-            return response()->json([
-                'success' => false,
-                'error' => $errorMessage,
-            ], 422);
+            return $this->refusePasskeyChallenge($request, $login, 'no_passkey_registered');
         }
 
         // Check if two-factor authentication is enabled
@@ -182,12 +229,7 @@ trait PasskeyLoginTrait
         // Check individual settings only when global settings are disabled (0)
         if ($globalTwoFaMode == 0) {
             if ($user->getTwoFaMode() === 0) {
-                $errorMessage = __($this->getTranslationPrefix().'.two_fa_disabled');
-
-                return response()->json([
-                    'success' => false,
-                    'error' => $errorMessage,
-                ], 422);
+                return $this->refusePasskeyChallenge($request, $login, 'two_fa_disabled');
             }
         }
 

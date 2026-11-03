@@ -125,6 +125,48 @@ class AdminPasskeyLoginController extends AdminController
     /**
      * Get login notification service class name
      */
+    /**
+     * Refuse a challenge while the admin login's lockout is in force, with
+     * the same messages the password form shows.
+     */
+    protected function passkeyChallengeLockoutRefusal(Request $request, string $login): ?\Illuminate\Http\JsonResponse
+    {
+        $lockoutService = app(\App\Services\AdminLoginLockoutService::class);
+
+        if ($lockoutService->isLockedOut($login)) {
+            return response()->json([
+                'success' => false,
+                'error' => __('auth.lockout', [
+                    'minutes' => $lockoutService->getLockoutRemainingMinutes($login),
+                ]),
+            ], 422);
+        }
+
+        if ($lockoutService->isIpLockedOut((string) $request->ip())) {
+            return response()->json([
+                'success' => false,
+                'error' => __('auth.ip_lockout'),
+            ], 422);
+        }
+
+        return null;
+    }
+
+    /**
+     * Count a refused challenge towards the admin login's lockout.
+     *
+     * The attempt row carries a coarse reason because the lockout screen
+     * reads it; the specific account state goes to the audit log.
+     */
+    protected function recordRefusedPasskeyChallenge(Request $request, string $login): void
+    {
+        app(\App\Services\AdminLoginLockoutService::class)->handleFailedLogin(
+            $request,
+            $login,
+            \App\Models\MemberLoginAttempt::FAILURE_UNKNOWN
+        );
+    }
+
     protected function getLoginNotificationServiceClass(): string
     {
         return \App\Services\AdminLoginNotificationService::class;
