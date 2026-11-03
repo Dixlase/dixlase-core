@@ -71,7 +71,7 @@ return [
     'initialize_database_members_total_count' => 'initializeDatabase - membersテーブル総レコード数: ',
     'initialize_database_new_admin_started' => 'initializeDatabase - 新規管理者作成開始',
     'initialize_database_site_settings_update' => 'initializeDatabase - site_settings更新開始',
-    'initialize_database_started_admin_email' => 'initializeDatabase - 開始: admin_email=',
+    'initialize_database_started' => 'initializeDatabase - 開始',
     'installation_completed' => '=== インストール完了 ===',
     'installation_error' => '=== インストールエラー ===',
     'installation_started' => '=== インストール開始 ===',

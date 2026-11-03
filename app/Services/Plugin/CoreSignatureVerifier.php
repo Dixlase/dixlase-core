@@ -80,6 +80,15 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      * If the exclusion sets differ between signing and verification, it will result in false positives for "extra"/"missing"
      * and be treated as tampering.
      */
+    /**
+     * A name used only to ask whether a directory's contents are skipped.
+     *
+     * Never read from disk; it is handed to the pattern matcher so a rule
+     * written against a directory's children can be recognised from the
+     * directory.
+     */
+    private const BOUNDARY_PROBE = '__dixlase_boundary_probe__';
+
     private const DEFAULT_EXCLUDE_PATTERNS = [
         // VCS / CI
         '.git',
@@ -330,7 +339,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      */
     protected function verifyFileHashes(string $pluginPath, array $expectedFiles, string $manifestFile = 'plugin.json'): array
     {
-        $actualFiles = $this->collectFileHashes($pluginPath, $manifestFile);
+        $actualFiles = $this->collectFileHashes($pluginPath, $manifestFile, $expectedFiles);
 
         $missing = array_diff_key($expectedFiles, $actualFiles);
         $extra = array_diff_key($actualFiles, $expectedFiles);
@@ -357,11 +366,17 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
      * Collect file hashes in the plugin directory
      * Exclude the manifest itself (plugin.json / theme.json), signature.sig, and paths excluded by .gitignore
      *
+     * A path the exclusion rules would skip still takes part when the signed
+     * files[] names it, or names a sibling in the same directory. See
+     * {@see signedDirectoriesOutsideTheWalk()}.
+     *
+     * @param  array<string, string>  $expectedFiles  files[] section (path => "algo:hash"); empty when the caller has none
      * @return array<string, string> path => "algo:hash"
      */
-    protected function collectFileHashes(string $pluginPath, string $manifestFile = 'plugin.json'): array
+    protected function collectFileHashes(string $pluginPath, string $manifestFile = 'plugin.json', array $expectedFiles = []): array
     {
         $files = [];
+        $signedDirs = $this->signedDirectoriesOutsideTheWalk($expectedFiles, $pluginPath);
         $gitignore = $this->parseGitignore($pluginPath);
         $excludePatterns = array_unique(array_merge(
             self::DEFAULT_EXCLUDE_PATTERNS,
@@ -389,7 +404,8 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
                 continue;
             }
             if ($this->shouldExclude($relPath, $excludePatterns, $includePatterns)
-                && ! $this->isExecutableCode($relPath)) {
+                && ! $this->isExecutableCode($relPath)
+                && ! $this->isUnderSignedDirectory($relPath, $signedDirs)) {
                 continue;
             }
 
@@ -399,6 +415,125 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         ksort($files);
 
         return $files;
+    }
+
+    /**
+     * Directories the manifest signed that this walk would otherwise skip.
+     *
+     * The exclusion rules come partly from the extension's own .gitignore,
+     * which is not itself signed, so anything it names is outside the
+     * comparison unless something puts it back. Build output is the case that
+     * matters: every official extension gitignores it, so the compiled
+     * JavaScript and CSS the application serves were never compared, while
+     * the extension still verified.
+     *
+     * The signed files[] is the right place to ask, because it is inside the
+     * signed payload. When it names a path this walk would skip, the signer
+     * meant that path to be covered, and the whole directory holding it joins
+     * the comparison -- so a file *added* there is reported as extra, not just
+     * a signed file that changed. Removing those entries to weaken the check
+     * is not open to an attacker: it changes the payload and the signature
+     * stops verifying.
+     *
+     * A manifest that names no such path -- every manifest signed before this
+     * -- produces an empty set here and the walk behaves exactly as it did.
+     * That is what lets the signer side change and the extensions be re-signed
+     * one at a time, instead of every installed extension turning invalid on
+     * the day core is updated.
+     *
+     * @param  array<string, string>  $expectedFiles  files[] section (path => "algo:hash")
+     * @return list<string> directory prefixes, each ending in "/"
+     */
+    protected function signedDirectoriesOutsideTheWalk(array $expectedFiles, string $pluginPath): array
+    {
+        if ($expectedFiles === []) {
+            return [];
+        }
+
+        $gitignore = $this->parseGitignore($pluginPath);
+        $excludePatterns = array_unique(array_merge(
+            self::DEFAULT_EXCLUDE_PATTERNS,
+            $gitignore['exclude'],
+        ));
+
+        $dirs = [];
+
+        foreach (array_keys($expectedFiles) as $relPath) {
+            if (! $this->shouldExclude($relPath, $excludePatterns, $gitignore['include'])) {
+                continue;
+            }
+            if ($this->isExecutableCode($relPath)) {
+                continue;
+            }
+
+            $dir = $this->shallowestExcludedAncestor($relPath, $excludePatterns, $gitignore['include']);
+
+            if ($dir !== '' && ! in_array($dir, $dirs, true)) {
+                $dirs[] = $dir;
+            }
+        }
+
+        return $dirs;
+    }
+
+    /**
+     * The highest directory above this path that the rules also skip.
+     *
+     * Taking the path's own directory would make the covered area depend on
+     * which file the signer happened to list. An extension whose build output
+     * holds `assets/manifest.json` would have the whole tree compared, because
+     * the prefix match reaches everything below it; one whose output starts a
+     * level down, at `assets/js/app.js`, would have only `assets/js/` compared,
+     * and a directory added beside it would stay outside.
+     *
+     * Walking up to the shallowest ancestor the rules skip removes that
+     * difference: the covered area is the ignored tree, whichever file inside
+     * it was listed. Walking stops where the rules stop, so a listed path under
+     * a directory the rules keep contributes only its own directory, and
+     * nothing the rules already compare is widened.
+     *
+     * @param  list<string>  $excludes
+     * @param  list<string>  $includes
+     * @return string a prefix ending in "/", or "" when the path has no directory
+     */
+    protected function shallowestExcludedAncestor(string $relPath, array $excludes, array $includes): string
+    {
+        if (! str_contains($relPath, '/')) {
+            return '';
+        }
+
+        $segments = explode('/', dirname($relPath));
+        $walked = '';
+
+        foreach ($segments as $segment) {
+            $walked = $walked === '' ? $segment : $walked.'/'.$segment;
+
+            // Ask about a file inside the directory, not about the directory
+            // itself. `/resources/assets/*` -- how every official extension
+            // writes it -- never matches `resources/assets`; it matches what
+            // is under it. Probing a child is what finds the boundary.
+            if ($this->shouldExclude($walked.'/'.self::BOUNDARY_PROBE, $excludes, $includes)) {
+                return $walked.'/';
+            }
+        }
+
+        return dirname($relPath).'/';
+    }
+
+    /**
+     * Whether this path sits under one of the signed directories.
+     *
+     * @param  list<string>  $signedDirs  prefixes ending in "/"
+     */
+    protected function isUnderSignedDirectory(string $relPath, array $signedDirs): bool
+    {
+        foreach ($signedDirs as $dir) {
+            if (str_starts_with($relPath, $dir)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
