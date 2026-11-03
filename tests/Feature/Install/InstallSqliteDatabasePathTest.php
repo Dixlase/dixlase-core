@@ -23,6 +23,7 @@
 namespace Tests\Feature\Install;
 
 use App\Http\Controllers\Install\InstallConfirmController;
+use App\Support\Install\SqliteDatabase;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -66,8 +67,40 @@ class InstallSqliteDatabasePathTest extends TestCase
 
     public function test_an_absolute_path_is_kept(): void
     {
+        // An operator installing from the CLI may put the file on a mounted
+        // volume, so resolvePath() keeps what it is given. What the wizard
+        // may ask for is a separate question -- see isAcceptableWizardPath().
         $this->assertSame('/var/data/dixlase.sqlite', $this->resolvePath('/var/data/dixlase.sqlite'));
         $this->assertSame('/var/data/dixlase.sqlite', $this->resolvePath('  /var/data/dixlase.sqlite  '));
+    }
+
+    public function test_a_parent_segment_falls_back_to_the_bundled_database_file(): void
+    {
+        // `..` is never needed, and it is what a prefix comparison cannot be
+        // made to hold for, so it is refused rather than normalised.
+        $this->assertSame(database_path('database.sqlite'), $this->resolvePath('/var/data/../../etc/dixlase.sqlite'));
+        $this->assertSame(database_path('database.sqlite'), $this->resolvePath(database_path('../dixlase.sqlite')));
+    }
+
+    public function test_the_wizard_accepts_the_default_and_the_database_directory(): void
+    {
+        $this->assertTrue(SqliteDatabase::isAcceptableWizardPath(''));
+        $this->assertTrue(SqliteDatabase::isAcceptableWizardPath(null));
+        $this->assertTrue(SqliteDatabase::isAcceptableWizardPath('database/database.sqlite'));
+        $this->assertTrue(SqliteDatabase::isAcceptableWizardPath(database_path('database.sqlite')));
+        $this->assertTrue(SqliteDatabase::isAcceptableWizardPath(database_path('nested/dixlase.sqlite')));
+    }
+
+    public function test_the_wizard_refuses_a_path_outside_the_database_directory(): void
+    {
+        $this->assertFalse(SqliteDatabase::isAcceptableWizardPath('/var/data/dixlase.sqlite'));
+        $this->assertFalse(SqliteDatabase::isAcceptableWizardPath('/tmp/dixlase.sqlite'));
+        $this->assertFalse(SqliteDatabase::isAcceptableWizardPath(database_path('../storage/dixlase.sqlite')));
+        $this->assertFalse(SqliteDatabase::isAcceptableWizardPath(storage_path('dixlase.sqlite')));
+
+        // A sibling whose name merely starts with the directory's name is
+        // outside it; the comparison is on a path boundary.
+        $this->assertFalse(SqliteDatabase::isAcceptableWizardPath(database_path().'-elsewhere/dixlase.sqlite'));
     }
 
     public function test_the_database_file_and_its_directory_are_created(): void

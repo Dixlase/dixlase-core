@@ -52,7 +52,8 @@ return [
     'db_username' => 'データベースユーザー名',
     'db_password' => 'データベースパスワード',
     'db_password_required' => 'データベースパスワードは必須です。',
-    'db_database_sqlite_help' => 'SQLite の場合は絶対パスを入力してください。ファイルが存在しなければ自動生成されます。',
+    'db_sqlite_path_outside_database_dir' => 'SQLite のデータベースファイルは :directory の中に置いてください。空欄にすると同梱のファイルを使います。',
+    'db_database_sqlite_help' => 'SQLite の場合は、空欄にすると同梱の database/database.sqlite を使います。database ディレクトリの中のパスを指定することもできます。ファイルが存在しなければ自動生成されます。',
 
     'preserve_database' => 'データベースをリセットしない',
     'preserve_database_help' => 'チェックを入れると、既存のデータを保持したまま必要な更新のみを適用します。チェックを外すと、インストール時に既存のデータがすべて削除されます。',

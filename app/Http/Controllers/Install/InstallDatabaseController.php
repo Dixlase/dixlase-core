@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Install;
 
 use App\Http\Requests\Install\InstallDatabaseRequest;
+use App\Support\Install\SqliteDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Crypt;
@@ -185,6 +186,44 @@ class InstallDatabaseController extends BaseInstallController
      */
     public function testConnection(Request $request)
     {
+        // The same constraints the submitted form carries: the driver is one
+        // whose PDO extension is loaded here, and a SQLite file stays inside
+        // the application's own database directory.
+        $allowedDrivers = [];
+        if (extension_loaded('pdo_mysql')) {
+            $allowedDrivers[] = 'mysql';
+        }
+        if (extension_loaded('pdo_sqlite')) {
+            $allowedDrivers[] = 'sqlite';
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'db_connection' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedDrivers)],
+            'db_database' => ['nullable', 'string'],
+        ]);
+
+        $validator->after(function ($validator) use ($request): void {
+            if ($request->input('db_connection') !== 'sqlite') {
+                return;
+            }
+
+            if (! SqliteDatabase::isAcceptableWizardPath($request->input('db_database'))) {
+                $validator->errors()->add(
+                    'db_database',
+                    __('install/step3.db_sqlite_path_outside_database_dir', [
+                        'directory' => database_path(),
+                    ])
+                );
+            }
+        });
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
         try {
             $connection = $request->input('db_connection', 'mysql');
             $database = $request->input('db_database');

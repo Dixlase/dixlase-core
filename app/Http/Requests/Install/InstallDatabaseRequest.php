@@ -85,7 +85,19 @@ class InstallDatabaseRequest extends FormRequest
             'db_connection' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedDrivers)],
             'db_host' => $isSqlite ? 'nullable|string' : 'required|string',
             'db_port' => $isSqlite ? 'nullable|integer' : 'required|integer',
-            'db_database' => 'required|string',
+            'db_database' => [
+                'required',
+                'string',
+                // A SQLite file the wizard creates stays inside the
+                // application's own database directory; see SqliteDatabase.
+                function (string $attribute, mixed $value, \Closure $fail) use ($isSqlite): void {
+                    if ($isSqlite && ! \App\Support\Install\SqliteDatabase::isAcceptableWizardPath(is_string($value) ? $value : null)) {
+                        $fail(__('install/step3.db_sqlite_path_outside_database_dir', [
+                            'directory' => database_path(),
+                        ]));
+                    }
+                },
+            ],
             'db_username' => $isSqlite ? 'nullable|string' : 'required|string',
             'db_password' => 'nullable|string',
             'preserve_data' => 'nullable|boolean',

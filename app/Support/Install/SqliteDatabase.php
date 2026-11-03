@@ -52,16 +52,81 @@ class SqliteDatabase
 {
     /**
      * Resolve the configured path, falling back to database/database.sqlite.
+     *
+     * An absolute path is kept as given: an operator installing from the CLI
+     * may legitimately put the file on a mounted volume. A path with a `..`
+     * segment is not, because a prefix check cannot be made to hold for one
+     * (see isInsideDatabaseDirectory()).
      */
     public static function resolvePath(?string $database): string
     {
         $database = trim((string) $database);
 
-        if ($database === '' || $database[0] !== '/') {
+        if ($database === '' || $database[0] !== '/' || self::hasParentSegment($database)) {
             return database_path('database.sqlite');
         }
 
         return $database;
+    }
+
+    /**
+     * Whether the wizard may use this path.
+     *
+     * The wizard answers while a site is not installed, so what it accepts is
+     * not operator input the way the CLI's arguments are. Its path is
+     * therefore confined to the application's own database directory; empty
+     * and relative values are fine, because resolvePath() turns them into the
+     * bundled default. The CLI is not confined -- it goes through
+     * resolvePath() only.
+     */
+    public static function isAcceptableWizardPath(?string $database): bool
+    {
+        $database = trim((string) $database);
+
+        if ($database === '' || $database[0] !== '/') {
+            return ! self::hasParentSegment($database);
+        }
+
+        return self::isInsideDatabaseDirectory($database);
+    }
+
+    /**
+     * Whether an absolute path points inside database_path().
+     *
+     * Compared as strings on the resolved parent directory, because the file
+     * itself usually does not exist yet. A `..` segment is refused outright
+     * rather than normalised, so the comparison cannot be walked around.
+     */
+    public static function isInsideDatabaseDirectory(string $database): bool
+    {
+        $database = trim($database);
+
+        if ($database === '' || $database[0] !== '/' || self::hasParentSegment($database)) {
+            return false;
+        }
+
+        $root = rtrim((string) database_path(), '/');
+        $parent = rtrim(dirname($database), '/');
+
+        if ($parent === $root) {
+            return true;
+        }
+
+        return str_starts_with($parent.'/', $root.'/');
+    }
+
+    /**
+     * Whether any path segment is `..`.
+     */
+    private static function hasParentSegment(string $path): bool
+    {
+        foreach (explode('/', str_replace('\\', '/', $path)) as $segment) {
+            if ($segment === '..') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
