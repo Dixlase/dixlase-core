@@ -40,6 +40,7 @@ namespace Tests\Unit\Services\Plugin;
 use App\Services\Plugin\AuthorityPublicKeyResolver;
 use App\Services\Plugin\CoreSignatureVerifier;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -233,5 +234,44 @@ class SignatureCoversSignedBuildOutputTest extends TestCase
 
         // node_modules stays out, as it always has.
         $this->assertTrue($verifier->check($this->plugin, $signed)['valid']);
+    }
+
+    /**
+     * The three spellings the official extensions use for the same rule.
+     *
+     * `/resources/assets/*` is the common one; OfficialDocs writes
+     * `/resources/assets/` and PublicKeys, Signer and Users write
+     * `/resources/assets`. The boundary has to come out the same for all
+     * three, or an extension's coverage would depend on how its ignore file
+     * happens to be punctuated.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function gitignoreStyles(): array
+    {
+        return [
+            'trailing star' => ['/resources/assets/*'],
+            'trailing slash' => ['/resources/assets/'],
+            'bare path' => ['/resources/assets'],
+        ];
+    }
+
+    #[DataProvider('gitignoreStyles')]
+    public function test_every_gitignore_spelling_gives_the_same_boundary(string $pattern): void
+    {
+        File::put($this->plugin.'/.gitignore', $pattern."\n");
+
+        $verifier = $this->verifier();
+        $signed = $verifier->signedIncludingBuildOutput($this->plugin);
+
+        // A file added one level below the listed one must be reported
+        // whichever spelling the ignore file uses.
+        File::ensureDirectoryExists($this->plugin.'/resources/assets/css');
+        File::put($this->plugin.'/resources/assets/css/added.css', "body{}\n");
+
+        $result = $verifier->check($this->plugin, $signed);
+
+        $this->assertFalse($result['valid'], $pattern.' should not verify with an added file');
+        $this->assertContains('resources/assets/css/added.css', $result['extra'], $pattern);
     }
 }
