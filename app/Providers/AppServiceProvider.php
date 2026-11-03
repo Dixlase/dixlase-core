@@ -114,8 +114,7 @@ class AppServiceProvider extends ServiceProvider
         // authentication surface under the operator-configurable admin prefix
         // (routes/admin.php), guarded by AdminIpFilter, the lockdown check and
         // AdminLoginController; two-factor management lives under
-        // admin.profile.two-fa and password confirmation under
-        // AdminConfirmablePasswordController. Fortify's defaults would publish
+        // admin.profile.two-fa. Fortify's defaults would publish
         // a second, fixed entry point — POST /login on the `member` guard with
         // only the `web` middleware, plus /logout, /two-factor-challenge and
         // /user/confirm-password — that bypasses all of the above, and its
