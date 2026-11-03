@@ -90,6 +90,7 @@ the Markdown editor is selected.
                 <x-form-label :for="$modalId.'_url'" :text="__('components/content-editor.embed.url')" />
                 <x-form-text
                     :id="$modalId.'_url'"
+                    :name="$modalId.'_url'"
                     type="url"
                     placeholder="https://"
                     xModel="url"
