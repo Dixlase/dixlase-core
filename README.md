@@ -98,16 +98,7 @@ For Docker-equipped hosts, use the [Docker installer](https://github.com/Dixlase
 
 ### Composer create-project
 
-For hosts with PHP 8.3+, Composer and Node.js, install from [Packagist](https://packagist.org/packages/dixlase/dixlase-core):
-
-```bash
-composer create-project dixlase/dixlase-core dixlase
-cd dixlase
-npm install && npm run build
-php artisan dls:theme:build DixlaseOnePage
-```
-
-A Composer install ships no compiled assets, so the core and the bundled theme are built once before the Web-based installation wizard is opened. See the [Composer installation guide](docs/installation/setup/download/composer.md).
+Coming after Dixlase is registered on Packagist. Until then, use the quick install script or the Docker installer above.
 
 ---
 
