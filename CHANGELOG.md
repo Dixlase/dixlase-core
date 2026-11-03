@@ -41,6 +41,33 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.1] — 2026-11-03
+
+### Added
+- A tag input with suggestions that any admin screen can use (#842). It suggests existing tags
+  as you type, offers to create a new one, and adds what was typed on Space, Enter or leaving
+  the field. The tag that matches the typed text exactly is offered first. The media library
+  keeps its tag input as before, now built on the shared one
+
+### Changed
+- Signature verification takes the files it compares from the signed manifest, not from the
+  extension's `.gitignore` (#847, #848). When a manifest lists a file under a directory the
+  extension ignores, that whole ignored directory is compared. A manifest that lists no such
+  file is verified exactly as before, so installed extensions are unaffected. **Extension
+  releases signed this way declare 0.2.1 as their minimum core; update core first**
+
+### Fixed
+- The installer's log records each step without the values it was given (#846)
+
+### Plugin API — Added
+- `<x-form-tag-input>`: the media tag input's options plus `tagsUrl`, `maxlength` and its
+  texts, which default to `components/form.tag_input.*` (#842). Its Alpine data is registered
+  as `tagInput`, and the `tag-input-reset` event clears it
+
+### Internal
+- Tests fix the signature comparison's boundary for each way an extension can write its ignore
+  rule (#849)
+
 ## [0.2.0] — 2026-11-01
 
 ### Added
