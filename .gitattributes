@@ -1,7 +1,49 @@
 # .gitattributes
+#
+# export-ignore decides what `git archive` leaves out, and GitHub builds the
+# tag zipball that Packagist serves as the Composer dist with it. So this list
+# is what `composer create-project dixlase/dixlase-core` does not receive.
+#
+# Keep it in line with .github/release-dist-exclude.txt, which does the same
+# for the release ZIP. Two differences are deliberate: the release ZIP ships a
+# generated composer.local.json, and it ships built assets, so the source files
+# a build needs (package.json, vite.config.js, resources/src/) stay in both.
 
 /stubs
 /stubs/* export-ignore
 /app/Console/Commands/AddCopyright.php export-ignore
+
+# VCS metadata and GitHub config
+/.github export-ignore
 .gitignore export-ignore
 .gitattributes export-ignore
+/.gitmodules export-ignore
+/.mailmap export-ignore
+/.gitmessage export-ignore
+/.gitignore.plugins export-ignore
+
+# Editor, IDE and AI assistant config
+/.editorconfig export-ignore
+/.ai export-ignore
+/.windsurf export-ignore
+/.vscode.example export-ignore
+/CLAUDE.md export-ignore
+/CLAUDE.ja.md export-ignore
+
+# Internal working notes
+/resources/src/_csp-build-dryrun export-ignore
+
+# Tests and development tooling
+/tests export-ignore
+/phpunit.xml export-ignore
+/phpstan.neon export-ignore
+
+# Developer-facing documents (README, LICENSE* and NOTICE* are kept)
+/CHANGELOG.md export-ignore
+/CONTRIBUTING* export-ignore
+/COPYRIGHT-POLICY* export-ignore
+/TRADEMARK-POLICY* export-ignore
+/CLA-* export-ignore
+/SECURITY.md export-ignore
+/PLUGIN-API.md export-ignore
+/README.laravel.md export-ignore
