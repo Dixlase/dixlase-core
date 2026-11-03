@@ -22,6 +22,7 @@
 
 namespace App\Http\Controllers\Admin\Settings;
 
+use App\Helpers\AdminHelper;
 use App\Models\ExtensionSource;
 use App\Services\Extension\ExtensionSourceManager;
 use Illuminate\Http\Request;
@@ -176,6 +177,20 @@ class AdminExtensionThumbnailController extends Controller
         if ($slug === '' || ! preg_match('/^[a-z0-9-]+$/', $slug)) {
             abort(404);
         }
+
+        // The "Add plugin" / "Add theme" pages this serves are gated, and
+        // this endpoint reaches the configured source over the network on
+        // their behalf, so it answers to the same gate they do. The check
+        // lives here rather than on the route because the key depends on
+        // {type}, which only the request carries. The sibling show() stays
+        // ungated on purpose: it serves a file already on disk, referenced
+        // from pages that several roles can open (#855).
+        $menuKey = $type === 'theme' ? 'settings.themes.add' : 'settings.plugins.add';
+
+        if (! AdminHelper::canAccessMenu($menuKey)) {
+            abort(403);
+        }
+
         if (! $source->is_enabled) {
             return $this->fallbackThumbnail($type);
         }
