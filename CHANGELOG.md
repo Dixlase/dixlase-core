@@ -41,6 +41,30 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.2] — 2026-11-04
+
+### Added
+- Dixlase can be installed from Packagist with `composer create-project dixlase/dixlase-core`,
+  with no GitHub token (#853). The bundled theme resolves from Packagist as well. A Composer
+  install carries no built assets, so run `npm run build` and
+  `php artisan dls:theme:build DixlaseOnePage` before opening the installer; the message shown
+  after `create-project` lists both. The install path is described in the installation guide
+  and in the READMEs (#860)
+
+### Changed
+- The Composer package leaves out the same files as the release ZIP: tests, CI configuration,
+  AI assistant files and developer documents (#853)
+
+### Fixed
+- A successful core rollback no longer leaves `vendor.old` behind, which the preflight check
+  then reported as the remains of an unfinished update (#857)
+- The thumbnail of an extension offered online is served only to members who may open the
+  **Add plugin** or **Add theme** page (#858)
+
+### Internal
+- Two admin authentication controllers left over from the starter scaffolding, which no route
+  reached, were removed (#859)
+
 ## [0.2.1] — 2026-11-03
 
 ### Added
