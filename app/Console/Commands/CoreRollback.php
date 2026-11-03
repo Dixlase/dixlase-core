@@ -68,7 +68,8 @@ use Illuminate\Support\Facades\DB;
  *   2. restores the core source tree from the snapshot (no npm run),
  *   3. for a dependency update, re-fetches the matching vendor/ from the old
  *      release ZIP under maintenance mode (vendor.old is discarded on update
- *      success, so it cannot simply be moved back) — the ZIP is downloaded
+ *      success, so it cannot simply be moved back; this command discards its
+ *      own vendor.old once the rollback succeeds) — the ZIP is downloaded
  *      and checked for a prebuilt vendor/ before step 1, so a release that
  *      lacks one is refused without changing anything,
  *   4. reverses ONLY this update's schema via migrate:rollback --step,
@@ -420,6 +421,16 @@ class CoreRollback extends Command
             // steps back to the PREVIOUS update rather than repeating this
             // one. The DB backup is retained as a safety net.
             $snapshotter->discard($snapshotPath);
+
+            // Discard the vendor/ this rollback replaced, the way a successful
+            // update does (CoreUpdater). Without this the tree keeps a
+            // vendor.old that the preflight check then reports as a leftover
+            // from an unfinished update, until the next swap deletes it
+            // (#854). The failure path above restores it instead.
+            if ($vendorSwapped) {
+                $vendorManager->discardPrevious();
+                $this->line('Discarded vendor.old (rollback succeeded).');
+            }
 
             // Record completion for the System Updates page's one-shot
             // "rollback complete" flash. Mirrors CoreUpdater: the web UI runs
