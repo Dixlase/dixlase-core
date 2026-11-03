@@ -742,6 +742,103 @@ export function contentEditorInsertImage() {
 }
 
 /**
+ * `@[service](URL)` for an embed (#731), or null when the URL is not an
+ * http(s) address. A ")" in the URL would end the syntax early, so it is
+ * percent-encoded.
+ */
+export function embedLine(service, url) {
+    const trimmed = String(url || '').trim();
+    if (!/^https?:\/\/\S+$/i.test(trimmed)) {
+        return null;
+    }
+    return '@[' + service + '](' + trimmed.replace(/\)/g, '%29') + ')';
+}
+
+/**
+ * Put a block on lines of its own over the field's selection (or at the
+ * cursor): a blank line before it unless it starts the field, and one after
+ * it. An embed only starts after a blank line, as a Markdown image block does.
+ */
+export function insertBlock(field, text) {
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? start;
+    const before = field.value.slice(0, start);
+    const after = field.value.slice(end);
+    const lead = before === '' || before.endsWith('\n\n') ? '' : (before.endsWith('\n') ? '\n' : '\n\n');
+    const trail = after.startsWith('\n\n') ? '' : (after.startsWith('\n') ? '\n' : '\n\n');
+    field.focus();
+    field.setRangeText(lead + text + trail, start, end, 'end');
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/**
+ * "Insert embed" button of the content editor: opens the modal that asks
+ * for the service and the URL (contentEditorEmbedForm).
+ */
+export function contentEditorInsertEmbed() {
+    return {
+        modalId: '',
+
+        init() {
+            this.modalId = this.$el.dataset.modalId || '';
+        },
+
+        open() {
+            if (typeof window.openModal === 'function') {
+                window.openModal(this.modalId);
+            }
+        },
+    };
+}
+
+/**
+ * The form inside the "Insert embed" modal. Every field is declared, so it
+ * stays on this component rather than on an outer x-data (see Blog #203).
+ */
+export function contentEditorEmbedForm() {
+    return {
+        targetId: '',
+        modalId: '',
+        invalidMessage: '',
+        service: 'youtube',
+        url: '',
+        error: '',
+
+        init() {
+            this.targetId = this.$el.dataset.target || '';
+            this.modalId = this.$el.dataset.modalId || '';
+            this.invalidMessage = this.$el.dataset.invalid || '';
+        },
+
+        insert() {
+            const line = embedLine(this.service, this.url);
+            if (line === null) {
+                this.error = this.invalidMessage;
+                return;
+            }
+            const field = document.getElementById(this.targetId);
+            if (!field) {
+                return;
+            }
+            this.close();
+            insertBlock(field, line);
+            this.url = '';
+        },
+
+        cancel() {
+            this.close();
+        },
+
+        close() {
+            this.error = '';
+            if (typeof window.closeModal === 'function') {
+                window.closeModal(this.modalId);
+            }
+        },
+    };
+}
+
+/**
  * The Alpine side of <x-content-editor.sidebar-section>.
  *
  * The Blade component decides the initial state (data-open) and whether a
@@ -807,5 +904,7 @@ export function contentEditorSidebarSection() {
 
 Alpine.data('contentEditor', contentEditor);
 Alpine.data('contentEditorInsertImage', contentEditorInsertImage);
+Alpine.data('contentEditorInsertEmbed', contentEditorInsertEmbed);
+Alpine.data('contentEditorEmbedForm', contentEditorEmbedForm);
 Alpine.data('contentEditorStorageInfo', contentEditorStorageInfo);
 Alpine.data('contentEditorSidebarSection', contentEditorSidebarSection);
