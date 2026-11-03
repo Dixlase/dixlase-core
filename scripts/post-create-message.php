@@ -27,8 +27,11 @@
  * mirroring the completion screen of the one-liner installer.
  *
  * Unlike the pre-built release ZIP, the composer source install ships no
- * compiled front-end assets (public/build/ is a build artifact, not in git),
- * so the npm build step is surfaced unless those assets already exist.
+ * compiled front-end assets (public/assets/build/ is a build artifact, not in
+ * git), so the npm build step is surfaced unless those assets already exist.
+ * The bundled theme arrives the same way, as source only, and the install
+ * wizard builds a theme only when it downloads one, so its build is surfaced
+ * too.
  *
  * Framework-independent: runs before the app is bootable / configured.
  */
@@ -37,7 +40,13 @@ $dir = getcwd() ?: '.';
 // Compiled Vite assets are absent on a source (composer) install but present
 // when this somehow runs over a pre-built tree — only nudge to build when the
 // manifest is missing, so the message stays accurate either way.
-$assetsBuilt = is_file($dir.'/public/build/manifest.json');
+$assetsBuilt = is_file($dir.'/public/assets/build/manifest.json');
+
+// The bundled theme's build output is exposed through a public symlink that
+// dls:theme:build creates, so its absence means the theme has not been built.
+$themeBuilt = is_dir($dir.'/themes/DixlaseOnePage')
+    ? file_exists($dir.'/public/assets/themes/DixlaseOnePage')
+    : true;
 
 // Emit ANSI colour only on an interactive terminal that has not opted out via
 // the NO_COLOR convention (https://no-color.org). Otherwise print plain text
@@ -76,6 +85,16 @@ $step = 1;
 if (! $assetsBuilt) {
     $out('  '.$step.'. Build the front-end assets:');
     $out('     '.$cyan('cd '.$dir.' && npm install && npm run build'));
+    $out();
+    $step++;
+}
+
+// The front page and the login screen need the theme's bundle. The wizard
+// builds a theme only when it downloads one, and Composer has already placed
+// this one, so nothing else builds it.
+if (! $themeBuilt) {
+    $out('  '.$step.'. Build the bundled theme:');
+    $out('     '.$cyan('php artisan dls:theme:build DixlaseOnePage').'   (from the directory above)');
     $out();
     $step++;
 }
