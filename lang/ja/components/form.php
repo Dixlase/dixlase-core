@@ -42,6 +42,12 @@ return [
         'title' => 'タイトルを入力',
         'description' => '説明を入力',
     ],
+    'tag_input' => [
+        'placeholder' => 'タグを追加…',
+        'create' => '「:name」を新しいタグとして作成',
+        'remove' => ':name を外す',
+        'no_match' => '一致するタグがありません。',
+    ],
     'show_password' => 'パスワードを表示',
     'hide_password' => 'パスワードを非表示',
     'validation' => [

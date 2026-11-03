@@ -244,7 +244,7 @@ document.addEventListener('alpine:init', () => {
             }
 
             fillIds(form, this.selectedIds);
-            document.getElementById(prefix + 'Input')?.dispatchEvent(new CustomEvent('media-tag-input-reset'));
+            document.getElementById(prefix + 'Input')?.dispatchEvent(new CustomEvent('tag-input-reset'));
             window.openModal(prefix + 'Modal');
         },
     }));

@@ -42,6 +42,12 @@ return [
         'title' => 'Enter title',
         'description' => 'Enter description',
     ],
+    'tag_input' => [
+        'placeholder' => 'Add a tag…',
+        'create' => 'Create “:name” as a new tag',
+        'remove' => 'Remove :name',
+        'no_match' => 'No tag matches.',
+    ],
     'show_password' => 'Show password',
     'hide_password' => 'Hide password',
     'validation' => [

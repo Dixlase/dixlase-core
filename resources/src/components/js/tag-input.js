@@ -20,12 +20,17 @@
 
 
 /**
- * Tag input for the media library (x-media.tag-input, #766).
+ * Tag input with suggestions (x-form-tag-input, #841; the media library's
+ * x-media.tag-input, #766, is a wrapper around it).
  *
- * A combobox: typing narrows the site's existing tags, shown with their
- * counts, and "create «…»" comes one step below them, so an existing tag is
- * the first thing offered. Chosen tags become hidden inputs, the tag's name
+ * A combobox: typing narrows the existing tags, shown with their counts,
+ * and "create «…»" comes one step below them, so an existing tag is the
+ * first thing offered. Chosen tags become hidden inputs, the tag's name
  * or its id depending on data-value-field.
+ *
+ * With data-commit-typed, Space and leaving the field add what was typed
+ * as it is, for a free-text tag field. With data-strip-hash, a leading "#"
+ * is dropped.
  *
  * The tag list is fetched from data-tags-url the first time the field
  * gets focus. Configuration comes from data attributes, so the directive
@@ -47,7 +52,7 @@ export function normalizeTagName(name) {
         .trim();
 }
 
-Alpine.data('mediaTagInput', () => ({
+Alpine.data('tagInput', () => ({
     query: '',
     tags: [],
     loaded: false,
@@ -75,7 +80,7 @@ Alpine.data('mediaTagInput', () => ({
         this.selected = initial.map(name => ({ key: ++this.nextKey, id: null, name: String(name) }));
 
         // Each opening of a bulk modal starts empty
-        this.$el.addEventListener('media-tag-input-reset', () => this.reset());
+        this.$el.addEventListener('tag-input-reset', () => this.reset());
     },
 
     reset() {
@@ -99,6 +104,19 @@ Alpine.data('mediaTagInput', () => ({
 
     formId() {
         return this.config.form || null;
+    },
+
+    commitTyped() {
+        return this.config.commitTyped === '1';
+    },
+
+    /**
+     * What was typed, as a tag name: normalised, and without a leading "#"
+     * when data-strip-hash is set.
+     */
+    typedName() {
+        const name = normalizeTagName(this.query);
+        return this.config.stripHash === '1' ? name.replace(/^#+/, '').trim() : name;
     },
 
     async load() {
@@ -125,7 +143,9 @@ Alpine.data('mediaTagInput', () => ({
     },
 
     blurred() {
-        // Options take mousedown.prevent, so choosing one does not blur
+        // Options take mousedown.prevent, so choosing one does not blur.
+        // A free-text field keeps an unfinished word rather than losing it.
+        if (this.commitTyped()) this.addTyped(false);
         this.open = false;
     },
 
@@ -143,11 +163,14 @@ Alpine.data('mediaTagInput', () => ({
      * and no tag has exactly that name.
      */
     options() {
-        const name = normalizeTagName(this.query);
+        const name = this.typedName();
         const needle = name.toLocaleLowerCase();
         const matches = this.tags
             .filter(tag => !this.isSelected(tag))
             .filter(tag => needle === '' || tag.name.toLocaleLowerCase().includes(needle))
+            // The tag that is exactly what was typed comes first, so Enter
+            // takes "news" rather than "newsletter"
+            .sort((a, b) => Number(b.name.toLocaleLowerCase() === needle) - Number(a.name.toLocaleLowerCase() === needle))
             .slice(0, MAX_OPTIONS)
             .map(tag => ({ key: 't' + tag.id, tag: tag, create: false }));
 
@@ -168,7 +191,7 @@ Alpine.data('mediaTagInput', () => ({
     },
 
     showEmpty() {
-        return this.open && this.loaded && !this.hasOptions() && normalizeTagName(this.query) !== '';
+        return this.open && this.loaded && !this.hasOptions() && this.typedName() !== '';
     },
 
     optionId(index) {
@@ -200,13 +223,37 @@ Alpine.data('mediaTagInput', () => ({
         return option.create ? '' : String(option.tag.count);
     },
 
-    choose(option) {
+    choose(option, refocus = true) {
         if (!option) return;
         this.selected.push({ key: ++this.nextKey, id: option.tag.id, name: option.tag.name });
         this.query = '';
         this.activeIndex = 0;
+        if (!refocus) return;
         this.open = true;
         this.$refs.field?.focus();
+    },
+
+    /**
+     * Adds what was typed as it is: the existing tag of that name, else a
+     * new one when creating is allowed. Typing a tag already chosen just
+     * clears the field.
+     */
+    addTyped(refocus = true) {
+        const name = this.typedName();
+        if (name === '') {
+            this.query = '';
+            return;
+        }
+        if (this.selected.some(item => item.name === name)) {
+            this.query = '';
+            return;
+        }
+        const tag = this.tags.find(entry => entry.name === name);
+        if (tag) {
+            this.choose({ tag: tag, create: false }, refocus);
+        } else if (this.allowCreate()) {
+            this.choose({ tag: { id: null, name: name, count: 0 }, create: true }, refocus);
+        }
     },
 
     remove(item) {
@@ -237,10 +284,18 @@ Alpine.data('mediaTagInput', () => ({
             event.preventDefault();
             this.open = true;
             this.activeIndex = options.length ? (this.activeIndex - 1 + options.length) % options.length : 0;
+        } else if (event.key === ' ' && this.commitTyped()) {
+            // A free-text field takes Space as "this word is a tag"
+            event.preventDefault();
+            this.addTyped();
         } else if (event.key === 'Enter') {
             // Never submits the surrounding form
             event.preventDefault();
-            if (this.open) this.choose(options[this.activeIndex]);
+            if (this.open && options.length) {
+                this.choose(options[this.activeIndex]);
+            } else if (this.commitTyped()) {
+                this.addTyped();
+            }
         } else if (event.key === 'Escape') {
             if (this.open) {
                 event.stopPropagation();
