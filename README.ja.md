@@ -99,7 +99,16 @@ Docker 環境のホストでは [Docker インストーラ](https://github.com/D
 
 ### Composer create-project
 
-Packagist 登録後に提供予定です。それまでは、上のクイックインストールスクリプトか Docker インストーラをご利用ください。
+PHP 8.3 以上、Composer、Node.js が用意された環境では、[Packagist](https://packagist.org/packages/dixlase/dixlase-core) からインストールできます:
+
+```bash
+composer create-project dixlase/dixlase-core dixlase
+cd dixlase
+npm install && npm run build
+php artisan dls:theme:build DixlaseOnePage
+```
+
+Composer でのインストールにはビルド済みのアセットが含まれないため、Web インストールウィザードを開く前に、コアと同梱テーマを一度ビルドします。詳しくは [Composer でのインストール手順](docs/ja/installation/setup/download/composer.md)をご覧ください。
 
 ---
 
