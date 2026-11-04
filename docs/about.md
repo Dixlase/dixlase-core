@@ -39,7 +39,7 @@ Dixlase is licensed under the [AGPL-3.0](license.md) with a special exception th
 
 ## Links
 
-- **Official Site**: [https://dixlase.com](https://dixlase.com)
-- **Documentation**: [https://docs.dixlase.com](https://docs.dixlase.com)
-- **GitHub**: [https://github.com/Dixlase/dixlase](https://github.com/Dixlase/dixlase)
+- **Official Site**: [https://dixlase.org](https://dixlase.org)
+- **Documentation**: [https://github.com/Dixlase/dixlase-core/tree/main/docs](https://github.com/Dixlase/dixlase-core/tree/main/docs)
+- **GitHub**: [https://github.com/Dixlase/dixlase-core](https://github.com/Dixlase/dixlase-core)
 - **Developer**: [exc-D inc.](https://exc-d.com)
