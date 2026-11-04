@@ -105,10 +105,10 @@ PHP 8.3 以上、Composer、Node.js が用意された環境では、[Packagist]
 composer create-project dixlase/dixlase-core dixlase
 cd dixlase
 npm install && npm run build
-php artisan dls:theme:build DixlaseOnePage
+php artisan dls:theme:symlink create DixlaseOnePage
 ```
 
-Composer でのインストールにはビルド済みのアセットが含まれないため、Web インストールウィザードを開く前に、コアと同梱テーマを一度ビルドします。詳しくは [Composer でのインストール手順](docs/ja/installation/setup/download/composer.md)をご覧ください。
+Composer でのインストールにはコアのビルド済みアセットが含まれないため、Web インストールウィザードを開く前に、コアを一度ビルドします。同梱テーマはビルド済みのものを同梱しており、テーマの署名に覆われています。2 つめのコマンドは、コアが配信するパスにそれを出すだけです。ビルドし直すと、テーマが改変扱いで報告されます。詳しくは [Composer でのインストール手順](docs/ja/installation/setup/download/composer.md)をご覧ください。
 
 ---
 
