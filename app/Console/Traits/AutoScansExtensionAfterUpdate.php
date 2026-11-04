@@ -91,6 +91,75 @@ trait AutoScansExtensionAfterUpdate
     }
 
     /**
+     * Refuse a staged update whose signature does not hold, before it is put
+     * in place.
+     *
+     * The staged tree sits outside plugins/ and themes/, so nothing loads it
+     * while this runs. Checking here means a tree whose files do not match
+     * its signed manifest never reaches the directory the application reads.
+     *
+     * The verdict follows the enable gate rather than inventing a second
+     * policy: a signature that does not hold is refused outright, and a tree
+     * with no signature is refused when the active security settings require
+     * one (the Development preset never does). An extension that is simply
+     * unsigned therefore keeps updating under the default preset, as before.
+     *
+     * @param  'plugin'|'theme'  $kind
+     *
+     * @throws ExtensionUpdateBlockedException
+     */
+    protected function refuseUnverifiedStagedTree(string $kind, string $slug, string $stagedPath): void
+    {
+        $manifestFile = $kind === 'theme' ? 'theme.json' : 'plugin.json';
+
+        try {
+            $result = app(\App\Services\Plugin\CoreSignatureVerifier::class)
+                ->verifyDirectory($stagedPath, $manifestFile);
+        } catch (\Throwable $e) {
+            throw new ExtensionUpdateBlockedException(
+                "The signature of the new version could not be checked, so it was not applied: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
+
+        if ($result->isInvalid()) {
+            throw new ExtensionUpdateBlockedException(
+                'The signature of the new version does not hold, so it was not applied.'
+            );
+        }
+
+        if ($result->isUnsigned() && $this->stagedTreeMustBeSigned()) {
+            throw new ExtensionUpdateBlockedException(
+                'The new version carries no signature, and the current extension security settings require one, so it was not applied.'
+            );
+        }
+    }
+
+    /**
+     * Whether the active security settings require a signature.
+     *
+     * Reads the same two settings the enable gate reads, in the same order,
+     * so the two cannot drift apart.
+     */
+    private function stagedTreeMustBeSigned(): bool
+    {
+        $preset = (string) \App\Services\SecuritySettingsRegistry::get(
+            'extension_security_preset',
+            \App\Enums\ExtensionSecurityPreset::default()->value,
+        );
+
+        if ($preset === \App\Enums\ExtensionSecurityPreset::Development->value) {
+            return false;
+        }
+
+        $presetDefault = (bool) (
+            \App\Enums\ExtensionSecurityPreset::tryFrom($preset)?->getDefaultSettings()['require_signature'] ?? false
+        );
+
+        return (bool) \App\Services\SecuritySettingsRegistry::get('extension_require_signature', $presetDefault);
+    }
+
+    /**
      * Scan the new version as soon as it is on disk and refuse it when its
      * health check resolves to Blocked -- the same rule that refuses to
      * enable a Blocked extension.

@@ -458,7 +458,7 @@ class PluginUpdate extends Command
     protected function extractUpdate(string $zipPath, Plugin $plugin): void
     {
         $pluginDir = base_path("plugins/{$plugin->directory}");
-        $this->extractZipReplacingDir($zipPath, $pluginDir);
+        $this->extractZipReplacingDir($zipPath, $pluginDir, (string) $plugin->slug);
     }
 
     /**
@@ -467,7 +467,7 @@ class PluginUpdate extends Command
      * extractUpdate() above and (for symmetry with the install flow)
      * may be called by other extension installers.
      */
-    protected function extractZipReplacingDir(string $zipPath, string $destinationDir): void
+    protected function extractZipReplacingDir(string $zipPath, string $destinationDir, string $slug): void
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -507,6 +507,11 @@ class PluginUpdate extends Command
             if (! File::isDirectory($newSource)) {
                 throw new \RuntimeException("Extracted top-level directory '{$topLevel}' not found in staging.");
             }
+
+            // Check the signature while the tree is still in staging, where
+            // nothing loads it. A tree whose files do not match its signed
+            // manifest never reaches the directory the application reads.
+            $this->refuseUnverifiedStagedTree('plugin', $slug, $newSource);
 
             // Replace the live tree wholesale. The caller already took a
             // snapshot, so rollback is handled outside this method.
