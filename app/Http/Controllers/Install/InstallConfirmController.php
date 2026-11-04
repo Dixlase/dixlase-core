@@ -39,6 +39,7 @@ use App\Exceptions\Install\CoreIntegrityBlockedException;
 use App\Exceptions\Install\SqliteDatabaseUnusableException;
 use App\Services\Install\InstallRunner;
 use App\Support\Install\InstallRunLock;
+use App\Support\Install\InstallStepFields;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 
@@ -84,11 +85,7 @@ class InstallConfirmController extends BaseInstallController
         // them in .env on purpose (a leftover DB_HOST=mysql from the docker
         // preset would otherwise make other code paths attempt a TCP connect).
         // Requiring them here made every SQLite installation fail this check.
-        $steps = [
-            'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
-            'environment' => ['app_env', 'app_url', 'admin_url', 'app_timezone'],
-            'database' => $this->requiredDatabaseFields($data['db_connection'] ?? null),
-        ];
+        $steps = InstallStepFields::all($data);
 
         // Start over if session data is completely empty
         if (empty($data)) {
@@ -164,24 +161,6 @@ class InstallConfirmController extends BaseInstallController
         // while core is unsigned. Re-introduce coreIntegrityPanel() + the
         // confirm.blade.php panel when shipping core signing.
         // See .backlog/core-signing-deferred.md.
-    }
-
-    /**
-     * Required database fields for the chosen driver.
-     *
-     * SQLite only needs the file path; every other driver needs the server
-     * coordinates as well. Kept as its own method so the confirm screen and
-     * its tests share one definition.
-     *
-     * @return array<int, string>
-     */
-    protected function requiredDatabaseFields(?string $connection): array
-    {
-        if ($connection === 'sqlite') {
-            return ['db_connection', 'db_database'];
-        }
-
-        return ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'];
     }
 
     /**

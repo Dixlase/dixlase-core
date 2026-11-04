@@ -35,6 +35,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Install\InstallStepFields;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,22 +75,17 @@ class CheckInstallationSteps
     }
 
     /**
-     * Check if required fields for each step exist in session
+     * Check if required fields for each step exist in session.
+     *
+     * The field lists come from InstallStepFields, shared with the confirm
+     * screen, so a SQLite install is not asked for a database server's host,
+     * port or user name it never submits.
+     *
+     * @param  array<string, mixed>  $data
      */
-    private function checkStepFields($stepName, $data)
+    private function checkStepFields(string $stepName, array $data): bool
     {
-        $requiredKeys = [
-            'settings' => ['site_name', 'admin_account_name', 'admin_email', 'admin_password'],
-            'environment' => ['app_env', 'app_url', 'app_timezone', 'admin_url'],
-            'database' => ['db_connection', 'db_host', 'db_port', 'db_database', 'db_username'],
-            'mail' => [],
-        ];
-
-        if (! isset($requiredKeys[$stepName])) {
-            return true; // Steps not subject to checking are always considered successful
-        }
-
-        foreach ($requiredKeys[$stepName] as $field) {
+        foreach (InstallStepFields::forStep($stepName, $data) as $field) {
             if (! isset($data[$field])) {
                 return false;
             }
