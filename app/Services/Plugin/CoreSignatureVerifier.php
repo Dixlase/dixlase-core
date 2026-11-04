@@ -168,6 +168,19 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
     }
 
     /**
+     * Verify an extension tree by path, installed or not.
+     *
+     * verify() and verifyTheme() resolve the directory of an extension the
+     * database knows about. This takes the path directly, so a tree that is
+     * only staged -- an update that has been extracted but not put in place
+     * -- can be checked while it is still outside plugins/ and themes/.
+     */
+    public function verifyDirectory(string $extensionPath, string $manifestFile = 'plugin.json'): SignatureVerificationResult
+    {
+        return $this->verifyExtensionDirectory($extensionPath, $manifestFile);
+    }
+
+    /**
      * Verify the signed extension at $pluginPath whose manifest is $manifestFile.
      */
     protected function verifyExtensionDirectory(string $pluginPath, string $manifestFile): SignatureVerificationResult

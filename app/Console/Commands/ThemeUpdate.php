@@ -470,7 +470,7 @@ class ThemeUpdate extends Command
     protected function extractUpdate(string $zipPath, Theme $theme): void
     {
         $themeDir = base_path("themes/{$theme->directory}");
-        $this->extractZipReplacingDir($zipPath, $themeDir);
+        $this->extractZipReplacingDir($zipPath, $themeDir, (string) $theme->slug);
     }
 
     /**
@@ -479,7 +479,7 @@ class ThemeUpdate extends Command
      * PluginUpdate::extractZipReplacingDir() for the same logic; we
      * keep a copy here so each console command stays self-contained.
      */
-    protected function extractZipReplacingDir(string $zipPath, string $destinationDir): void
+    protected function extractZipReplacingDir(string $zipPath, string $destinationDir, string $slug): void
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -515,6 +515,11 @@ class ThemeUpdate extends Command
             if (! File::isDirectory($newSource)) {
                 throw new \RuntimeException("Extracted top-level directory '{$topLevel}' not found in staging.");
             }
+
+            // Check the signature while the tree is still in staging, where
+            // nothing loads it. A tree whose files do not match its signed
+            // manifest never reaches the directory the application reads.
+            $this->refuseUnverifiedStagedTree('theme', $slug, $newSource);
 
             if (File::isDirectory($destinationDir)) {
                 File::deleteDirectory($destinationDir);
