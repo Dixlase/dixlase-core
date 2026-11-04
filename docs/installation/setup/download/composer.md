@@ -31,13 +31,22 @@ The bundled theme, DixlaseOnePage, is placed in `themes/DixlaseOnePage/` by Comp
 
 ## Next Steps
 
-Start a local server and open the Installation Wizard:
+Start PHP's built-in server from the project directory and open the Installation Wizard:
 
 ```bash
-php artisan serve --no-reload
+cd public
+PHP_CLI_SERVER_WORKERS=4 php -d variables_order=EGPCS -d max_execution_time=300 \
+  -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php
 ```
 
-Keep `--no-reload`. Without it the development server restarts whenever `.env` changes, and the wizard writes `.env` during its steps: the restart cuts off that request, and the browser reports an empty response.
+- Run it from `public/`: the router script, the same one `php artisan serve` uses, treats the current directory as the web root.
+- `variables_order=EGPCS` keeps `PATH` for the commands the wizard runs; without it `composer dump-autoload` fails with "env: php: No such file or directory".
+- `PHP_CLI_SERVER_WORKERS=4` lets one slow page load without stalling the others. Leave it out on Windows, which does not support it.
+- `max_execution_time=300` gives the final step, which runs the migrations, enough time.
+
+Do not use `php artisan serve` for the wizard. It restarts whenever `.env` changes, which cuts off the step that wrote it. With `--no-reload` it keeps the `.env` it read at start-up for as long as it runs, so the wizard's database settings never take effect and the final step sends you back to the first screen.
+
+Restart the server after a core update or rollback. Both recreate `public/`, and a server started there keeps the old directory.
 
 Then open `http://127.0.0.1:8000`. The [Installation Wizard](../../wizard.md) guides you through the database, the administrator account and mail. Choose **SQLite** in the database step to start without a separate database server.
 
