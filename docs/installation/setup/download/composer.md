@@ -34,8 +34,10 @@ The bundled theme, DixlaseOnePage, is placed in `themes/DixlaseOnePage/` by Comp
 Start a local server and open the Installation Wizard:
 
 ```bash
-php artisan serve
+php artisan serve --no-reload
 ```
+
+Keep `--no-reload`. Without it the development server restarts whenever `.env` changes, and the wizard writes `.env` during its steps: the restart cuts off that request, and the browser reports an empty response.
 
 Then open `http://127.0.0.1:8000`. The [Installation Wizard](../../wizard.md) guides you through the database, the administrator account and mail. Choose **SQLite** in the database step to start without a separate database server.
 
