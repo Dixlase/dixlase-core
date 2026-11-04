@@ -42,6 +42,13 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [0.2.4] — 2026-11-04
+
+### 修正
+- `composer create-project` や git clone で入れたサイトでも、ウィザードの最後の手順でインストールが
+  終わるようになりました（#874、#875）。これまでは `symfony/filesystem` が無いというエラーで止まり、
+  最初の画面に戻っていました。`public/storage` は、そのパッケージを使わずに作るようにしました
+
 ## [0.2.3] — 2026-11-04
 
 ### 変更

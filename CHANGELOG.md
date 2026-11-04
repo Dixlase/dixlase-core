@@ -41,6 +41,14 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.4] — 2026-11-04
+
+### Fixed
+- A site installed with `composer create-project` or from a git clone now finishes
+  installing at the wizard's last step (#874, #875). The step stopped with an error saying the
+  `symfony/filesystem` package was missing, and the wizard went back to its first screen.
+  `public/storage` is now created without that package
+
 ## [0.2.3] — 2026-11-04
 
 ### Changed
