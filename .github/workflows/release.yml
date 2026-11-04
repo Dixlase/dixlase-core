@@ -193,37 +193,33 @@ jobs:
         # Node on the destination host.
         run: npm run build
 
-      - name: Build bundled-theme assets
-        # composer/installers placed themes/DixlaseOnePage/ (and any
-        # other dixlase-theme composer packages) during composer install
-        # above. The theme ships only resources/ — no built public/
-        # assets, no public symlink — so without this step the release
-        # ZIP would extract into a UI that boots with "appearanceTheme
-        # is not defined" Alpine errors and an unstyled login / install
-        # / front page.
+      - name: Link bundled-theme assets into public/
+        # composer/installers placed themes/DixlaseOnePage/ (and any other
+        # dixlase-theme composer packages) during composer install above,
+        # and a theme ships its built resources/assets/ with the release it
+        # was signed for. So nothing is built here; what is still needed is
+        # the relative symlink core serves the theme's assets through,
+        # because the composer dist carries no public/ tree.
         #
-        # We run npm directly rather than calling `php artisan
-        # dls:theme:build`, because artisan would require a bootable
-        # Laravel (.env, APP_KEY, …) which is extra ceremony in CI just
-        # to shell out to npm. The relative public symlink we create is
-        # the same one the artisan command writes — relative paths
-        # survive ZIP extraction; an absolute path would point at the
-        # CI runner's filesystem on the operator's machine.
+        # Building here would rewrite the bytes the theme's signature
+        # covers, and every site installed from this ZIP would report the
+        # theme as modified.
+        #
+        # The symlink is the same one `php artisan dls:theme:symlink` writes.
+        # Relative paths survive ZIP extraction; an absolute one would point
+        # at the CI runner's filesystem on the operator's machine.
         run: |
           set -e
           mkdir -p public/assets/themes
           shopt -s nullglob
           for theme_dir in themes/*/; do
             theme_name="$(basename "$theme_dir")"
-            if [ -f "$theme_dir/package.json" ]; then
-              echo "::group::Build theme: $theme_name"
-              (cd "$theme_dir" && npm ci && npm run build)
-              # Relative symlink: public/assets/themes/<name> → ../../../themes/<name>/resources/assets
-              ln -sfn "../../../themes/$theme_name/resources/assets" "public/assets/themes/$theme_name"
-              echo "::endgroup::"
-            else
-              echo "Skipping $theme_name (no package.json)"
+            if [ ! -f "$theme_dir/resources/assets/manifest.json" ]; then
+              echo "::error::$theme_name ships no built assets (resources/assets/manifest.json is missing). A theme release has to build and commit them." >&2
+              exit 1
             fi
+            ln -sfn "../../../themes/$theme_name/resources/assets" "public/assets/themes/$theme_name"
+            echo "Linked public/assets/themes/$theme_name"
           done
 
       - name: Clean dev-only artifacts before bundling

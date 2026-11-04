@@ -21,13 +21,15 @@ cd dixlase
 # 2. Build the core's front-end assets
 npm install && npm run build
 
-# 3. Build the bundled theme
-php artisan dls:theme:build DixlaseOnePage
+# 3. Expose the bundled theme's assets
+php artisan dls:theme:symlink create DixlaseOnePage
 ```
 
 `create-project` also copies `.env.example` to `.env`, generates the application key and creates an empty `database/database.sqlite`. It ends by printing the remaining steps; the steps it prints are skipped once their assets exist.
 
-The bundled theme, DixlaseOnePage, is placed in `themes/DixlaseOnePage/` by Composer. The Installation Wizard builds a theme only when it downloads one, so this theme has to be built by step 3. Without it the front page and the login screen load without the theme's scripts and styles.
+The bundled theme, DixlaseOnePage, is placed in `themes/DixlaseOnePage/` by Composer, and it ships its built stylesheet and scripts: a theme release builds them once and they are covered by the theme's signature, so **do not rebuild them**. Step 3 only creates the symlink core serves them through (`public/assets/themes/DixlaseOnePage`), which the Composer package cannot carry. Without it the front page and the login screen load without the theme's scripts and styles.
+
+Step 2 is still a build, because core's own assets are not part of the Composer package.
 
 ## Next Steps
 
