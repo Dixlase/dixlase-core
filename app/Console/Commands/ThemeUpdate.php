@@ -202,21 +202,18 @@ class ThemeUpdate extends Command
                 }
             }
 
-            $this->extractUpdate($zipPath, $theme);
+            // The manifest and signature gates run inside this call, on the
+            // staged tree, before it replaces the live directory: the version
+            // that was asked for (security review D13), requires.dixlase /
+            // requires.php (dixlase-core#473) and the signature.
+            $this->extractUpdate($zipPath, $theme, $release->version);
 
-            // Scan the new files before anything else runs: a version whose
-            // health check resolves to Blocked (or that cannot be scanned)
-            // throws here and is rolled back by the catch below, before its
-            // migrations, seeders or npm build touch anything.
-            // The archive must be the version that was asked for: anything
-            // else (a default-branch zipball, a mislabelled asset) is
-            // refused and rolled back (security review D13).
-            $this->refuseVersionMismatch(base_path("themes/{$theme->directory}/theme.json"), $release->version);
-
-            // The new version's requires.dixlase / requires.php
-            // (dixlase-core#473): refused and rolled back like the above.
-            $this->refuseUnmetRequirements(base_path("themes/{$theme->directory}/theme.json"), (string) ($theme->name ?? $slug));
-
+            // The health scan still runs on the files in place: it reads the
+            // database rows and the audit tables for this theme, which are
+            // keyed by slug rather than by path. A version that resolves to
+            // Blocked (or that cannot be scanned) throws here and is rolled
+            // back by the catch below, before its migrations, seeders or npm
+            // build touch anything.
             $this->refuseBlockedUpdate('theme', $slug);
 
             // Apply any new migration files shipped with this release.
@@ -467,10 +464,19 @@ class ThemeUpdate extends Command
      * (the correct location). The upstream snapshot+rollback flow
      * continues to protect against partial failures here.
      */
-    protected function extractUpdate(string $zipPath, Theme $theme): void
+    protected function extractUpdate(string $zipPath, Theme $theme, string $expectedVersion): void
     {
         $themeDir = base_path("themes/{$theme->directory}");
-        $this->extractZipReplacingDir($zipPath, $themeDir, (string) $theme->slug);
+        $slug = (string) $theme->slug;
+        $name = (string) ($theme->name ?? $slug);
+
+        $this->extractZipReplacingDir($zipPath, $themeDir, function (string $staged) use ($expectedVersion, $name, $slug): void {
+            $manifest = $staged.'/theme.json';
+
+            $this->refuseVersionMismatch($manifest, $expectedVersion);
+            $this->refuseUnmetRequirements($manifest, $name);
+            $this->refuseUnverifiedStagedTree('theme', $slug, $staged);
+        });
     }
 
     /**
@@ -479,7 +485,7 @@ class ThemeUpdate extends Command
      * PluginUpdate::extractZipReplacingDir() for the same logic; we
      * keep a copy here so each console command stays self-contained.
      */
-    protected function extractZipReplacingDir(string $zipPath, string $destinationDir, string $slug): void
+    protected function extractZipReplacingDir(string $zipPath, string $destinationDir, callable $gateStagedTree): void
     {
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -516,10 +522,11 @@ class ThemeUpdate extends Command
                 throw new \RuntimeException("Extracted top-level directory '{$topLevel}' not found in staging.");
             }
 
-            // Check the signature while the tree is still in staging, where
-            // nothing loads it. A tree whose files do not match its signed
-            // manifest never reaches the directory the application reads.
-            $this->refuseUnverifiedStagedTree('theme', $slug, $newSource);
+            // Every gate that can read the new tree on its own runs here,
+            // while it is still in staging and nothing loads it. A tree that
+            // any of them refuses never reaches the directory the
+            // application reads.
+            $gateStagedTree($newSource);
 
             if (File::isDirectory($destinationDir)) {
                 File::deleteDirectory($destinationDir);
