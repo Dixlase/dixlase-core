@@ -40,6 +40,7 @@ return [
     // Common Buttons
     'back' => 'Back',
     'next' => 'Next',
+    'show_details' => 'Show details',
     'back_button' => 'Back',
 
     // Step Display

@@ -40,6 +40,7 @@ return [
     // 共通ボタン
     'back' => '戻る',
     'next' => '次へ',
+    'show_details' => '詳しく見る',
     'back_button' => '戻る',
 
     // ステップ表示

@@ -64,4 +64,20 @@ return [
     'db_connection_error' => 'Failed to connect to database: :error',
     'db_test_required' => '⚠️ Please run database connection test before proceeding to the next screen.',
     'db_test_success' => '✅ Database connection successful! You may proceed to the next screen!',
+
+    // Guidance that depends on how Dixlase was installed
+    'detected_docker' => 'Detected a Docker environment.',
+    'mysql_docker' => 'The Docker installer provides a MySQL container, and its connection settings are already filled in.',
+    'mysql_server_required' => 'A separate MySQL (or MariaDB) server is required.',
+    'mysql_server_required_details' => [
+        'Start a MySQL or MariaDB server, create an empty database and a user that can use it, then enter those values here.',
+        'On a hosting service, these values are usually shown in its control panel.',
+        'If you do not have a database server, choose SQLite. It needs no extra setup.',
+    ],
+    'sqlite_ready' => 'SQLite needs no database server and works as it is.',
+    'sqlite_details' => [
+        'SQLite keeps the whole site in one file. It suits small and medium sites and trying Dixlase out.',
+        'For busy sites, MySQL is recommended.',
+    ],
+    'ready_to_test' => 'These values work as they are. Press "Test Connection" without changing them.',
 ];

@@ -39,6 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @param array $encryptions - Encryption options (optional)
     @param string $context - 'install' or 'admin' (default: 'admin')
     @param string $admin_email - Administrator email address (install only)
+    @param array $installDefaults - Pre-filled mail_host / mail_port (install only; defaults to Mailpit)
 --}}
 
 @php
@@ -58,6 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'ssl' => 'SSL'
     ];
     
+    $installDefaults = array_merge(['mail_host' => 'mailpit', 'mail_port' => '1025'], $installDefaults ?? []);
     $mailers = $mailers ?? $defaultMailers;
     $encryptions = $encryptions ?? $defaultEncryptions;
 @endphp
@@ -110,7 +112,7 @@ $mailServerFormConfig = [
         <x-form-text
             name="mail_host"
             id="mail_host"
-            :value="old('mail_host', session('install_data.mail_host', 'mailpit'))"
+            :value="old('mail_host', session('install_data.mail_host', $installDefaults['mail_host']))"
             class="mail-setting-input"
             class="input-full"
         />
@@ -136,7 +138,7 @@ $mailServerFormConfig = [
             type="number"
             name="mail_port"
             id="mail_port"
-            :value="old('mail_port', session('install_data.mail_port', '1025'))"
+            :value="old('mail_port', session('install_data.mail_port', $installDefaults['mail_port']))"
             class="input-full"
         />
     @else

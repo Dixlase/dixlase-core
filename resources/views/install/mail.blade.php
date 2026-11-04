@@ -46,6 +46,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <!-- メールサーバー設定セクション -->
     <section aria-labelledby="mail-server-heading">
         <h2 id="mail-server-heading" class="sr-only">{{ __('install/step4.mail_server_settings') }}</h2>
+
+        @if($hasMailpit)
+            <x-install.hint
+                :text="__('install/step4.mailpit_ready')"
+                :details="__('install/step4.mailpit_details')"
+            />
+        @else
+            <x-install.hint
+                tone="warning"
+                :text="__('install/step4.smtp_required')"
+                :details="__('install/step4.smtp_required_details')"
+            />
+        @endif
         
         <x-mail-server.form
             :settings="[]"
@@ -53,6 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :admin_email="$admin_email"
             :mailers="$mailers"
             :encryptions="$encryptions"
+            :installDefaults="$installDefaults"
         />
     </section>
 

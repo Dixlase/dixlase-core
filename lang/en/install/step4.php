@@ -59,4 +59,16 @@ return [
         'send_test' => 'Mail Send Test',
         'receive_test' => 'Mail Receipt Verification',
     ],
+
+    // Guidance that depends on how Dixlase was installed
+    'mailpit_ready' => 'The Docker installer provides Mailpit, a test mail server, and its settings are already filled in.',
+    'mailpit_details' => [
+        'Mail sent to Mailpit is not delivered to anyone. You can read it in the Mailpit web interface.',
+        'To send real mail, enter your SMTP server instead, now or after installation.',
+    ],
+    'smtp_required' => 'Sending mail needs an SMTP server.',
+    'smtp_required_details' => [
+        'Use the SMTP server of your hosting service or of a mail delivery service. Its host, port, username and password are shown in that service\'s settings.',
+        'If you do not have one yet, skip this step and set it up after installation.',
+    ],
 ];

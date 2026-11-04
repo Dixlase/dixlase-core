@@ -112,16 +112,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     xModel="driver"
                     onchange="this.dispatchEvent(new Event('input'))"
                 />
+                @if($isDocker)
+                    <x-install.hint :text="__('install/step3.detected_docker')" />
+                @endif
+                <div x-show="driver !== 'sqlite'" x-cloak>
+                    @if($isDocker)
+                        <x-install.hint :text="__('install/step3.mysql_docker')" />
+                    @else
+                        <x-install.hint
+                            tone="warning"
+                            :text="__('install/step3.mysql_server_required')"
+                            :details="__('install/step3.mysql_server_required_details')"
+                        />
+                    @endif
+                </div>
+                <div x-show="driver === 'sqlite'" x-cloak>
+                    <x-install.hint
+                        :text="__('install/step3.sqlite_ready')"
+                        :details="__('install/step3.sqlite_details')"
+                    />
+                </div>
             </div>
 
             @php
-                // Detect Docker by DNS-resolving the 'mysql' service hostname; inside the container it resolves, outside it does not.
-                $isDocker = gethostbyname('mysql') !== 'mysql';
+                // $isDocker comes from InstallEnvironment (DIXLASE_INSTALL_METHOD, or the `mysql` host name as a fallback).
                 $defaultDbHost = $isDocker ? 'mysql' : '127.0.0.1';
                 $defaultDbUser = $isDocker ? 'dixlase' : '';
                 $defaultDbPassword = $isDocker ? 'dixlase' : '';
                 $defaultDbName = old('db_database', session('install_data.db_database'))
-                    ?? (old('db_connection', session('install_data.db_connection', 'mysql')) === 'sqlite'
+                    ?? (old('db_connection', $defaultDriver) === 'sqlite'
                         ? database_path('database.sqlite')
                         : 'dixlase');
             @endphp
@@ -214,6 +233,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="hidden" id="db-success-message" value="{{ __('install/step3.db_test_success') }}">
         
         <div class="text-center space-y-3">
+            {{-- Under Docker the pre-filled MySQL values work too; elsewhere only SQLite works untouched. --}}
+            <p class="text-sm text-gray-600 dark:text-gray-300"
+                x-show="{{ $isDocker ? '! connectionSuccess' : "driver === 'sqlite' && ! connectionSuccess" }}" x-cloak>
+                <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
+            </p>
             <p id="db-test-result" class="text-sm" :class="testResultClass" role="status" aria-live="polite" x-text="testResult">
             </p>
             

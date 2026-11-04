@@ -55,6 +55,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Install Method
+    |--------------------------------------------------------------------------
+    |
+    | How this copy of Dixlase was installed: "docker", "oneliner" or
+    | "composer". The installers set it; a release ZIP or a git clone
+    | leaves it unset. The setup wizard reads it to choose its defaults
+    | (MySQL or SQLite, Mailpit or an empty mail host) and its guidance.
+    | See App\Services\Install\InstallEnvironment.
+    |
+    */
+
+    'install_method' => env('DIXLASE_INSTALL_METHOD'),
+
+    /*
+    |--------------------------------------------------------------------------
     | License Label
     |--------------------------------------------------------------------------
     |
