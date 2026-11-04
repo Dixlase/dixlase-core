@@ -133,15 +133,56 @@ class StagedExtensionUpdateVerificationTest extends TestCase
         foreach (['PluginUpdate', 'ThemeUpdate'] as $command) {
             $source = (string) file_get_contents(app_path("Console/Commands/{$command}.php"));
 
-            $check = strpos($source, 'refuseUnverifiedStagedTree(');
+            $gate = strpos($source, '$gateStagedTree($newSource)');
             $delete = strpos($source, 'File::deleteDirectory($destinationDir)');
             $move = strpos($source, 'File::move($newSource, $destinationDir)');
 
-            $this->assertNotFalse($check, "{$command} no longer checks the staged tree.");
+            $this->assertNotFalse($gate, "{$command} no longer gates the staged tree.");
             $this->assertNotFalse($delete, "{$command}: the replace step moved.");
             $this->assertNotFalse($move, "{$command}: the move step moved.");
-            $this->assertLessThan($delete, $check, "{$command} must check before it deletes the live tree.");
-            $this->assertLessThan($move, $check, "{$command} must check before it moves the staged tree in.");
+            $this->assertLessThan($delete, $gate, "{$command} must gate before it deletes the live tree.");
+            $this->assertLessThan($move, $gate, "{$command} must gate before it moves the staged tree in.");
+        }
+    }
+
+    /**
+     * Which gates read the staged tree, and which still read the files in
+     * place. The manifest gates and the signature only need a path, so they
+     * run before the swap; the health scan reads rows keyed by slug, so it
+     * stays after it.
+     */
+    public function test_the_manifest_gates_run_on_the_staged_tree(): void
+    {
+        foreach (['PluginUpdate' => 'plugin.json', 'ThemeUpdate' => 'theme.json'] as $command => $manifest) {
+            $source = (string) file_get_contents(app_path("Console/Commands/{$command}.php"));
+
+            $this->assertStringContainsString(
+                "\$manifest = \$staged.'/{$manifest}';",
+                $source,
+                "{$command}: the manifest gates must read the staged manifest."
+            );
+
+            foreach (['refuseVersionMismatch(', 'refuseUnmetRequirements(', 'refuseUnverifiedStagedTree('] as $gate) {
+                $position = strpos($source, $gate);
+                $this->assertNotFalse($position, "{$command}: {$gate} is gone.");
+                $this->assertLessThan(
+                    (int) strpos($source, 'File::deleteDirectory($destinationDir)'),
+                    $position,
+                    "{$command}: {$gate} must run before the live tree is replaced."
+                );
+            }
+
+            // The version gate must no longer read the live directory.
+            $this->assertStringNotContainsString(
+                'refuseVersionMismatch(base_path(',
+                $source,
+                "{$command}: the version gate still reads the installed tree."
+            );
+            $this->assertStringNotContainsString(
+                'refuseUnmetRequirements(base_path(',
+                $source,
+                "{$command}: the requirement gate still reads the installed tree."
+            );
         }
     }
 }
