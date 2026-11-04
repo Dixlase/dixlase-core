@@ -138,6 +138,33 @@ class FormContentEditorTest extends TestCase
         $this->assertStringNotContainsString('contentEditorInsertImage', $html);
     }
 
+    public function test_the_insert_embed_button_shows_with_the_markdown_editor(): void
+    {
+        $html = Blade::render('<x-form-content-editor contentFieldName="body" />');
+
+        $this->assertStringContainsString('x-data="contentEditorInsertEmbed"', $html);
+        $this->assertStringContainsString("x-show=\"isEditorSelected('markdown')\"", $html);
+        $this->assertStringContainsString('data-modal-id="body_embed_modal"', $html);
+    }
+
+    public function test_the_insert_embed_modal_asks_for_the_service_and_the_url(): void
+    {
+        // The modal goes to the layout's modals stack, outside the form.
+        $html = Blade::render("<x-form-content-editor contentFieldName=\"body\" />@stack('modals')");
+
+        $this->assertStringContainsString('id="body_embed_modal"', $html);
+        $this->assertStringContainsString('x-data="contentEditorEmbedForm"', $html);
+        $this->assertStringContainsString('id="body_embed_modal_url"', $html);
+        $this->assertStringContainsString('x-model="service"', $html);
+    }
+
+    public function test_the_insert_embed_button_can_be_left_out(): void
+    {
+        $html = Blade::render('<x-form-content-editor :insertEmbed="false" />');
+
+        $this->assertStringNotContainsString('contentEditorInsertEmbed', $html);
+    }
+
     /**
      * @return array<string, mixed>
      */

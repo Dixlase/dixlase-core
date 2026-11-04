@@ -39,6 +39,18 @@ return [
     'tab_js' => 'JavaScript',
     'insert_image' => '画像を挿入',
     'insert_image_help' => 'メディアライブラリから画像を選び、カーソルの位置に挿入します',
+    'insert_embed' => '埋め込みを挿入',
+    'insert_embed_help' => 'YouTube の動画、X のポスト、GitHub のリポジトリをカーソルの位置に埋め込みます',
+    'embed' => [
+        'title' => '埋め込みを挿入',
+        'service' => 'サービス',
+        'url' => 'URL',
+        'url_help' => '動画、ポスト、リポジトリのアドレスを貼り付けてください。サービスの形に合わない URL は、ただのリンクとして表示されます。',
+        'url_invalid' => 'https:// で始まる URL を入力してください',
+        'insert' => '挿入',
+        'youtube_title' => 'YouTube の動画',
+        'x_title' => ':user のポスト',
+    ],
 
     'editor_type_locked_help' => 'エディタータイプは作成後に変更できません。変更するにはリセットして再作成してください。',
 

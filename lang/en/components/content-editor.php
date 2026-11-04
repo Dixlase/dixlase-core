@@ -39,6 +39,18 @@ return [
     'tab_js' => 'JavaScript',
     'insert_image' => 'Insert image',
     'insert_image_help' => 'Choose an image from the media library and insert it at the cursor',
+    'insert_embed' => 'Insert embed',
+    'insert_embed_help' => 'Embed a YouTube video, an X post or a GitHub repository at the cursor',
+    'embed' => [
+        'title' => 'Insert embed',
+        'service' => 'Service',
+        'url' => 'URL',
+        'url_help' => 'Paste the address of the video, post or repository. A URL the service does not recognise is shown as a plain link.',
+        'url_invalid' => 'Enter a URL that starts with https://',
+        'insert' => 'Insert',
+        'youtube_title' => 'YouTube video',
+        'x_title' => 'Post by :user',
+    ],
 
     'editor_type_locked_help' => 'Editor type is locked after creation. To change it, reset and recreate the content.',
 
