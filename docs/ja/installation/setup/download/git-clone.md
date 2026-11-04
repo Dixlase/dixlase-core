@@ -11,7 +11,7 @@ Dixlaseリポジトリをクローンして、バージョン管理付きの最�
 
 ```bash
 # リポジトリをクローン
-git clone https://github.com/Dixlase/dixlase.git
+git clone https://github.com/Dixlase/dixlase-core.git dixlase
 cd dixlase
 
 # PHP依存パッケージをインストール
@@ -20,17 +20,17 @@ composer install
 
 ## 特定バージョンのクローン
 
-特定のリリースバージョンをクローンする場合：
+特定のリリースをクローンする場合は、そのタグを指定します（一覧は[リリースページ](https://github.com/Dixlase/dixlase-core/releases)）：
 
 ```bash
-git clone --branch v1.0.0 https://github.com/Dixlase/dixlase.git
+git clone --branch v0.2.2 https://github.com/Dixlase/dixlase-core.git dixlase
 cd dixlase
 composer install
 ```
 
 ## 更新
 
-最新の変更を取得して依存パッケージを更新します：
+`main` には常に最新のリリースが入っています。取得して依存パッケージを更新します：
 
 ```bash
 git pull origin main

@@ -12,7 +12,7 @@ Install Dixlase on your server with a single command.
 ## Usage
 
 ```bash
-curl -sS https://install.dixlase.com | php
+curl -sS https://install.dixlase.net | php
 ```
 
 The script will:
@@ -28,13 +28,13 @@ The script will:
 
 ```bash
 # Specify installation directory
-curl -sS https://install.dixlase.com | php -- --dir=/var/www/dixlase
+curl -sS https://install.dixlase.net | php -- --dir=/var/www/dixlase
 
 # Specify version
-curl -sS https://install.dixlase.com | php -- --version=1.0.0
+curl -sS https://install.dixlase.net | php -- --version=0.2.2
 
 # Skip Composer install (if you want to run it manually)
-curl -sS https://install.dixlase.com | php -- --no-composer
+curl -sS https://install.dixlase.net | php -- --no-composer
 ```
 
 ## After Installation

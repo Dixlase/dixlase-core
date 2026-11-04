@@ -39,7 +39,7 @@ Dixlaseは[AGPL-3.0](license.md)ライセンスの下で公開されています
 
 ## リンク
 
-- **公式サイト**: [https://dixlase.com](https://dixlase.com)
-- **ドキュメント**: [https://docs.dixlase.com](https://docs.dixlase.com)
-- **GitHub**: [https://github.com/Dixlase/dixlase](https://github.com/Dixlase/dixlase)
+- **公式サイト**: [https://dixlase.org](https://dixlase.org)
+- **ドキュメント**: [https://github.com/Dixlase/dixlase-core/tree/main/docs/ja](https://github.com/Dixlase/dixlase-core/tree/main/docs/ja)
+- **GitHub**: [https://github.com/Dixlase/dixlase-core](https://github.com/Dixlase/dixlase-core)
 - **開発元**: [exc-D inc.](https://exc-d.com)

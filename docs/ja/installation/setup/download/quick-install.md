@@ -12,7 +12,7 @@
 ## 使い方
 
 ```bash
-curl -sS https://install.dixlase.com | php
+curl -sS https://install.dixlase.net | php
 ```
 
 スクリプトが行うこと:
@@ -28,13 +28,13 @@ curl -sS https://install.dixlase.com | php
 
 ```bash
 # インストールディレクトリを指定
-curl -sS https://install.dixlase.com | php -- --dir=/var/www/dixlase
+curl -sS https://install.dixlase.net | php -- --dir=/var/www/dixlase
 
 # バージョンを指定
-curl -sS https://install.dixlase.com | php -- --version=1.0.0
+curl -sS https://install.dixlase.net | php -- --version=0.2.2
 
 # Composerインストールをスキップ（手動で実行する場合）
-curl -sS https://install.dixlase.com | php -- --no-composer
+curl -sS https://install.dixlase.net | php -- --no-composer
 ```
 
 ## インストール後

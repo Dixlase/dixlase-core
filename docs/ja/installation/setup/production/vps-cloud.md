@@ -59,7 +59,7 @@ EXIT;
 ```bash
 # Dixlase をクローンまたはダウンロード
 cd /var/www
-git clone https://github.com/Dixlase/dixlase.git dixlase
+git clone https://github.com/Dixlase/dixlase-core.git dixlase
 cd dixlase
 
 # 依存パッケージのインストール
