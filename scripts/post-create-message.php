@@ -99,12 +99,16 @@ if (! $themeBuilt) {
     $step++;
 }
 
+// --no-reload: `artisan serve` restarts whenever .env changes, and the
+// wizard writes .env mid-step, so the restart would cut off that request
+// and the browser would show an empty response.
 $out('  '.$step.'. Start the local server:');
 if ($assetsBuilt) {
-    $out('     '.$cyan('cd '.$dir.' && php artisan serve'));
+    $out('     '.$cyan('cd '.$dir.' && php artisan serve --no-reload'));
 } else {
-    $out('     '.$cyan('php artisan serve').'   (from the directory above)');
+    $out('     '.$cyan('php artisan serve --no-reload').'   (from the directory above)');
 }
+$out('     Keep --no-reload: the wizard writes .env, and a reload would cut off its response.');
 $out();
 $out('     Then open '.$cyan('http://127.0.0.1:8000').' in your browser.');
 $out('     The '.$bold('Installation Wizard').' guides you through database, admin, and mail setup.');
