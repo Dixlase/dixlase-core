@@ -21,13 +21,15 @@ cd dixlase
 # 2. コアのフロントエンドアセットをビルドする
 npm install && npm run build
 
-# 3. 同梱テーマをビルドする
-php artisan dls:theme:build DixlaseOnePage
+# 3. 同梱テーマのアセットを公開する
+php artisan dls:theme:symlink create DixlaseOnePage
 ```
 
 `create-project` は、`.env.example` から `.env` を作り、アプリケーションキーを生成し、空の `database/database.sqlite` も作成します。最後に残りの手順を表示します。アセットがすでにある手順は表示されません。
 
-同梱テーマの DixlaseOnePage は、Composer が `themes/DixlaseOnePage/` に配置します。インストールウィザードがテーマをビルドするのはテーマをダウンロードしたときだけなので、このテーマは手順 3 でビルドする必要があります。ビルドしないと、フロントページとログイン画面がテーマのスクリプトとスタイル無しで表示されます。
+同梱テーマの DixlaseOnePage は、Composer が `themes/DixlaseOnePage/` に配置します。このテーマはビルド済みのスタイルシートとスクリプトを同梱しています。テーマのリリースが 1 回だけビルドしたもので、テーマの署名に覆われているため、**ビルドし直さないでください**。手順 3 は、コアがそれを配信するためのシンボリックリンク（`public/assets/themes/DixlaseOnePage`）を作るだけです。Composer のパッケージはこのリンクを運べません。リンクが無いと、フロントページとログイン画面がテーマのスクリプトとスタイル無しで表示されます。
+
+手順 2 のビルドは引き続き必要です。コア自身のアセットは Composer のパッケージに含まれないためです。
 
 ## 次のステップ
 

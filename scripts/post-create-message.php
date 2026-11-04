@@ -42,9 +42,10 @@ $dir = getcwd() ?: '.';
 // manifest is missing, so the message stays accurate either way.
 $assetsBuilt = is_file($dir.'/public/assets/build/manifest.json');
 
-// The bundled theme's build output is exposed through a public symlink that
-// dls:theme:build creates, so its absence means the theme has not been built.
-$themeBuilt = is_dir($dir.'/themes/DixlaseOnePage')
+// The bundled theme ships its built assets; what a Composer package cannot
+// carry is the public symlink core serves them through. Its absence means
+// the link has not been made yet, not that the theme needs building.
+$themeLinked = is_dir($dir.'/themes/DixlaseOnePage')
     ? file_exists($dir.'/public/assets/themes/DixlaseOnePage')
     : true;
 
@@ -89,12 +90,13 @@ if (! $assetsBuilt) {
     $step++;
 }
 
-// The front page and the login screen need the theme's bundle. The wizard
-// builds a theme only when it downloads one, and Composer has already placed
-// this one, so nothing else builds it.
-if (! $themeBuilt) {
-    $out('  '.$step.'. Build the bundled theme:');
-    $out('     '.$cyan('php artisan dls:theme:build DixlaseOnePage').'   (from the directory above)');
+// The front page and the login screen load the theme's bundle through
+// public/assets/themes/<name>. The theme's own build is already in its
+// resources/assets and is covered by its signature, so this only makes the
+// link -- rebuilding would change the bytes the signature covers.
+if (! $themeLinked) {
+    $out('  '.$step.'. Expose the bundled theme\'s assets:');
+    $out('     '.$cyan('php artisan dls:theme:symlink create DixlaseOnePage').'   (from the directory above)');
     $out();
     $step++;
 }
