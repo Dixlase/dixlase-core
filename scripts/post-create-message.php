@@ -99,16 +99,23 @@ if (! $themeBuilt) {
     $step++;
 }
 
-// --no-reload: `artisan serve` restarts whenever .env changes, and the
-// wizard writes .env mid-step, so the restart would cut off that request
-// and the browser would show an empty response.
+// Start PHP's built-in server directly rather than `artisan serve`, which
+// cannot run the install wizard (#879). Its .env watcher restarts the server
+// and cuts off the in-flight request, because the wizard writes .env mid-step.
+// With --no-reload it passes the start-up .env to the server as real
+// environment variables, which win over every later write, so the final step
+// redirects with the old database settings and the wizard starts over.
+// The router script is the one `artisan serve` uses; it treats the current
+// directory as the web root, hence `cd public`. variables_order=EGPCS keeps
+// PATH in the environment of child processes (composer dump-autoload fails
+// without it), and the workers keep one slow request from stalling the rest.
+$workers = PHP_OS_FAMILY === 'Windows' ? '' : 'PHP_CLI_SERVER_WORKERS=4 ';
+$serve = $workers.'php -d variables_order=EGPCS -d max_execution_time=300 -S 127.0.0.1:8000 '
+    .'../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php';
 $out('  '.$step.'. Start the local server:');
-if ($assetsBuilt) {
-    $out('     '.$cyan('cd '.$dir.' && php artisan serve --no-reload'));
-} else {
-    $out('     '.$cyan('php artisan serve --no-reload').'   (from the directory above)');
-}
-$out('     Keep --no-reload: the wizard writes .env, and a reload would cut off its response.');
+$out('     '.$cyan('cd '.$dir.'/public && '.$serve));
+$out('     Do not use `php artisan serve` for the wizard: it cannot see the .env the wizard writes.');
+$out('     Restart this server after a core update or rollback, which recreates public/.');
 $out();
 $out('     Then open '.$cyan('http://127.0.0.1:8000').' in your browser.');
 $out('     The '.$bold('Installation Wizard').' guides you through database, admin, and mail setup.');
