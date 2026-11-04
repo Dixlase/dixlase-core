@@ -104,10 +104,10 @@ For hosts with PHP 8.3+, Composer and Node.js, install from [Packagist](https://
 composer create-project dixlase/dixlase-core dixlase
 cd dixlase
 npm install && npm run build
-php artisan dls:theme:build DixlaseOnePage
+php artisan dls:theme:symlink create DixlaseOnePage
 ```
 
-A Composer install ships no compiled assets, so the core and the bundled theme are built once before the Web-based installation wizard is opened. See the [Composer installation guide](docs/installation/setup/download/composer.md).
+A Composer install ships no compiled core assets, so the core is built once before the Web-based installation wizard is opened. The bundled theme ships its own build, covered by its signature — the second command only exposes it at the path the core serves it from, and rebuilding it would report the theme as modified. See the [Composer installation guide](docs/installation/setup/download/composer.md).
 
 ---
 
