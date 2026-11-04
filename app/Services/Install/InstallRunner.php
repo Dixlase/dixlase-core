@@ -45,6 +45,7 @@ use App\Helpers\ComposerLocalHelper;
 use App\Models\Site;
 use App\Models\ThemeAudit;
 use App\Services\Core\CoreIntegrityVerifier;
+use App\Services\Core\PublicAssetRelinker;
 use App\Services\Csp\CspComplianceScanner;
 use App\Services\Site\SettingResolver;
 use App\Services\Theme\ThemePermissionService;
@@ -325,14 +326,15 @@ class InstallRunner
         // until the 900s UI timeout. Ensure the target exists first
         // so the symlink is always valid.
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_started'));
-        File::ensureDirectoryExists(storage_path('app/public'));
-        // `--relative` so the recorded target is `../storage/app/public`
-        // rather than an absolute path anchored at the PHP container's
-        // mount point. On split-container topologies (nginx and php-fpm
-        // in different containers with different app-root mounts), the
-        // absolute form does not resolve from nginx and every
-        // `/storage/*` request 404s.
-        Artisan::call('storage:link', ['--relative' => true]);
+        // Relative (`../storage/app/public`) rather than an absolute path
+        // anchored at the PHP container's mount point: on split-container
+        // topologies (nginx and php-fpm with different app-root mounts) the
+        // absolute form does not resolve from nginx and every `/storage/*`
+        // request 404s. Not `storage:link --relative`, which needs
+        // symfony/filesystem and threw here (dixlase-core#874).
+        if (! PublicAssetRelinker::createStorageLink(public_path('storage'), storage_path('app/public'))) {
+            throw new \RuntimeException('Could not create the public/storage link.');
+        }
         Log::channel('install')->info(__('http/controllers/install/install_confirm_controller.storage_symlink_creation_completed'));
 
         // Create symbolic link for active theme

@@ -40,7 +40,6 @@ namespace App\Services\Core;
 use App\Models\Plugin;
 use App\Models\Theme;
 use App\Support\RelativeSymlink;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -284,19 +283,37 @@ class PublicAssetRelinker
 
     /**
      * Create public/storage when it is missing.
-     *
-     * `--relative` for cross-container symlink resolution: see the matching
-     * comment in InstallConfirmController.
      */
     protected function ensureStorageLink(): bool
     {
-        $link = public_path('storage');
+        return self::createStorageLink(public_path('storage'), storage_path('app/public'));
+    }
 
+    /**
+     * Link `$link` (public/storage) to `$target` (storage/app/public) with a
+     * relative target, unless something already occupies the slot.
+     *
+     * Relative so the link resolves from every container that mounts the
+     * tree (php-fpm and nginx often mount it at different paths). This used
+     * to call `storage:link --relative`, but Laravel implements `--relative`
+     * with symfony/filesystem, which core does not depend on: on a tree with
+     * no public/storage yet (composer create-project, a git clone) the
+     * install's last step threw and the site was left uninstalled
+     * (dixlase-core#874). RelativeSymlink exists for exactly this reason.
+     *
+     * The target directory is created first, so the link is never dangling.
+     *
+     * @return bool whether something occupies `$link` afterwards
+     */
+    public static function createStorageLink(string $link, string $target): bool
+    {
         if (self::occupied($link)) {
             return true;
         }
 
-        Artisan::call('storage:link', ['--relative' => true]);
+        File::ensureDirectoryExists($target);
+        File::ensureDirectoryExists(dirname($link));
+        RelativeSymlink::create($target, $link);
         clearstatcache(true, $link);
 
         return self::occupied($link);
