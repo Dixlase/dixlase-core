@@ -108,6 +108,32 @@ class PublicAssetRelinkerTest extends TestCase
         $this->assertSame('theme css', (string) file_get_contents($this->link().'/style.css'));
     }
 
+    public function test_it_creates_a_relative_storage_link_without_symfony_filesystem(): void
+    {
+        // dixlase-core#874: `storage:link --relative` needs symfony/filesystem,
+        // which core does not depend on, so a tree with no public/storage
+        // (composer create-project) failed the install's last step.
+        $link = $this->workDir.'/public/storage';
+        $target = $this->workDir.'/storage/app/public';
+
+        $this->assertTrue(PublicAssetRelinker::createStorageLink($link, $target));
+
+        $this->assertTrue(is_link($link));
+        $this->assertSame('../storage/app/public', readlink($link));
+        $this->assertTrue(is_dir($target), 'The target is created so the link is never dangling.');
+    }
+
+    public function test_it_leaves_an_existing_storage_link_alone(): void
+    {
+        $link = $this->workDir.'/public/storage';
+        mkdir($this->workDir.'/elsewhere', 0755, true);
+        symlink($this->workDir.'/elsewhere', $link);
+
+        $this->assertTrue(PublicAssetRelinker::createStorageLink($link, $this->workDir.'/storage/app/public'));
+
+        $this->assertSame($this->workDir.'/elsewhere', readlink($link));
+    }
+
     public function test_it_does_nothing_when_the_extension_has_no_assets(): void
     {
         $missing = $this->workDir.'/themes/NoAssets/resources/assets';
