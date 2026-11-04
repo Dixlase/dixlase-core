@@ -41,6 +41,30 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.3] — 2026-11-04
+
+### Changed
+- After `composer create-project`, start the development server with
+  `php artisan serve --no-reload` (#867, #870). Without it the server restarts when the
+  wizard's database step writes `.env`, and the browser shows an empty response although the
+  step succeeded. The installation guide and the message shown after `create-project` say so
+- An extension update checks the signature of the downloaded update before it replaces the
+  installed extension (#865). An update whose signature does not hold is refused; an unsigned
+  update is refused only where the security settings require a signature, as when enabling
+  an extension
+- Passkey sign-in follows the same lockout, wait and failure messages as the password login
+  (#863). The direct **Login with Passkey** button now shows the same failure message for
+  every refusal
+- The wizard's SQLite file is kept inside the `database` directory (#864). Leave the field
+  empty for the bundled `database/database.sqlite`, or give a path inside that directory.
+  `php artisan dls:install --db-database` still accepts any path
+
+### Fixed
+- With SQLite chosen, the browser wizard gets past the database step and can be completed
+  (#866, #869)
+- The download pages point at the real repository and hosts, and the ZIP instructions match
+  what the release ZIP contains (#868, #871)
+
 ## [0.2.2] — 2026-11-04
 
 ### Added
