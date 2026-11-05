@@ -41,6 +41,24 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.7] — 2026-11-06
+
+### Fixed
+- Updating a plugin or theme now rewrites the local autoload map (#893, #894). Both update
+  commands left `composer.local.json` describing the version they had replaced, so a helper
+  file that the new version moved or renamed stayed in the map and stopped every request and
+  every `artisan` command, and a helper it added was never loaded. The map is rewritten after
+  the update passes its checks and before its migrations run; when that fails, the update
+  warns and prints the command that repairs it
+- The setup wizard no longer shows or installs the admin URL as a bare `admin` (#884, #897).
+  The URL was generated only on the mode step, so opening the settings step directly, or a
+  session that expired mid-wizard, left it without its suffix. It is now generated wherever
+  it is needed, and a URL already chosen is kept
+- The release ZIP no longer carries a copy of the bundled theme's built assets under
+  `public/assets/themes/` (#898, #899). The copy could stop a later theme update from linking
+  its new build, so the site kept serving the previous stylesheet. The link is created on
+  install and on core update, as before, and the release now fails if a file appears there
+
 ## [0.2.6] — 2026-11-05
 
 ### Added
