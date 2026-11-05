@@ -67,6 +67,8 @@ return [
 
     // インストール方法に応じた案内
     'docker_heading' => 'Docker 環境',
+    'sqlite_heading' => 'SQLite',
+    'mysql_heading' => 'MySQL サーバー',
     'detected_docker' => 'Docker 環境として検出しました。',
     'mysql_docker' => 'Docker インストーラが MySQL のコンテナを用意しており、接続情報は入力済みです。',
     'mysql_server_required' => 'MySQL（または MariaDB）サーバーが別途必要です。',

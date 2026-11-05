@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @php($panelId = 'install-hint-'.\Illuminate\Support\Str::random(8))
         <div x-data="accordion" class="mt-1">
             <button type="button"
-                class="group inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline"
+                class="group inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-200 hover:underline"
                 aria-controls="{{ $panelId }}"
                 aria-expanded="false"
                 :aria-expanded="open"

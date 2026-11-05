@@ -68,6 +68,7 @@ return [
         'To send real mail, enter your SMTP server instead, now or after installation.',
     ],
     'mailpit_open_inbox' => 'Test mail goes to Mailpit. After sending it, open Mailpit at this URL to read it.',
+    'smtp_heading' => 'SMTP server',
     'smtp_required' => 'Sending mail needs an SMTP server.',
     'smtp_required_details' => [
         'Use the SMTP server of your hosting service or of a mail delivery service. Its host, port, username and password are shown in that service\'s settings.',

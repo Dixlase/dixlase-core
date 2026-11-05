@@ -67,6 +67,8 @@ return [
 
     // Guidance that depends on how Dixlase was installed
     'docker_heading' => 'Docker environment',
+    'sqlite_heading' => 'SQLite',
+    'mysql_heading' => 'MySQL server',
     'detected_docker' => 'Detected a Docker environment.',
     'mysql_docker' => 'The Docker installer provides a MySQL container, and its connection settings are already filled in.',
     'mysql_server_required' => 'A separate MySQL (or MariaDB) server is required.',

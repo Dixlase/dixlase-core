@@ -122,7 +122,7 @@ $out();
 $out('     Then open '.$cyan('http://127.0.0.1:8000').' in your browser.');
 $out('     The '.$bold('Installation Wizard').' guides you through database, admin, and mail setup.');
 $out();
-$out('     '.$yellow('No MySQL?').' Choose '.$bold('SQLite').' in the Database step to start without a separate DB server.');
+$out('     The Database step starts with '.$bold('SQLite').', which needs no separate DB server. Choose MySQL there if you have one.');
 $out();
 $step++;
 $out('  '.$step.'. For other deployment options (Docker, VPS, shared hosting), see:');

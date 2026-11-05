@@ -62,7 +62,10 @@ if (preg_match('/^DIXLASE_INSTALL_METHOD=\S/m', $env) === 1) {
 
 if (preg_match('/^DIXLASE_INSTALL_METHOD=.*$/m', $env) === 1) {
     // An empty placeholder: fill it in place.
-    $env = (string) preg_replace('/^DIXLASE_INSTALL_METHOD=.*$/m', 'DIXLASE_INSTALL_METHOD='.$method, $env);
+    $env = (string) preg_replace('/^DIXLASE_INSTALL_METHOD=.*$/m', 'DIXLASE_INSTALL_METHOD='.$method, $env, 1);
+} elseif (preg_match('/^#[ \t]*DIXLASE_INSTALL_METHOD=[ \t]*$/m', $env) === 1) {
+    // The commented-out placeholder from .env.example: set it there, under its explanation.
+    $env = (string) preg_replace('/^#[ \t]*DIXLASE_INSTALL_METHOD=[ \t]*$/m', 'DIXLASE_INSTALL_METHOD='.$method, $env, 1);
 } else {
     $env = rtrim($env, "\n")."\n\n# How Dixlase was installed (read by the setup wizard)\nDIXLASE_INSTALL_METHOD=".$method."\n";
 }

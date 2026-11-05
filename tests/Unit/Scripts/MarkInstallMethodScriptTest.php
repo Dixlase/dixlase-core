@@ -66,6 +66,14 @@ class MarkInstallMethodScriptTest extends TestCase
         $this->assertSame("A=1\nDIXLASE_INSTALL_METHOD=composer\nB=2\n", file_get_contents($env));
     }
 
+    public function test_it_uncomments_the_placeholder_from_the_example(): void
+    {
+        $env = $this->env("A=1\n# How Dixlase was installed\n# DIXLASE_INSTALL_METHOD=\nB=2\n");
+
+        $this->assertSame(0, $this->runScript('composer', $env));
+        $this->assertSame("A=1\n# How Dixlase was installed\nDIXLASE_INSTALL_METHOD=composer\nB=2\n", file_get_contents($env));
+    }
+
     public function test_it_keeps_a_value_already_set(): void
     {
         $env = $this->env("DIXLASE_INSTALL_METHOD=oneliner\n");
