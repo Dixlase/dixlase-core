@@ -41,6 +41,21 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.6] — 2026-11-05
+
+### Added
+- The setup wizard chooses its defaults and guidance by how Dixlase was installed (#883, #890).
+  `DIXLASE_INSTALL_METHOD` (`docker`, `oneliner` or `composer`) names the method;
+  `composer create-project` sets it to `composer`. Without it, the wizard recognises Docker by
+  its `mysql` / `mailpit` host names
+  - Database step: MySQL is preselected under Docker and SQLite everywhere else. The selection
+    can still be changed by hand
+  - Mail step: Mailpit (`mailpit:1025`) is filled in only under Docker; elsewhere the host is
+    empty and the port is 587
+  - Each step shows short guidance for the chosen setup, with the background folded under
+    **Show details**. Under Docker the mail step links to the Mailpit web interface
+    (`DIXLASE_MAILPIT_URL`, or port 8025 of the current host)
+
 ## [0.2.5] — 2026-11-05
 
 ### Changed
