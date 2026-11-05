@@ -70,6 +70,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Mailpit URL
+    |--------------------------------------------------------------------------
+    |
+    | Where the browser opens the Mailpit web interface, e.g.
+    | "http://localhost:8025". The Docker installer knows the port it
+    | publishes Mailpit on and can set this; when it is unset, the setup
+    | wizard links to the current host on port 8025.
+    |
+    */
+
+    'mailpit_url' => env('DIXLASE_MAILPIT_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | License Label
     |--------------------------------------------------------------------------
     |

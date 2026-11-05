@@ -98,6 +98,33 @@ class InstallEnvironment
     }
 
     /**
+     * Where the browser opens the Mailpit web interface.
+     *
+     * Only the installer knows the host port Mailpit is published on, so it
+     * may name the URL in DIXLASE_MAILPIT_URL. Otherwise the URL is the host
+     * the wizard is being viewed on with Mailpit's own default port, 8025.
+     * Anything but an http(s) URL is ignored, since the value becomes a link.
+     */
+    public function mailpitUrl(string $scheme, string $host): string
+    {
+        $configured = trim((string) config('dixlase.mailpit_url', ''));
+        $configuredScheme = strtolower((string) parse_url($configured, PHP_URL_SCHEME));
+        if ($configured !== '' && in_array($configuredScheme, ['http', 'https'], true)
+            && filter_var($configured, FILTER_VALIDATE_URL) !== false) {
+            return rtrim($configured, '/');
+        }
+
+        $scheme = in_array(strtolower($scheme), ['http', 'https'], true) ? strtolower($scheme) : 'http';
+        $host = $host !== '' ? $host : 'localhost';
+        // An IPv6 literal needs brackets once a port follows it.
+        if (str_contains($host, ':') && ! str_starts_with($host, '[')) {
+            $host = '['.$host.']';
+        }
+
+        return $scheme.'://'.$host.':8025';
+    }
+
+    /**
      * True when the host name resolves to an address. gethostbyname()
      * returns its argument unchanged when it cannot resolve it.
      */

@@ -61,11 +61,13 @@ return [
     ],
 
     // インストール方法に応じた案内
+    'mailpit_heading' => 'Mailpit でのメール確認',
     'mailpit_ready' => 'Docker インストーラがテスト用のメールサーバー Mailpit を用意しており、設定は入力済みです。',
     'mailpit_details' => [
         'Mailpit に送ったメールは、実際には誰にも配信されません。Mailpit の画面で内容を確認できます。',
         '実際にメールを送るには、代わりに SMTP サーバーの情報を入力してください。インストール後に設定することもできます。',
     ],
+    'mailpit_open_inbox' => 'テストメールは Mailpit に届きます。送信したら、次の URL で Mailpit を開いて確認してください。',
     'smtp_required' => 'メールを送るには SMTP サーバーが必要です。',
     'smtp_required_details' => [
         'レンタルサーバーやメール配信サービスの SMTP サーバーを使ってください。ホスト・ポート・ユーザー名・パスワードは、そのサービスの設定画面に表示されています。',

@@ -47,19 +47,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <section aria-labelledby="mail-server-heading">
         <h2 id="mail-server-heading" class="sr-only">{{ __('install/step4.mail_server_settings') }}</h2>
 
-        @if($hasMailpit)
-            <x-install.hint
-                :text="__('install/step4.mailpit_ready')"
-                :details="__('install/step4.mailpit_details')"
-            />
-        @else
+        @unless($hasMailpit)
             <x-install.hint
                 tone="warning"
                 :text="__('install/step4.smtp_required')"
                 :details="__('install/step4.smtp_required_details')"
             />
-        @endif
-        
+        @endunless
+
         <x-mail-server.form
             :settings="[]"
             context="install"
@@ -70,10 +65,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </section>
 
+    {{-- Everything about the Docker installer's Mailpit in one place, between the settings and the test. --}}
+    @if($hasMailpit)
+        <section aria-labelledby="mailpit-heading" class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 id="mailpit-heading" class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('install/step4.mailpit_heading') }}</h2>
+            <x-install.hint
+                class="!mt-0"
+                :text="__('install/step4.mailpit_ready')"
+                :details="__('install/step4.mailpit_details')"
+            />
+            @if($mailpitUrl)
+                <div class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                    <p><i class="fas fa-envelope-open-text mr-1" aria-hidden="true"></i>{{ __('install/step4.mailpit_open_inbox') }}</p>
+                    <a href="{{ $mailpitUrl }}" target="_blank" rel="noopener noreferrer"
+                        class="mt-1 inline-flex items-center gap-1 whitespace-nowrap text-indigo-600 dark:text-indigo-400 underline">{{ $mailpitUrl }}<i class="fas fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i><span class="sr-only">{{ __('install/common.opens_in_new_tab') }}</span></a>
+                </div>
+            @endif
+        </section>
+    @endif
+
     <!-- メール接続テストセクション -->
     <section aria-labelledby="mail-test-heading">
         <h2 id="mail-test-heading" class="sr-only">{{ __('install/step4.mail_connection_test') }}</h2>
-        
+
         <x-mail-server.test
             context="install"
             :connectionTestRoute="route('install.mail.test-connection')"

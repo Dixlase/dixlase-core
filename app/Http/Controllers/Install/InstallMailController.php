@@ -53,7 +53,7 @@ class InstallMailController extends BaseInstallController
     /**
      * Display mail server settings screen
      */
-    public function create(InstallEnvironment $installEnvironment)
+    public function create(Request $request, InstallEnvironment $installEnvironment)
     {
         $installData = session('install_data', []);
         $adminEmail = $installData['admin_email'] ?? '';
@@ -88,6 +88,9 @@ class InstallMailController extends BaseInstallController
                 'admin_email' => $adminEmail,
                 'testStatus' => $testStatus,
                 'hasMailpit' => $hasMailpit,
+                'mailpitUrl' => $hasMailpit
+                    ? $installEnvironment->mailpitUrl($request->getScheme(), $request->getHost())
+                    : null,
                 'installDefaults' => $hasMailpit
                     ? ['mail_host' => 'mailpit', 'mail_port' => '1025']
                     // No mail server comes with the install: leave the host for the user, start at the SMTP submission port.

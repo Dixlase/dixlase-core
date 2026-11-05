@@ -112,20 +112,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     xModel="driver"
                     onchange="this.dispatchEvent(new Event('input'))"
                 />
-                @if($isDocker)
-                    <x-install.hint :text="__('install/step3.detected_docker')" />
-                @endif
-                <div x-show="driver !== 'sqlite'" x-cloak>
-                    @if($isDocker)
-                        <x-install.hint :text="__('install/step3.mysql_docker')" />
-                    @else
+                @unless($isDocker)
+                    <div x-show="driver !== 'sqlite'" x-cloak>
                         <x-install.hint
                             tone="warning"
                             :text="__('install/step3.mysql_server_required')"
                             :details="__('install/step3.mysql_server_required_details')"
                         />
-                    @endif
-                </div>
+                    </div>
+                @endunless
                 <div x-show="driver === 'sqlite'" x-cloak>
                     <x-install.hint
                         :text="__('install/step3.sqlite_ready')"
@@ -224,6 +219,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </fieldset>
     </section>
 
+    {{-- Everything about the Docker installer's MySQL in one place, between the settings and the test. --}}
+    @if($isDocker)
+        <section aria-labelledby="docker-db-heading" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 id="docker-db-heading" class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('install/step3.docker_heading') }}</h2>
+            <x-install.hint class="!mt-0" :text="__('install/step3.detected_docker')" />
+            <div x-show="driver !== 'sqlite'" x-cloak>
+                <x-install.hint :text="__('install/step3.mysql_docker')" />
+            </div>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300" x-show="! connectionSuccess" x-cloak>
+                <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
+            </p>
+        </section>
+    @endif
+
     <!-- 接続テストセクション -->
     <section aria-labelledby="connection-test-heading">
         <h2 id="connection-test-heading" class="sr-only">{{ __('install/step3.database_connection_test') }}</h2>
@@ -233,11 +242,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <input type="hidden" id="db-success-message" value="{{ __('install/step3.db_test_success') }}">
         
         <div class="text-center space-y-3">
-            {{-- Under Docker the pre-filled MySQL values work too; elsewhere only SQLite works untouched. --}}
-            <p class="text-sm text-gray-600 dark:text-gray-300"
-                x-show="{{ $isDocker ? '! connectionSuccess' : "driver === 'sqlite' && ! connectionSuccess" }}" x-cloak>
-                <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
-            </p>
+            {{-- Outside Docker only SQLite works untouched; under Docker the box above says it. --}}
+            @unless($isDocker)
+                <p class="text-sm text-gray-600 dark:text-gray-300"
+                    x-show="driver === 'sqlite' && ! connectionSuccess" x-cloak>
+                    <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
+                </p>
+            @endunless
             <p id="db-test-result" class="text-sm" :class="testResultClass" role="status" aria-live="polite" x-text="testResult">
             </p>
             

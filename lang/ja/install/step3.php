@@ -66,6 +66,7 @@ return [
     'db_test_success' => '✅ データベース接続が成功しました！次の画面へお進みください！',
 
     // インストール方法に応じた案内
+    'docker_heading' => 'Docker 環境',
     'detected_docker' => 'Docker 環境として検出しました。',
     'mysql_docker' => 'Docker インストーラが MySQL のコンテナを用意しており、接続情報は入力済みです。',
     'mysql_server_required' => 'MySQL（または MariaDB）サーバーが別途必要です。',

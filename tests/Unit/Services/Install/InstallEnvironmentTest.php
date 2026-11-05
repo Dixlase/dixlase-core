@@ -83,6 +83,34 @@ class InstallEnvironmentTest extends TestCase
         $this->assertFalse($bare->hasMailpit());
     }
 
+    public function test_the_mailpit_url_falls_back_to_the_current_host_on_port_8025(): void
+    {
+        config(['dixlase.mailpit_url' => null]);
+        $env = $this->environment();
+
+        $this->assertSame('http://localhost:8025', $env->mailpitUrl('http', 'localhost'));
+        $this->assertSame('https://dixlase.test:8025', $env->mailpitUrl('https', 'dixlase.test'));
+        $this->assertSame('http://[::1]:8025', $env->mailpitUrl('http', '::1'));
+        $this->assertSame('http://localhost:8025', $env->mailpitUrl('ftp', ''));
+    }
+
+    public function test_the_installer_can_name_the_mailpit_url(): void
+    {
+        config(['dixlase.mailpit_url' => 'http://localhost:40025/']);
+
+        $this->assertSame('http://localhost:40025', $this->environment()->mailpitUrl('http', 'example.com'));
+    }
+
+    public function test_a_mailpit_url_that_is_not_http_is_ignored(): void
+    {
+        // The value becomes a link, so a javascript: URL must never reach it.
+        foreach (['javascript:alert(1)', 'not a url', 'ftp://localhost:8025'] as $value) {
+            config(['dixlase.mailpit_url' => $value]);
+
+            $this->assertSame('http://localhost:8025', $this->environment()->mailpitUrl('http', 'localhost'), $value);
+        }
+    }
+
     /**
      * @param  list<string>  $resolves  Host names the fake resolver answers for
      */

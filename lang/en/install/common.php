@@ -41,6 +41,7 @@ return [
     'back' => 'Back',
     'next' => 'Next',
     'show_details' => 'Show details',
+    'opens_in_new_tab' => '(opens in a new tab)',
     'back_button' => 'Back',
 
     // Step Display

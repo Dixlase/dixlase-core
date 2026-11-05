@@ -41,6 +41,7 @@ return [
     'back' => '戻る',
     'next' => '次へ',
     'show_details' => '詳しく見る',
+    'opens_in_new_tab' => '（新しいタブで開きます）',
     'back_button' => '戻る',
 
     // ステップ表示

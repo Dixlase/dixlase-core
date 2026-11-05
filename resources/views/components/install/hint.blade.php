@@ -33,10 +33,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{--
     Setup wizard hint: one line that is always visible, and an optional
-    explanation folded into a native <details> element, closed by default.
-    What the user must not miss goes in `text`; the background goes in
-    `details` (one string per paragraph). <details> needs no JavaScript,
-    so it is CSP-safe and works under the strict Alpine build.
+    explanation folded into a panel that opens and closes with an
+    animation (the shared `accordion` data plus x-collapse), closed by
+    default. What the user must not miss goes in `text`; the background
+    goes in `details` (one string per paragraph). The directives use only
+    method calls and plain properties, so they work under the strict
+    Alpine build.
 --}}
 @props([
     'text' => '',
@@ -55,13 +57,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <i class="fas {{ $tone === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info' }} mr-1" aria-hidden="true"></i>{{ $text }}
     </p>
     @if(! empty($details))
-        <details class="mt-1">
-            <summary class="cursor-pointer text-indigo-600 dark:text-indigo-400 hover:underline">{{ __('install/common.show_details') }}</summary>
-            <div class="mt-2 space-y-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-3 text-gray-600 dark:text-gray-300">
-                @foreach($details as $paragraph)
-                    <p>{{ $paragraph }}</p>
-                @endforeach
+        @php($panelId = 'install-hint-'.\Illuminate\Support\Str::random(8))
+        <div x-data="accordion" class="mt-1">
+            <button type="button"
+                class="group inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline"
+                aria-controls="{{ $panelId }}"
+                aria-expanded="false"
+                :aria-expanded="open"
+                @click="toggle()">
+                <i class="fas fa-chevron-down text-xs transition-transform duration-200 group-aria-expanded:rotate-180" aria-hidden="true"></i>
+                {{ __('install/common.show_details') }}
+            </button>
+            <div id="{{ $panelId }}" x-show="open" x-collapse x-cloak>
+                <div class="mt-2 space-y-2 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-3 text-gray-600 dark:text-gray-300">
+                    @foreach($details as $paragraph)
+                        <p>{{ $paragraph }}</p>
+                    @endforeach
+                </div>
             </div>
-        </details>
+        </div>
     @endif
 </div>

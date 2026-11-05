@@ -122,6 +122,18 @@ class InstallMethodAwareStepsTest extends TestCase
         $response->assertDontSee(__('install/step4.smtp_required'));
     }
 
+    public function test_docker_links_to_the_mailpit_inbox(): void
+    {
+        config(['dixlase.install_method' => 'docker', 'dixlase.mailpit_url' => 'http://localhost:40025']);
+
+        $response = $this->withSession(['install_data' => $this->sessionBeforeMail()])
+            ->get('/install/mail');
+
+        $response->assertViewHas('mailpitUrl', 'http://localhost:40025');
+        $response->assertSee(__('install/step4.mailpit_open_inbox'));
+        $response->assertSee('href="http://localhost:40025"', false);
+    }
+
     public function test_other_methods_leave_the_mail_host_empty(): void
     {
         config(['dixlase.install_method' => 'oneliner']);
@@ -133,6 +145,8 @@ class InstallMethodAwareStepsTest extends TestCase
         $response->assertViewHas('installDefaults', ['mail_host' => '', 'mail_port' => '587']);
         $response->assertDontSee('value="mailpit"', false);
         $response->assertSee(__('install/step4.smtp_required'));
+        $response->assertViewHas('mailpitUrl', null);
+        $response->assertDontSee(__('install/step4.mailpit_open_inbox'));
     }
 
     /**
