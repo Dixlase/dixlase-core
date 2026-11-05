@@ -115,13 +115,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
 
             @php
-                // Detect Docker by DNS-resolving the 'mysql' service hostname; inside the container it resolves, outside it does not.
-                $isDocker = gethostbyname('mysql') !== 'mysql';
+                // $isDocker comes from InstallEnvironment (DIXLASE_INSTALL_METHOD, or the `mysql` host name as a fallback).
                 $defaultDbHost = $isDocker ? 'mysql' : '127.0.0.1';
                 $defaultDbUser = $isDocker ? 'dixlase' : '';
                 $defaultDbPassword = $isDocker ? 'dixlase' : '';
                 $defaultDbName = old('db_database', session('install_data.db_database'))
-                    ?? (old('db_connection', session('install_data.db_connection', 'mysql')) === 'sqlite'
+                    ?? (old('db_connection', $defaultDriver) === 'sqlite'
                         ? database_path('database.sqlite')
                         : 'dixlase');
             @endphp
@@ -156,9 +155,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :required="true"
                     class="input-full"
                 />
-                <template x-if="driver === 'sqlite'">
-                    <x-form-help-text :text="__('install/step3.db_database_sqlite_help')" />
-                </template>
             </div>
 
             <div x-show="driver !== 'sqlite'" x-cloak>
@@ -204,6 +200,48 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <x-form-help-text :text="__('install/step3.preserve_database_help')" />
         </fieldset>
     </section>
+
+    {{--
+        The guidance for this step, between the settings and the test, in
+        one boxed section per subject: the Docker installer's MySQL, SQLite,
+        and a MySQL server of the user's own.
+    --}}
+    @if($isDocker)
+        <section aria-labelledby="docker-db-heading" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <h2 id="docker-db-heading" class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('install/step3.docker_heading') }}</h2>
+            <x-install.hint class="!mt-0" :text="__('install/step3.detected_docker')" />
+            <div x-show="driver !== 'sqlite'" x-cloak>
+                <x-install.hint :text="__('install/step3.mysql_docker')" />
+            </div>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300" x-show="driver !== 'sqlite' && ! connectionSuccess" x-cloak>
+                <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
+            </p>
+        </section>
+    @endif
+
+    <section aria-labelledby="sqlite-heading" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg" x-show="driver === 'sqlite'" x-cloak>
+        <h2 id="sqlite-heading" class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('install/step3.sqlite_heading') }}</h2>
+        <x-install.hint
+            class="!mt-0"
+            :text="__('install/step3.sqlite_ready')"
+            :details="array_merge(__('install/step3.sqlite_details'), [__('install/step3.db_database_sqlite_help')])"
+        />
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300" x-show="! connectionSuccess">
+            <i class="fas fa-circle-info mr-1" aria-hidden="true"></i>{{ __('install/step3.ready_to_test') }}
+        </p>
+    </section>
+
+    @unless($isDocker)
+        <section aria-labelledby="mysql-heading" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg" x-show="driver !== 'sqlite'" x-cloak>
+            <h2 id="mysql-heading" class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('install/step3.mysql_heading') }}</h2>
+            <x-install.hint
+                class="!mt-0"
+                tone="warning"
+                :text="__('install/step3.mysql_server_required')"
+                :details="__('install/step3.mysql_server_required_details')"
+            />
+        </section>
+    @endunless
 
     <!-- 接続テストセクション -->
     <section aria-labelledby="connection-test-heading">

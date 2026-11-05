@@ -55,6 +55,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Install Method
+    |--------------------------------------------------------------------------
+    |
+    | How this copy of Dixlase was installed: "docker", "oneliner" or
+    | "composer". The installers set it; a release ZIP or a git clone
+    | leaves it unset. The setup wizard reads it to choose its defaults
+    | (MySQL or SQLite, Mailpit or an empty mail host) and its guidance.
+    | See App\Services\Install\InstallEnvironment.
+    |
+    */
+
+    'install_method' => env('DIXLASE_INSTALL_METHOD'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mailpit URL
+    |--------------------------------------------------------------------------
+    |
+    | Where the browser opens the Mailpit web interface, e.g.
+    | "http://localhost:8025". The Docker installer knows the port it
+    | publishes Mailpit on and can set this; when it is unset, the setup
+    | wizard links to the current host on port 8025.
+    |
+    */
+
+    'mailpit_url' => env('DIXLASE_MAILPIT_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | License Label
     |--------------------------------------------------------------------------
     |

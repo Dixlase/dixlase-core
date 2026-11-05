@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Install;
 
 use App\Http\Requests\Install\InstallDatabaseRequest;
+use App\Services\Install\InstallEnvironment;
 use App\Support\Install\SqliteDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -51,7 +52,7 @@ class InstallDatabaseController extends BaseInstallController
     /**
      * Display database settings screen
      */
-    public function create()
+    public function create(InstallEnvironment $installEnvironment)
     {
         // Build the driver option list from the actually loaded PDO extensions
         // so users cannot pick a driver that the host PHP cannot connect with.
@@ -69,15 +70,35 @@ class InstallDatabaseController extends BaseInstallController
         if ($sessionDriver !== null && ! isset($availableDrivers[$sessionDriver])) {
             $sessionDriver = null;
         }
-        $defaultDriver = $sessionDriver ?? array_key_first($availableDrivers);
+        $isDocker = $installEnvironment->isDocker();
+        $defaultDriver = $sessionDriver ?? $this->defaultDriverFor($isDocker, $availableDrivers);
 
         return view('install.database', array_merge(
             $this->getViewData(4),
             [
                 'availableDrivers' => $availableDrivers,
                 'defaultDriver' => $defaultDriver,
+                'isDocker' => $isDocker,
             ]
         ));
+    }
+
+    /**
+     * The database type selected when the user has not chosen one yet.
+     *
+     * The Docker installer starts a MySQL container, so MySQL is the natural
+     * choice there. Every other install method has no database server of its
+     * own, and SQLite works there with nothing to prepare.
+     *
+     * @param  array<string, string>  $availableDrivers
+     */
+    private function defaultDriverFor(bool $isDocker, array $availableDrivers): ?string
+    {
+        $preferred = $isDocker ? 'mysql' : 'sqlite';
+
+        return isset($availableDrivers[$preferred])
+            ? $preferred
+            : array_key_first($availableDrivers);
     }
 
     /**

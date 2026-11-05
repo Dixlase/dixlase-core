@@ -64,4 +64,23 @@ return [
     'db_connection_error' => 'データベース接続に失敗しました: :error',
     'db_test_required' => '⚠️ 次の画面へ進む前にデータベース接続テストを行ってください。',
     'db_test_success' => '✅ データベース接続が成功しました！次の画面へお進みください！',
+
+    // インストール方法に応じた案内
+    'docker_heading' => 'Docker 環境',
+    'sqlite_heading' => 'SQLite',
+    'mysql_heading' => 'MySQL サーバー',
+    'detected_docker' => 'Docker 環境として検出しました。',
+    'mysql_docker' => 'Docker インストーラが MySQL のコンテナを用意しており、接続情報は入力済みです。',
+    'mysql_server_required' => 'MySQL（または MariaDB）サーバーが別途必要です。',
+    'mysql_server_required_details' => [
+        'MySQL か MariaDB のサーバーを起動し、空のデータベースと、それを使えるユーザーを作成してから、その値をここに入力してください。',
+        'レンタルサーバーでは、これらの値はたいてい管理画面に表示されています。',
+        'データベースサーバーがない場合は SQLite を選んでください。追加の準備なしで使えます。',
+    ],
+    'sqlite_ready' => 'SQLite はデータベースサーバーがいらず、このままで使えます。',
+    'sqlite_details' => [
+        'SQLite はサイト全体を 1 つのファイルに保存します。小〜中規模のサイトや試用に向いています。',
+        'アクセスの多いサイトでは MySQL をおすすめします。',
+    ],
+    'ready_to_test' => 'この値のままで使えます。変更せずに「接続テスト」を押してください。',
 ];

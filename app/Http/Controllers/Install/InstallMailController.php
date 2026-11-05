@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Install;
 
 use App\Http\Requests\Install\InstallMailRequest;
 use App\Http\Requests\MailServerRequest;
+use App\Services\Install\InstallEnvironment;
 use App\Traits\MailTestTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -52,7 +53,7 @@ class InstallMailController extends BaseInstallController
     /**
      * Display mail server settings screen
      */
-    public function create()
+    public function create(Request $request, InstallEnvironment $installEnvironment)
     {
         $installData = session('install_data', []);
         $adminEmail = $installData['admin_email'] ?? '';
@@ -79,11 +80,21 @@ class InstallMailController extends BaseInstallController
             'session_id' => session()->getId(),
         ]);
 
+        $hasMailpit = $installEnvironment->hasMailpit();
+
         return view('install.mail', array_merge(
             $this->getViewData(5),
             [
                 'admin_email' => $adminEmail,
                 'testStatus' => $testStatus,
+                'hasMailpit' => $hasMailpit,
+                'mailpitUrl' => $hasMailpit
+                    ? $installEnvironment->mailpitUrl($request->getScheme(), $request->getHost())
+                    : null,
+                'installDefaults' => $hasMailpit
+                    ? ['mail_host' => 'mailpit', 'mail_port' => '1025']
+                    // No mail server comes with the install: leave the host for the user, start at the SMTP submission port.
+                    : ['mail_host' => '', 'mail_port' => '587'],
                 'mailers' => __('mail-server/config.mailers'),
                 'encryptions' => __('mail-server/config.encryptions'),
             ]

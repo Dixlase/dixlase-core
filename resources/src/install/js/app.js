@@ -25,4 +25,5 @@ import './database';
 import './complete';
 import './finalize-buttons';
 import './theme-download';
+import './hint';
 import '../../components/mail-server/js/settings-install';
