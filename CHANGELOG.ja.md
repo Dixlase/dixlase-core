@@ -42,6 +42,21 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [0.2.6] — 2026-11-05
+
+### 追加
+- セットアップのウィザードが、Dixlase のインストール方法に合わせて初期値と案内を選ぶように
+  なりました（#883、#890）。インストール方法は `DIXLASE_INSTALL_METHOD`（`docker`、`oneliner`、
+  `composer`）で表し、`composer create-project` は `composer` を書き込みます。指定が無いときは、
+  ホスト名 `mysql`・`mailpit` が引けるかで Docker かどうかを判断します
+  - データベースの手順: Docker では MySQL、それ以外では SQLite を最初から選びます。選択は
+    これまでどおり手で変えられます
+  - メールの手順: Mailpit（`mailpit:1025`）は Docker のときだけ入れておきます。それ以外では
+    ホストは空、ポートは 587 です
+  - 手順ごとに、選んだ構成に合った短い案内を出し、背景の説明は **詳しく見る** の中に
+    たたみました。Docker のときは、メールの手順から Mailpit の画面（`DIXLASE_MAILPIT_URL`、
+    無ければ同じホストの 8025 番ポート）へリンクします
+
 ## [0.2.5] — 2026-11-05
 
 ### 変更
