@@ -292,6 +292,22 @@ class PluginUpdate extends Command
             // for source / dev installs; --skip-build never builds.
             $this->buildExtensionAssets($livePath, $this->resolveAssetBuildMode());
 
+            // Refresh the public symlink so the output is reachable from the
+            // web root (the symlink target is the resources/assets directory
+            // inside the plugin). ThemeUpdate already does this; without it a
+            // plugin that gains compiled assets in this update has no link,
+            // because `dls:plugin:symlink create` skips a plugin with nothing
+            // to serve and so created none when the plugin was enabled. Every
+            // /assets/plugins/<Name>/... request would answer 404 while the
+            // page's byte size barely moves, so a size-based health check
+            // still reports the site healthy.
+            if (is_dir($livePath)) {
+                $this->call('dls:plugin:symlink', [
+                    'action' => 'create',
+                    'plugin' => $plugin->directory,
+                ]);
+            }
+
             // Regenerate the Tailwind plugin-source aggregator: the
             // updated plugin may have added, removed, or moved
             // `declares.tailwind_content` paths in its new plugin.json.
