@@ -110,7 +110,17 @@ class InstallThemeDownloaderBuildDecisionTest extends TestCase
         $this->assertLessThan($build, $decision);
     }
 
-    public function test_the_release_workflow_links_the_bundled_theme_instead_of_building_it(): void
+    /**
+     * The release neither builds a bundled theme nor links its assets.
+     *
+     * Building would rewrite the bytes the theme's signature covers. Linking
+     * looked harmless and was not: `zip` follows symlinks, so the archive
+     * carried a dereferenced copy of the build, and after a theme update the
+     * relinker keeps such a copy rather than linking -- the site then serves
+     * the previous version's stylesheet silently (#898). The link is created
+     * on the consuming side, by the install and by the core update.
+     */
+    public function test_the_release_workflow_neither_builds_nor_links_the_bundled_theme(): void
     {
         $workflow = (string) file_get_contents(base_path('.github/workflows/release.yml'));
 
@@ -119,15 +129,20 @@ class InstallThemeDownloaderBuildDecisionTest extends TestCase
             $workflow,
             'The release must not rebuild a bundled theme: that changes the bytes its signature covers.'
         );
-        $this->assertStringContainsString(
+        $this->assertStringNotContainsString(
             'ln -sfn "../../../themes/$theme_name/resources/assets"',
             $workflow,
-            'The release still has to create the symlink core serves the theme assets through.'
+            'The release must not write the public asset link: zip dereferences it into a copy that outlives the theme version it came from.'
         );
         $this->assertStringContainsString(
             'resources/assets/manifest.json',
             $workflow,
             'The release must refuse a bundled theme that ships no build.'
+        );
+        $this->assertStringContainsString(
+            'public/assets/themes/, which must stay empty',
+            $workflow,
+            'The release must fail if a file ships under public/assets/themes/.'
         );
     }
 }
