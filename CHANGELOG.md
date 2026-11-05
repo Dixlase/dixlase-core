@@ -41,6 +41,30 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.5] — 2026-11-05
+
+### Changed
+- The release ZIP and new installs use the bundled theme's own build, which ships with the theme
+  and is covered by its signature, instead of building the theme again (#881). The bundled theme
+  is now v0.5.3. After `composer create-project`, expose the theme's assets with
+  `php artisan dls:theme:symlink create DixlaseOnePage` instead of building them; rebuilding the
+  theme makes it report as modified. The READMEs say so (#882)
+- After `composer create-project`, the message shown starts PHP's built-in server directly
+  (`php -S`, run from `public/`) instead of `php artisan serve`, which cannot run the install
+  wizard to the end (#879, #880). The Composer guide explains each option
+- An extension update checks the requested version and `requires.dixlase` / `requires.php` on
+  the downloaded update, before it replaces the installed extension (#878)
+
+### Fixed
+- After a plugin update, the plugin's public assets are linked again, as after a theme update
+  (#885, #886). A plugin whose new version is the first to ship built assets no longer serves
+  its pages without their stylesheet
+
+### Security
+- Update `symfony/http-foundation`, `symfony/http-kernel`, `symfony/routing`,
+  `symfony/serializer` and `symfony/yaml` to 7.4.23 for the advisories Symfony published on
+  2026-11-04 (CVE-2026-118514, CVE-2026-118515, CVE-2026-118516, CVE-2026-45075) (#887)
+
 ## [0.2.4] — 2026-11-04
 
 ### Fixed
