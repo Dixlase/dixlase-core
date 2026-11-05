@@ -40,6 +40,7 @@ use App\Console\Traits\BuildsExtensionAssets;
 use App\Console\Traits\EnforcesExtensionRequirements;
 use App\Console\Traits\TakesExtensionBackup;
 use App\Exceptions\ExtensionUpdateBlockedException;
+use App\Helpers\ComposerLocalHelper;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionAuditScope;
 use App\Services\Extension\ExtensionSourceManager;
@@ -215,6 +216,24 @@ class ThemeUpdate extends Command
             // back by the catch below, before its migrations, seeders or npm
             // build touch anything.
             $this->refuseBlockedUpdate('theme', $slug);
+
+            // Rewrite composer.local.json and regenerate the autoload map, now
+            // that the new version is the one on disk and has not been
+            // refused. Until this ran, an update left the file describing the
+            // version it replaced: a helper the new version moved or renamed
+            // stayed in autoload.files as a path that no longer exists, which
+            // Composer requires on every request, and a helper it added was
+            // declared but never hoisted. It also has to happen before the
+            // migrations below, which the comment there assumes -- a
+            // migration can only reference the new version's classes if the
+            // map knows about them. A failure is logged, not fatal: the files
+            // are already in place, which is why syncAutoload() defaults to
+            // $requireDump = false.
+            if (ComposerLocalHelper::syncAutoload()) {
+                $this->info('Updated composer.local.json');
+            } else {
+                $this->warn('Failed to sync composer.local.json; run `'.ComposerLocalHelper::RECOVERY_COMMAND.'` if theme pages error.');
+            }
 
             // Apply any new migration files shipped with this release.
             // The theme's migrations live in
