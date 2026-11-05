@@ -193,21 +193,29 @@ jobs:
         # Node on the destination host.
         run: npm run build
 
-      - name: Link bundled-theme assets into public/
-        # composer/installers placed themes/DixlaseOnePage/ (and any other
-        # dixlase-theme composer packages) during composer install above,
-        # and a theme ships its built resources/assets/ with the release it
-        # was signed for. So nothing is built here; what is still needed is
-        # the relative symlink core serves the theme's assets through,
-        # because the composer dist carries no public/ tree.
+      - name: Verify each bundled theme ships its build
+        # composer/installers placed themes/<Theme>/ (every dixlase-theme
+        # composer package) during composer install above, and a theme ships
+        # its built resources/assets/ with the release it was signed for. So
+        # nothing is built here: building would rewrite the bytes the theme's
+        # signature covers, and every site installed from this ZIP would
+        # report the theme as modified.
         #
-        # Building here would rewrite the bytes the theme's signature
-        # covers, and every site installed from this ZIP would report the
-        # theme as modified.
+        # Nothing is linked here either. This step used to write the relative
+        # symlink core serves a theme's assets through, on the assumption that
+        # it would survive ZIP extraction. It never got the chance: `zip`
+        # follows symlinks unless `-y` is passed, so the archive carried a
+        # real directory holding a copy of the build. That copy is worse than
+        # a duplicate -- AssetHelper reads the manifest under public/, and
+        # after a theme update PublicAssetRelinker keeps a real directory
+        # whose manifest lists files the new build does not have, so the site
+        # goes on serving the previous version's stylesheet with a complete
+        # page and an unchanged byte size (#898).
         #
-        # The symlink is the same one `php artisan dls:theme:symlink` writes.
-        # Relative paths survive ZIP extraction; an absolute one would point
-        # at the CI runner's filesystem on the operator's machine.
+        # The link is created on the consuming side instead, which both
+        # consumers of this archive already do: InstallRunner calls
+        # dls:theme:symlink for the active theme on a fresh install, and
+        # CoreUpdater calls PublicAssetRelinker::relink() on an update.
         run: |
           set -e
           mkdir -p public/assets/themes
@@ -218,8 +226,7 @@ jobs:
               echo "::error::$theme_name ships no built assets (resources/assets/manifest.json is missing). A theme release has to build and commit them." >&2
               exit 1
             fi
-            ln -sfn "../../../themes/$theme_name/resources/assets" "public/assets/themes/$theme_name"
-            echo "Linked public/assets/themes/$theme_name"
+            echo "$theme_name ships its build ($(find "$theme_dir/resources/assets" -type f | wc -l | tr -d ' ') file(s))."
           done
 
       - name: Clean dev-only artifacts before bundling
@@ -415,6 +422,22 @@ jobs:
             exit 1
           fi
           echo "vendor/ retains the framework's exception-renderer dist/ assets."
+
+          # The reverse pin for #898: nothing may ship under
+          # public/assets/themes/. A file there is a dereferenced copy of a
+          # theme's build, and after the theme is updated the relinker keeps
+          # that copy rather than linking -- the site then serves the previous
+          # version's stylesheet silently, because the page is complete and
+          # its byte size barely moves. The link belongs to the consuming
+          # side; an empty directory in the archive is correct.
+          THEME_PUBLIC="dixlase-${{ steps.stage.outputs.tag }}/public/assets/themes/"
+          STRAY=$(unzip -l "${{ steps.zip.outputs.name }}" | awk -v p="$THEME_PUBLIC" '$4 ~ "^" p && $1 != "0" {print $4}')
+          if [ -n "$STRAY" ]; then
+            echo "::error::Release ZIP carries files under public/assets/themes/, which must stay empty (see #898). A theme's built assets reach a site through themes/<Theme>/resources/assets and a symlink the install or the update creates. Files found:" >&2
+            printf '  %s\n' $STRAY >&2
+            exit 1
+          fi
+          echo "public/assets/themes/ ships no files, as it must."
 
       - name: Attach to GitHub release
         if: github.event_name == 'release'
