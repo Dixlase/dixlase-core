@@ -48,7 +48,10 @@ class InstallEnvironmentController extends BaseInstallController
      */
     public function create()
     {
-        return view('install.environment', $this->getViewData(3));
+        return view('install.environment', array_merge(
+            $this->getViewData(3),
+            ['adminUrl' => $this->ensureAdminUrl()]
+        ));
     }
 
     /**
@@ -63,7 +66,7 @@ class InstallEnvironmentController extends BaseInstallController
         if ($isSimpleMode) {
             $data['app_env'] = 'production';
             $data['app_debug'] = false;
-            $data['admin_url'] = session('install_data.admin_url', 'admin');
+            $data['admin_url'] = $this->ensureAdminUrl();
             // Auto-detect forced SSL from current access protocol
             $data['force_ssl'] = $request->isSecure()
                 || $request->header('X-Forwarded-Proto') === 'https';

@@ -142,7 +142,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if($isSimpleMode)
     <!-- 管理画面URL表示セクション（簡単モード：読み取り専用） -->
     <section aria-labelledby="admin-url-heading" x-data="{
-        fullUrl: '{{ $protocol }}{{ $hostAndPort }}/{{ session('install_data.admin_url', 'admin') }}',
+        fullUrl: '{{ $protocol }}{{ $hostAndPort }}/{{ $adminUrl }}',
         copied: false,
         copyUrl() {
             navigator.clipboard.writeText(this.fullUrl);
@@ -172,7 +172,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             $adminUrlPrefixes = config('admin.url.admin_url_prefixes', ['admin']);
             $currentAdminUrl = old('admin_url_prefix', '') !== ''
                 ? old('admin_url_prefix') . '-' . old('admin_url_suffix', '')
-                : session('install_data.admin_url', 'admin');
+                : $adminUrl;
             $parts = explode('-', $currentAdminUrl, 2);
             $currentPrefix = in_array($parts[0], $adminUrlPrefixes) ? $parts[0] : $adminUrlPrefixes[0];
             $currentSuffix = $parts[1] ?? '';

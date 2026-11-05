@@ -37,7 +37,6 @@ namespace App\Http\Controllers\Install;
 
 use App\Enums\AdminMode;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * Install - Mode Selection
@@ -71,14 +70,8 @@ class InstallModeController extends BaseInstallController
 
         session(['install_data.install_mode' => (int) $validated['install_mode']]);
 
-        // Generate random admin panel URL only on first access (if not set in session)
-        // Generate both prefix and suffix randomly
-        if (! session()->has('install_data.admin_url')) {
-            $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
-            $prefix = $prefixes[array_rand($prefixes)];
-            $suffix = strtolower(Str::random(4));
-            session(['install_data.admin_url' => $prefix.'-'.$suffix]);
-        }
+        // A random admin URL (prefix and suffix), kept when one was already chosen.
+        $this->ensureAdminUrl();
 
         return redirect()->route('install.settings');
     }
