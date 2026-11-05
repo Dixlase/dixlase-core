@@ -65,6 +65,46 @@ abstract class BaseInstallController extends Controller
     }
 
     /**
+     * The admin URL the wizard is going to install, generating one when the
+     * session has none.
+     *
+     * The mode step used to be the only place that generated it, while the
+     * environment step fell back to a bare `admin` when it was missing. The
+     * settings step opens without the mode step, and a session can expire
+     * mid-wizard, so the most guessable admin URL there is could be shown
+     * and installed. A value that is not `<prefix>-<suffix>` is replaced too.
+     */
+    protected function ensureAdminUrl(): string
+    {
+        $prefixes = config('admin.url.admin_url_prefixes', ['admin']);
+        $current = session('install_data.admin_url');
+
+        if (is_string($current) && self::isCompleteAdminUrl($current, $prefixes)) {
+            return $current;
+        }
+
+        $adminUrl = $prefixes[array_rand($prefixes)].'-'.strtolower(Str::random(4));
+        session(['install_data.admin_url' => $adminUrl]);
+
+        return $adminUrl;
+    }
+
+    /**
+     * Whether the value is a known prefix followed by a suffix, as the
+     * environment step's own validation requires.
+     *
+     * @param  array<int, string>  $prefixes
+     */
+    private static function isCompleteAdminUrl(string $adminUrl, array $prefixes): bool
+    {
+        $parts = explode('-', $adminUrl, 2);
+
+        return count($parts) === 2
+            && in_array($parts[0], $prefixes, true)
+            && preg_match('/^[a-z0-9]{4,50}$/', $parts[1]) === 1;
+    }
+
+    /**
      * Get current locale
      */
     protected function getCurrentLocale(): string
