@@ -328,10 +328,14 @@ trait LoginTrait
             'context' => $this->getContext(),
         ]);
 
-        // Skip 2FA if mail server testing is not completed
-        $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
+        // Ask for the second step whenever the account has it enabled and a
+        // step can actually be completed for it. The mail server's test state
+        // does not describe that on its own -- the recovery code needs no mail
+        // -- and reading it as if it did removed the second step from every
+        // account whenever the mail settings were saved with a value changed.
+        $canChallenge = $twoFactor->canChallenge($user);
 
-        if ($twoFactor->has($user) && $mailServerTested) {
+        if ($twoFactor->has($user) && $canChallenge) {
             // 2FA lockout check
             $lockoutStatus = $twoFactor->checkLockout($user);
 
@@ -355,11 +359,23 @@ trait LoginTrait
             // Get valid authentication method
             $effectiveMethod = $twoFactor->getEffectiveAuthMethod($user);
 
-            // Generate code only for email authentication
+            // Generate code only for email authentication. A send can fail --
+            // the mail server may be unconfigured or unreachable -- and that
+            // must not turn the login into an error page: the challenge screen
+            // offers the recovery code, which needs no mail. The sent flag is
+            // set only on success, so the screen may try again.
             if ($effectiveMethod === \App\Enums\TwoFaMethod::EMAIL->value) {
-                $twoFactor->generate($user);
-                // Set email sent flag in session (prevent duplicate sending)
-                $request->session()->put($this->getSessionPrefix().'.email_sent', true);
+                try {
+                    $twoFactor->generate($user);
+                    // Set email sent flag in session (prevent duplicate sending)
+                    $request->session()->put($this->getSessionPrefix().'.email_sent', true);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('[2FA] Failed to generate email code at login', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                        'context' => $this->getContext(),
+                    ]);
+                }
             }
 
             // Redirect to appropriate route based on default authentication method
@@ -367,6 +383,19 @@ trait LoginTrait
 
             return redirect()->route($redirectRoute);
         } else {
+            // An account with the second step enabled but no way to complete
+            // one is let through, because refusing it would lock out every
+            // account on a site whose mail server is down -- including the one
+            // that would repair it. It is recorded, so the state is not silent.
+            if ($twoFactor->has($user)) {
+                \Illuminate\Support\Facades\Log::warning('[2FA] Second step skipped: no step can be completed for this account', [
+                    'user_id' => $user->id,
+                    'context' => $this->getContext(),
+                    'mail_server_tested' => \App\Services\MailServerValidatorService::isMailServerTested(),
+                    'has_usable_recovery_code' => $twoFactor->hasUsableRecoveryCode($user),
+                ]);
+            }
+
             // Password accepted: the identifier-step CAPTCHA has done its job.
             session()->forget($captchaVerifiedKey);
 
