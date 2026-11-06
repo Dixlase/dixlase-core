@@ -37,8 +37,11 @@ declare(strict_types=1);
 
 namespace App\Services\Install;
 
+use App\Models\AuditLog;
 use App\Models\CoreVersionHistory;
+use App\Models\Member;
 use App\Services\AuditLogIntegrityService;
+use App\Services\AuditService;
 use App\Services\Core\CoreUpdater;
 use App\Support\Install\EnvFile;
 use App\Support\Install\InstallLogFile;
@@ -84,11 +87,89 @@ class InstallFinalizer
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
 
-        $this->recordBaselineVersionHistory();
+        $baseline = $this->recordBaselineVersionHistory();
+        // Before the chain is built, so the install's own entry is inside
+        // that pass rather than left behind it.
+        $this->recordInstallAudit($baseline);
         $this->buildAuditLogHashChain();
         $this->scheduleInstallLogDiscard();
 
         return $sessionCookie;
+    }
+
+    /**
+     * Record the install in the audit log.
+     *
+     * The log's first line on a new site used to be whatever happened
+     * after the install, so the event that created the site -- and the
+     * account that became its first administrator -- was the one event the
+     * log did not hold. `core_version_history` answers "which version";
+     * only the hash-chained log answers "when, by whom, from where", and
+     * it is the log `audit:integrity` verifies.
+     *
+     * Both install paths reach this through finalize(): the wizard's
+     * InstallCompleteController and `dls:install`.
+     *
+     * Writes nothing when an entry already exists, so re-running the
+     * finalizer against an installed site does not claim a second
+     * install. Never throws: bookkeeping must not fail an install that
+     * has otherwise completed.
+     *
+     * `public` (not `private`) for the same reason as the two methods
+     * above: a test can exercise it without invoking finalize(), which
+     * mutates `.env`.
+     *
+     * Returns the row, or null when one already existed or the write
+     * failed.
+     */
+    public function recordInstallAudit(?CoreVersionHistory $baseline = null): ?AuditLog
+    {
+        try {
+            if (AuditLog::query()->where('action', AuditLog::ACTION_CORE_INSTALLED)->exists()) {
+                return null;
+            }
+
+            // The install's own ledger row names both the version and the
+            // member who became the first administrator. InstallRunner
+            // writes it (seedCoreReleaseState), which is why
+            // recordBaselineVersionHistory() usually has nothing to do and
+            // returns null -- so fall back to looking it up.
+            $row = $baseline ?? CoreVersionHistory::query()
+                ->where('installation_method', CoreVersionHistory::METHOD_INSTALL)
+                ->orderBy('id')
+                ->first();
+
+            // The nullsafe stays: first() returns null when no ledger
+            // row exists, whatever the static analysis infers from the
+            // builder chain. It is written as a statement rather than
+            // with ?? so the analyser's rule about a nullsafe on the
+            // left of ?? does not fire on a guard that is real.
+            $version = $row?->new_version;
+
+            if ($version === null) {
+                $version = CoreUpdater::readVersionFromDisk();
+            }
+            $actorId = $row?->applied_by_id;
+            $actor = $actorId !== null ? Member::find($actorId) : null;
+
+            return app(AuditService::class)->log([
+                'action' => AuditLog::ACTION_CORE_INSTALLED,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_NOTICE,
+                'outcome' => AuditLog::OUTCOME_SUCCESS,
+                'actor' => $actor,
+                'target_label' => $version !== null ? "Dixlase core v{$version}" : 'Dixlase core',
+                'context' => [
+                    'version' => $version,
+                    'history_id' => $row?->id,
+                    'installation_method' => CoreVersionHistory::METHOD_INSTALL,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('install')->warning('Failed to record the install in the audit log (non-fatal): '.$e->getMessage());
+
+            return null;
+        }
     }
 
     /**
