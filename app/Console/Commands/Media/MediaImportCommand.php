@@ -109,7 +109,7 @@ class MediaImportCommand extends Command
             return null;
         }
 
-        if ($member->status !== MemberStatus::Active) {
+        if ($member->getAttribute('status') !== MemberStatus::Active) {
             $this->error(__('admin/media/import.member_inactive', ['identifier' => $identifier]));
 
             return null;
@@ -148,7 +148,7 @@ class MediaImportCommand extends Command
             $rows[] = [
                 $result->source,
                 __('admin/media/import.status_'.$status),
-                $result->media?->id ?? '',
+                $result->media !== null ? $result->media->getKey() : '',
                 $result->media !== null ? MediaImporter::pathOf($result->media) : (string) $result->error,
             ];
         }

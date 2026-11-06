@@ -90,10 +90,10 @@ class MediaImporter
         try {
             $result = app(UploadMediaAction::class)->execute(new MemberActor($uploader), [
                 'file' => $file,
-                'uploaded_by' => $uploader->id,
+                'uploaded_by' => $uploader->getKey(),
             ]);
         } catch (AuthorizationException) {
-            return MediaImportResult::failed($path, __('admin/media/import.not_allowed', ['member' => $uploader->email]));
+            return MediaImportResult::failed($path, __('admin/media/import.not_allowed', ['member' => (string) $uploader->getAttribute('email')]));
         } catch (Throwable $e) {
             report($e);
 
@@ -181,8 +181,8 @@ class MediaImporter
     {
         $mediaPath = (string) config('admin.files.mediaPath', 'media');
 
-        return str_starts_with((string) $media->path, $mediaPath.'/')
-            ? (string) $media->path
-            : $mediaPath.'/'.$media->path;
+        $path = (string) $media->getAttribute('path');
+
+        return str_starts_with($path, $mediaPath.'/') ? $path : $mediaPath.'/'.$path;
     }
 }

@@ -93,11 +93,11 @@ final class MediaImportResult
 
         return [
             'source' => $this->source,
-            'id' => $this->media->id,
-            'name' => $this->media->name,
-            'type' => $this->media->type,
-            'width' => $this->media->width,
-            'height' => $this->media->height,
+            'id' => $this->media->getKey(),
+            'name' => $this->media->getAttribute('name'),
+            'type' => $this->media->getAttribute('type'),
+            'width' => $this->media->getAttribute('width'),
+            'height' => $this->media->getAttribute('height'),
             'path' => MediaImporter::pathOf($this->media),
             'url' => MediaImporter::urlOf($this->media),
             'reused' => $this->reused,
