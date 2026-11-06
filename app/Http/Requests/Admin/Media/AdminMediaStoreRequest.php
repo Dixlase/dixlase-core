@@ -36,6 +36,7 @@
 namespace App\Http\Requests\Admin\Media;
 
 use App\Models\MediaSetting;
+use App\Services\Media\MediaUploadLimits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 
@@ -96,9 +97,7 @@ class AdminMediaStoreRequest extends FormRequest
      */
     protected function getAllowedFileTypes(): array
     {
-        $allowedTypes = MediaSetting::where('name', 'allowed_file_types')->value('value');
-
-        return $allowedTypes ? json_decode($allowedTypes, true) : ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+        return app(MediaUploadLimits::class)->allowedFileTypes();
     }
 
     /**
@@ -106,9 +105,7 @@ class AdminMediaStoreRequest extends FormRequest
      */
     protected function getMaxFileSize(): int
     {
-        $maxSize = MediaSetting::where('name', 'max_file_size')->value('value');
-
-        return $maxSize ? (int) $maxSize : 2048;
+        return app(MediaUploadLimits::class)->maxFileSizeKb();
     }
 
     public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
