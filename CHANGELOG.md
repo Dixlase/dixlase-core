@@ -41,6 +41,33 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.9] — 2026-11-07
+
+### Added
+- `composer create-project` now builds core's front-end assets and links the bundled theme's
+  shipped build itself, so a Composer install no longer ends with two manual steps (#909,
+  #915). Both are skipped when already present, a missing `npm` only warns, and
+  `DIXLASE_SKIP_BUILD=1` skips them. The new `php scripts/serve.php` starts the built-in server
+  the setup wizard needs
+
+### Fixed
+- An install is now recorded in the audit log, with the version installed and the member who
+  became the first administrator (#917, #920). The event that created the site was the one the
+  log did not hold
+- A core update or rollback started from the admin panel is recorded with the request it came
+  from — IP address, user agent, session and `web` as its source — instead of as a shell run
+  (#916, #919). A rollback also records the same fields as an update
+- `storage/logs/install.log` is deleted once the installation finishes, so it no longer travels
+  into backups that include logs (#889, #906). A core update also removes the file left by a
+  site installed with 0.2.0 or earlier, which `GHSA-p76r-g9mq-w6j6` asked operators to delete
+  by hand
+- The message after `composer create-project` no longer links to a documentation site that is
+  not published; it points at the installation guide in the repository (#910, #911)
+
+### Documentation
+- `PLUGIN-API.md` lists `MediaImporter`, `MediaImportResult` and `MediaUploadLimits`, added in
+  0.2.8 (#918)
+
 ## [0.2.8] — 2026-11-06
 
 ### Added
