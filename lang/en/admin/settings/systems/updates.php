@@ -141,6 +141,7 @@ return [
         'kind_ahead' => 'The on-disk code is NEWER than the ledger. This usually means the checkout was advanced via git rather than through dls:core:update, so no history row was recorded. An "available update" older than the on-disk code would be a downgrade — CoreUpdater refuses it, but the safest fix is to reconcile the ledger first.',
         'kind_behind' => 'The on-disk code is OLDER than the ledger. This is unusual; it can happen after a rollback that did not clean up, or a hand-edited VERSION file. Applying any update from this state may not do what the UI implies.',
         'fix_instruction' => 'To reconcile the ledger to the on-disk VERSION, run:',
+        'fix_instruction_behind' => 'The ledger is the newer side here, so nothing should be written to it until the cause is known. This command reports what it finds and stops without writing:',
     ],
 
     // Subtle note shown under the "Take a backup before updating"
