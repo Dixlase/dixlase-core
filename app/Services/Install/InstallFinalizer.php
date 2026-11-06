@@ -41,6 +41,7 @@ use App\Models\CoreVersionHistory;
 use App\Services\AuditLogIntegrityService;
 use App\Services\Core\CoreUpdater;
 use App\Support\Install\EnvFile;
+use App\Support\Install\InstallLogFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -85,8 +86,36 @@ class InstallFinalizer
 
         $this->recordBaselineVersionHistory();
         $this->buildAuditLogHashChain();
+        $this->scheduleInstallLogDiscard();
 
         return $sessionCookie;
+    }
+
+    /**
+     * Discard the installer's log once this request or command is over.
+     *
+     * The install is complete, so the log has no audience left. It is
+     * dropped after the response rather than here because the callers of
+     * this method keep writing to the `install` channel afterwards — the
+     * controller logs the finalize result and the redirect, and
+     * `dls:install` logs its own completion. Removing the file first
+     * would only have Monolog recreate it, with the tail of the install
+     * in it.
+     *
+     * `terminating` runs for an HTTP request and for an Artisan command
+     * alike, which is what makes one call here cover both install paths.
+     * Failure is silent on purpose: an install must not be reported as
+     * broken because a leftover log could not be removed.
+     */
+    private function scheduleInstallLogDiscard(): void
+    {
+        app()->terminating(function (): void {
+            try {
+                InstallLogFile::discard();
+            } catch (\Throwable) {
+                // A leftover log is not worth a failed install.
+            }
+        });
     }
 
     /**

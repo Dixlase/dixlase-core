@@ -45,6 +45,8 @@ use App\Models\CoreVersionHistory;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Update\SystemUpdateFlash;
+use App\Support\Core\CoreOperationContext;
+use App\Support\Install\InstallLogFile;
 use Closure;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +103,12 @@ class CoreUpdater
     public function update(?string $version = null, ?int $appliedById = null, ?int $existingDbBackupId = null, ?Closure $log = null, bool $allowDowngrade = false): array
     {
         $log ??= fn (string $line) => null;
+
+        // Read the lock file the admin panel wrote before spawning this
+        // process, while it is still there: it is unlinked below on a
+        // preflight refusal and in this method's finally, and audit
+        // entries are written either side of both.
+        CoreOperationContext::capture();
 
         $coreState = CoreRelease::singleton();
         $version ??= $coreState->available_version;
@@ -457,6 +465,19 @@ class CoreUpdater
                 }
             } catch (\Throwable $relinkError) {
                 $log('WARNING: public asset relink failed ('.$relinkError->getMessage().'); if the front page renders unstyled, run `php artisan dls:theme:symlink create --all` and `php artisan dls:plugin:symlink create --all`.');
+            }
+
+            // An installed site has no use for the installer's log, and
+            // one written before 0.2.1 recorded values it should not have
+            // (#846). A site installed back then was asked to delete the
+            // file by hand; do it here instead. Idempotent — absent is the
+            // normal state after the first upgrade that passes through.
+            try {
+                if (InstallLogFile::discard()) {
+                    $log('Discarded the installer log left from the installation.');
+                }
+            } catch (\Throwable $installLogError) {
+                $log('WARNING: could not discard the installer log ('.$installLogError->getMessage().'); remove storage/logs/install.log by hand.');
             }
 
             $log('Running migrations...');
