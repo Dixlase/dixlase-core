@@ -40,6 +40,7 @@ namespace App\Services\TwoFa;
 use App\Enums\TwoFaMethod;
 use App\Helpers\TwoFaHelper;
 use App\Services\EmailAuthenticationService;
+use App\Services\MailServerValidatorService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -129,6 +130,36 @@ class TwoFaService
     public function has($member): bool
     {
         return $this->helper->isTwoFaEnabled($member, $this->settingModelClass);
+    }
+
+    /**
+     * Determine whether a second step can actually be completed for this user
+     *
+     * The challenge that follows a password login is the e-mailed code --
+     * TwoFaHelper::getTwoFaMethodRoute() routes every method there -- and the
+     * recovery code is its only alternative. So a second step is possible when
+     * the mail server's tests are recorded as passed, or when the user still
+     * holds a recovery code that can be used. The mail state alone does not
+     * describe it: a recovery code needs no mail server.
+     *
+     * @param  mixed  $user  User model
+     * @return bool Whether a second step can be completed
+     */
+    public function canChallenge($user): bool
+    {
+        return MailServerValidatorService::isMailServerTested()
+            || $this->hasUsableRecoveryCode($user);
+    }
+
+    /**
+     * Determine whether the user holds a recovery code that can still be used
+     *
+     * @param  mixed  $user  User model
+     * @return bool Whether an unused, enabled recovery code exists
+     */
+    public function hasUsableRecoveryCode($user): bool
+    {
+        return $this->recoveryCode->getRemainingCount($user) > 0;
     }
 
     /**

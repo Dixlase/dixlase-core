@@ -95,16 +95,18 @@ class LoginHelper
     {
         $twoFactorService = app($twoFactorServiceClass);
 
-        // Skip Two-FA if mail server testing is not completed
-        $mailServerTested = \App\Services\MailServerValidatorService::isMailServerTested();
+        // Whether a second step can be completed for this user, which the
+        // mail server's test state does not describe on its own. See
+        // TwoFaService::canChallenge().
+        $canChallenge = $twoFactorService->canChallenge($user);
 
         Log::info('[Login] Two-FA check', [
             'user_id' => $user->id,
             'has_two_fa' => $twoFactorService->has($user),
-            'mail_server_tested' => $mailServerTested,
+            'can_challenge' => $canChallenge,
         ]);
 
-        if (! $twoFactorService->has($user) || ! $mailServerTested) {
+        if (! $twoFactorService->has($user) || ! $canChallenge) {
             return [
                 'needs_two_fa' => false,
                 'lockout_status' => null,
