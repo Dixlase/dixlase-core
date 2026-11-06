@@ -28,10 +28,10 @@
  *
  * Unlike the pre-built release ZIP, the composer source install ships no
  * compiled front-end assets (public/assets/build/ is a build artifact, not in
- * git), so the npm build step is surfaced unless those assets already exist.
- * The bundled theme arrives the same way, as source only, and the install
- * wizard builds a theme only when it downloads one, so its build is surfaced
- * too.
+ * git), and the bundled theme's public link cannot be carried by a package.
+ * scripts/post-create-build.php, which runs just before this, makes both
+ * (#909). The steps below are printed only for what is still missing: when
+ * npm was not found, the build failed, or DIXLASE_SKIP_BUILD was set.
  *
  * Framework-independent: runs before the app is bootable / configured.
  */
@@ -85,7 +85,7 @@ $step = 1;
 // them the install wizard 500s on the missing Vite manifest. Build first.
 if (! $assetsBuilt) {
     $out('  '.$step.'. Build the front-end assets:');
-    $out('     '.$cyan('cd '.$dir.' && npm install && npm run build'));
+    $out('     '.$cyan('cd '.$dir.' && npm ci && npm run build'));
     $out();
     $step++;
 }
@@ -101,21 +101,14 @@ if (! $themeLinked) {
     $step++;
 }
 
-// Start PHP's built-in server directly rather than `artisan serve`, which
-// cannot run the install wizard (#879). Its .env watcher restarts the server
-// and cuts off the in-flight request, because the wizard writes .env mid-step.
-// With --no-reload it passes the start-up .env to the server as real
-// environment variables, which win over every later write, so the final step
-// redirects with the old database settings and the wizard starts over.
-// The router script is the one `artisan serve` uses; it treats the current
-// directory as the web root, hence `cd public`. variables_order=EGPCS keeps
-// PATH in the environment of child processes (composer dump-autoload fails
-// without it), and the workers keep one slow request from stalling the rest.
-$workers = PHP_OS_FAMILY === 'Windows' ? '' : 'PHP_CLI_SERVER_WORKERS=4 ';
-$serve = $workers.'php -d variables_order=EGPCS -d max_execution_time=300 -S 127.0.0.1:8000 '
-    .'../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php';
+// scripts/serve.php starts PHP's built-in server the way the install wizard
+// needs (#909). `artisan serve` cannot run the wizard (#879): its .env
+// watcher cuts off the request that wrote .env, and with --no-reload it
+// keeps the start-up .env, so the wizard starts over after its last step.
+// The server is left to the user: starting it here would keep
+// create-project from returning.
 $out('  '.$step.'. Start the local server:');
-$out('     '.$cyan('cd '.$dir.'/public && '.$serve));
+$out('     '.$cyan('cd '.$dir.' && php scripts/serve.php'));
 $out('     Do not use `php artisan serve` for the wizard: it cannot see the .env the wizard writes.');
 $out('     Restart this server after a core update or rollback, which recreates public/.');
 $out();
