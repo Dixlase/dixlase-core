@@ -50,6 +50,7 @@ use App\Services\Core\CoreUpdater;
 use App\Services\Core\CoreVendorManager;
 use App\Services\Core\PublicAssetRelinker;
 use App\Services\Update\SystemUpdateFlash;
+use App\Support\Core\CoreOperationContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +93,10 @@ class CoreRollback extends Command
 
     public function handle(CoreSourceSnapshot $snapshotter, CoreVendorManager $vendorManager): int
     {
+        // Read the lock file the admin panel wrote before spawning this
+        // process, while it is still there — see CoreOperationContext.
+        CoreOperationContext::capture();
+
         $snapshotPath = $snapshotter->latestSnapshotWithMetadata();
         if ($snapshotPath === null) {
             $this->error('No core update snapshot with rollback metadata was found. Nothing to roll back to.');
@@ -162,6 +167,7 @@ class CoreRollback extends Command
         $maintenanceOn = false;
         $safetySnapshot = null;
         $vendorZip = null;
+        $restoredSha256 = null;
         $schemaTouched = false;
         $vendorSwapped = false;
 
@@ -189,6 +195,12 @@ class CoreRollback extends Command
             if ($dependencyUpdate) {
                 $this->line("Checking that v{$from} ships prebuilt dependencies...");
                 $vendorZip = $vendorManager->prefetchVerifiedRelease($from);
+
+                // Hash it here, while the file is certainly on disk: the
+                // swap below consumes it. A rollback with no dependency
+                // update fetches no archive, and then this stays null
+                // rather than being filled with something else's hash.
+                $restoredSha256 = hash_file('sha256', $vendorZip) ?: null;
             }
 
             // Capture the current (post-update) state first so the rollback
@@ -385,17 +397,23 @@ class CoreRollback extends Command
             }
 
             $appliedBy = $this->option('applied-by');
-            CoreVersionHistory::create([
+            $history = CoreVersionHistory::create([
                 'old_version' => $current !== '' ? $current : $to,
                 'new_version' => $from,
                 'installation_method' => CoreVersionHistory::METHOD_ROLLBACK,
                 'applied_by_id' => ($appliedBy !== null && $appliedBy !== '') ? (int) $appliedBy : null,
                 'applied_at' => now(),
+                // The archive this rollback restored dependencies from,
+                // as the update path records the one it applied. Null
+                // when the rollback restored no dependencies.
+                'downloaded_sha256' => $restoredSha256,
             ]);
 
             CoreUpdateAudit::record(AuditLog::ACTION_CORE_ROLLED_BACK, true, $current !== '' ? $current : $to, $from, $this->appliedById(), [
+                'history_id' => $history->id,
                 'dependency_update' => $dependencyUpdate,
                 'backup_record_id' => $meta['backup_record_id'] ?? null,
+                'downloaded_sha256' => $restoredSha256,
             ]);
 
             // The version just rolled back from is still published: keep it

@@ -41,6 +41,7 @@ use App\Models\Plugin;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Update\SystemUpdateFlash;
+use App\Support\Core\CoreOperationContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
@@ -480,11 +481,15 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         // that the first POST landed on continues polling normally. The
         // lock file is cleared by the subprocess in CoreUpdater::update()'s
         // finally block.
+        // The detached subprocess has no request of its own, so the
+        // audit entry it writes would read as a CLI operation. The lock
+        // payload carries this request's own values across to it — see
+        // CoreOperationContext.
         $lockAcquired = $this->tryAcquireCoreUpdateLock([
             'started_at' => now()->timestamp,
             'target_version' => $state->available_version,
             'started_by_id' => $appliedById,
-        ]);
+        ] + CoreOperationContext::forLockPayload($request));
         if (! $lockAcquired) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('warning', __('admin/settings/systems/updates.core.already_in_progress'));
@@ -567,7 +572,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
             'operation' => 'rollback',
             'target_version' => $targetVersion,
             'started_by_id' => $appliedById,
-        ]);
+        ] + CoreOperationContext::forLockPayload($request));
         if (! $lockAcquired) {
             return redirect()->route('admin.settings.systems.updates.index')
                 ->with('warning', __('admin/settings/systems/updates.core.already_in_progress'));

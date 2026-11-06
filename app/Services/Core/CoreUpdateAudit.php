@@ -40,6 +40,7 @@ namespace App\Services\Core;
 use App\Models\AuditLog;
 use App\Models\Member;
 use App\Services\AuditService;
+use App\Support\Core\CoreOperationContext;
 
 /**
  * Audit-log entries for core updates and rollbacks.
@@ -65,6 +66,9 @@ class CoreUpdateAudit
         try {
             $actor = $appliedById !== null ? Member::find($appliedById) : null;
 
+            // Where the operation was started from, when it was started
+            // from the admin panel. Empty for a run started in a shell,
+            // and then the entry keeps saying CLI, which is the truth.
             app(AuditService::class)->log([
                 'action' => $action,
                 'category' => AuditLog::CATEGORY_SYSTEM,
@@ -73,7 +77,7 @@ class CoreUpdateAudit
                 'actor' => $actor,
                 'target_label' => "Dixlase core v{$from} → v{$to}",
                 'context' => ['from' => $from, 'to' => $to, 'applied_by_id' => $appliedById] + $context,
-            ]);
+            ] + CoreOperationContext::auditFields());
         } catch (\Throwable) {
             // AuditService already swallows its own failures; this guards
             // the lookup above. Reporting must never fail the operation.
