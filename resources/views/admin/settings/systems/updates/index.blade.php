@@ -95,9 +95,28 @@ file is governed by the AGPL terms below.
                 <p class="text-xs text-orange-800 dark:text-orange-200">
                     {{ __('admin/settings/systems/updates.drift.kind_' . $versionDrift['kind']) }}
                 </p>
+                {{-- The command depends on the direction, and the two
+                     directions want opposite things. `ahead` (the usual
+                     case: a checkout advanced with git) is a stale ledger,
+                     and writing the on-disk version into it is the fix.
+                     `behind` means the ledger holds a version the code no
+                     longer is -- an interrupted rollback, a checkout moved
+                     backwards, a hand-edited VERSION -- so nothing should
+                     be written until the cause is known, and
+                     `dls:core:reconcile --confirm` refuses there anyway
+                     (CoreReconcile returns FAILURE without --force). The
+                     panel therefore names the report-only form and does
+                     not mention --force: the operator's next step is to
+                     find out what happened, not to overwrite the evidence
+                     of it. --}}
                 <p class="text-xs text-orange-800 dark:text-orange-200">
-                    {{ __('admin/settings/systems/updates.drift.fix_instruction') }}
-                    <code class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-800 text-orange-900 dark:text-orange-100 font-mono">php artisan dls:core:reconcile --confirm</code>
+                    @if($versionDrift['kind'] === 'behind')
+                        {{ __('admin/settings/systems/updates.drift.fix_instruction_behind') }}
+                        <code class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-800 text-orange-900 dark:text-orange-100 font-mono">php artisan dls:core:reconcile</code>
+                    @else
+                        {{ __('admin/settings/systems/updates.drift.fix_instruction') }}
+                        <code class="px-1 py-0.5 rounded bg-orange-100 dark:bg-orange-800 text-orange-900 dark:text-orange-100 font-mono">php artisan dls:core:reconcile --confirm</code>
+                    @endif
                 </p>
             </div>
         </div>
