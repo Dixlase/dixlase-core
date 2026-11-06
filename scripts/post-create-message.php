@@ -126,8 +126,7 @@ $out('     The Database step starts with '.$bold('SQLite').', which needs no sep
 $out();
 $step++;
 $out('  '.$step.'. For other deployment options (Docker, VPS, shared hosting), see:');
-$out('     '.$cyan('https://docs.dixlase.com'));
+$out('     '.$cyan('https://github.com/Dixlase/dixlase-core/tree/main/docs/installation'));
 $out();
-$out($dim('  Documentation: https://docs.dixlase.com'));
 $out($dim('  Support:       https://github.com/Dixlase/dixlase-core/issues'));
 $out();
