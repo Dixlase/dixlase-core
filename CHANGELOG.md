@@ -41,6 +41,30 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.8] — 2026-11-06
+
+### Added
+- `dls:media:import` registers local files in the media library from the command line, with
+  exactly the checks of an upload from the admin: the allowed types and size limit, the MIME
+  and SVG checks, SVG sanitising and the `media.uploaded` audit entry (#902, #903). `--as`
+  names the member the upload is recorded under, and must be an active member who may upload
+  media. A file whose content matches an existing item is reused rather than duplicated, and
+  `--json` prints each file's `id`, `path` and `url`, or its error
+
+### Plugin API — Added
+- `App\Services\Media\MediaImporter`, `MediaImportResult` and `MediaUploadLimits` (`@api`),
+  the service behind `dls:media:import` and the allowed types and size limit it shares with
+  the admin upload form (#903). They are not listed in `PLUGIN-API.md` until its next
+  regeneration
+
+### Security
+- `postcss-selector-parser` is overridden to 6.1.5 (CVE-2026-104844, #904). It runs only at
+  build time over this repository's own CSS, and the built assets are byte-for-byte the same
+
+### Changed
+- A fresh install bundles the OnePage theme v0.5.4 (#905). A core update does not change a
+  theme that is already installed
+
 ## [0.2.7] — 2026-11-06
 
 ### Fixed
