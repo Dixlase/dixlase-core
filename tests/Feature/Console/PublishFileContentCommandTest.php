@@ -63,14 +63,41 @@ class PublishFileContentCommandTest extends TestCase
 
     private Member $admin;
 
+    /**
+     * What the three installed-flag sources held before this test.
+     *
+     * @var array<string, string|false|null>
+     */
+    private array $installedFlag;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->withoutMiddleware(EnsureEmailIsVerified::class);
 
+        // The flag is read as
+        // `$_SERVER ?? $_ENV ?? env() ?? config('app.installed')`
+        // (CheckInstallationReady, CheckMaintenanceMode, AdminHelper,
+        // ThemeHelper), so $_SERVER decides and all three have to be set
+        // here: this class used to set only the last two, and then
+        // whatever an earlier test had left in $_SERVER decided whether
+        // the admin request below reached the page or was redirected to
+        // /install. It passed in the full suite because something in
+        // between happened to leave 'true' there -- not because of
+        // anything this class did (#926).
+        //
+        // Restored rather than reset, so this class cannot decide a later
+        // test's outcome either.
+        $this->installedFlag = [
+            'getenv' => getenv('INSTALLED'),
+            'env' => array_key_exists('INSTALLED', $_ENV) ? (string) $_ENV['INSTALLED'] : null,
+            'server' => array_key_exists('INSTALLED', $_SERVER) ? (string) $_SERVER['INSTALLED'] : null,
+        ];
+
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
         config()->set('app.installed', true);
 
         Storage::fake('local');
@@ -88,8 +115,20 @@ class PublishFileContentCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        putenv('INSTALLED=false');
-        $_ENV['INSTALLED'] = 'false';
+        if ($this->installedFlag['getenv'] === false) {
+            putenv('INSTALLED');
+        } else {
+            putenv('INSTALLED='.$this->installedFlag['getenv']);
+        }
+
+        foreach ([['env', &$_ENV], ['server', &$_SERVER]] as [$key, &$bag]) {
+            if ($this->installedFlag[$key] === null) {
+                unset($bag['INSTALLED']);
+            } else {
+                $bag['INSTALLED'] = $this->installedFlag[$key];
+            }
+        }
+
         parent::tearDown();
     }
 
