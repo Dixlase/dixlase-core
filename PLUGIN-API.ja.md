@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-10-23
+**最終更新日:** 2026-11-06
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -136,6 +136,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\TwoFaInterface` | Interface for users with two-factor authentication functionality |
 | `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Contract for Passkey (WebAuthn) authentication service |
 | `App\Contracts\Verification\FileVerificationServiceInterface` | File integrity verification service interface |
+| `App\Contracts\ViewerTimezoneResolver` | Viewer Timezone Resolver Contract |
 
 ### 1.2 Licensing Contracts
 
@@ -621,6 +622,9 @@ return [
 - `App\Services\CommentTranslation\CommentBuilderService`
 - `App\Services\CommentTranslation\ExtensionDictionaryLocator`
 - `App\Services\Site\PageTitleBuilder`
+- `App\Services\Media\MediaImporter`
+- `App\Services\Media\MediaImportResult`
+- `App\Services\Media\MediaUploadLimits`
 
 ### 9.3 メール & ログ
 
