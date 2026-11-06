@@ -45,6 +45,7 @@ use App\Models\CoreVersionHistory;
 use App\Models\Theme;
 use App\Services\Extension\ExtensionSourceManager;
 use App\Services\Update\SystemUpdateFlash;
+use App\Support\Core\CoreOperationContext;
 use App\Support\Install\InstallLogFile;
 use Closure;
 use Illuminate\Support\Facades\Artisan;
@@ -102,6 +103,12 @@ class CoreUpdater
     public function update(?string $version = null, ?int $appliedById = null, ?int $existingDbBackupId = null, ?Closure $log = null, bool $allowDowngrade = false): array
     {
         $log ??= fn (string $line) => null;
+
+        // Read the lock file the admin panel wrote before spawning this
+        // process, while it is still there: it is unlinked below on a
+        // preflight refusal and in this method's finally, and audit
+        // entries are written either side of both.
+        CoreOperationContext::capture();
 
         $coreState = CoreRelease::singleton();
         $version ??= $coreState->available_version;
