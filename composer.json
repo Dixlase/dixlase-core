@@ -72,6 +72,8 @@
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php scripts/mark-install-method.php composer",
+            "Composer\\Config::disableProcessTimeout",
+            "@php scripts/post-create-build.php",
             "@php scripts/post-create-message.php"
         ],
         "test": "php artisan test",
