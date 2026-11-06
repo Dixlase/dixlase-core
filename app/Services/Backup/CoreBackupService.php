@@ -29,6 +29,7 @@ use App\Events\DixlaseEvents;
 use App\Facades\Audit;
 use App\Models\AuditLog;
 use App\Models\BackupRecord;
+use App\Support\Install\InstallLogFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -66,6 +67,23 @@ class CoreBackupService implements BackupServiceInterface
     private const PRIVATE_EXCLUDE_DIRS = [
         'backups',
         '.backup-tmp',
+    ];
+
+    /**
+     * Files never collected by the `logs` target, as paths relative to
+     * `storage/logs`.
+     *
+     * `install.log` is the one log in there that is not about the
+     * running site: it belongs to the wizard, and the installer discards
+     * it once the install completes (InstallLogFile). A site installed
+     * before that discard existed still holds one, and an archive is
+     * the one place a leftover travels to other machines, so the target
+     * skips the file rather than relying on it being gone.
+     *
+     * Not operator-configurable: there is no backup this file improves.
+     */
+    private const LOGS_EXCLUDE_FILES = [
+        InstallLogFile::BASENAME,
     ];
 
     /**
@@ -356,7 +374,12 @@ class CoreBackupService implements BackupServiceInterface
                 base_path(config('custom.custom_files_dir', 'custom')),
                 'custom',
             ),
-            BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip($zip, storage_path('logs'), 'storage/logs'),
+            BackupServiceInterface::TARGET_LOGS => $this->addDirectoryToZip(
+                $zip,
+                storage_path('logs'),
+                'storage/logs',
+                excludeFiles: self::LOGS_EXCLUDE_FILES,
+            ),
             BackupServiceInterface::TARGET_CORE_SOURCE => $this->addCoreSourceToZip($zip),
             BackupServiceInterface::TARGET_PLUGINS_ALL => $this->addDirectoryToZip(
                 $zip,
@@ -668,6 +691,7 @@ class CoreBackupService implements BackupServiceInterface
      *
      * @param  string[]  $excludeDirs  Directory names to exclude directly under source
      * @param  string[]  $excludeDirNames  Directory names to exclude at any depth
+     * @param  string[]  $excludeFiles  File paths, relative to source and '/'-separated, to leave out
      */
     private function addDirectoryToZip(
         \ZipArchive $zip,
@@ -675,6 +699,7 @@ class CoreBackupService implements BackupServiceInterface
         string $namespace,
         array $excludeDirs = [],
         array $excludeDirNames = [],
+        array $excludeFiles = [],
     ): void {
         if (! is_dir($sourceDir)) {
             return;
@@ -736,6 +761,12 @@ class CoreBackupService implements BackupServiceInterface
             }
 
             if (! $file->isFile()) {
+                continue;
+            }
+
+            // Excluded by name rather than by directory: the file is
+            // inside a directory the operator did ask for.
+            if (in_array($relativePath, $excludeFiles, true)) {
                 continue;
             }
 
