@@ -396,6 +396,15 @@ class AuditLog extends Model
 
     public const ACTION_CORE_ROLLBACK_FAILED = 'core_rollback_failed';
 
+    /**
+     * The install itself.
+     *
+     * Written once, by InstallFinalizer, which both install paths pass
+     * through. A site installed before this existed has no such row and
+     * never will: the event is in the past and cannot be reconstructed.
+     */
+    public const ACTION_CORE_INSTALLED = 'core_installed';
+
     // ========================================
     // Action constants - settings related
     // ========================================
