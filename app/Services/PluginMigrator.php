@@ -45,6 +45,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class PluginMigrator
 {
@@ -130,12 +131,45 @@ class PluginMigrator
     }
 
     /**
+     * Send the migrator's own output somewhere.
+     *
+     * A pretend run's SQL is written by the migrator, not returned, so a
+     * caller that wants to show it has to hand over an output first.
+     */
+    public function setOutput(OutputInterface $output): void
+    {
+        $this->migrator->setOutput($output);
+    }
+
+    /**
+     * The plugin's migrations that have not run yet, in file order.
+     *
+     * @return list<string>
+     */
+    public function pendingMigrations(string $plugin, ?string $path = null): array
+    {
+        $this->bindPlugin($plugin);
+
+        $migrationPath = $path ?? base_path("plugins/{$plugin}/database/migrations");
+
+        if (! $this->files->isDirectory($migrationPath)) {
+            return [];
+        }
+
+        $files = array_keys($this->migrator->getMigrationFiles($migrationPath));
+
+        return array_values(array_diff($files, $this->repository->getRan()));
+    }
+
+    /**
      * Run migrations for the specified plugin
      *
      * @param  string  $plugin  Plugin name
      * @param  string|null  $path  Path to migration files (defaults to plugin directory)
      * @param  array  $options  Options (e.g. --force)
-     * @return array Details of executed migrations
+     * @return array Details of executed migrations, or -- for a pretend
+     *               run, which writes nothing -- the migrations that would
+     *               have run
      *
      * @throws \Exception
      */
@@ -176,6 +210,13 @@ class PluginMigrator
             $migrationPath,
         );
 
+        // What would run, computed before the run because a pretend run
+        // writes nothing to the ledger and the before/after difference
+        // below is then always empty -- which is what made --pretend
+        // report "nothing to run" while migrations were pending (#694).
+        $pretend = (bool) ($options['pretend'] ?? false);
+        $pending = $pretend ? $this->pendingMigrations($plugin, $migrationPath) : [];
+
         // Get migration files before execution
         $before = $this->repository->getRan();
         Log::info('PluginMigrator: Migrations before run', ['count' => count($before)]);
@@ -185,6 +226,15 @@ class PluginMigrator
             'pretend' => $options['pretend'] ?? false,
             'step' => $options['step'] ?? false,
         ]);
+
+        if ($pretend) {
+            Log::info('PluginMigrator: Pretend run', [
+                'plugin' => $plugin,
+                'pending_count' => count($pending),
+            ]);
+
+            return $pending;
+        }
 
         // Get migration files after execution
         $after = $this->repository->getRan($this->pluginSlug);

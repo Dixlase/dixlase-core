@@ -122,14 +122,35 @@ class ThemeMigrate extends Command
             $themeSlug,
         );
 
+        $pretend = (bool) $this->option('pretend');
+
+        // The migrator writes a pretend run's SQL rather than returning
+        // it, so give it somewhere to write.
+        if ($pretend) {
+            $migrator->setOutput($this->output);
+        }
+
         try {
             $migrated = $migrator->migrate($themeName, null, [
-                'pretend' => (bool) $this->option('pretend'),
+                'pretend' => $pretend,
             ]);
         } catch (\Throwable $e) {
             $this->error("Migration failed for theme: {$themeName}: ".$e->getMessage());
 
             return 1;
+        }
+
+        if ($pretend) {
+            // Nothing ran and nothing was recorded, so this reports what
+            // would run and writes no audit entry.
+            foreach ($migrated as $file) {
+                $this->line('Would run: '.$file);
+            }
+            $this->info($migrated === []
+                ? "No migrations to run for theme: {$themeName}"
+                : 'Nothing was applied. Re-run without --pretend to apply '.count($migrated).' migration(s).');
+
+            return 0;
         }
 
         $this->info("Migrations completed for theme: {$themeName} (".count($migrated).' applied)');
