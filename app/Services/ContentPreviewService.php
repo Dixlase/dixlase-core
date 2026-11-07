@@ -39,6 +39,7 @@ namespace App\Services;
 
 use App\Enums\ContentEditorType;
 use App\Services\Editor\EditorManager;
+use App\Support\Content\Embed\ContentEmbedExtension;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -79,11 +80,13 @@ class ContentPreviewService
      * GitHub-flavoured Markdown. Shared with PageContentService so a page
      * previews as it publishes.
      *
+     * Embeds (`@[youtube](URL)` and the like) are one of them (#731).
+     *
      * @return list<ExtensionInterface>
      */
     public static function markdownExtensions(): array
     {
-        return [new AttributesExtension()];
+        return [new AttributesExtension(), new ContentEmbedExtension()];
     }
 
     /**

@@ -28,6 +28,37 @@ import { marked } from 'marked';
 // Single line breaks render as <br>, as ContentPreviewService does.
 marked.setOptions({ breaks: true });
 
+// `@[service](URL)` on a line of its own (#731). The side-by-side preview
+// shows it as a link to the URL; the server renders the real embed, which
+// the preview pane and the published page use.
+const EMBED_SERVICES = { youtube: 'YouTube', x: 'X', github: 'GitHub' };
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+marked.use({
+    extensions: [{
+        name: 'contentEmbed',
+        level: 'block',
+        tokenizer(src) {
+            const match = /^ {0,3}@\[(youtube|x|github)\]\(\s*(https?:\/\/\S+?)\s*\)[ \t]*(?:\n+|$)/i.exec(src);
+            if (!match) {
+                return undefined;
+            }
+            return { type: 'contentEmbed', raw: match[0], service: match[1].toLowerCase(), url: match[2] };
+        },
+        renderer(token) {
+            const url = escapeHtml(token.url);
+            return '<p class="dls-embed"><a href="' + url + '">' + EMBED_SERVICES[token.service] + ': ' + url + '</a></p>\n';
+        },
+    }],
+});
+
 // Expose marked to window for use in Alpine components
 window.marked = marked;
 

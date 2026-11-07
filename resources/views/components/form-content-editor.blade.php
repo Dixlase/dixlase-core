@@ -59,6 +59,8 @@ Optional parts:
   - rightSidebar: tell the admin layout the page has a right sidebar.
   - insertImage (on by default): an "Insert image" button above the text
     field that puts a media library item at the cursor.
+  - insertEmbed (on by default): an "Insert embed" button beside it, shown
+    with the Markdown editor, that puts `@[service](URL)` at the cursor.
 --}}
 
 @props([
@@ -101,6 +103,7 @@ Optional parts:
     'fileStorageBasePath' => '',
     'rightSidebar' => false,
     'insertImage' => true,
+    'insertEmbed' => true,
 ])
 
 <div data-translations='@json($editorTranslations)'
@@ -290,12 +293,20 @@ Optional parts:
 
                 {{-- Markdown / HTML / Blade: one field --}}
                 <div x-show="showContentTab">
-                    @if ($insertImage)
+                    @if ($insertImage || $insertEmbed)
                         <div class="mb-2 flex flex-wrap items-center gap-2">
-                            <x-content-editor.insert-image
-                                :target="$contentFieldName"
-                                :selectorId="$contentFieldName.'_image_selector'"
-                            />
+                            @if ($insertImage)
+                                <x-content-editor.insert-image
+                                    :target="$contentFieldName"
+                                    :selectorId="$contentFieldName.'_image_selector'"
+                                />
+                            @endif
+                            @if ($insertEmbed)
+                                <x-content-editor.insert-embed
+                                    :target="$contentFieldName"
+                                    :modalId="$contentFieldName.'_embed_modal'"
+                                />
+                            @endif
                         </div>
                     @endif
                     <div :class="contentGridClass()">
