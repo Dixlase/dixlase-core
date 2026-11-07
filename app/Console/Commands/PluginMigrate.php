@@ -104,14 +104,31 @@ class PluginMigrate extends Command
             return Command::FAILURE;
         }
 
+        $pretend = (bool) $this->option('pretend');
+
         // Execute migration
-        $this->info("Running migrations for plugin [{$plugin}]...");
+        $this->info($pretend
+            ? "Showing the migrations that would run for plugin [{$plugin}]..."
+            : "Running migrations for plugin [{$plugin}]...");
+
+        // The migrator writes a pretend run's SQL rather than returning
+        // it, so give it somewhere to write.
+        if ($pretend) {
+            $this->pluginMigrator->setOutput($this->output);
+        }
 
         try {
             $migrated = $this->pluginMigrator->migrate($plugin, null, $options);
 
             if (empty($migrated)) {
                 $this->info("No migrations to run for plugin [{$plugin}].");
+            } elseif ($pretend) {
+                // Nothing ran and nothing was recorded, so this reports
+                // what would run and writes no audit entry.
+                foreach ($migrated as $file) {
+                    $this->line('Would run: '.$file);
+                }
+                $this->info('Nothing was applied. Re-run without --pretend to apply '.count($migrated).' migration(s).');
             } else {
                 foreach ($migrated as $file) {
                     $this->info('Migrated: '.$file);
