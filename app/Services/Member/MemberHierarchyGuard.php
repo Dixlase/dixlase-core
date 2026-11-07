@@ -109,6 +109,31 @@ class MemberHierarchyGuard
             && $data['status'] !== null && $data['status'] !== ''
             && (int) $data['status'] !== self::statusValue($target);
 
+        // Clearing verification sends the account to the verification
+        // notice on its next request, and the mail that lifts it may never
+        // arrive on a site whose mail is not working. For your own account
+        // and for the initial administrator that is a lockout, so it is
+        // refused here next to the role and status rules. Marking either
+        // one verified stays allowed: it takes nothing away.
+        // hasVerifiedEmail() rather than the column: Member declares no
+        // property for it, so reading it directly is an error the static
+        // analysis has had to baseline elsewhere.
+        $verificationCleared = array_key_exists('email_verified', $data)
+            && (string) $data['email_verified'] !== '1'
+            && $target->hasVerifiedEmail();
+
+        if ($target->id === self::INITIAL_ADMIN_ID && $verificationCleared) {
+            throw ValidationException::withMessages([
+                'email_verified' => __('admin/members/validation.initial_admin_verification_locked'),
+            ]);
+        }
+
+        if ($target->id === $actor->id && $verificationCleared) {
+            throw ValidationException::withMessages([
+                'email_verified' => __('admin/members/validation.own_verification_locked'),
+            ]);
+        }
+
         if ($target->id === self::INITIAL_ADMIN_ID && ($roleChanged || $statusChanged)) {
             throw ValidationException::withMessages([
                 $roleChanged ? 'role' : 'status' => __('admin/members/validation.initial_admin_locked'),

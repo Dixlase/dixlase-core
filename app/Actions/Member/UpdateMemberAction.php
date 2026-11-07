@@ -97,6 +97,27 @@ class UpdateMemberAction extends AbstractAction
             unset($data['password']);
         }
 
+        // The form sends `email_verified` ('0' / '1'); the column is
+        // `email_verified_at`. CreateMemberAction translates one into the
+        // other, this path did not, and `email_verified` is neither
+        // fillable nor a column -- so update() discarded it and the form's
+        // own help text ("selecting Unverified resets the verification
+        // status") was not true. Absent means leave the state alone, so
+        // every other caller that updates a member is unaffected.
+        if (array_key_exists('email_verified', $data)) {
+            $verified = (string) $data['email_verified'] === '1';
+            unset($data['email_verified']);
+
+            if (! $verified) {
+                $data['email_verified_at'] = null;
+            } elseif (! $this->member->hasVerifiedEmail()) {
+                $data['email_verified_at'] = now();
+            }
+            // Already verified and staying verified: the column is left
+            // alone, so re-saving the form does not restamp a verification
+            // that happened months ago.
+        }
+
         $wasActive = $this->member->canAuthenticate();
 
         $this->member->update($data);
