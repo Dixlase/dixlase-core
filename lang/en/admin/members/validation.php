@@ -55,4 +55,6 @@ return [
     'role_above_own' => 'You cannot assign a role higher than your own.',
     'initial_admin_locked' => 'The role and status of the initial administrator cannot be changed.',
     'own_role_locked' => 'You cannot change your own role or status.',
+    'initial_admin_verification_locked' => 'The verification status of the initial administrator cannot be reset. Doing so would lock the account out of the admin panel until a verification e-mail arrives.',
+    'own_verification_locked' => 'You cannot reset your own verification status. Doing so would lock you out of the admin panel until a verification e-mail arrives.',
 ];
