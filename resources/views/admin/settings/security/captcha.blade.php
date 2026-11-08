@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 <div x-data="{
-    captchaEnabled: {{ old('captcha_enabled', $settings['captcha_enabled']) ? 'true' : 'false' }},
+    captchaEnabled: '{{ old('captcha_enabled', $settings['captcha_enabled']) ? '1' : '0' }}',
     captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
     captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
     captchaSiteKey: '{{ old('captcha_site_key', $settings['captcha_site_key']) }}',
@@ -145,7 +145,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 xModel="captchaEnabled"
             />
 
-            <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': !captchaEnabled }">
+            <div class="mt-4 space-y-4" :class="{ 'opacity-50 pointer-events-none': captchaEnabled === '0' }">
                 <x-form-label
                     for="captcha_driver"
                     :text="__('admin/settings/security/captcha.driver')"
@@ -161,7 +161,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         'google_enterprise' => 'Google reCAPTCHA Enterprise',
                     ]"
                     xModel="captchaDriver"
-                    x-bind:disabled="!captchaEnabled"
+                    x-bind:disabled="captchaEnabled === '0'"
                     class="input-common input-xl"
                 />
 
@@ -178,7 +178,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :showPasswordToggle="true"
                     xModel="captchaSiteKey"
                     autocomplete="off"
-                    x-bind:disabled="!captchaEnabled"
+                    x-bind:disabled="captchaEnabled === '0'"
                     class="input-common input-xl"
                 />
 
@@ -194,7 +194,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :showPasswordToggle="true"
                     xModel="captchaSecretKey"
                     autocomplete="off"
-                    x-bind:disabled="!captchaEnabled"
+                    x-bind:disabled="captchaEnabled === '0'"
                     class="input-common input-xl"
                 />
 
@@ -210,7 +210,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_version', $settings['captcha_google_version'])"
                         :options="__('admin/settings/security/captcha.version_options')"
                         xModel="captchaVersion"
-                        x-bind:disabled="!captchaEnabled"
+                        x-bind:disabled="captchaEnabled === '0'"
                         class="input-common input-xl"
                     />
                 </div>
@@ -227,7 +227,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :value="old('captcha_google_project_id', $settings['captcha_google_project_id'])"
                         placeholder="your-gcp-project-id"
                         xModel="captchaProjectId"
-                        x-bind:disabled="!captchaEnabled"
+                        x-bind:disabled="captchaEnabled === '0'"
                         class="input-common input-xl"
                     />
                 </div>
@@ -245,7 +245,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="number"
                         step="0.1"
                         xModel="captchaMinScore"
-                        x-bind:disabled="!captchaEnabled"
+                        x-bind:disabled="captchaEnabled === '0'"
                         class="input-common input-sm"
                     />
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -254,7 +254,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
 
                 <!-- CAPTCHA認証テストセクション -->
-                <div class="mt-6" x-show="captchaEnabled" id="captcha-test-section">
+                <div class="mt-6" x-show="captchaEnabled === '1'" id="captcha-test-section">
                     <div class="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin/settings/security/captcha.live_validation') }}</h3>
                         
@@ -303,7 +303,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 id="captcha-validate-button"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed mb-3"
                                 @click="validateCaptchaWidget()"
-                                :disabled="!captchaEnabled || !captchaDriver"
+                                :disabled="captchaEnabled === '0' || !captchaDriver"
                                 x-text="captchaSettingsChanged ? '{{ __('admin/settings/security/captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin/settings/security/captcha.revalidate_button') : __('admin/settings/security/captcha.validate_button') }}'">
                         </button>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -331,7 +331,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         name="forms[{{ $formKey }}]"
                                         :label="__($form['name'])"
                                         :checked="old('forms.' . $formKey, $enabledForms[$formKey] ?? false)"
-                                        x-bind:disabled="!captchaEnabled"
+                                        x-bind:disabled="captchaEnabled === '0'"
                                     />
                                     <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                                         <span class="font-medium">{{ __('admin/settings/security/captcha.route') }}:</span> 
