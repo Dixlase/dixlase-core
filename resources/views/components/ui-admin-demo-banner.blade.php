@@ -53,9 +53,11 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
              and admin URL live. URLs resolve to the current (tenant) host. --}}
         <div class="text-sm flex flex-wrap items-center gap-x-4 gap-y-1">
             {{-- Order: front page and admin URL first (where to go), then the
-                 account and expiry (session details). --}}
-            <a href="{{ url('/') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
-            <a href="{{ route('admin.login') }}" target="_blank" rel="noopener" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}</a>
+                 account and expiry (session details). They open in the same tab:
+                 the banner is sticky and stays visible on every page, so a new
+                 tab is unnecessary and the link is one click away after navigating. --}}
+            <a href="{{ url('/') }}" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-house mr-1" aria-hidden="true"></i>{{ __('admin/demo.front_page') }}</a>
+            <a href="{{ route('admin.login') }}" class="underline hover:no-underline whitespace-nowrap"><i class="fas fa-user-shield mr-1" aria-hidden="true"></i>{{ __('admin/demo.admin_url') }}</a>
             @if(config('dixlase.demo_account'))
                 <span><i class="fas fa-user mr-1" aria-hidden="true"></i>{{ __('admin/demo.account') }}: <strong>{{ config('dixlase.demo_account') }}</strong></span>
             @endif
