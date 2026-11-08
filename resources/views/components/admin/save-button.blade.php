@@ -46,7 +46,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'form' => null,                          // Form ID
     'id_confirmation' => 'confirmationModal',        // Modal ID
     'id_delete' => 'deleteModal',                  // Delete modal ID
-    'onclick' => null,                       // Custom onclick function (optional)
     'back_url' => null,                      // Back button URL (optional)
     'back_label' => __('common.back'),       // Back button text
     'guard' => true,                         // Ask before leaving the form with unsaved changes

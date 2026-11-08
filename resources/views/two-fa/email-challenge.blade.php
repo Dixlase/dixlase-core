@@ -110,7 +110,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         type="button" 
                         id="resend-button"
                         class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        onclick="resendCode()"
                     >
                         {{ __('two-fa/email.resend') }}
                     </button>
