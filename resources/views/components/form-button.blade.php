@@ -41,7 +41,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'label' => null,         // ボタンのテキスト（nullの場合はスロットを使用）
     'icon' => null,          // アイコンクラス (例: 'fas fa-save')
     'iconPosition' => 'left', // アイコンの位置 (left, right)
-    'onclick' => null,       // onclick属性を追加
     'disabled' => false,     // ボタンを無効にする
     'form' => null,          // フォームのID
     'id' => null,            // ボタンのID
@@ -115,9 +114,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 </a>
 @else
+{{-- `onclick` stays in the except() list below on purpose. The component no longer takes an
+     onclick prop, and the CSP sets script-src-attr to 'none' in every preset but development,
+     so an inline handler is refused by the browser. Dropping the attribute here keeps this
+     component from emitting one at all; use xClick (Alpine's @click) instead. --}}
 <button type="{{ $type }}"
     @if ($id) id="{{ $id }}" @endif
-    @if ($onclick) onclick="{{ $onclick }}" @endif
     @if ($xClick) @click="{{ $xClick }}" @endif
     @if ($xDisabled) :disabled="{{ $xDisabled }}" @endif
     @if ($xShow) x-show="{{ $xShow }}" @endif

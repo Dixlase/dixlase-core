@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'class' => '',           // 追加クラス
     'required' => false,     // 必須フラグ
     'xModel' => null,        // Alpine.js x-model属性
-    'onchange' => null,      // onchangeイベント
+    'onchange' => null,      // Alpine.js @change expression (rendered as @change, not onchange)
     'style' => null,         // インラインスタイル
     'useDefaultClass' => true, // デフォルトクラスを使用するか
     'width' => 'full',       // 幅: full（フル幅）, auto（コンテンツに合わせた最小幅）
@@ -62,7 +62,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @if ($disabled) disabled @endif
         @if ($required) required @endif
         @if ($xModel) x-model="{{ $xModel }}" @endif
-        @if ($onchange) onchange="{{ $onchange }}" @endif
+        @if ($onchange) @change="{{ $onchange }}" @endif
         @if ($style) style="{{ $style }}" @endif>
     @foreach ($options as $optionValue => $optionText)
         <option value="{{ $optionValue }}" {{ $value == $optionValue ? 'selected' : '' }}>
