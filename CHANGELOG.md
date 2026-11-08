@@ -41,6 +41,65 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.10] — 2026-11-08
+
+### Added
+- The content editor can embed a YouTube video, an X post or a GitHub repository (#731, #851).
+  Write `@[youtube](URL)`, `@[x](URL)` or `@[github](URL)` on a line of its own, or use the new
+  "Insert embed" button beside "Insert image" in the Markdown editor. Every Markdown editor —
+  the front page, pages and the blog — gets it, and the preview and the published page render
+  it the same way. YouTube plays in an `<iframe>` on `youtube-nocookie.com`, and a page with one
+  adds that origin to `frame-src` itself, so nothing has to be changed in the CSP settings. X
+  and GitHub become link cards with no third-party script. A URL that does not match stays a
+  plain link
+
+### Security
+- The login decides whether a second step can be completed from the factors the account can
+  use — an e-mailed code when the mail tests have passed, or an unused recovery code — instead
+  of from the site-wide mail test state alone (#923). An advisory will be published separately
+
+### Fixed
+- The "Verified / Unverified" control on the member edit form now takes effect when saved
+  (#928, #934). It used to change nothing while the page reported success, so a site whose mail
+  is not working had no way to mark an existing member verified. Clearing verification is
+  refused for your own account and for the initial administrator, so the control cannot lock
+  an operator out of the admin panel; marking either one verified is allowed
+- `dls:plugin:migrate --pretend` and `dls:theme:migrate --pretend` list the migrations that
+  would run and print their SQL (#694, #937). They used to say "No migrations to run" even with
+  migrations pending. A pretend run is not recorded in the audit log
+- The version-drift banner names a command that fits the direction of the drift (#924, #925).
+  When the ledger is ahead of the files on disk it now names `php artisan dls:core:reconcile`,
+  which reports what it finds and writes nothing, instead of a command that refuses there
+- On the CAPTCHA, IP access control and environment screens, switching a toggle back off dims
+  or hides its fields again (#939, #945)
+- Saving a file's details in the media library asks for confirmation first, like every other
+  admin form, and the button is disabled for a member who may only view (#777, #938)
+- The installer loads its icon font before the installing dialog opens, so the dialog's icons
+  no longer show as empty boxes (#935, #936)
+- The e-mail code screen of two-factor authentication no longer carries an inline handler that
+  the CSP refuses (#940, #951). The resend button keeps working as before
+
+### Changed
+- The links in the demo-mode banner open in the same tab instead of a new one (#946, #947)
+
+### Plugin API — Changed
+- `x-form-button` no longer has an `onclick` prop, and `x-admin.save-button` drops the
+  `onclick` prop it declared and never used (#940, #951). Under `script-src-attr 'none'` an
+  inline handler never ran, and an `onclick` passed to `x-form-button` is now dropped rather
+  than rendered. Use `xClick` instead. `x-form-select` keeps its `onchange` prop and renders it
+  as Alpine's `@change` binding. Nothing in core, the bundled theme or the extensions we
+  publish passed either prop
+
+### Documentation
+- The Composer installation guide says how to stop and restart the local server (#949, #950)
+
+### Internal
+- `laravel/octane` is added as a development dependency, for evaluating worker mode (#944,
+  #948). It is in `require-dev`, so a production install does not carry it, and no existing
+  package moved
+- A content test sets the installed flag where the application reads it first and restores it
+  afterwards, so it no longer fails when the suite is run as a subset (#926, #927)
+
 ## [0.2.9] — 2026-11-07
 
 ### Added
