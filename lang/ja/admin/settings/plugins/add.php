@@ -63,6 +63,8 @@ return [
         'source_not_configured' => '拡張機能ソースが設定されていません。',
         'configure_link' => 'セキュリティ設定で設定する',
         'download' => 'ダウンロード',
+        'development_branch_badge' => '開発ブランチ',
+        'development_branch_hint' => 'この拡張機能はリリースもバージョンのタグも公開していません。ダウンロードすると、開発ブランチのその時点の状態が入ります。予告なく変わります。',
         'download_confirm_title' => 'プラグインのダウンロード',
         'download_confirm_message' => 'プラグイン「:name」をダウンロードしますか？',
         'downloading' => 'ダウンロード中...',

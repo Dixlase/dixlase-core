@@ -74,4 +74,8 @@ return [
     'all_passkeys_deleted' => 'Passkeyデバイス（:count件）を削除しました。',
     'no_passkeys_to_delete' => '削除するPasskeyデバイスがありません。',
     'passkey_delete_all_error' => 'Passkeyデバイスの削除に失敗しました。',
+    'recovery_codes_generated' => '回復コードを生成しました。',
+    'recovery_codes_regenerated' => '回復コードを再生成しました。',
+    'recovery_codes_regenerate_too_soon' => '回復コードはまだ再生成できません。:time 以降に再生成できます。',
+    'recovery_codes_generation_error' => '回復コードの生成に失敗しました。',
 ];

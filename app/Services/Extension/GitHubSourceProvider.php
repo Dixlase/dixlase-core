@@ -109,6 +109,17 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      */
     protected array $knownReleases = [];
 
+    /**
+     * Newest version tag per repository, resolved once per request.
+     *
+     * null (stored, not absent) means "asked, and the repository has
+     * none", so a repository without tags is not asked about twice in
+     * one listing.
+     *
+     * @var array<string, string|null>
+     */
+    protected array $latestTags = [];
+
     public function __construct(
         protected ExtensionSource $source,
     ) {
@@ -216,7 +227,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch'}>
      */
     public function listPlugins(): array
     {
@@ -224,7 +235,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch'}>
      */
     public function listThemes(): array
     {
@@ -247,8 +258,16 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         }
         $repo = $repoResponse->json();
 
-        // Retrieve manifest
-        $manifest = $this->fetchManifest($repoName, $extensionType);
+        // The detail screen describes the same thing the card does: the
+        // newest tag, or the default branch when there is no tag (#958).
+        $tag = $this->latestTag($repoName);
+        $manifest = $this->fetchManifest($repoName, $extensionType, $tag);
+
+        if ($manifest === null && $tag !== null) {
+            $manifest = $this->fetchManifest($repoName, $extensionType);
+            $tag = null;
+        }
+
         if ($manifest === null) {
             return null;
         }
@@ -278,6 +297,8 @@ class GitHubSourceProvider implements ExtensionSourceInterface
             'repository_url' => $repo['html_url'] ?? null,
             'updated_at' => $repo['updated_at'] ?? null,
             'extension_type' => $extensionType,
+            'ref' => $tag ?? $defaultBranch,
+            'ref_type' => $tag !== null ? 'tag' : 'branch',
         ];
     }
 
@@ -298,6 +319,14 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         }
 
         $this->throwIfRateLimited($response);
+
+        // No GitHub Release. A tag is the next best thing and is still a
+        // fixed set of bytes, which is what every unpublished Dixlase
+        // extension ships as (tag only, no Release).
+        $fromTag = $this->getTagReleaseInfo($slug, $extensionType);
+        if ($fromTag !== null) {
+            return $fromTag;
+        }
 
         // Generate pseudo-release from default branch information if no release exists
         return $this->getDefaultBranchReleaseInfo($slug, $extensionType);
@@ -325,14 +354,22 @@ class GitHubSourceProvider implements ExtensionSourceInterface
         // Attempt to retrieve from release
         $release = $this->findRelease($slug, $version, $extensionType);
 
-        // Fall back to default branch zipball if no release exists
-        if ($release === null) {
-            $downloadUrl = $this->getDefaultBranchZipballUrl($slug, $extensionType);
+        if ($release !== null) {
+            $downloadUrl = $release['download_url'];
+        } else {
+            // No Release for this version. Prefer the tag of the same
+            // version -- it is the exact tree the card advertised, and it
+            // cannot move. Only when there is no such tag does the
+            // default branch come into it (#958).
+            $repo = $this->buildRepoName($slug, $extensionType);
+            $tag = $this->latestTag($repo);
+            $downloadUrl = $tag !== null && ltrim($tag, 'vV') === ltrim($version, 'vV')
+                ? $this->tagZipballUrl($repo, $tag)
+                : $this->getDefaultBranchZipballUrl($slug, $extensionType);
+
             if ($downloadUrl === null) {
                 throw new RuntimeException("Release v{$version} not found for {$slug} and default branch is unavailable.");
             }
-        } else {
-            $downloadUrl = $release['download_url'];
         }
 
         if ($downloadUrl === null) {
@@ -503,6 +540,151 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
+     * The newest version tag in a repository, or null when it has none.
+     *
+     * A published release always has a tag, and an extension released
+     * tag-only (no GitHub Release) has one too, so this one call answers
+     * for both. The listing order of /tags is not documented, so the
+     * newest is chosen by version_compare rather than by position.
+     *
+     * Only tags shaped like a version are considered. A repository whose
+     * tags are names rather than versions ("stable", "latest") is treated
+     * as having none: such a tag can be moved, and the whole point here
+     * is to advertise something that cannot.
+     */
+    protected function latestTag(string $repoName): ?string
+    {
+        if (array_key_exists($repoName, $this->latestTags)) {
+            return $this->latestTags[$repoName];
+        }
+
+        // Without a token the listing is deliberately kept to one API
+        // call -- GitHub allows 60 an hour per IP, shared by everyone
+        // behind it -- so the tag is resolved on github.com instead,
+        // which that budget does not cover. With a token the API answers
+        // for private repositories too, which github.com will not.
+        $tag = $this->usesPublicHosts()
+            ? $this->latestTagFromWeb($repoName)
+            : $this->latestTagFromApi($repoName);
+
+        return $this->latestTags[$repoName] = $tag;
+    }
+
+    /**
+     * The newest version tag, from the tags API.
+     */
+    protected function latestTagFromApi(string $repoName): ?string
+    {
+        $response = $this->client(self::LOOKUP_TIMEOUT)
+            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/tags", ['per_page' => 100]);
+
+        if ($response->failed()) {
+            $this->throwIfRateLimited($response);
+
+            return null;
+        }
+
+        $newest = null;
+
+        foreach ((array) $response->json() as $tag) {
+            $name = is_array($tag) ? ($tag['name'] ?? null) : null;
+
+            if (! $this->looksLikeVersionTag($name)) {
+                continue;
+            }
+
+            if ($newest === null || version_compare(ltrim($name, 'vV'), ltrim($newest, 'vV'), '>')) {
+                $newest = $name;
+            }
+        }
+
+        return $newest;
+    }
+
+    /**
+     * The latest release's tag, from github.com's own redirect.
+     *
+     * `/<owner>/<repo>/releases/latest` answers 302 to
+     * `/<owner>/<repo>/releases/tag/<tag>`. Reading the Location header
+     * costs nothing against the API rate limit, which is the point: a
+     * source with no token has 60 API requests an hour for the whole
+     * listing.
+     *
+     * A repository with no published release redirects to `/releases`
+     * instead, with no tag in it, and the card then says it would
+     * install a branch. That is the honest answer here: without a token
+     * only public repositories are visible, and this cannot see a tag
+     * that has no release behind it.
+     */
+    protected function latestTagFromWeb(string $repoName): ?string
+    {
+        $response = Http::timeout(self::LOOKUP_TIMEOUT)
+            ->withoutRedirecting()
+            // Nullable: with `throw: false` the callback is handed null
+            // for a response that merely failed, and a 302 is one of
+            // those -- which is the answer being looked for here.
+            ->retry(2, 1000, fn (?\Throwable $e): bool => $e instanceof ConnectionException, throw: false)
+            ->get("{$this->webBaseUrl}/{$this->owner}/{$repoName}/releases/latest");
+
+        $location = $response->header('Location');
+
+        if ($location === '' || ! preg_match('~/releases/tag/([^/?#]+)~', $location, $matches)) {
+            return null;
+        }
+
+        $tag = urldecode($matches[1]);
+
+        return $this->looksLikeVersionTag($tag) ? $tag : null;
+    }
+
+    /**
+     * Is this a tag naming a version?
+     *
+     * A tag that is a name rather than a version ("stable", "latest")
+     * can be moved to another commit, and advertising something that
+     * cannot move is the whole point, so it is not treated as one.
+     */
+    protected function looksLikeVersionTag(mixed $name): bool
+    {
+        return is_string($name) && preg_match('/^v?\d+\.\d+\.\d+/', $name) === 1;
+    }
+
+    /**
+     * The source archive of one tag.
+     *
+     * Used for an extension released as a tag with no GitHub Release --
+     * the tag-only flow every unpublished Dixlase extension follows. A
+     * tag does not move, so unlike the default branch this is a fixed
+     * set of bytes.
+     */
+    protected function tagZipballUrl(string $repoName, string $tag): string
+    {
+        return "{$this->baseUrl}/repos/{$this->owner}/{$repoName}/zipball/{$tag}";
+    }
+
+    /**
+     * Pseudo-ReleaseInfo from the newest tag, for a repository that
+     * publishes no GitHub Release.
+     */
+    protected function getTagReleaseInfo(string $slug, string $extensionType): ?ReleaseInfo
+    {
+        $repo = $this->buildRepoName($slug, $extensionType);
+        $tag = $this->latestTag($repo);
+
+        if ($tag === null) {
+            return null;
+        }
+
+        return new ReleaseInfo(
+            version: ltrim($tag, 'vV'),
+            slug: $slug,
+            extensionType: $extensionType,
+            downloadUrl: $this->tagZipballUrl($repo, $tag),
+            metadata: ['source' => 'tag', 'tag' => $tag],
+        );
+    }
+
+    /**
      * Generate pseudo-ReleaseInfo from default branch
      */
     protected function getDefaultBranchReleaseInfo(string $slug, string $extensionType): ?ReleaseInfo
@@ -652,7 +834,7 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     /**
      * List repositories matching the given prefix
      *
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch'}>
      */
     protected function listRepositories(string $prefix, string $extensionType, ?string $excludePrefix = null): array
     {
@@ -690,8 +872,24 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
                 // Always derive slug from repository name (do not trust the slug field in manifest; use fixed value)
                 $slug = substr($name, strlen($prefix));
-                // Retrieve official name, description, and version from plugin.json / theme.json
-                $manifest = $this->fetchManifest($name, $extensionType) ?? [];
+
+                // Describe what pressing Download would place, which is the
+                // newest tag -- not the default branch. Reading the branch
+                // advertised a -dev version one step ahead of the release
+                // that actually installed (#958). A repository with no tag
+                // keeps the old behaviour and says so on the card.
+                $tag = $this->latestTag($name);
+                $manifest = $this->fetchManifest($name, $extensionType, $tag);
+
+                if ($manifest === null && $tag !== null) {
+                    // Tagged, but the manifest could not be read at that
+                    // tag. Fall back rather than drop the extension, and
+                    // mark the card for what it then describes.
+                    $manifest = $this->fetchManifest($name, $extensionType);
+                    $tag = null;
+                }
+
+                $manifest ??= [];
                 $defaultBranch = $repo['default_branch'] ?? 'main';
                 $thumbnailFile = is_string($manifest['thumbnail'] ?? null)
                     ? $manifest['thumbnail']
@@ -702,6 +900,10 @@ class GitHubSourceProvider implements ExtensionSourceInterface
                     'name' => $this->resolveLocalizedString($manifest['name'] ?? null) ?? ($repo['description'] ?? $slug),
                     'description' => $this->resolveLocalizedString($manifest['description'] ?? null) ?? $repo['description'] ?? null,
                     'version' => $this->resolveString($manifest['version'] ?? null),
+                    // What the card describes, and what Download will
+                    // install: a fixed tag, or a branch that moves.
+                    'ref' => $tag ?? $defaultBranch,
+                    'ref_type' => $tag !== null ? 'tag' : 'branch',
                     'author' => $this->resolveString($manifest['author'] ?? null),
                     'license' => $this->resolveString($manifest['license'] ?? null),
                     'thumbnail_url' => route('admin.settings.extension-thumbnail-online', [
@@ -851,14 +1053,16 @@ class GitHubSourceProvider implements ExtensionSourceInterface
     }
 
     /**
-     * A file from the default branch, read from raw.githubusercontent.com.
+     * A file at one ref, read from raw.githubusercontent.com.
      *
-     * `HEAD` resolves to the repository's default branch, which is what the
-     * Contents API reads when no ref is given. Returns null on any failure.
+     * The default ref `HEAD` resolves to the repository's default branch,
+     * which is what the Contents API reads when no ref is given. Pass a
+     * tag to read the version that would actually be installed. Returns
+     * null on any failure.
      */
-    protected function fetchRawFile(string $repoName, string $path): ?string
+    protected function fetchRawFile(string $repoName, string $path, string $ref = 'HEAD'): ?string
     {
-        $url = "{$this->rawBaseUrl}/{$this->owner}/{$repoName}/HEAD/".ltrim($path, '/');
+        $url = "{$this->rawBaseUrl}/{$this->owner}/{$repoName}/{$ref}/".ltrim($path, '/');
 
         $response = Http::timeout(self::LOOKUP_TIMEOUT)
             ->retry(2, 1000, fn (\Throwable $e): bool => $e instanceof ConnectionException, throw: false)
@@ -973,15 +1177,18 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      * Returns null on any failure (missing file, auth error, oversized
      * file that the API refuses to inline, etc.).
      */
-    protected function fetchRepoFileBytes(string $repoName, string $path): ?string
+    protected function fetchRepoFileBytes(string $repoName, string $path, ?string $ref = null): ?string
     {
         if ($this->usesPublicHosts()) {
-            return $this->fetchRawFile($repoName, $path);
+            return $this->fetchRawFile($repoName, $path, $ref ?? 'HEAD');
         }
 
         $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
-            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$path}");
+            ->get(
+                "{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$path}",
+                $ref === null ? [] : ['ref' => $ref],
+            );
 
         if ($response->failed()) {
             return null;
@@ -1005,12 +1212,12 @@ class GitHubSourceProvider implements ExtensionSourceInterface
      *
      * @return array<string, mixed>|null
      */
-    protected function fetchManifest(string $repoName, string $extensionType): ?array
+    protected function fetchManifest(string $repoName, string $extensionType, ?string $ref = null): ?array
     {
         $manifestFile = $extensionType === 'theme' ? 'theme.json' : 'plugin.json';
 
         if ($this->usesPublicHosts()) {
-            $body = $this->fetchRawFile($repoName, $manifestFile);
+            $body = $this->fetchRawFile($repoName, $manifestFile, $ref ?? 'HEAD');
             $manifest = $body === null ? null : json_decode($body, true);
 
             return is_array($manifest) ? $manifest : null;
@@ -1018,7 +1225,10 @@ class GitHubSourceProvider implements ExtensionSourceInterface
 
         $response = $this->client(self::LOOKUP_TIMEOUT)
             ->acceptJson()
-            ->get("{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$manifestFile}");
+            ->get(
+                "{$this->baseUrl}/repos/{$this->owner}/{$repoName}/contents/{$manifestFile}",
+                $ref === null ? [] : ['ref' => $ref],
+            );
 
         if ($response->failed()) {
             return null;

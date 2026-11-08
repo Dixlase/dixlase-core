@@ -41,6 +41,43 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.11] — 2026-11-09
+
+### Fixed
+- The add-extension screen shows the version that Download will install (#958, #962). It used
+  to read each manifest from the repository's default branch, so a card could advertise a
+  `-dev` version while Download installed the latest release. The card now reads the manifest
+  at the newest version tag, and Download takes that tag's Release asset, or the tag's own
+  archive when the tag has no Release. An extension published as a tag without a Release is
+  therefore installed from the tag, not from a branch, and is offered updates afterwards. A
+  repository with no version tag at all is still listed, marked on its card as a development
+  branch
+- Choosing a date in the log file list shows that day's log again (#952, #959). The date
+  selector used an inline handler that the CSP refuses; it is now a plain form with a Show
+  button. The close button of the recovery-code error state works for the same reason
+- The messages shown when recovery codes are generated, regenerated too soon or fail to
+  generate are translated in English and Japanese (#960, #961)
+
+### Changed
+- A fresh install bundles the OnePage theme v0.5.5 (#957). A core update does not change a
+  theme that is already installed
+
+### Plugin API — Changed
+- `ExtensionSourceInterface::listPlugins()` and `listThemes()` document two more keys in each
+  entry, `ref` (the tag or branch the entry was read from) and `ref_type` (`tag` or `branch`)
+  (#962). Core treats both as optional, so a source that does not return them keeps working;
+  its cards simply carry no development-branch mark
+
+### Documentation
+- The Composer installation guide puts the steps first and the reference after them (#963,
+  #964). Nothing was removed
+
+### Internal
+- The unused `components/extension/card` view is removed (#959). Nothing rendered it, it was
+  not part of the Plugin API, and the plugin and theme cards in use are unchanged. The test
+  for inline event handlers no longer keeps an allow-list, so any inline handler in core's
+  views fails it
+
 ## [0.2.10] — 2026-11-08
 
 ### Added

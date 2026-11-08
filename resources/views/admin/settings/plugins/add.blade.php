@@ -173,8 +173,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             x-on:error="$el.src = '{{ asset('assets/images/plugin-default.svg') }}'; $el.onerror = null;"
                                         >
-                                        {{-- Version badge --}}
-                                        <div class="absolute top-3 right-3">
+                                        {{-- Version badge. The version is read at the ref the
+                                             download will install: the newest tag, or the
+                                             default branch when the repository has no tag.
+                                             The second case is called out, because that
+                                             download is not a fixed set of bytes (#958). --}}
+                                        <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-amber-500 text-white"
+                                                  x-show="plugin.ref_type === 'branch'"
+                                                  :title="'{{ __('admin/settings/plugins/add.online.development_branch_hint') }}'">
+                                                <i class="fas fa-code-branch mr-1"></i>{{ __('admin/settings/plugins/add.online.development_branch_badge') }}
+                                            </span>
                                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-blue-500 text-white" x-show="plugin.version">
                                                 <span x-text="'v' + plugin.version"></span>
                                             </span>

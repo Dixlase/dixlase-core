@@ -218,7 +218,7 @@ class ExtensionSourceManager
     /**
      * Aggregate available plugins from all enabled sources
      *
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, source_id: int, source_name: string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch', source_id: int, source_name: string}>
      */
     public function listAvailablePlugins(): array
     {
@@ -252,7 +252,7 @@ class ExtensionSourceManager
     /**
      * Aggregate available themes from all enabled sources
      *
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, source_id: int, source_name: string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch', source_id: int, source_name: string}>
      */
     public function listAvailableThemes(): array
     {

@@ -63,12 +63,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <nav class="flex flex-row items-center justify-center md:justify-end gap-2 mb-4">
         <!-- Date Selector -->
         @if(!empty($availableDates) && count($availableDates) > 1)
-        <div>
+        <form method="GET" action="{{ route('admin.settings.systems.logs.files', ['type' => $logType]) }}" class="flex flex-row items-center gap-2">
             <label for="date-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ __('admin/settings/systems/logs/files.date_select') }}:
             </label>
-            <select id="date-select" 
-                    onchange="window.location.href='{{ route('admin.settings.systems.logs.files', ['type' => $logType]) }}' + (this.value ? '?date=' + this.value : '')"
+            <select id="date-select"
+                    name="date"
                     class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white text-sm">
                 @foreach($availableDates as $dateValue => $dateLabel)
                     <option value="{{ $dateValue }}" {{ ($selectedDate ?? '') === $dateValue ? 'selected' : '' }}>
@@ -76,7 +76,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </option>
                 @endforeach
             </select>
-        </div>
+            <x-form-button
+                type="submit"
+                variant="primary"
+                :label="__('admin/settings/systems/logs/files.date_show')"
+                size="sm"
+                class="flex-shrink-0"
+            />
+        </form>
         @endif
 
         <!-- Download Button -->

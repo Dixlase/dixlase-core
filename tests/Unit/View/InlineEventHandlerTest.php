@@ -105,19 +105,10 @@ class InlineEventHandlerTest extends TestCase
      * its only entry points are scanPlugin() and scanTheme(). So the project
      * held extensions to a rule its own views broke, with nothing to notice.
      *
-     * This pins the inventory. The two entries below are tracked in #952 and
-     * must be replaced, not deleted - each is its control's only wiring. The
-     * list may only shrink: a third inline handler fails this test.
+     * This test is what notices. A view that carries one fails it.
      */
-    public function test_core_views_carry_no_inline_handler_outside_the_known_inventory(): void
+    public function test_core_views_carry_no_inline_handler(): void
     {
-        $known = [
-            // #952: choosing a date does not navigate under the standard preset
-            'admin/settings/systems/logs/files.blade.php',
-            // #952: a missing extension thumbnail keeps the broken image
-            'components/extension/card.blade.php',
-        ];
-
         $attributes = implode('|', [
             'onclick', 'ondblclick', 'onmousedown', 'onmouseup', 'onmouseover',
             'onmousemove', 'onmouseout', 'onmouseenter', 'onmouseleave',
@@ -147,10 +138,6 @@ class InlineEventHandlerTest extends TestCase
 
             $relative = str_replace($root.'/', '', $file->getPathname());
 
-            if (in_array($relative, $known, true)) {
-                continue;
-            }
-
             $content = (string) file_get_contents($file->getPathname());
 
             if (preg_match('/\b(?:'.$attributes.')\s*=\s*["\'][^"\']*["\']/i', $content, $m)) {
@@ -161,7 +148,7 @@ class InlineEventHandlerTest extends TestCase
         $this->assertSame(
             [],
             $found,
-            'A view outside the #952 inventory carries an inline event handler. '.
+            'A view carries an inline event handler. '.
             "script-src-attr is 'none' in every CSP preset but development, so the browser ".
             "refuses it. Use an Alpine binding, or render the behaviour server-side:\n".
             implode("\n", $found)

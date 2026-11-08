@@ -22,18 +22,43 @@ cd dixlase
 php scripts/serve.php
 ```
 
+`create-project` はアセットのビルドとサイトの準備までを行い、サーバーの起動は 2 つ目のコマンドに任せます。サーバーを起動すると、`create-project` が終わらなくなるためです。
+
 `http://127.0.0.1:8000` を開くと、[インストールウィザード](../../wizard.md)がデータベース、管理者アカウント、メールの設定を案内します。データベースサーバーを別に用意せずに始める場合は、データベースの手順で **SQLite** を選んでください。
 
-## `create-project` がすること
+## サーバーの停止と再起動
 
-- `.env.example` から `.env` を作り、アプリケーションキーを生成し、空の `database/database.sqlite` を作成します。
-- コアのフロントエンドアセットをビルドします（`npm ci --ignore-scripts` のあと `npm run build`）。コア自身のアセットは Composer のパッケージに含まれないためです。
-- 同梱テーマのアセットを公開します。DixlaseOnePage は Composer が `themes/DixlaseOnePage/` に配置し、ビルド済みのスタイルシートとスクリプトを同梱しています。テーマのリリースが 1 回だけビルドしたもので、テーマの署名に覆われているため、**ビルドし直すことはありません**。`create-project` は、コアがそれを配信するためのシンボリックリンク（`public/assets/themes/DixlaseOnePage`）を作るだけです。Composer のパッケージはこのリンクを運べません。
-- 最後に残りの手順を表示します。
+サーバーは、起動したターミナルが開いている間だけ動きます。
 
-サーバーは起動しません。起動すると、コマンドが終わらなくなるためです。
+- **止めるとき**は、`php scripts/serve.php` を実行しているターミナルで `Ctrl+C` を押します。ターミナルを閉じても止まります。
+- **もう一度起動するとき**は、サイトのディレクトリで同じコマンドを実行します。ウィザードのときと同じように、インストール済みのサイトを表示します。
 
-npm が見つからないときや、途中の手順が失敗したときも、`create-project` は成功し、手で実行する手順を表示します。
+  ```bash
+  cd dixlase
+  php scripts/serve.php
+  ```
+
+- ポート 8000 がすでに使われているときは、別の番号を指定します（`php scripts/serve.php --port=8080`）。`--host` も指定できます。
+
+コアの更新やロールバックのあとは、サーバーを起動し直してください。どちらも `public/` を作り直すため、起動中のサーバーは古いディレクトリを見たままになります。
+
+## `php artisan serve` は使わない
+
+ウィザードには、`php artisan serve` ではなく `php scripts/serve.php` を使ってください。`php artisan serve` は `.env` が変わるたびに再起動するので、`.env` を書いた手順の応答が切れます。`--no-reload` を付けると、起動時に読んだ `.env` を動いている間ずっと使い続けるため、ウィザードが書いたデータベースの設定が反映されず、最後の手順で最初の画面に戻ってしまいます。
+
+## バージョンを指定してインストールする
+
+```bash
+composer create-project dixlase/dixlase-core dixlase "0.2.*"
+```
+
+Composer は、条件に合うタグ付きリリースのうち最も新しいものを選びます。
+
+ローカルのサーバーではなく Web サーバーで公開する場合は、[本番環境](../production/index.md)を参照してください。
+
+## 途中の手順が失敗したとき・飛ばしたいとき
+
+npm が見つからないときや、ビルドやリンクが失敗したときも、`create-project` は成功し、手で実行する手順を表示します。サイトのディレクトリで実行してください。
 
 ```bash
 npm ci && npm run build
@@ -48,9 +73,20 @@ DIXLASE_SKIP_BUILD=1 composer create-project dixlase/dixlase-core dixlase
 
 `--no-scripts` でも飛ばせますが、`.env` の作成とアプリケーションキーの生成も行われません。
 
-## ローカルのサーバー
+## 仕組み（参考）
 
-`php scripts/serve.php` は、ウィザードのために PHP の組み込みサーバーを起動します。`--host` と `--port` を指定できます（`php scripts/serve.php --port=8080`）。実行するのは次のコマンドと同じです。
+インストールするだけなら、この節は読まなくてかまいません。2 つのコマンドが何をしているかを説明します。
+
+### `create-project` がすること
+
+- `.env.example` から `.env` を作り、アプリケーションキーを生成し、空の `database/database.sqlite` を作成します。
+- コアのフロントエンドアセットをビルドします（`npm ci --ignore-scripts` のあと `npm run build`）。コア自身のアセットは Composer のパッケージに含まれないためです。
+- 同梱テーマのアセットを公開します。DixlaseOnePage は Composer が `themes/DixlaseOnePage/` に配置し、ビルド済みのスタイルシートとスクリプトを同梱しています。テーマのリリースが 1 回だけビルドしたもので、テーマの署名に覆われているため、**ビルドし直すことはありません**。`create-project` は、コアがそれを配信するためのシンボリックリンク（`public/assets/themes/DixlaseOnePage`）を作るだけです。Composer のパッケージはこのリンクを運べません。
+- 最後に残りの手順を表示します。
+
+### `scripts/serve.php` が実行するもの
+
+`php scripts/serve.php` は PHP の組み込みサーバーを起動します。実行するのは次のコマンドと同じです。
 
 ```bash
 cd public
@@ -62,31 +98,3 @@ PHP_CLI_SERVER_WORKERS=4 php -d variables_order=EGPCS -d max_execution_time=300 
 - `variables_order=EGPCS` は、ウィザードが実行するコマンドに `PATH` を残すためのものです。これが無いと、`composer dump-autoload` が「env: php: No such file or directory」で失敗します。
 - `PHP_CLI_SERVER_WORKERS=4` で、遅いページが 1 つあっても、ほかのページが止まりません。Windows では使えないので付けません。
 - `max_execution_time=300` で、マイグレーションを実行する最後の手順に十分な時間を与えます。
-
-ウィザードには `php artisan serve` を使わないでください。`.env` が変わるたびに再起動するので、`.env` を書いた手順の応答が切れます。`--no-reload` を付けると、起動時に読んだ `.env` を動いている間ずっと使い続けるため、ウィザードが書いたデータベースの設定が反映されず、最後の手順で最初の画面に戻ってしまいます。
-
-### サーバーの停止と再起動
-
-サーバーは、起動したターミナルが開いている間だけ動きます。
-
-- **止めるとき**は、`php scripts/serve.php` を実行しているターミナルで `Ctrl+C` を押します。ターミナルを閉じても止まります。
-- **もう一度起動するとき**は、サイトのディレクトリで同じコマンドを実行します。ウィザードのときと同じように、インストール済みのサイトを表示します。
-
-  ```bash
-  cd dixlase
-  php scripts/serve.php
-  ```
-
-- ポート 8000 がすでに使われているときは、別の番号を指定します（`php scripts/serve.php --port=8080`）。
-
-コアの更新やロールバックのあとは、サーバーを起動し直してください。どちらも `public/` を作り直すため、起動中のサーバーは古いディレクトリを見たままになります。
-
-Web サーバーで公開する場合は、[本番環境](../production/index.md)を参照してください。
-
-## バージョンを指定してインストールする
-
-```bash
-composer create-project dixlase/dixlase-core dixlase "0.2.*"
-```
-
-Composer は、条件に合うタグ付きリリースのうち最も新しいものを選びます。
