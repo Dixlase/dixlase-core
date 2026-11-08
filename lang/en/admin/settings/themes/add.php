@@ -58,6 +58,8 @@ return [
         'no_themes' => 'No themes available from this source.',
         'connection_error' => 'Failed to connect to the extension source.',
         'download' => 'Download',
+        'development_branch_badge' => 'dev branch',
+        'development_branch_hint' => 'This extension publishes no release and no version tag. Downloading it takes the current state of its development branch, which changes without notice.',
         'downloading' => 'Downloading...',
         'downloading_title' => 'Downloading Theme',
         'downloading_wait' => 'Please wait until the download completes.',

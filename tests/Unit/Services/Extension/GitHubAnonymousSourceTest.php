@@ -100,9 +100,23 @@ class GitHubAnonymousSourceTest extends TestCase
                 ['name' => 'plugin-dixlase-pages', 'default_branch' => 'main', 'description' => 'Pages'],
                 ['name' => 'plugin-dixlase-seo', 'default_branch' => 'main', 'description' => 'SEO'],
             ]),
-            'raw.githubusercontent.com/Dixlase/plugin-dixlase-pages/HEAD/plugin.json' => Http::response(json_encode(['name' => 'Pages', 'version' => '0.1.0'])),
-            'raw.githubusercontent.com/Dixlase/plugin-dixlase-seo/HEAD/plugin.json' => Http::response(json_encode(['name' => 'SEO', 'version' => '0.1.0'])),
+            // Which version the card advertises is resolved on github.com
+            // rather than through the API, so the listing still costs one
+            // API call without a token (#958).
+            'github.com/Dixlase/plugin-dixlase-pages/releases/latest' => Http::response('', 302, [
+                'Location' => 'https://github.com/Dixlase/plugin-dixlase-pages/releases/tag/v0.1.0',
+            ]),
+            'github.com/Dixlase/plugin-dixlase-seo/releases/latest' => Http::response('', 302, [
+                'Location' => 'https://github.com/Dixlase/plugin-dixlase-seo/releases/tag/v0.1.0',
+            ]),
+            'raw.githubusercontent.com/Dixlase/plugin-dixlase-pages/v0.1.0/plugin.json' => Http::response(json_encode(['name' => 'Pages', 'version' => '0.1.0'])),
+            'raw.githubusercontent.com/Dixlase/plugin-dixlase-seo/v0.1.0/plugin.json' => Http::response(json_encode(['name' => 'SEO', 'version' => '0.1.0'])),
             'api.github.com/*' => Http::response(['message' => 'unexpected API call'], 500),
+            // Anything not named above is a mistake in the test, not a
+            // request to let out: Http::fake() passes an unmatched URL
+            // through to the real network, and this suite asked the real
+            // github.com for a while before that was noticed.
+            '*' => Http::response(['message' => 'unexpected request'], 500),
         ]);
     }
 
@@ -113,6 +127,30 @@ class GitHubAnonymousSourceTest extends TestCase
         $plugins = (new GitHubSourceProvider($this->source()))->listPlugins();
 
         $this->assertSame(['Pages', 'SEO'], array_column($plugins, 'name'));
+        $this->assertSame(['/orgs/Dixlase/repos'], $this->apiPaths());
+    }
+
+    public function test_a_public_repository_with_no_release_is_marked_as_a_branch(): void
+    {
+        Http::fake([
+            'api.github.com/orgs/Dixlase/repos*' => Http::response([
+                ['name' => 'plugin-dixlase-pages', 'default_branch' => 'main', 'description' => 'Pages'],
+            ]),
+            // github.com answers /releases/latest with the releases page
+            // itself when there is no release: no tag in the Location.
+            'github.com/Dixlase/plugin-dixlase-pages/releases/latest' => Http::response('', 302, [
+                'Location' => 'https://github.com/Dixlase/plugin-dixlase-pages/releases',
+            ]),
+            'raw.githubusercontent.com/Dixlase/plugin-dixlase-pages/HEAD/plugin.json' => Http::response(json_encode(['name' => 'Pages', 'version' => '0.2.0-dev'])),
+            'api.github.com/*' => Http::response(['message' => 'unexpected API call'], 500),
+            '*' => Http::response(['message' => 'unexpected request'], 500),
+        ]);
+
+        $plugins = (new GitHubSourceProvider($this->source()))->listPlugins();
+
+        $this->assertSame('branch', $plugins[0]['ref_type']);
+        $this->assertSame('main', $plugins[0]['ref']);
+        $this->assertSame('0.2.0-dev', $plugins[0]['version']);
         $this->assertSame(['/orgs/Dixlase/repos'], $this->apiPaths());
     }
 

@@ -1148,7 +1148,7 @@ class AdminThemesSettingsController extends AdminLoggedInController
     protected function normalizeExtensionEntry(array $entry): array
     {
         $locale = app()->getLocale();
-        $stringFields = ['slug', 'version', 'author', 'email', 'url', 'license', 'package_name', 'namespace', 'thumbnail_url', 'source_name', 'repository_url', 'updated_at'];
+        $stringFields = ['slug', 'version', 'author', 'email', 'url', 'license', 'package_name', 'namespace', 'thumbnail_url', 'source_name', 'repository_url', 'updated_at', 'ref', 'ref_type'];
         foreach ($stringFields as $field) {
             if (isset($entry[$field]) && ! is_string($entry[$field])) {
                 $entry[$field] = null;

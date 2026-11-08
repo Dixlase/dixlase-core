@@ -58,6 +58,8 @@ return [
         'no_themes' => 'このソースから利用可能なテーマはありません。',
         'connection_error' => '拡張機能ソースへの接続に失敗しました。',
         'download' => 'ダウンロード',
+        'development_branch_badge' => '開発ブランチ',
+        'development_branch_hint' => 'この拡張機能はリリースもバージョンのタグも公開していません。ダウンロードすると、開発ブランチのその時点の状態が入ります。予告なく変わります。',
         'downloading' => 'ダウンロード中...',
         'downloading_title' => 'テーマをダウンロード中',
         'downloading_wait' => 'ダウンロードが完了するまでお待ちください。',
