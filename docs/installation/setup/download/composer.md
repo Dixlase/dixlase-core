@@ -65,6 +65,20 @@ PHP_CLI_SERVER_WORKERS=4 php -d variables_order=EGPCS -d max_execution_time=300 
 
 Do not use `php artisan serve` for the wizard. It restarts whenever `.env` changes, which cuts off the step that wrote it. With `--no-reload` it keeps the `.env` it read at start-up for as long as it runs, so the wizard's database settings never take effect and the final step sends you back to the first screen.
 
+### Stopping and Restarting the Server
+
+The server runs only while its terminal is open.
+
+- **Stop it** with `Ctrl+C` in the terminal running `php scripts/serve.php`. Closing the terminal stops it too.
+- **Start it again** from the site directory with the same command. It serves an installed site just as it served the wizard:
+
+  ```bash
+  cd dixlase
+  php scripts/serve.php
+  ```
+
+- If port 8000 is already taken, pass another one: `php scripts/serve.php --port=8080`.
+
 Restart the server after a core update or rollback. Both recreate `public/`, and a server started there keeps the old directory.
 
 To serve the site from a web server instead, see [production environment](../production/index.md).
