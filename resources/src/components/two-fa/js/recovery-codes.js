@@ -222,12 +222,13 @@ window.displayRecoveryCodesError = function (modalId, errorMessage) {
         const actionsHTML = `
             <button 
                 type="button"
-                onclick="closeModal('${modalId}')"
                 class="inline-flex items-center justify-center font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-200 dark:bg-gray-500 text-gray-900 dark:text-white hover:bg-gray-700 focus:ring-gray-500 px-4 py-2 text-sm mx-2">
                 ${closeLabel}
             </button>
         `;
         modalActions.innerHTML = actionsHTML;
+        // An onclick attribute would be refused by script-src-attr.
+        modalActions.querySelector('button').addEventListener('click', () => window.closeModal(modalId));
     }
 
     // タイトルを更新
