@@ -60,7 +60,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->display_name ?? __('admin/media/preview.unknown') }}</p>
             
             <!-- Media information edit form -->
-            <form action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
+            <form id="mediaUpdateForm" action="{{ route('admin.media.update', $media->id) }}" method="POST" class="mt-6 space-y-4">
                 @csrf
                 @method('PUT')
                 
@@ -124,15 +124,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <div class="flex justify-end">
-                    <button type="submit"
-                            @if($viewOnly) disabled @endif
-                            @if($viewOnly) title="{{ $tooltipText }}" @endif
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-save mr-2"></i>{{ __('common.save') }}
-                    </button>
-                </div>
             </form>
             
             <!-- Media URL -->
@@ -191,4 +182,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         confirm_color="red"
         form="deleteMediaForm"
     />
+@endsection
+
+{{-- The shared save button asks before saving and guards unsaved edits
+     (#777); it also disables itself for members who can only view. --}}
+@section('save')
+    <x-admin.save-button form="mediaUpdateForm" />
 @endsection
