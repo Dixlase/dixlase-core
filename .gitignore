@@ -151,3 +151,11 @@ license.txt
 # event and at install time — never hand-edited, never committed.
 /resources/src/common/css/dixlase-tailwind-plugin-sources.css
 
+# Laravel Octane, a development-only dependency while worker-mode support is
+# being evaluated. A worker run leaves these behind in the working tree: the
+# FrankenPHP worker stub Octane copies into public/, and the binary it
+# downloads into the project root when it cannot find one on PATH. Both are
+# artefacts of running a compatibility check, never part of a release.
+/public/frankenphp-worker.php
+/frankenphp
+/frankenphp.backup
