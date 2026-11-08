@@ -51,7 +51,7 @@ class AdminSystemInfoController extends AdminLoggedInController
      */
     public function index()
     {
-        $databaseVersion = DB::select('select version() as version')[0]->version ?? 'N/A';
+        $databaseVersion = DB::connection()->getServerVersion() ?: 'N/A';
 
         $info = [
             'software' => [
