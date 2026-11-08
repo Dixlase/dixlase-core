@@ -36,10 +36,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 <div x-data="{
-    enableAllowedIPs: {{ old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']) ? 'true' : 'false' }},
-    blockedAdminIps: {{ old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']) ? 'true' : 'false' }},
-    enableAllowedFrontIPs: {{ old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']) ? 'true' : 'false' }},
-    enableBlockedFrontIps: {{ old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']) ? 'true' : 'false' }}
+    enableAllowedIPs: '{{ old('enable_allowed_admin_ips', $settings['enable_allowed_admin_ips']) ? '1' : '0' }}',
+    blockedAdminIps: '{{ old('enable_blocked_admin_ips', $settings['enable_blocked_admin_ips']) ? '1' : '0' }}',
+    enableAllowedFrontIPs: '{{ old('enable_allowed_front_ips', $settings['enable_allowed_front_ips']) ? '1' : '0' }}',
+    enableBlockedFrontIps: '{{ old('enable_blocked_front_ips', $settings['enable_blocked_front_ips']) ? '1' : '0' }}'
 }">
     <form id="security-ip-form" method="POST" action="{{ route('admin.settings.security.ip.update') }}">
         @csrf
@@ -96,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xModel="enableAllowedIPs"
                     />
 
-                    <div :class="{ 'opacity-50': !enableAllowedIPs }">
+                    <div :class="{ 'opacity-50': enableAllowedIPs === '0' }">
                         <x-form-label
                             for="allowed_admin_ips"
                             :text="__('admin/settings/security/ip.allowed_admin_ips_list')"
@@ -110,7 +110,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
-                            x-bind:disabled="!enableAllowedIPs"
                         />
                         
                         @error('allowed_admin_ips')
@@ -131,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xModel="blockedAdminIps"
                     />
 
-                    <div :class="{ 'opacity-50': !blockedAdminIps }">
+                    <div :class="{ 'opacity-50': blockedAdminIps === '0' }">
                         <x-form-label
                             for="blocked_admin_ips"
                             :text="__('admin/settings/security/ip.blocked_admin_ips_list')"
@@ -145,7 +144,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
-                            x-bind:disabled="!blockedAdminIps"
                         />
                         
                         @error('blocked_admin_ips')
@@ -171,7 +169,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xModel="enableAllowedFrontIPs"
                     />
 
-                    <div :class="{ 'opacity-50': !enableAllowedFrontIPs }">
+                    <div :class="{ 'opacity-50': enableAllowedFrontIPs === '0' }">
                         <x-form-label
                             for="allowed_front_ips"
                             :text="__('admin/settings/security/ip.allowed_front_ips_list')"
@@ -185,7 +183,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
-                            x-bind:disabled="!enableAllowedFrontIPs"
                         />
                         
                         <p class="mb-3">{{ __('admin/settings/security/ip.front_ip_help') }}</p>
@@ -202,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         xModel="enableBlockedFrontIps"
                     />
 
-                    <div :class="{ 'opacity-50': !enableBlockedFrontIps }">
+                    <div :class="{ 'opacity-50': enableBlockedFrontIps === '0' }">
                         <x-form-label
                             for="blocked_front_ips"
                             :text="__('admin/settings/security/ip.blocked_front_ips_list')"
@@ -216,7 +213,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             :rows="8"
                             :placeholder="__('admin/settings/security/ip.ip_list_placeholder')"
                             class="input-xl"
-                            x-bind:disabled="!enableBlockedFrontIps"
                         />
                         
                         <p>{{ __('admin/settings/security/ip.front_ip_help') }}</p>

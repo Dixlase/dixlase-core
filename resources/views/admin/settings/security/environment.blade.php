@@ -37,7 +37,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <div class="mx-auto">
 <div x-data="{ 
     appEnv: '{{ old('app_env', $settings['app_env']) }}',
-    appDebug: {{ old('app_debug', $settings['app_debug']) ? 'true' : 'false' }}
+    appDebug: '{{ old('app_debug', $settings['app_debug']) ? '1' : '0' }}'
 }">
     <form id="security-environment-form" method="POST" action="{{ route('admin.settings.security.environment.update') }}">
         @csrf
@@ -63,7 +63,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </fieldset>
 
             <!-- 本番環境でデバッグモードONの警告 -->
-            <template x-if="appEnv === 'production' && appDebug">
+            <template x-if="appEnv === 'production' && appDebug === '1'">
                 <div class="mt-4">
                     <x-ui-message
                         type="error"
@@ -87,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <p>{!! __('admin/settings/security/environment.app_debug_help') !!}</p>
 
                 <!-- デバッグモードの警告 -->
-                <template x-if="appDebug">
+                <template x-if="appDebug === '1'">
                     <div class="mt-4">
                         <x-ui-message
                             type="warning"
