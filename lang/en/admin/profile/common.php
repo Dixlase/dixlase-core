@@ -73,4 +73,8 @@ return [
     'all_passkeys_deleted' => 'Passkey devices (:count) have been deleted.',
     'no_passkeys_to_delete' => 'There are no passkey devices to delete.',
     'passkey_delete_all_error' => 'Failed to delete the passkey devices.',
+    'recovery_codes_generated' => 'Recovery codes have been generated.',
+    'recovery_codes_regenerated' => 'Recovery codes have been regenerated.',
+    'recovery_codes_regenerate_too_soon' => 'Recovery codes cannot be regenerated yet. You can regenerate them after :time.',
+    'recovery_codes_generation_error' => 'Failed to generate the recovery codes.',
 ];
