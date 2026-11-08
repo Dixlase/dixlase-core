@@ -110,7 +110,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :options="$availableDrivers"
                     :value="old('db_connection', $defaultDriver)"
                     xModel="driver"
-                    onchange="this.dispatchEvent(new Event('input'))"
                 />
             </div>
 
