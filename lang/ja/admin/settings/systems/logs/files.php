@@ -38,6 +38,7 @@ return [
     'description' => 'アプリケーションログファイルを日付別に確認、ダウンロード、クリアできます。',
     'date_latest' => '最新',
     'date_select' => '日付を選択',
+    'date_show' => '表示',
     'no_logs_found' => 'ログが見つかりません。',
     'activity' => 'アクティビティ',
     'error' => 'エラー',
