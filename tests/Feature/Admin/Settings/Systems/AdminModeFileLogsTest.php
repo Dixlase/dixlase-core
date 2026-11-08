@@ -35,6 +35,7 @@ use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -137,5 +138,43 @@ class AdminModeFileLogsTest extends TestCase
             ->get(route('admin.settings.systems.logs.files'));
 
         $response->assertStatus(200);
+    }
+
+    public function test_file_logs_keep_a_date_in_the_log_file_form(): void
+    {
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.systems.logs.files', ['date' => '2026-01-02']));
+
+        $response->assertOk();
+        $response->assertViewHas('selectedDate', '2026-01-02');
+    }
+
+    #[DataProvider('notALogDate')]
+    public function test_file_logs_treat_any_other_date_as_none(mixed $date): void
+    {
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        AdminModeHelper::clearCache();
+
+        $response = $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.systems.logs.files', ['date' => $date]));
+
+        $response->assertOk();
+        $response->assertViewHas('selectedDate', null);
+    }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function notALogDate(): array
+    {
+        return [
+            'not a date' => ['latest'],
+            'partial' => ['2026-01'],
+            'trailing text' => ['2026-01-02x'],
+            'a list' => [['2026-01-02']],
+        ];
     }
 }

@@ -77,7 +77,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        $selectedDate = $request->input('date');
+        $selectedDate = $this->selectedLogDate($request);
 
         // Get list of available dates
         $availableDates = $this->getAvailableLogDates($fileName);
@@ -218,7 +218,7 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         $fileName = $this->logPaths[$type] ?? $this->logPaths['activity'];
-        $selectedDate = $request->input('date');
+        $selectedDate = $this->selectedLogDate($request);
 
         // Use the file for the specified date if a date is provided
         if ($selectedDate) {
@@ -823,6 +823,18 @@ class AdminSystemLogsController extends AdminLoggedInController
         }
 
         return $dates;
+    }
+
+    /**
+     * Get the date selected for a log file, in the form log file names use
+     *
+     * Any other value counts as no date being selected.
+     */
+    protected function selectedLogDate(Request $request): ?string
+    {
+        $date = $request->query('date');
+
+        return is_string($date) && preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $date) === 1 ? $date : null;
     }
 
     /**
