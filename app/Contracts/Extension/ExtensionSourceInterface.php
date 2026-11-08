@@ -63,14 +63,14 @@ interface ExtensionSourceInterface
     /**
      * List available plugins from this source
      *
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch'}>
      */
     public function listPlugins(): array;
 
     /**
      * List available themes from this source
      *
-     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string}>
+     * @return array<int, array{slug: string, name: string, description: ?string, version: ?string, ref: string, ref_type: 'tag'|'branch'}>
      */
     public function listThemes(): array;
 

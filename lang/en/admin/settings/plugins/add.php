@@ -63,6 +63,8 @@ return [
         'source_not_configured' => 'Extension source is not configured.',
         'configure_link' => 'Configure in Security Settings',
         'download' => 'Download',
+        'development_branch_badge' => 'dev branch',
+        'development_branch_hint' => 'This extension publishes no release and no version tag. Downloading it takes the current state of its development branch, which changes without notice.',
         'download_confirm_title' => 'Download Plugin',
         'download_confirm_message' => 'Do you want to download plugin ":name"?',
         'downloading' => 'Downloading...',

@@ -169,7 +169,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             x-on:error="$el.src = '{{ asset('assets/images/theme-default.svg') }}'; $el.onerror = null;"
                                         >
-                                        <div class="absolute top-3 right-3">
+                                        {{-- Version badge, read at the ref the download will
+                                             install: the newest tag, or the default branch
+                                             when there is no tag. The second case is called
+                                             out, because that download moves (#958). --}}
+                                        <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-amber-500 text-white"
+                                                  x-show="theme.ref_type === 'branch'"
+                                                  :title="'{{ __('admin/settings/themes/add.online.development_branch_hint') }}'">
+                                                <i class="fas fa-code-branch mr-1"></i>{{ __('admin/settings/themes/add.online.development_branch_badge') }}
+                                            </span>
                                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium shadow-sm bg-indigo-500 text-white" x-show="theme.version">
                                                 <span x-text="'v' + theme.version"></span>
                                             </span>
