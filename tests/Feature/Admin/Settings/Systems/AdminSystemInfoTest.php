@@ -40,12 +40,23 @@ use Tests\TestCase;
 /**
  * The page is hidden in simple mode, so these tests switch to advanced mode:
  * in simple mode the request is redirected before the controller runs.
+ *
+ * The suite runs on whichever database the environment gives it: SQLite
+ * locally (phpunit.xml), MySQL in CI (test.yml). The first test holds on
+ * both; the second checks the SQLite version itself and runs only there.
  */
 class AdminSystemInfoTest extends TestCase
 {
     use RefreshDatabase;
 
     private Member $superAdmin;
+
+    /**
+     * What the three installed-flag sources held before this test.
+     *
+     * @var array<string, string|false|null>
+     */
+    private array $installedFlag;
 
     protected function setUp(): void
     {
@@ -57,8 +68,20 @@ class AdminSystemInfoTest extends TestCase
             EnsureEmailIsVerified::class,
         ]);
 
+        // The flag is read as `$_SERVER ?? $_ENV ?? env() ?? config('app.installed')`,
+        // so all three are set here and restored afterwards rather than reset,
+        // the way #927 settled it: otherwise whatever an earlier test left in
+        // $_SERVER decides this one, and this one decides the next.
+        $this->installedFlag = [
+            'getenv' => getenv('INSTALLED'),
+            'env' => array_key_exists('INSTALLED', $_ENV) ? (string) $_ENV['INSTALLED'] : null,
+            'server' => array_key_exists('INSTALLED', $_SERVER) ? (string) $_SERVER['INSTALLED'] : null,
+        ];
+
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+        config()->set('app.installed', true);
 
         View::addNamespace('admin', [resource_path('views/'.config('themes.admin_theme', 'admin'))]);
 
@@ -78,15 +101,42 @@ class AdminSystemInfoTest extends TestCase
 
     protected function tearDown(): void
     {
-        putenv('INSTALLED=false');
-        $_ENV['INSTALLED'] = 'false';
+        if ($this->installedFlag['getenv'] === false) {
+            putenv('INSTALLED');
+        } else {
+            putenv('INSTALLED='.$this->installedFlag['getenv']);
+        }
+
+        foreach ([['env', &$_ENV], ['server', &$_SERVER]] as [$key, &$bag]) {
+            if ($this->installedFlag[$key] === null) {
+                unset($bag['INSTALLED']);
+            } else {
+                $bag['INSTALLED'] = $this->installedFlag[$key];
+            }
+        }
+
         AdminModeHelper::clearCache();
         parent::tearDown();
     }
 
-    public function test_the_page_opens_on_sqlite_and_shows_its_version(): void
+    public function test_the_page_opens_and_shows_the_database_version(): void
     {
-        $this->assertSame('sqlite', DB::getDriverName());
+        $this->actingAs($this->superAdmin, 'member')
+            ->get(route('admin.settings.systems.info'))
+            ->assertOk()
+            ->assertViewHas('info', function (array $info): bool {
+                $version = $info['Database']['version'] ?? null;
+
+                return is_string($version) && $version !== '' && $version !== 'N/A';
+            });
+    }
+
+    public function test_on_sqlite_the_page_shows_the_sqlite_version(): void
+    {
+        if (DB::getDriverName() !== 'sqlite') {
+            $this->markTestSkipped('Checks the SQLite version, so it runs only on SQLite.');
+        }
+
         $sqliteVersion = DB::selectOne('select sqlite_version() as version')->version;
 
         $this->actingAs($this->superAdmin, 'member')
