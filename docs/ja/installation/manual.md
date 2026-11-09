@@ -22,7 +22,7 @@ sudo dnf install php83-php-fpm php83-php-mysqlnd php83-php-mbstring \
 
 ### MariaDB
 
-MariaDB 10.6以上をインストールして設定します：
+MariaDB 10.11以上をインストールして設定します：
 
 ```bash
 sudo apt install mariadb-server

@@ -10,7 +10,7 @@ draft: true
 
 - hPanel アクセス付きの Hostinger ホスティングアカウント
 - サーバーで PHP 8.3 以上が利用可能
-- MySQL 8.0 / MariaDB 10.6 以上
+- MySQL 8.4 / MariaDB 10.11 以上
 - hPanel 経由の SSH アクセス
 
 ## 手順

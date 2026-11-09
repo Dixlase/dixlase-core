@@ -10,7 +10,7 @@ Deploy Dixlase on AWS EC2 with Nginx and RDS.
 
 - An AWS account
 - An EC2 instance running Ubuntu 22.04+ or Amazon Linux 2023
-- An RDS instance (MySQL 8.0+ or MariaDB 10.6+)
+- An RDS instance (MySQL 8.4+ or MariaDB 10.11+)
 - SSH access to the EC2 instance
 - A domain name (recommended)
 

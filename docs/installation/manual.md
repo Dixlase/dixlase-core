@@ -22,7 +22,7 @@ sudo dnf install php83-php-fpm php83-php-mysqlnd php83-php-mbstring \
 
 ### MariaDB
 
-Install and configure MariaDB 10.6+:
+Install and configure MariaDB 10.11+:
 
 ```bash
 sudo apt install mariadb-server
