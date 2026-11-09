@@ -50,6 +50,31 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   registered, every plugin is shown. Declare the `visible-plugins` capability in `plugin.json`
   and tag the provider on `plugin.capabilities` (#992)
 
+## [0.2.13] — 2026-11-10
+
+### Supported versions
+- The supported database floors are now the oldest versions their vendors still support:
+  **MySQL 8.4+** (was 8.0+), **MariaDB 10.11+** (was 10.6+), and **SQLite 3.35+**, which the
+  requirements now list (#987, #989). MySQL 8.0 and MariaDB 10.6 reached end of life in 2026.
+  No code changed: a site on an older server keeps running, but it is outside the supported
+  range. The development setup guide no longer lists PostgreSQL, which is neither supported
+  nor tested
+
+### Fixed
+- The install wizard checks for PHP 8.3, the floor core requires, and says "PHP 8.3+" (#988,
+  #990). It used to check for 8.2, so on PHP 8.2 it reported the requirement as met
+- A model's revisions come back newest first even when several were saved within the same
+  second (#985, #986). On some databases the oldest of them could come first
+- The admin sidebar opens full by default from 1024px (`lg`) instead of 1280px, so labels are
+  no longer cut off at 1024–1279px (#969, #971). A rail chosen by hand is still remembered
+- The overview pages' card grids switch at the same widths: one column below 768px, then two,
+  three from 1024px and four from 1280px (#970, #972)
+
+### Internal
+- CI runs every PHP version on SQLite, MySQL 9.7 and MariaDB 12.3, PHP 8.3 on the supported
+  floors (MySQL 8.4, MariaDB 10.11), and, as a warning only, on MySQL 8.0 and MariaDB 11.8
+  (#981, #982). The Migration Test moves to MySQL 8.4
+
 ## [0.2.12] — 2026-11-10
 
 ### Fixed
