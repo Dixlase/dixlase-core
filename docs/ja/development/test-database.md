@@ -9,12 +9,23 @@
 | どこ | ドライバ | 決めているもの |
 | --- | --- | --- |
 | 手元の実行（`php artisan test`） | sqlite（インメモリ） | `phpunit.xml` の `<env name="DB_CONNECTION" value="sqlite" force="true"/>` |
-| CI の `Core Tests` と `Plugin Tests` | サービスコンテナの MySQL 8.0 | `.github/workflows/test.yml` のステップの `env:` と `DLS_TESTS_ALLOW_NON_SQLITE: 1` |
-| CI の `Migration Test` | サービスコンテナの MySQL 8.0 | スイートではなく `migrate` を走らせるジョブです |
+| CI の `Core Tests` と `Plugin Tests` | 組み合わせごとの DB: SQLite、またはサービスコンテナの MySQL / MariaDB（下を参照） | `.github/workflows/test.yml` の matrix とステップの `env:`。MySQL と MariaDB の分は `DLS_TESTS_ALLOW_NON_SQLITE: 1` も設定します |
+| CI の `Migration Test` | サービスコンテナの MySQL 8.4 | スイートではなく `migrate` を走らせるジョブです |
 
 **つまりテストは両方で通らなければなりません。** テストの中にドライバ依存のものを書かないでください。`PRAGMA defer_foreign_keys` を使ったテストは手元では毎回通り、CI でだけ落ちました（#515）。これがその代償の形です。
 
-## CI が MySQL を使う理由
+## CI が試す版（#981）
+
+| 対象 | DB | 失敗したとき |
+| --- | --- | --- |
+| 8.3 以上のすべての PHP | SQLite、MySQL 9.7、MariaDB 12.3（最新の LTS） | 止める |
+| PHP 8.3 だけ（サポートの下限） | MySQL 8.4、MariaDB 10.11 | 止める |
+| PHP 8.3 だけ（サポートの範囲外だが、よく使われている版） | MySQL 8.0、MariaDB 11.8 | 警告だけ |
+
+必須チェック `Core Tests (PHP 8.3)` は、PHP 8.3 / MySQL 9.7 の分です。開発元のサポートが終わったら、
+下限の分は [動作環境](../requirements.md) に書いた下限と一緒に動かします。
+
+## CI が MySQL と MariaDB を使う理由
 
 本番は MySQL / MariaDB で動いています。スイートをそれに対して走らせているのは CI のこのジョブだけなので、照合順序・strict モード・DDL での暗黙のコミット・遅延した外部キーの挙動といった 2 つのエンジンの違いは、サイトではなくここで現れます。
 
