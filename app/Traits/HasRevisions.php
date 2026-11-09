@@ -67,7 +67,12 @@ trait HasRevisions
     public function revisions(): HasMany
     {
         /** @var \App\Contracts\Revisionable $this */
-        return $this->hasMany($this->revisionModel(), $this->revisionForeignKey())
-            ->latest('created_at');
+        $relation = $this->hasMany($this->revisionModel(), $this->revisionForeignKey());
+
+        // Revisions saved within the same second share created_at, and the
+        // database may return ties in any order, so the key breaks them (#985).
+        return $relation
+            ->latest('created_at')
+            ->orderByDesc($relation->getRelated()->getKeyName());
     }
 }
