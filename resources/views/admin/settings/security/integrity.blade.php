@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     default => 'gray',
                 };
             @endphp
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.status') }}</p>
                     <x-ui-status-badge :variant="$coreBadgeVariant" :label="$coreManifestCheck['status_label']" />
@@ -219,7 +219,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         
         @if($latestAudit)
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
@@ -274,7 +274,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <h3 class="font-semibold text-red-800 dark:text-red-200 mb-3">{{ __('admin/settings/security/integrity.issues_found') }}</h3>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 text-sm">
                         @if($latestAudit->changed_files_count > 0)
                             <div class="flex items-center text-red-700 dark:text-red-300">
                                 <i class="fas fa-edit mr-2"></i>

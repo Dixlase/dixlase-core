@@ -54,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {{-- Two-factor authentication --}}
         <a href="{{ route('admin.profile.two-fa') }}" @click="visit('two_fa')"
            class="flex items-start gap-3 p-4 rounded-lg border transition"
