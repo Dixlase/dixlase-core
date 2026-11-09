@@ -162,6 +162,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\PluginIntegration\ReadonlyRouteProviderInterface` | Contract for extensions that declare which state-changing routes a site |
 | `App\Contracts\PluginIntegration\SeoMetaProviderInterface` | Interface to provide read/write access to SEO meta information per content |
 | `App\Contracts\PluginIntegration\TranslationUiProviderInterface` | Contract for plugins that provide a translation editor for content records |
+| `App\Contracts\PluginIntegration\VisiblePluginsProviderInterface` | Contract for extensions that restrict which plugins appear on the plugins |
 
 ### 1.4 Plugin Capability Contracts
 
