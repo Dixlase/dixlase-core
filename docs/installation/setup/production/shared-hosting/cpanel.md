@@ -10,7 +10,7 @@ Install Dixlase on any hosting provider that uses cPanel.
 
 - A hosting account with cPanel access
 - PHP 8.3 or higher available on the server
-- MySQL 8.0 / MariaDB 10.6 or higher
+- MySQL 8.4 / MariaDB 10.11 or higher
 - SSH access (recommended) or File Manager access
 
 ## Steps

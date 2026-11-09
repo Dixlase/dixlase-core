@@ -10,7 +10,7 @@ Install PHP, Composer, and a database server individually on your machine. This 
 
 - PHP 8.3 or higher
 - Composer
-- A database server (MariaDB, MySQL, PostgreSQL, or SQLite)
+- A database server: MariaDB 10.11+, MySQL 8.4+, or SQLite 3.35+
 - A web server (Nginx or Apache) or PHP's built-in server
 
 ## Steps

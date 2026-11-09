@@ -10,7 +10,7 @@ AWS EC2 と RDS で Dixlase をデプロイします。
 
 - AWS アカウント
 - Ubuntu 22.04+ または Amazon Linux 2023 を実行する EC2 インスタンス
-- RDS インスタンス（MySQL 8.0+ または MariaDB 10.6+）
+- RDS インスタンス（MySQL 8.4+ または MariaDB 10.11+）
 - EC2 インスタンスへの SSH アクセス
 - ドメイン名（推奨）
 
