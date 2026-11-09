@@ -47,7 +47,7 @@ const SIDEBAR_SWITCHING_CLASS = 'dls-sidebar-switching';
 const SIDEBAR_FADE_MS = 150;
 const SIDEBAR_RESIZE_MS = 300;
 const SIDEBAR_TABLET_MIN = 640;
-const SIDEBAR_DESKTOP_MIN = 1280;
+const SIDEBAR_DESKTOP_MIN = 1024;
 
 /**
  * Which band the viewport is in. The rail only exists in 'tablet' and
