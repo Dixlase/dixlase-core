@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
     <!-- セキュリティステータスカード -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
         <!-- パスワード -->
         @if($subPageVisible['password'] ?? true)
         <a href="{{ route('admin.settings.security.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
@@ -448,7 +448,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if(($subPageVisible['integrity'] ?? true) && $latestIntegrityAudit)
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/index.latest_integrity_scan') }}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.scan_date') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white">{{ $latestIntegrityAudit->created_at->format('Y-m-d H:i') }}</p>
