@@ -41,6 +41,24 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.12] — 2026-11-10
+
+### Fixed
+- System Information opens on a site that runs on SQLite (#955, #956). It answered 500 there,
+  because it asked the database for its version with a query SQLite does not have; it now uses
+  the driver's own version call, which every driver supports. On MariaDB the page now shows the
+  plain version number (`10.11.6`) without the `-MariaDB-…` suffix
+- The log screens and the log download accept only a `YYYY-MM-DD` date for the day to show
+  (#968). Any other value counts as no date being chosen, instead of making the page fail
+
+### Changed
+- A fresh install bundles the OnePage theme v0.5.6 (#979). A core update does not change a
+  theme that is already installed
+
+### Internal
+- The core and plugin test suites run on every PHP version from 8.3 up: 8.3, 8.4, 8.5, and
+  8.6 while it is a development build (#973, #974)
+
 ## [0.2.11] — 2026-11-09
 
 ### Fixed
