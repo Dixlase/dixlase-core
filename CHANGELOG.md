@@ -55,6 +55,12 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   banner and falls back to the legacy `dixlase.demo_expires_at` config while none is
   registered (#996)
 
+### Changed
+- The CSP-report "dev tool" exclusion no longer hardcodes specific Vite dev-server ports.
+  Core keeps generic patterns (including Vite's default `:5173`); operators add their own
+  via `CSP_DEV_TOOL_PATTERNS` (comma-separated), merged into `config('csp.dev_tool_patterns')`.
+  Report-noise filtering only — no effect on the emitted policy (#999)
+
 ## [0.2.13] — 2026-11-10
 
 ### Supported versions

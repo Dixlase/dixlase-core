@@ -129,4 +129,22 @@ return [
     |
     */
     'blocklist_cache_ttl' => env('CSP_BLOCKLIST_CACHE_TTL', 86400),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Extra dev-tool exclusion patterns
+    |--------------------------------------------------------------------------
+    |
+    | CSP violation reports whose blocked URI, source file or script sample
+    | contains one of these substrings are treated as dev-tool noise and not
+    | logged. Core ships generic patterns (Vite's default :5173, HMR, etc.);
+    | this adds operator-specific ones, typically a Vite dev-server port on a
+    | non-default port. Comma-separated, e.g. CSP_DEV_TOOL_PATTERNS=":44173".
+    | Report-noise filtering only — it does not affect the emitted policy.
+    |
+    */
+    'dev_tool_patterns' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CSP_DEV_TOOL_PATTERNS', ''))
+    ))),
 ];

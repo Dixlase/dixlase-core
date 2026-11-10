@@ -64,10 +64,8 @@ class CspReportController extends Controller
         '@react-refresh',
         'hot-update',
         ':5173',            // Default Vite port (sandbox / fresh setup)
-        ':41173',           // Dixlase dev environment Vite port
-        ':42173',           // Dixlase brand environment Vite port
-        ':43174',           // Dixlase docs environment Vite port
-        ':44173',           // Dixlase demo environment Vite port
+        // Operator-specific dev-server ports come from config('csp.dev_tool_patterns')
+        // (the CSP_DEV_TOOL_PATTERNS env var), merged in isDevToolViolation().
         'node_modules/.vite',
         'node_modules/vite',
         // Other development tools
@@ -127,13 +125,17 @@ class CspReportController extends Controller
             $report['script-sample'] ?? '',
         ];
 
+        // Core ships generic patterns; operators add their own dev-server ports
+        // or markers through config('csp.dev_tool_patterns').
+        $patterns = array_merge($this->devToolPatterns, (array) config('csp.dev_tool_patterns', []));
+
         foreach ($fieldsToCheck as $field) {
             if (empty($field)) {
                 continue;
             }
 
-            foreach ($this->devToolPatterns as $pattern) {
-                if (stripos($field, $pattern) !== false) {
+            foreach ($patterns as $pattern) {
+                if ($pattern !== '' && stripos($field, (string) $pattern) !== false) {
                     return true;
                 }
             }
