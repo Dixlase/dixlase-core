@@ -41,6 +41,15 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [Unreleased]
+
+### Added
+- Plugin API: `VisiblePluginsProviderInterface` lets an extension choose which plugins appear
+  on the plugins admin screen — for example a curated public demo that hides internal or
+  infrastructure plugins. Core aggregates the slugs from every registered provider; with none
+  registered, every plugin is shown. Declare the `visible-plugins` capability in `plugin.json`
+  and tag the provider on `plugin.capabilities` (#992)
+
 ## [0.2.13] — 2026-11-10
 
 ### Supported versions

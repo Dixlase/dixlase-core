@@ -270,6 +270,13 @@ class AppServiceProvider extends ServiceProvider
         // the guard falls back to its built-in list while none is registered.
         $this->app->singleton(\App\Services\Admin\ReadonlyRouteGuard::class);
 
+        // The visible-plugins resolver memoises its aggregated allowlist per
+        // request, so bind it as a singleton. Extensions contribute an allowlist
+        // via VisiblePluginsProviderInterface tagged on the capability tag above;
+        // with none registered it falls back to the legacy demo config, then to
+        // no restriction.
+        $this->app->singleton(\App\Services\Admin\VisiblePluginsResolver::class);
+
         // File-stored content published through the admin (#555). The
         // registry lists the models the scheduled scan and the dashboard look
         // at; core registers its front page, extensions their own models.
