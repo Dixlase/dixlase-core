@@ -112,7 +112,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         const testResult = document.getElementById('captcha-test-result')
         if (testResult) testResult.style.display = 'none'
         
-        // CAPTCHAウィジェットをクリア
+        // Clear the CAPTCHA widget
         if (typeof clearCaptchaWidget === 'function') {
             clearCaptchaWidget()
         }
@@ -124,7 +124,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <!-- Hidden field to track CAPTCHA authentication result -->
         <input type="hidden" id="captcha-authentication-result" name="captcha_authentication_result" value="{{ $captchaTestResult ? '1' : '0' }}">
         
-        <!-- CAPTCHA設定 -->
+        <!-- CAPTCHA settings -->
         <section>
             <h2>{{ __('admin/settings/security/captcha.title') }}</h2>
             <p>{{ __('admin/settings/security/captcha.description') }}</p>
@@ -253,12 +253,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </p>
                 </div>
 
-                <!-- CAPTCHA認証テストセクション -->
+                <!-- CAPTCHA verification test section -->
                 <div class="mt-6" x-show="captchaEnabled === '1'" id="captcha-test-section">
                     <div class="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                         <h3 class="font-semibold text-gray-900 dark:text-white mb-3">{{ __('admin/settings/security/captcha.live_validation') }}</h3>
                         
-                        <!-- 認証成功時の詳細表示 -->
+                        <!-- Details shown when verification succeeds -->
                         <div id="captcha-success-display" class="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-3" style="{{ $captchaTestResult ? '' : 'display: none;' }}">
                             <div class="flex items-center text-green-600 dark:text-green-400">
                                 <i class="fas fa-check-circle mr-2"></i>
@@ -273,7 +273,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @endif
                         </div>
                         
-                        <!-- 認証テスト必要通知 -->
+                        <!-- Notice that the verification test is required -->
                         <div id="auth-test-required-notice" class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-3" style="{{ $captchaTestResult ? 'display: none;' : '' }}">
                             <div class="flex items-center text-yellow-600 dark:text-yellow-400">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
@@ -287,7 +287,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <!-- CAPTCHA Widget Container -->
                         <div id="captcha-widget-container" class="mb-4"></div>
                         
-                        <!-- Test Result Message (動的に表示) -->
+                        <!-- Test result message (shown dynamically) -->
                         <div id="captcha-test-result" class="mb-4 p-3 border rounded-lg" style="display: none;">
                             <div class="flex items-center">
                                 <i id="captcha-test-icon" class="mr-3 text-xl"></i>
@@ -314,7 +314,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         </section>
 
-        <!-- フォームごとのCAPTCHA設定 -->
+        <!-- CAPTCHA settings per form -->
         <section class="mt-8">
             <h2>{{ __('admin/settings/security/captcha.form_settings_title') }}</h2>
             <p>{{ __('admin/settings/security/captcha.form_settings_description') }}</p>

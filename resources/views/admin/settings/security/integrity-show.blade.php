@@ -44,7 +44,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <h1 class="text-2xl font-bold mb-2">{{ __('admin/settings/security/integrity.scan_details') }}</h1>
     <p class="text-gray-600 dark:text-gray-400 mb-6">{{ $audit->created_at->format('Y-m-d H:i:s') }}</p>
 
-    <!-- スキャン概要 -->
+    <!-- Scan summary -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/integrity.scan_summary') }}</h2>
         
@@ -91,7 +91,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     </div>
 
-    <!-- 変更されたファイル -->
+    <!-- Changed files -->
     @if(!empty($resultPayload['changed']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-red-200 dark:border-red-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-red-800 dark:text-red-200 mb-4">
@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <!-- 追加されたファイル -->
+    <!-- Added files -->
     @if(!empty($resultPayload['added']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-yellow-200 dark:border-yellow-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4">
@@ -138,7 +138,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <!-- 削除されたファイル -->
+    <!-- Removed files -->
     @if(!empty($resultPayload['removed']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-orange-200 dark:border-orange-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-4">
@@ -155,7 +155,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <!-- 疑わしいファイル -->
+    <!-- Suspicious files -->
     @if(!empty($resultPayload['suspicious']))
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-purple-200 dark:border-purple-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-4">
@@ -174,7 +174,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <!-- 問題なしの場合 -->
+    <!-- When no issues were found -->
     @if(!$audit->hasIssues())
         <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
             <div class="flex items-center text-green-700 dark:text-green-300">
