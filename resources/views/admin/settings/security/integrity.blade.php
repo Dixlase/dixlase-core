@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        {{ $latestAudit->created_at->format($dateFormat) }}
+                        <x-ui-datetime :value="$latestAudit->created_at" :format="$dateFormat" />
                     </p>
                 </div>
                 <div>
@@ -359,7 +359,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @foreach($recentAudits as $audit)
                             <tr>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ $audit->created_at->format($dateFormat) }}
+                                    <x-ui-datetime :value="$audit->created_at" :format="$dateFormat" />
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if($audit->status === $integrityStatusOk)

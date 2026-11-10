@@ -268,7 +268,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 <div class="mt-2 text-sm text-green-600 dark:text-green-400">
                                     <i class="fas fa-clock mr-1"></i>
                                     {{ __('admin/settings/security/captcha.tested_at') }}: 
-                                    {{ \Carbon\Carbon::parse($captchaTestDetails['tested_at'])->format('Y-m-d H:i:s') }}
+                                    <x-ui-datetime :value="$captchaTestDetails['tested_at']" format="full" />
                                 </div>
                             @endif
                         </div>

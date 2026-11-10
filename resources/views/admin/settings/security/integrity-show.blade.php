@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </div>
 
     <h1 class="text-2xl font-bold mb-2">{{ __('admin/settings/security/integrity.scan_details') }}</h1>
-    <p class="text-gray-600 dark:text-gray-400 mb-6">{{ $audit->created_at->format('Y-m-d H:i:s') }}</p>
+    <p class="text-gray-600 dark:text-gray-400 mb-6"><x-ui-datetime :value="$audit->created_at" format="full" /></p>
 
     <!-- Scan summary -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">

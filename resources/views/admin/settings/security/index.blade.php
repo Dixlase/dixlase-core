@@ -451,7 +451,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.scan_date') }}</p>
-                <p class="font-medium text-gray-900 dark:text-white">{{ $latestIntegrityAudit->created_at->format('Y-m-d H:i') }}</p>
+                <p class="font-medium text-gray-900 dark:text-white"><x-ui-datetime :value="$latestIntegrityAudit->created_at" format="datetime" /></p>
             </div>
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.files_scanned') }}</p>
