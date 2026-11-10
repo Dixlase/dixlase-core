@@ -112,6 +112,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Content\PublishesFileContent` | Content that can be stored as files and is published through the admin |
 | `App\Contracts\Cookie\ConsentStateProviderInterface` | Read the current visitor's cookie consent state. |
 | `App\Contracts\CspPolicyProvider` | CSP Policy Provider Interface |
+| `App\Contracts\Demo\DemoExpiryProvider` | Demo Expiry Provider Contract |
 | `App\Contracts\Encryption\FileEncryptionServiceInterface` | File encryption service interface |
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
 | `App\Contracts\Extension\ProvidesSettingsDefaultsInterface` | Opt-in contract for extensions that own a `name` / `value` settings |

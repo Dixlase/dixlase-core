@@ -49,6 +49,11 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   infrastructure plugins. Core aggregates the slugs from every registered provider; with none
   registered, every plugin is shown. Declare the `visible-plugins` capability in `plugin.json`
   and tag the provider on `plugin.capabilities` (#992)
+- Plugin API: `App\Contracts\Demo\DemoExpiryProvider` lets an extension supply the demo
+  banner's sandbox expiry. Register it in the container
+  (`$this->app->singleton(DemoExpiryProvider::class, …)`); core asks it when rendering the
+  banner and falls back to the legacy `dixlase.demo_expires_at` config while none is
+  registered (#996)
 
 ## [0.2.13] — 2026-11-10
 
