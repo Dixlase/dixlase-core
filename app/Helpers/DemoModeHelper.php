@@ -37,7 +37,6 @@ namespace App\Helpers;
 
 use App\Contracts\Demo\DemoExpiryProvider;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -53,9 +52,7 @@ class DemoModeHelper
      * When the current demo sandbox expires, or null for no expiry line.
      *
      * A demo extension supplies this by registering a DemoExpiryProvider. With
-     * none registered, core falls back to the legacy `dixlase.demo_expires_at`
-     * config value (written at runtime by a demo extension), then to null. The
-     * config fallback is removed once extensions provide the expiry.
+     * none registered, core shows no expiry line.
      */
     public static function expiresAt(): ?CarbonInterface
     {
@@ -69,8 +66,6 @@ class DemoModeHelper
             }
         }
 
-        $legacy = config('dixlase.demo_expires_at');
-
-        return $legacy !== null ? Carbon::parse($legacy) : null;
+        return null;
     }
 }
