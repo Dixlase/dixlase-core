@@ -392,6 +392,44 @@ class CaptchaHelper
     }
 
     /**
+     * Verify a CAPTCHA token for an endpoint that is NOT one of core's named
+     * forms (for example a plugin's own POST endpoint), using the globally
+     * configured CAPTCHA and ignoring the per-form toggles.
+     *
+     * Unlike verify(), this does not consult shouldShowCaptcha($action): the
+     * caller is expected to gate on shouldShowCaptcha() (no form) itself and
+     * treat a disabled/misconfigured CAPTCHA as a refusal, never a bypass. This
+     * only checks the token and fails closed (returns false) on any error, so a
+     * non-form endpoint can protect itself without reaching past the @api
+     * boundary to the concrete CaptchaDriver.
+     *
+     * @param  \Illuminate\Http\Request  $request  Request carrying the CAPTCHA token
+     * @param  string  $action  CAPTCHA action name, matched by drivers that
+     *                          assess the token against the action it was
+     *                          rendered with (e.g. reCAPTCHA Enterprise)
+     * @return bool True only when the token verifies successfully.
+     */
+    public static function verifyGlobally(\Illuminate\Http\Request $request, string $action): bool
+    {
+        try {
+            $captchaDriverInstance = app(\App\Captcha\CaptchaDriver::class);
+
+            if ($captchaDriverInstance instanceof \App\Captcha\ExpectsAction) {
+                $captchaDriverInstance = $captchaDriverInstance->withExpectedAction($action);
+            }
+
+            return $captchaDriverInstance->verify($request)->isSuccess();
+        } catch (\Throwable $e) {
+            Log::error('Failed to verify standalone CAPTCHA', [
+                'action' => $action,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Check if CAPTCHA is enabled for the specified form (specify settings retrieval function)
      *
      * @param  string  $formName  Form name
