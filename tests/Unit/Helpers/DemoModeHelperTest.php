@@ -43,45 +43,26 @@ use RuntimeException;
 use Tests\TestCase;
 
 /**
- * DemoModeHelper::expiresAt() asks a registered DemoExpiryProvider, falls back
- * to the legacy `dixlase.demo_expires_at` config while none is registered, and
- * answers null (no expiry line) when neither supplies one.
+ * DemoModeHelper::expiresAt() asks a registered DemoExpiryProvider and answers
+ * null (no expiry line) when none is registered.
  */
 class DemoModeHelperTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        config(['dixlase.demo_expires_at' => null]);
-    }
-
-    public function test_returns_null_with_no_provider_and_no_config(): void
+    public function test_returns_null_with_no_provider(): void
     {
         $this->assertNull(DemoModeHelper::expiresAt());
     }
 
-    public function test_falls_back_to_the_legacy_config_when_no_provider_is_registered(): void
+    public function test_a_registered_provider_supplies_the_expiry(): void
     {
-        config(['dixlase.demo_expires_at' => '2026-11-10T21:00:00+00:00']);
-
-        $expires = DemoModeHelper::expiresAt();
-
-        $this->assertInstanceOf(CarbonInterface::class, $expires);
-        $this->assertSame('2026-11-10T21:00:00+00:00', $expires->toIso8601String());
-    }
-
-    public function test_a_registered_provider_is_used_and_the_config_is_ignored(): void
-    {
-        config(['dixlase.demo_expires_at' => '2026-01-01T00:00:00+00:00']);
         $providerValue = Carbon::parse('2026-12-31T23:59:00+00:00');
         $this->app->instance(DemoExpiryProvider::class, $this->makeProvider($providerValue));
 
         $this->assertSame('2026-12-31T23:59:00+00:00', DemoModeHelper::expiresAt()?->toIso8601String());
     }
 
-    public function test_a_provider_returning_null_hides_the_expiry_even_with_a_config(): void
+    public function test_a_provider_returning_null_hides_the_expiry(): void
     {
-        config(['dixlase.demo_expires_at' => '2026-01-01T00:00:00+00:00']);
         $this->app->instance(DemoExpiryProvider::class, $this->makeProvider(null));
 
         $this->assertNull(DemoModeHelper::expiresAt());

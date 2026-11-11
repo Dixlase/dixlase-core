@@ -50,6 +50,14 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   policy provider (`CspPolicyProvider` / `CspPolicyRegistry`). Non-demo installs are
   unaffected — the base `form-action` default (`'self'`) stays (#1003).
 
+### Removed
+- Demo: the transitional fallbacks to the legacy demo runtime config are removed now that
+  extensions supply these values through the seams. `VisiblePluginsResolver` no longer reads
+  `demo.visible_plugin_slugs`, `DemoModeHelper::expiresAt()` no longer reads
+  `dixlase.demo_expires_at`, and the `demo_expires_at` key is dropped from `config/dixlase.php`.
+  A core install with no demo extension is unaffected — both already answered null in that case
+  (#1005).
+
 ## [0.2.14] — 2026-11-11
 
 ### Added

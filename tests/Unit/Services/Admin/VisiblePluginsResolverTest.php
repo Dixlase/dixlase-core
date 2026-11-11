@@ -44,9 +44,8 @@ use Tests\TestCase;
 
 /**
  * VisiblePluginsResolver merges the plugin-slug allowlist from every registered
- * VisiblePluginsProviderInterface, falls back to the legacy
- * `demo.visible_plugin_slugs` config while none is registered, and answers null
- * (no restriction) when neither a provider nor the config imposes one.
+ * VisiblePluginsProviderInterface, and answers null (no restriction) when no
+ * provider imposes one.
  */
 class VisiblePluginsResolverTest extends TestCase
 {
@@ -66,8 +65,6 @@ class VisiblePluginsResolverTest extends TestCase
         $this->resolver = new PluginServiceResolver($this->permissionService);
         $this->app->instance(PluginServiceResolver::class, $this->resolver);
 
-        config(['demo.visible_plugin_slugs' => null]);
-
         $this->visible = new VisiblePluginsResolver($this->resolver);
     }
 
@@ -77,21 +74,13 @@ class VisiblePluginsResolverTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_no_restriction_when_no_provider_and_no_config(): void
+    public function test_no_restriction_when_no_provider_is_registered(): void
     {
         $this->assertNull($this->visible->allowedSlugs());
     }
 
-    public function test_falls_back_to_the_legacy_config_when_no_provider_is_registered(): void
+    public function test_a_registered_provider_sets_the_allowlist(): void
     {
-        config(['demo.visible_plugin_slugs' => ['dixlase-blog', 'dixlase-pages']]);
-
-        $this->assertSame(['dixlase-blog', 'dixlase-pages'], $this->visible->allowedSlugs());
-    }
-
-    public function test_a_registered_provider_replaces_the_legacy_config(): void
-    {
-        config(['demo.visible_plugin_slugs' => ['dixlase-legacy']]);
         $this->resolver->register(
             VisiblePluginsProviderInterface::class,
             $this->makeProvider('demo', ['dixlase-blog', 'dixlase-seo'])
@@ -100,15 +89,14 @@ class VisiblePluginsResolverTest extends TestCase
         $this->assertSame(['dixlase-blog', 'dixlase-seo'], $this->visible->allowedSlugs());
     }
 
-    public function test_a_provider_that_imposes_no_restriction_defers_to_the_config(): void
+    public function test_a_provider_that_imposes_no_restriction_yields_no_restriction(): void
     {
-        config(['demo.visible_plugin_slugs' => ['dixlase-blog']]);
         $this->resolver->register(
             VisiblePluginsProviderInterface::class,
             $this->makeProvider('passive', null)
         );
 
-        $this->assertSame(['dixlase-blog'], $this->visible->allowedSlugs());
+        $this->assertNull($this->visible->allowedSlugs());
     }
 
     public function test_multiple_providers_are_merged_and_deduped(): void
@@ -130,19 +118,17 @@ class VisiblePluginsResolverTest extends TestCase
 
     public function test_an_unavailable_provider_is_ignored(): void
     {
-        config(['demo.visible_plugin_slugs' => ['dixlase-blog']]);
         $this->resolver->register(
             VisiblePluginsProviderInterface::class,
             $this->makeProvider('disabled', ['dixlase-seo'], available: false)
         );
 
-        // The provider is skipped, so the legacy config still applies.
-        $this->assertSame(['dixlase-blog'], $this->visible->allowedSlugs());
+        // The provider is skipped, so nothing imposes a restriction.
+        $this->assertNull($this->visible->allowedSlugs());
     }
 
     public function test_an_empty_provider_list_hides_every_plugin(): void
     {
-        config(['demo.visible_plugin_slugs' => ['dixlase-blog']]);
         $this->resolver->register(
             VisiblePluginsProviderInterface::class,
             $this->makeProvider('strict', [])
@@ -155,7 +141,10 @@ class VisiblePluginsResolverTest extends TestCase
     {
         $this->assertNull($this->visible->allowedSlugs());
 
-        config(['demo.visible_plugin_slugs' => ['dixlase-blog']]);
+        $this->resolver->register(
+            VisiblePluginsProviderInterface::class,
+            $this->makeProvider('late', ['dixlase-blog'])
+        );
         $this->assertNull($this->visible->allowedSlugs(), 'the memoised answer is reused');
 
         $this->visible->forget();

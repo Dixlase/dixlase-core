@@ -43,11 +43,8 @@ use App\Services\Plugin\PluginServiceResolver;
  *
  * Extensions contribute an allowlist through VisiblePluginsProviderInterface
  * (tagged on the capability tag); the slugs from every registered provider are
- * merged. While no provider is registered, core falls back to the legacy
- * `demo.visible_plugin_slugs` config value (written at runtime by a demo
- * extension) so behaviour is unchanged during the transition; that fallback is
- * removed once extensions provide the list. A null result means no restriction
- * — every plugin is shown.
+ * merged. While no provider is registered, every plugin is shown. A null result
+ * means no restriction.
  *
  * @internal
  */
@@ -99,10 +96,7 @@ class VisiblePluginsResolver
         }
 
         if (! $anyProvider) {
-            // Legacy fallback, removed once extensions provide the list.
-            $legacy = config('demo.visible_plugin_slugs');
-
-            return $this->allowed = is_array($legacy) ? array_values($legacy) : null;
+            return $this->allowed = null;
         }
 
         return $this->allowed = array_values(array_unique($slugs));

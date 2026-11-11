@@ -49,9 +49,8 @@ use Carbon\CarbonInterface;
  * an implementation of this contract and core asks it when rendering the
  * banner.
  *
- * With nothing registered, core falls back to the legacy
- * `dixlase.demo_expires_at` config value, then to no expiry line, so a site
- * without such an extension behaves exactly as before.
+ * With nothing registered, core shows no expiry line, so a site without such an
+ * extension simply has no demo banner expiry.
  *
  * Register in a ServiceProvider:
  * ```php
