@@ -37,6 +37,7 @@ namespace App\Http\Controllers\Admin\Settings\Security;
 
 use App\DTO\FileIntegrity\ScanTargetDTO;
 use App\Helpers\AdminModeHelper;
+use App\Helpers\DateTimeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
@@ -76,7 +77,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
 
         // Format baseline date
         if (isset($baselineMeta['generated_at'])) {
-            $baselineMeta['formatted_generated_at'] = \Carbon\Carbon::parse($baselineMeta['generated_at'])->format($dateFormat);
+            $baselineMeta['formatted_generated_at'] = DateTimeHelper::display($baselineMeta['generated_at'], $dateFormat);
         }
 
         $this->viewParams['dateFormat'] = $dateFormat;
@@ -91,7 +92,7 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
         if ($coreManifestCheck !== null) {
             $coreManifestCheck['status_label'] = $monitor->coreStatusLabel((string) ($coreManifestCheck['status'] ?? ''));
             $coreManifestCheck['formatted_checked_at'] = isset($coreManifestCheck['checked_at'])
-                ? \Carbon\Carbon::parse($coreManifestCheck['checked_at'])->timezone(config('app.timezone'))->format($dateFormat)
+                ? DateTimeHelper::display($coreManifestCheck['checked_at'], $dateFormat)
                 : null;
         }
         $alerts = $monitor->alerts();

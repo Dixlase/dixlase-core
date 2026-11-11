@@ -140,7 +140,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
     @endif
 
-    <!-- ベースライン情報 -->
+    <!-- Baseline information -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.baseline_info') }}</h2>
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    <!-- 最新スキャン結果 -->
+    <!-- Latest scan result -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.latest_scan') }}</h2>
@@ -223,7 +223,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.scan_date') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">
-                        {{ $latestAudit->created_at->format($dateFormat) }}
+                        <x-ui-datetime :value="$latestAudit->created_at" :format="$dateFormat" />
                     </p>
                 </div>
                 <div>
@@ -269,7 +269,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            <!-- 問題の詳細 -->
+            <!-- Issue details -->
             @if($latestAudit->hasIssues())
                 <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                     <h3 class="font-semibold text-red-800 dark:text-red-200 mb-3">{{ __('admin/settings/security/integrity.issues_found') }}</h3>
@@ -321,7 +321,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    <!-- スキャン履歴 -->
+    <!-- Scan history -->
     @if($recentAudits->count() > 0)
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
@@ -359,7 +359,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         @foreach($recentAudits as $audit)
                             <tr>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    {{ $audit->created_at->format($dateFormat) }}
+                                    <x-ui-datetime :value="$audit->created_at" :format="$dateFormat" />
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @if($audit->status === $integrityStatusOk)
@@ -439,7 +439,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endsection
 
 @section('modals')
-    <!-- スキャン実行確認モーダル -->
+    <!-- Run scan confirmation modal -->
     <x-ui-modal
         id="scan-modal"
         :title="__('admin/settings/security/integrity.run_scan')"
@@ -455,7 +455,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
     </form>
 
-    <!-- ベースライン再生成確認モーダル -->
+    <!-- Regenerate baseline confirmation modal -->
     <x-ui-modal
         id="regenerate-baseline-modal"
         :title="__('admin/settings/security/integrity.regenerate_baseline')"
@@ -471,7 +471,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @csrf
     </form>
 
-    <!-- 一括削除確認モーダル -->
+    <!-- Bulk delete confirmation modal -->
     <div x-data="{ days: 30 }">
         <x-ui-modal
             id="bulk-delete-modal"
@@ -492,7 +492,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     @if($recentAudits->count() > 0)
         @foreach($recentAudits as $audit)
-            <!-- 個別削除確認モーダル -->
+            <!-- Single delete confirmation modal -->
             <x-ui-modal
                 id="delete-audit-{{ $audit->id }}-modal"
                 :title="__('admin/settings/security/integrity.delete_audit')"

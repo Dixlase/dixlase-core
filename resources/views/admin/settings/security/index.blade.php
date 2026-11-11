@@ -35,9 +35,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-    <!-- セキュリティステータスカード -->
+    <!-- Security status cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-        <!-- パスワード -->
+        <!-- Password -->
         @if($subPageVisible['password'] ?? true)
         <a href="{{ route('admin.settings.security.password') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- ログイン試行制限 -->
+        <!-- Login attempt limits -->
         @if($subPageVisible['login'] ?? true)
         <a href="{{ route('admin.settings.security.login') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -82,7 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
         @endif
 
-        <!-- 二段階認証設定 -->
+        <!-- Two-factor authentication settings -->
         @if($subPageVisible['two-fa'] ?? true)
         <a href="{{ route('admin.settings.security.two-fa') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -128,7 +128,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </a>
         @endif
 
-        <!-- セッション -->
+        <!-- Session -->
         @if($subPageVisible['session'] ?? true)
         <a href="{{ route('admin.settings.security.session') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -157,7 +157,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- 通知 -->
+        <!-- Notifications -->
         @if($subPageVisible['notifications'] ?? true)
         <a href="{{ route('admin.settings.security.notifications') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -253,7 +253,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- 拡張機能 -->
+        <!-- Extensions -->
         @if($subPageVisible['extensions'] ?? true)
         <a href="{{ route('admin.settings.security.extensions') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -282,7 +282,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- IPアクセス制御 -->
+        <!-- IP access control -->
         @if($subPageVisible['ip'] ?? true)
         <a href="{{ route('admin.settings.security.ip') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -327,7 +327,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- ファイル整合性 -->
+        <!-- File integrity -->
         @if($subPageVisible['integrity'] ?? true)
         <a href="{{ route('admin.settings.security.integrity') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -400,7 +400,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         @endif
 
-        <!-- 環境設定 -->
+        <!-- Environment settings -->
         @if($subPageVisible['environment'] ?? true)
         <a href="{{ route('admin.settings.security.environment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-3">
@@ -444,14 +444,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @endif
     </div>
 
-    <!-- 最新のファイル整合性スキャン結果 -->
+    <!-- Latest file integrity scan result -->
     @if(($subPageVisible['integrity'] ?? true) && $latestIntegrityAudit)
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ __('admin/settings/security/index.latest_integrity_scan') }}</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.scan_date') }}</p>
-                <p class="font-medium text-gray-900 dark:text-white">{{ $latestIntegrityAudit->created_at->format('Y-m-d H:i') }}</p>
+                <p class="font-medium text-gray-900 dark:text-white"><x-ui-datetime :value="$latestIntegrityAudit->created_at" format="datetime" /></p>
             </div>
             <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/index.files_scanned') }}</p>
