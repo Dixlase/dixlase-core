@@ -42,6 +42,31 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [0.2.14] — 2026-11-11
+
+### 追加
+- Plugin API: `VisiblePluginsProviderInterface` で、プラグインの管理画面に出すプラグインを拡張機能が
+  選べるようになりました。たとえば公開のデモで、内部用や基盤用のプラグインを隠せます。コアは登録された
+  すべての提供元のスラッグをまとめ、ひとつも登録がなければ、これまでどおりすべてのプラグインを表示します。
+  `plugin.json` で `visible-plugins` の capability を宣言し、提供元を `plugin.capabilities` に
+  タグ付けしてください（#992、#994）
+- Plugin API: `App\Contracts\Demo\DemoExpiryProvider` で、デモ帯に出すサンドボックスの有効期限を
+  拡張機能が渡せるようになりました。コンテナに登録してください
+  （`$this->app->singleton(DemoExpiryProvider::class, …)`）。コアはデモ帯を出すときにこれを尋ね、
+  登録がないあいだは従来の `dixlase.demo_expires_at` の設定を使います（#996、#997）
+
+### 変更
+- CSP レポートの「開発ツール」の除外で、特定の Vite の開発サーバーのポートを直書きするのをやめました。
+  コアは汎用のパターン（Vite の既定の `:5173` を含む）だけを持ち、運営者は `CSP_DEV_TOOL_PATTERNS`
+  （カンマ区切り）で自分のものを足せます。足したものは `config('csp.dev_tool_patterns')` に
+  まとめられます。レポートの雑音を除くためだけのもので、出力するポリシーには影響しません（#999、#1000）
+
+### 修正
+- リンクとして出す `<x-form-button>` が、ボタンのときと同じように、渡された属性を転送するように
+  なりました。リンクでも `xClick` が効きます（#941、#995）。`onclick` はこれまでどおり外します。
+  メンバー一覧と Pages のページ一覧の編集リンクは、すでに `title` を渡していたので、それが表示される
+  ようになります
+
 ## [0.2.13] — 2026-11-10
 
 ### サポートする版

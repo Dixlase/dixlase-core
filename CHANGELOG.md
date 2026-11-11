@@ -41,25 +41,30 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
-## [Unreleased]
+## [0.2.14] — 2026-11-11
 
 ### Added
 - Plugin API: `VisiblePluginsProviderInterface` lets an extension choose which plugins appear
   on the plugins admin screen — for example a curated public demo that hides internal or
   infrastructure plugins. Core aggregates the slugs from every registered provider; with none
   registered, every plugin is shown. Declare the `visible-plugins` capability in `plugin.json`
-  and tag the provider on `plugin.capabilities` (#992)
+  and tag the provider on `plugin.capabilities` (#992, #994)
 - Plugin API: `App\Contracts\Demo\DemoExpiryProvider` lets an extension supply the demo
   banner's sandbox expiry. Register it in the container
   (`$this->app->singleton(DemoExpiryProvider::class, …)`); core asks it when rendering the
   banner and falls back to the legacy `dixlase.demo_expires_at` config while none is
-  registered (#996)
+  registered (#996, #997)
 
 ### Changed
 - The CSP-report "dev tool" exclusion no longer hardcodes specific Vite dev-server ports.
   Core keeps generic patterns (including Vite's default `:5173`); operators add their own
   via `CSP_DEV_TOOL_PATTERNS` (comma-separated), merged into `config('csp.dev_tool_patterns')`.
-  Report-noise filtering only — no effect on the emitted policy (#999)
+  Report-noise filtering only — no effect on the emitted policy (#999, #1000)
+
+### Fixed
+- `<x-form-button>` rendered as a link now forwards the attributes it is given, as the button
+  form already did, and `xClick` works on it (#941, #995). `onclick` is still dropped. Edit
+  links that already passed a `title`, in the member list and the Pages page list, now show it
 
 ## [0.2.13] — 2026-11-10
 
