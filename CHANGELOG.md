@@ -41,6 +41,15 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [Unreleased]
+
+### Changed
+- CSP: the demo sign-up `form-action` and its `DEMO_BASE_DOMAIN` default (`demo.dixlase.org`)
+  are no longer hardcoded in `config/csp/domains.php`. A hosted demo now supplies its own
+  `form-action` (base domain and per-tenant subdomain wildcard) at runtime through a CSP
+  policy provider (`CspPolicyProvider` / `CspPolicyRegistry`). Non-demo installs are
+  unaffected — the base `form-action` default (`'self'`) stays (#1003).
+
 ## [0.2.14] — 2026-11-11
 
 ### Added
