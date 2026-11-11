@@ -42,6 +42,27 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [0.2.15] — 2026-11-12
+
+### 変更
+- CSP: デモ申込フォームの `form-action` と、その `DEMO_BASE_DOMAIN` の既定（`demo.dixlase.org`）を、
+  `config/csp/domains.php` に直書きするのをやめました。公開のデモは、自分の `form-action`
+  （ベースドメインとテナントのサブドメインのワイルドカード）を、CSP のポリシーの提供元
+  （`CspPolicyProvider` / `CspPolicyRegistry`）を通して実行時に渡します。デモでないサイトには
+  影響しません。基本の `form-action` の既定（`'self'`）はそのままです（#1003、#1004）
+
+### 削除
+- デモ: 拡張機能が継ぎ目を通して値を渡すようになったので、古いデモのランタイム設定を読む
+  移行用のフォールバックを外しました。`VisiblePluginsResolver` は `demo.visible_plugin_slugs` を、
+  `DemoModeHelper::expiresAt()` は `dixlase.demo_expires_at` を読まなくなり、`config/dixlase.php`
+  から `demo_expires_at` のキーを外しました。デモの拡張機能を入れていないサイトには影響しません。
+  どちらも、その場合はもともと null を返していました（#1005、#1006）
+
+### 修正
+- セキュリティの画面の時刻を、UTC ではなく表示用のタイムゾーンで出すようになりました。概要の
+  最新の整合性スキャン、スキャンの履歴、ベースラインとコアのマニフェストの時刻、スキャンの詳細、
+  CAPTCHA の最後のテストが対象です（#765、#998）
+
 ## [0.2.14] — 2026-11-11
 
 ### 追加
