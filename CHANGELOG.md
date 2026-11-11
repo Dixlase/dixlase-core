@@ -43,6 +43,14 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+### Added
+- Plugin API: `CaptchaHelper::verifyGlobally($request, $action)` verifies a CAPTCHA token for
+  an endpoint that is not one of core's named forms (e.g. a plugin's own POST endpoint), using
+  the globally configured CAPTCHA without the per-form gate, and returns a plain `bool` that
+  fails closed. The caller gates on the no-form `shouldShowCaptcha()` itself, so a non-form
+  endpoint can require a CAPTCHA through the `@api` surface instead of resolving the concrete
+  `CaptchaDriver` (#1010)
+
 ### Changed
 - CSP: the demo sign-up `form-action` and its `DEMO_BASE_DOMAIN` default (`demo.dixlase.org`)
   are no longer hardcoded in `config/csp/domains.php`. A hosted demo now supplies its own
