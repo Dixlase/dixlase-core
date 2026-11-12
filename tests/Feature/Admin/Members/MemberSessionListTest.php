@@ -42,8 +42,10 @@ use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Models\AuditLog;
 use App\Models\Member;
+use App\Models\SiteSetting;
 use App\Services\Member\MemberSessionService;
 use App\Session\GuardAwareDatabaseSessionHandler;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -259,6 +261,22 @@ class MemberSessionListTest extends TestCase
         DB::table('members_sessions')->where('id', 'fresh-session')->update(['started_at' => 1000]);
         $update->invoke($handler, 'fresh-session', ['payload' => 'x', 'last_activity' => time()]);
         $this->assertSame(1000, (int) DB::table('members_sessions')->where('id', 'fresh-session')->value('started_at'));
+    }
+
+    public function test_the_list_shows_session_times_in_the_display_timezone(): void
+    {
+        SiteSetting::setValue('display_timezone', 'Asia/Tokyo');
+        // The list drops sessions idle longer than the lifetime, so the last
+        // activity has to be recent rather than a fixed date.
+        $lastActivity = time() - 60;
+        $this->memberSession($this->staff, 'staff-a', self::CHROME_MAC, $lastActivity, CarbonImmutable::parse('2026-03-01 15:30:45', 'UTC')->getTimestamp());
+
+        $this->actingAs($this->owner, 'member')
+            ->get(route('admin.members.sessions'))
+            ->assertOk()
+            ->assertSee('2026-03-02 00:30', false)
+            ->assertSee('datetime="2026-03-01T15:30:45+00:00"', false)
+            ->assertSee('title="'.CarbonImmutable::createFromTimestamp($lastActivity, 'UTC')->setTimezone('Asia/Tokyo')->format('Y-m-d H:i:s').'"', false);
     }
 
     private function device(string $browser, string $os): string
