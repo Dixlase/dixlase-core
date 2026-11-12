@@ -83,9 +83,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($file->member)
                 <span class="media-card__uploader">{{ $file->member->display_name }}</span>
             @endif
-            <time class="media-card__date" datetime="{{ $file->created_at->format('Y-m-d') }}">
-                {{ $file->created_at->format('Y/m/d') }}
-            </time>
+            <x-ui-datetime :value="$file->created_at" format="Y/m/d" class="media-card__date" />
         </div>
 
         <div class="media-card__actions">

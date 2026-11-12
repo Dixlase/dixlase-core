@@ -42,6 +42,7 @@ use App\Enums\ExtensionSecurityPreset;
 use App\Enums\PluginEnableAction;
 use App\Enums\PluginHealthStatus;
 use App\Enums\PluginTrustLevel;
+use App\Helpers\DateTimeHelper;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\Plugin\PluginHealthScorer;
 use App\Services\SecuritySettingsRegistry;
@@ -106,7 +107,7 @@ class ExtensionCardPresenter
                 'summary' => $auditResult['csp_summary'] ?? [],
             ];
         }
-        $auditedAtFormatted = $auditedAt ? Carbon::parse($auditedAt)->format('Y/m/d H:i') : null;
+        $auditedAtFormatted = DateTimeHelper::display($auditedAt, 'Y/m/d H:i');
 
         $permissionModalId = 'permissionModal-theme-'.($isModel ? $theme->id : $directory);
 
@@ -285,7 +286,7 @@ class ExtensionCardPresenter
                 'summary' => $auditResult['csp_summary'] ?? [],
             ];
         }
-        $auditedAtFormatted = $auditedAt ? Carbon::parse($auditedAt)->format('Y/m/d H:i') : null;
+        $auditedAtFormatted = DateTimeHelper::display($auditedAt, 'Y/m/d H:i');
 
         $permissionModalId = 'permissionModal-'.($isModel ? $plugin->id : $directory);
 

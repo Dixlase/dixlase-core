@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @if(! empty($details['updated_at']))
                         <div class="flex items-start gap-3">
                             <dt class="w-24 shrink-0 text-gray-500 dark:text-gray-400">{{ __('admin/settings/plugins/show.last_updated') }}</dt>
-                            <dd class="text-gray-900 dark:text-gray-200 min-w-0">{{ \Carbon\Carbon::parse($details['updated_at'])->format('Y/m/d H:i') }}</dd>
+                            <dd class="text-gray-900 dark:text-gray-200 min-w-0"><x-ui-datetime :value="$details['updated_at']" format="Y/m/d H:i" /></dd>
                         </div>
                     @endif
                 </dl>

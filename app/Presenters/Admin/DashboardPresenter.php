@@ -50,6 +50,7 @@ use App\Enums\PluginHealthStatus;
 use App\Helpers\AdminHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
+use App\Helpers\DateTimeHelper;
 use App\Models\AuditLog;
 use App\Models\CoreVersionHistory;
 use App\Models\FileIntegrityAudit;
@@ -535,7 +536,7 @@ class DashboardPresenter
             ]),
             AuditLogIntegrityService::HEALTH_EMPTY => __('admin/dashboard.audit_integrity_empty'),
             default => $auditHealth['last_verified_at'] !== null
-                ? __('admin/dashboard.audit_integrity_ok', ['date' => $auditHealth['last_verified_at']->format('Y-m-d')])
+                ? __('admin/dashboard.audit_integrity_ok', ['date' => DateTimeHelper::display($auditHealth['last_verified_at'], 'date')])
                 : __('admin/dashboard.audit_integrity_ok_unverified'),
         };
         $items[] = [
