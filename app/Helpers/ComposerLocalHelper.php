@@ -350,6 +350,9 @@ class ComposerLocalHelper
         $extra = [];
 
         $home = getenv('HOME') ?: ($_SERVER['HOME'] ?? '');
+        // $_SERVER['HOME'] is the process environment, not request input, and the path is
+        // only tested for writability (#1017).
+        // nosemgrep: php.lang.security.injection.tainted-filename.tainted-filename
         if (! is_string($home) || $home === '' || ! is_writable($home)) {
             $composerHome = storage_path('app/private/composer-home');
             if (! is_dir($composerHome)) {
