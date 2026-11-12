@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
         <div>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.created_at') }}</dt>
-            <dd>{{ $record->created_at?->format('Y-m-d H:i:s') }}</dd>
+            <dd><x-ui-datetime :value="$record->created_at" format="full" /></dd>
         </div>
         <div>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.status') }}</dt>
@@ -81,7 +81,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
         <div>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.retention') }}</dt>
-            <dd>{{ $record->retention_until?->format('Y-m-d H:i:s') ?: __('admin/settings/systems/backup/index.detail.retention_none') }}</dd>
+            <dd><x-ui-datetime :value="$record->retention_until" format="full" :empty-label="__('admin/settings/systems/backup/index.detail.retention_none')" /></dd>
         </div>
         <div>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.duration') }}</dt>
