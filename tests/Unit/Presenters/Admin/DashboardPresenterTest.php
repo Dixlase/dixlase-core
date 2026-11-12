@@ -189,6 +189,46 @@ class DashboardPresenterTest extends TestCase
         $this->assertEquals('ok', $item['status']);
     }
 
+    /**
+     * Audit log integrity: an unkeyed chain that is otherwise fine is a
+     * recommendation to create the integrity key (#665).
+     */
+    public function test_site_health_audit_log_integrity_recommends_the_key_when_unkeyed(): void
+    {
+        $this->assertSame('recommendation', $this->auditIntegrityItemWithOneRow(null)['status']);
+    }
+
+    public function test_site_health_audit_log_integrity_ok_when_keyed(): void
+    {
+        $this->assertSame('ok', $this->auditIntegrityItemWithOneRow(\App\Services\Security\IntegrityKeyring::generate(2))['status']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function auditIntegrityItemWithOneRow(?string $integrityKey): array
+    {
+        config(['security.integrity_keys.current' => $integrityKey, 'security.integrity_keys.previous' => null]);
+        AuditLog::forgetChainLockAvailability();
+
+        $safeModeService = Mockery::mock(SafeModeService::class);
+        $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
+        $this->app->instance(SafeModeService::class, $safeModeService);
+
+        $twoFaStatusService = Mockery::mock(TwoFaStatusService::class);
+        $twoFaStatusService->shouldReceive('isTwoFaEnabled')->andReturn(false);
+        $twoFaStatusService->shouldReceive('getGlobalTwoFaMode')->andReturn(AuthenticationMode::UseProfileSetting->value);
+        $this->app->instance(TwoFaStatusService::class, $twoFaStatusService);
+
+        AuditLog::log(['category' => AuditLog::CATEGORY_SYSTEM, 'action' => 'today', 'context' => []]);
+        (new AuditLogIntegrityService())->forgetHealthCache();
+
+        $user = new Member();
+        $user->two_fa_mode = AuthenticationMode::Disabled->value;
+
+        return collect(DashboardPresenter::siteHealth($user))->firstWhere('key', 'audit_log_integrity');
+    }
+
     public function test_mail_status_warning_for_log_driver(): void
     {
         config(['mail.default' => 'log']);

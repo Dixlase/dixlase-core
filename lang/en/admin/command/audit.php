@@ -42,6 +42,7 @@ return [
         'chain_valid' => '✓ Hash chain is valid.',
         'chain_invalid' => '✗ Hash chain integrity issues detected!',
         'tampered_records' => 'Tampered records detected:',
+        'invalid_epochs' => ':count key epoch record(s) failed signature verification (altered, or their key version is not configured).',
         'and_more' => 'and :count more...',
         'verifying_seal' => 'Verifying daily seal for :date...',
         'seal_not_found' => 'No seal found for the specified date.',

@@ -149,11 +149,11 @@ return [
     | Audit Log Signing Key
     |--------------------------------------------------------------------------
     |
-    | HMAC key for the audit log daily seals. When empty the application key
-    | is used, so the seals detect tampering in the database but not by an
-    | attacker who can also read .env. Set a separate secret to widen that,
-    | but set it before the first seal exists: seals signed with a previous
-    | key fail verification (key rotation is not supported yet).
+    | HMAC key of the daily seals made before an integrity key was set (seal
+    | key version 1). When empty the application key is used. Keep it as it
+    | is for as long as those seals are kept: they verify only with it. New
+    | seals are signed with the integrity key instead (INTEGRITY_KEY, see
+    | config/security.php), which can be rotated.
     |
     */
 

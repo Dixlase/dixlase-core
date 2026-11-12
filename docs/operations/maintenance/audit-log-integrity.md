@@ -4,8 +4,8 @@
 
 Dixlase layers two mechanisms over the audit log to **detect** tampering. They do not prevent it, and they do not guarantee anything.
 
-- **A hash chain per row (unkeyed).** Each row carries a SHA-256 (`record_hash`) over 13 fields and the previous row's hash. No key is involved, so a row that is rewritten and re-hashed still forms a consistent chain on its own.
-- **A daily seal per day (keyed).** For each completed day, an HMAC-SHA256 is recorded over the day's count, first and last row and last row's hash. The key is `AUDIT_LOG_SECRET`, or `APP_KEY` when that is unset. A recomputed chain no longer matches the seal unless the key is known as well.
+- **A hash chain per row (keyed).** Each row carries an HMAC-SHA256 (`record_hash`) over 13 fields and the previous row's hash, keyed with the site's integrity key (`INTEGRITY_KEY`). A row that is rewritten cannot be re-hashed without the key. Rows written before the key was set carry a plain SHA-256 and keep verifying as such (see "Integrity Key").
+- **A daily seal per day (keyed).** For each completed day, an HMAC-SHA256 is recorded over the day's count, first and last row and last row's hash, keyed with the integrity key as well. Seals made before the key was set keep their old key (`AUDIT_LOG_SECRET`, or `APP_KEY` when that is unset).
 
 Both live in the same database as the audit log. A row is linked into the chain in the same transaction that writes it (see "When a Row Is Linked"). Seals are created automatically every day and verification runs daily on the schedule; the full pass that re-hashes every row is run by hand. See "Security Considerations" for what this can and cannot prove.
 
@@ -36,16 +36,89 @@ waiting has not taken an id yet.
 The alternatives were a shorter batch interval, which keeps a window, and linking only
 high-severity rows on write, which leaves two paths that must agree.
 
-**The per-row hash is not keyed, for now.** Keying it means an HMAC with a dedicated
-chain secret, a key version on each row and verification that accepts previous keys.
-That rotation design does not exist yet for the seal either, and keying without it
-would make the first key change look like tampering. A consistent rewrite of the chain
-is detected by the keyed daily seal, for completed days. Keying the chain is tracked
-in #665.
+**The per-row hash is keyed, with rotation (#665).** #629 left it unkeyed because
+keying without rotation would make the first key change look like tampering. Rows and
+seals now record the key version that signed them, and verification accepts every
+version still configured, so a key can be replaced without past rows or seals failing.
 
 **What this claims.** The chain and the seal detect changes made **in the database**.
 Code running inside the application process can write rows through the same path and
 reads the same key, so a full compromise of the application is out of scope.
+
+## Integrity Key
+
+One secret in `.env` keys the chain and the seals:
+
+```dotenv
+INTEGRITY_KEY=3:base64:...            # the current key: signs new rows and seals
+INTEGRITY_PREVIOUS_KEYS=2:base64:...  # earlier keys, comma separated: verify only
+```
+
+Each entry is `<version>:base64:<key>`, with a version of 2 or more and at least 32
+bytes of key. The chain, the seals and the key epochs (below) each use their own key,
+derived from that secret with HKDF.
+
+It is kept in `.env` because that is outside the database, which is what the chain
+guards, and outside the backup archive. Restoring a backup on another server therefore
+needs the key copied over by hand; without it the restored rows and seals fail with
+`key_unavailable`.
+
+### Creating the key
+
+The installer creates it for a new site. An existing site keeps working as before
+until its operator runs:
+
+```bash
+php artisan dls:integrity:key          # writes INTEGRITY_KEY=2:... to .env
+php artisan dls:integrity:key --show   # prints the line instead, for a read-only .env
+```
+
+Nothing writes `.env` during an update. Until the key exists, Site Health recommends
+creating it, the chain stays unkeyed and the seals keep the old key.
+
+### Rotating the key
+
+```bash
+php artisan dls:integrity:key --rotate
+```
+
+This writes a new key with the next version and moves the old one to
+`INTEGRITY_PREVIOUS_KEYS`. Rows and seals written from then on use the new key; those
+written before still verify with the old one. Keep an old key for as long as anything it
+signed is kept: removing it makes those rows and seals fail with `key_unavailable`.
+
+Creating and rotating the key are recorded in the audit log
+(`integrity_key_created`, `integrity_key_rotated`). After either:
+
+- run `php artisan config:cache` when the configuration is cached
+- restart long-running processes (queue workers, the scheduler) so they read the new
+  key. Until they do, they keep signing with the old one, which still verifies.
+
+### Versions
+
+| Version | Rows | Seals |
+|---------|------|-------|
+| 0 | Plain SHA-256, written before keying | — |
+| 1 | — | `AUDIT_LOG_SECRET`, or `APP_KEY` when unset (every seal made before keying) |
+| 2 and up | HMAC-SHA256 with that version's key | HMAC-SHA256 with that version's key |
+
+Version 1 seals keep verifying only while `AUDIT_LOG_SECRET` (or, when it is unset,
+`APP_KEY`) stays as it is.
+
+### Where keying starts
+
+A row of version 0 verifies with no key at all, so accepting one anywhere would let a
+rewrite turn keyed rows back into unkeyed ones. The first row each key version hashes is
+therefore recorded in `audit_log_key_epochs`, signed with that version's key. From the
+earliest valid epoch on:
+
+- an unkeyed row fails with `unkeyed_after_keying`
+- a keyed row needs a valid epoch at or before it, or fails with `key_epoch_missing`
+- an epoch whose signature does not verify fails the verification as a whole
+
+Deleting the epochs together with rewriting every keyed row back to unkeyed is not
+caught by the chain alone. The keyed daily seals still pin each completed day's last
+row, so that rewrite is limited to the rows not sealed yet.
 
 ## How It Works
 
@@ -64,7 +137,8 @@ The following fields are added to each log record:
 | `record_hash` | SHA-256 hash of this record (64 characters) |
 | `previous_hash` | Hash of the previous record ('genesis' for the first) |
 | `chain_sequence` | Sequential number within the chain |
-| `hash_algorithm` | Algorithm used (sha256) |
+| `hash_algorithm` | Algorithm used (`hmac-sha256`, or `sha256` for an unkeyed row) |
+| `hash_key_version` | Integrity key version that hashed the row (0 = unkeyed) |
 | `verification_status` | Verification result (valid/invalid/null) |
 | `last_verified_at` | Last verification timestamp |
 
@@ -87,8 +161,15 @@ $data = implode('|', [
     $previousHash,  // Hash of the previous record
 ]);
 
+// Keyed row (hash_key_version 2 and up)
+$hash = hash_hmac('sha256', $data, $chainKey);
+
+// Row written before keying (hash_key_version 0)
 $hash = hash('sha256', $data);
 ```
+
+The key version itself is not part of `$data`: changing it only selects a key the hash
+does not match.
 
 ## Daily Seal
 
@@ -104,7 +185,7 @@ Each completed day is pinned by a daily seal. Deleting or inserting a row, or re
 | `log_count` | Number of log entries |
 | `final_hash` | Hash of the final log entry |
 | `daily_signature` | The seal's HMAC-SHA256 |
-| `key_version` | Seal key version |
+| `key_version` | Seal key version (see "Versions") |
 
 ## Commands
 
@@ -273,6 +354,7 @@ item derived from `AuditLogIntegrityService::getHealth()`:
 | Tampered | Critical | A record or a daily seal failed verification |
 | Chain stalled | Warning | Entries have waited more than 2 hours to be chained — linking on write failed for them and the hourly `audit:integrity build` is not running |
 | Seal overdue | Warning | The most recent completed day with entries has no seal after 04:30 the next day — the daily `audit:integrity seal` is not running |
+| Not keyed | Recommended | No integrity key is configured, so the chain is unkeyed (shown only when nothing worse applies). Run `php artisan dls:integrity:key` |
 | Verification stale | Recommended | An entry chained more than 30 days ago has never been verified, or the oldest verification is older than 30 days (an incremental pass does not refresh old rows — run `verify --all`). Entries chained since the last pass are expected to be unverified and do not count |
 | OK | OK | Chain and seals are up to date (day one shows OK: seals only exist for completed days) |
 
@@ -318,7 +400,7 @@ periodically (see "Verifying Integrity").
 
 ### Security Considerations
 
-1. **Protect the seal key**: Seals are keyed with `AUDIT_LOG_SECRET` (`config('app.audit_log_secret')`), falling back to `APP_KEY` when unset. With the default, the chain and the seals detect tampering **in the database**, but an attacker who can also read `.env` can recompute both. Setting a dedicated `AUDIT_LOG_SECRET` — ideally not stored on the same host — widens what the seals prove. Choose it before the first seal is created and never change it afterwards (or rotate `APP_KEY` while it is unset): seals made with a previous key fail verification and Site Health turns critical, because key rotation (`key_version`) is not implemented yet
+1. **Protect the integrity key**: The chain and the seals detect tampering **in the database**. An attacker who can also read `.env` can recompute both, and so can code running inside the application. Rotate the key when you suspect it has leaked (see "Rotating the key"), and keep the previous keys for as long as what they signed is kept. Seals made before keying stay on `AUDIT_LOG_SECRET` (or `APP_KEY`); do not change it while they are kept
 2. **Regular verification**: Run `audit:integrity verify` on a documented cadence and `verify --all` periodically (see "Verifying Integrity")
 3. **Alert configuration**: Configure the notification e-mail and the mail server so that a failed daily verification is mailed as well as shown as a banner
 4. **Backups**: Include the daily seal table in your backups
@@ -328,8 +410,9 @@ periodically (see "Verifying Integrity").
 
 ### Hash Algorithms
 
-- **Record hash**: SHA-256
+- **Record hash**: HMAC-SHA256 with the chain key (SHA-256 for a row written before keying)
 - **Daily seal**: HMAC-SHA256
+- **Key derivation**: HKDF-SHA256 from `INTEGRITY_KEY`, one key per use
 
 ### Verification Error Codes
 
@@ -340,6 +423,9 @@ periodically (see "Verifying Integrity").
 | `sequence_gap` | Gap in the sequence numbers |
 | `invalid_genesis` | Invalid first record |
 | `redaction_unrecorded` | The record is marked redacted, but no recorded erasure explains it |
+| `key_unavailable` | The record's key version is not configured (its key was removed from `.env`) |
+| `unkeyed_after_keying` | An unkeyed record after the point where keying started |
+| `key_epoch_missing` | A keyed record with no valid key epoch at or before it |
 
 ### Redacted Records (Personal-Data Erasure)
 
@@ -384,7 +470,6 @@ erasure changed them.
 
 - ON/OFF and frequency settings for the scheduled verification (verification only — generation stays always-on)
 - "Verify now" button in the admin panel (queued; a synchronous chain pass grows with the row count)
-- A keyed per-row chain (HMAC with a dedicated secret and key rotation)
 - Real-time tampering detection
 - External timestamping service integration
 - Log export/import with signatures

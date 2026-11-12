@@ -55,10 +55,11 @@ class EnvFile
      * Set or add entries, leaving everything else in the file untouched.
      *
      * @param  array<string, mixed>  $values
+     * @param  string|null  $envPath  The file to write (default: the installation's .env)
      */
-    public static function update(array $values): void
+    public static function update(array $values, ?string $envPath = null): void
     {
-        $envPath = base_path('.env');
+        $envPath ??= base_path('.env');
 
         // Copy from .env.example if .env does not exist
         if (! File::exists($envPath)) {
