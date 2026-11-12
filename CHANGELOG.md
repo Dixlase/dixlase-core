@@ -41,6 +41,17 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [Unreleased]
+
+### Added
+- Plugin API: `FrontPageProviderInterface` lets an extension choose what the site front page
+  (`/`) displays. A new per-site `front_page_display` setting takes `theme` (the default theme
+  front page), `forbidden` (a 403), or a registered provider's slug; when it names a provider,
+  core serves that provider's `renderFrontPage()` for `/`, falling back to the theme front page
+  while it is unavailable. Declare the `front-page` capability in `plugin.json` and tag the
+  provider on `plugin.capabilities`. This replaces taking over the `/` route and calling the
+  non-`@api` front controller directly (#1012)
+
 ## [0.2.16] — 2026-11-13
 
 ### Security
