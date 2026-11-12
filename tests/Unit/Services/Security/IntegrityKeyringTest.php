@@ -56,7 +56,7 @@ class IntegrityKeyringTest extends TestCase
             'security.integrity_keys.previous' => $previous,
         ]);
 
-        return new IntegrityKeyring;
+        return new IntegrityKeyring();
     }
 
     public function test_nothing_is_configured_by_default(): void
@@ -130,18 +130,18 @@ class IntegrityKeyringTest extends TestCase
         $this->assertSame(3, $keyring->currentVersion());
         $this->assertCount(1, $keyring->problems());
 
-        $expected = (new IntegrityKeyring)->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, 3);
+        $expected = (new IntegrityKeyring())->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, 3);
         $this->configure($current);
-        $this->assertSame($expected, (new IntegrityKeyring)->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, 3));
+        $this->assertSame($expected, (new IntegrityKeyring())->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, 3));
     }
 
     public function test_the_legacy_seal_key_is_the_audit_log_secret_or_the_application_key(): void
     {
         config(['app.audit_log_secret' => 'secret', 'app.key' => 'app-key']);
-        $this->assertSame('secret', (new IntegrityKeyring)->legacySealKey());
+        $this->assertSame('secret', (new IntegrityKeyring())->legacySealKey());
 
         config(['app.audit_log_secret' => null]);
-        $this->assertSame('app-key', (new IntegrityKeyring)->legacySealKey());
+        $this->assertSame('app-key', (new IntegrityKeyring())->legacySealKey());
     }
 
     public function test_a_change_of_configuration_is_picked_up_by_the_same_instance(): void
