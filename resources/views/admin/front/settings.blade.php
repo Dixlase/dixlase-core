@@ -57,6 +57,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
             <x-content.scheduler-notice :running="$schedulerRunning" />
         </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-6">
+            <x-form-label for="front_page_display" :text="__('admin/front.settings.front_page_display_label')" />
+            <x-form-select
+                id="front_page_display"
+                name="front_page_display"
+                :options="$frontPageDisplayOptions"
+                :value="old('front_page_display', $frontPageDisplay)"
+            />
+            <x-form-help-text :text="__('admin/front.settings.front_page_display_help')" />
+            <x-form-error name="front_page_display" />
+        </div>
     </form>
 @endsection
 

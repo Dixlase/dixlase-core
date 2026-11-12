@@ -299,6 +299,17 @@ class CoreSettingDefinitions
             type: 'string',
         ));
 
+        // What the site front page (`/`) displays: 'theme' (the theme front
+        // page, default), 'forbidden' (a 403), or a registered FrontPageProvider
+        // slug. Read by FrontPageDisplayResolver; per-site so each site chooses
+        // its own front page.
+        $registry->register(new SettingDefinition(
+            name: 'front_page_display',
+            scope: SettingScope::PerSite,
+            default: 'theme',
+            type: 'string',
+        ));
+
         // ------------------------------------------------------------------
         // Overridable (global default + per-site override)
         // ------------------------------------------------------------------

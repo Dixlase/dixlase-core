@@ -51,6 +51,11 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   while it is unavailable. Declare the `front-page` capability in `plugin.json` and tag the
   provider on `plugin.capabilities`. This replaces taking over the `/` route and calling the
   non-`@api` front controller directly (#1012)
+- Admin: the Front settings page has a **Front page display** control to choose what the site
+  front page (`/`) shows — the theme front page (the default), hidden (403), or a page from an
+  installed plugin that registers a front-page provider. The choice is the per-site
+  `front_page_display` setting, saved through an audited settings change and validated against
+  the available options (#1027)
 
 ## [0.2.16] — 2026-11-13
 
