@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <div>
                     <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/front.index.last_updated') }}</dt>
-                    <dd class="mt-1 font-medium text-gray-900 dark:text-white">{{ $frontPage->updated_at->format('Y-m-d H:i') }}</dd>
+                    <dd class="mt-1 font-medium text-gray-900 dark:text-white"><x-ui-datetime :value="$frontPage->updated_at" format="datetime" /></dd>
                 </div>
             </dl>
 

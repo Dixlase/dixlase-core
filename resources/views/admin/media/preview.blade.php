@@ -56,7 +56,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @if($media->formatted_dimensions)
                 <p><strong>{{ __('common.dimensions') }}</strong> {{ $media->formatted_dimensions }}</p>
             @endif
-            <p><strong>{{ __('common.upload_date') }}</strong> {{ $media->created_at->format('Y-m-d H:i:s') }}</p>
+            <p><strong>{{ __('common.upload_date') }}</strong> <x-ui-datetime :value="$media->created_at" format="full" /></p>
             <p><strong>{{ __('common.uploaded_by') }}</strong> {{ $media->member->display_name ?? __('admin/media/preview.unknown') }}</p>
             
             <!-- Media information edit form -->
