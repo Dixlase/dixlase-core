@@ -51,19 +51,38 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   while it is unavailable. Declare the `front-page` capability in `plugin.json` and tag the
   provider on `plugin.capabilities`. This replaces taking over the `/` route and calling the
   non-`@api` front controller directly (#1012)
+
+## [0.2.16] — 2026-11-13
+
+### Security
+- `grpc/grpc` moves from 1.82.0 to 1.85.0 (#1021). Releases below 1.84.1 bundle a CA store that
+  trusts compromised eMudhra intermediate CAs
+  ([GHSA-gvrc-7wf9-p7hg](https://github.com/grpc/grpc/security/advisories/GHSA-gvrc-7wf9-p7hg)).
+  It comes in through `google/gax`; nothing else in the lock moves
+
+### Fixed
+- The backup screens show their times in the display timezone instead of UTC: the created time
+  in the list and the detail, the retention date, and the restore history (#765, #1008). A
+  backup kept with no time limit still says so
+- The active session list, on the sessions page and on the member edit page, shows the start
+  time in the display timezone, and the exact time behind "last active" too (#765, #1018)
+
+## [0.2.15] — 2026-11-12
+
+### Added
 - Plugin API: `CaptchaHelper::verifyGlobally($request, $action)` verifies a CAPTCHA token for
   an endpoint that is not one of core's named forms (e.g. a plugin's own POST endpoint), using
   the globally configured CAPTCHA without the per-form gate, and returns a plain `bool` that
   fails closed. The caller gates on the no-form `shouldShowCaptcha()` itself, so a non-form
   endpoint can require a CAPTCHA through the `@api` surface instead of resolving the concrete
-  `CaptchaDriver` (#1010)
+  `CaptchaDriver` (#1010, #1011)
 
 ### Changed
 - CSP: the demo sign-up `form-action` and its `DEMO_BASE_DOMAIN` default (`demo.dixlase.org`)
   are no longer hardcoded in `config/csp/domains.php`. A hosted demo now supplies its own
   `form-action` (base domain and per-tenant subdomain wildcard) at runtime through a CSP
   policy provider (`CspPolicyProvider` / `CspPolicyRegistry`). Non-demo installs are
-  unaffected — the base `form-action` default (`'self'`) stays (#1003).
+  unaffected — the base `form-action` default (`'self'`) stays (#1003, #1004).
 
 ### Removed
 - Demo: the transitional fallbacks to the legacy demo runtime config are removed now that
@@ -71,7 +90,12 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   `demo.visible_plugin_slugs`, `DemoModeHelper::expiresAt()` no longer reads
   `dixlase.demo_expires_at`, and the `demo_expires_at` key is dropped from `config/dixlase.php`.
   A core install with no demo extension is unaffected — both already answered null in that case
-  (#1005).
+  (#1005, #1006).
+
+### Fixed
+- The security screens show their times in the display timezone instead of UTC: the latest
+  integrity scan on the overview, the scan history, the baseline and core-manifest times, the
+  scan detail and the CAPTCHA's last test (#765, #998)
 
 ## [0.2.14] — 2026-11-11
 

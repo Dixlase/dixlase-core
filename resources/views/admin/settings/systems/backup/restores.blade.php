@@ -59,7 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     @foreach($records as $record)
                         <tr class="border-b border-gray-200 dark:border-gray-700">
                             <td class="px-4 py-2 whitespace-nowrap">
-                                {{ $record->restored_at?->format('Y-m-d H:i:s') }}
+                                <x-ui-datetime :value="$record->restored_at" format="full" />
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap">
                                 @if($record->backupRecord)
