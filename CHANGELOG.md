@@ -41,6 +41,21 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [0.2.16] — 2026-11-13
+
+### Security
+- `grpc/grpc` moves from 1.82.0 to 1.85.0 (#1021). Releases below 1.84.1 bundle a CA store that
+  trusts compromised eMudhra intermediate CAs
+  ([GHSA-gvrc-7wf9-p7hg](https://github.com/grpc/grpc/security/advisories/GHSA-gvrc-7wf9-p7hg)).
+  It comes in through `google/gax`; nothing else in the lock moves
+
+### Fixed
+- The backup screens show their times in the display timezone instead of UTC: the created time
+  in the list and the detail, the retention date, and the restore history (#765, #1008). A
+  backup kept with no time limit still says so
+- The active session list, on the sessions page and on the member edit page, shows the start
+  time in the display timezone, and the exact time behind "last active" too (#765, #1018)
+
 ## [0.2.15] — 2026-11-12
 
 ### Added
