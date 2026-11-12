@@ -32,6 +32,7 @@
 namespace Tests\Feature\Admin\Front;
 
 use App\Actions\Content\RecordFileContentChangeAction;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Contracts\TranslationResolver;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentPublishMode;
@@ -46,6 +47,7 @@ use App\Models\Member;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\FileContentRegistry;
+use App\Services\Front\FrontPageDisplayResolver;
 use App\Services\FrontPageContentService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -497,23 +499,57 @@ class FrontFileContentPublishTest extends TestCase
     public function test_the_publish_mode_setting_is_saved_and_audited(): void
     {
         $this->actingAs($this->admin, 'member')
-            ->post(route('admin.front.settings.store'), ['publish_mode' => 'file_save'])
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'file_save', 'front_page_display' => 'theme'])
             ->assertRedirect(route('admin.front.settings'))
             ->assertSessionHas('success');
 
         $this->assertSame('file_save', FrontSetting::getValue(FrontPage::PUBLISH_MODE_SETTING));
 
-        $log = AuditLog::where('action', AuditLog::ACTION_SETTINGS_UPDATED)
-            ->where('target_label', 'front.settings')
-            ->sole();
+        $log = $this->frontSettingsAuditFor(FrontPage::PUBLISH_MODE_SETTING);
+        $this->assertNotNull($log);
         $this->assertSame([FrontPage::PUBLISH_MODE_SETTING], $log->context['changed_keys']);
     }
 
     public function test_the_publish_mode_setting_rejects_an_unknown_value(): void
     {
         $this->actingAs($this->admin, 'member')
-            ->post(route('admin.front.settings.store'), ['publish_mode' => 'anything'])
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'anything', 'front_page_display' => 'theme'])
             ->assertSessionHasErrors('publish_mode');
+    }
+
+    public function test_the_front_page_display_setting_is_saved_and_audited(): void
+    {
+        $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'admin', 'front_page_display' => 'forbidden'])
+            ->assertRedirect(route('admin.front.settings'))
+            ->assertSessionHas('success');
+
+        $this->assertSame('forbidden', app(SiteSettingRepositoryInterface::class)
+            ->get(FrontPageDisplayResolver::SETTING_KEY));
+
+        $log = $this->frontSettingsAuditFor(FrontPageDisplayResolver::SETTING_KEY);
+        $this->assertNotNull($log);
+        $this->assertSame([FrontPageDisplayResolver::SETTING_KEY], $log->context['changed_keys']);
+    }
+
+    /**
+     * The front.settings audit-log entry whose changed keys include $key, or null.
+     * The settings form writes publish_mode and front_page_display through
+     * separate audited changes, so a save can record more than one entry.
+     */
+    private function frontSettingsAuditFor(string $key): ?AuditLog
+    {
+        return AuditLog::where('action', AuditLog::ACTION_SETTINGS_UPDATED)
+            ->where('target_label', 'front.settings')
+            ->get()
+            ->first(fn (AuditLog $log) => in_array($key, $log->context['changed_keys'] ?? [], true));
+    }
+
+    public function test_the_front_page_display_setting_rejects_an_unknown_value(): void
+    {
+        $this->actingAs($this->admin, 'member')
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'admin', 'front_page_display' => 'no-such-provider'])
+            ->assertSessionHasErrors('front_page_display');
     }
 
     private function createFilePage(): FrontPage

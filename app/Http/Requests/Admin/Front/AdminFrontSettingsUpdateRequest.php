@@ -36,6 +36,7 @@
 namespace App\Http\Requests\Admin\Front;
 
 use App\Enums\ContentPublishMode;
+use App\Services\Front\FrontPageDisplayResolver;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -56,8 +57,14 @@ class AdminFrontSettingsUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $allowedDisplay = array_merge(
+            [FrontPageDisplayResolver::MODE_THEME, FrontPageDisplayResolver::MODE_FORBIDDEN],
+            array_keys(app(FrontPageDisplayResolver::class)->availableProviders()),
+        );
+
         return [
             'publish_mode' => ['required', Rule::enum(ContentPublishMode::class)],
+            'front_page_display' => ['required', 'string', Rule::in($allowedDisplay)],
         ];
     }
 }
