@@ -36,6 +36,7 @@
 namespace App\Models;
 
 use App\Enums\OperationRiskLevel;
+use App\Services\Security\IntegrityKeyring;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -93,6 +94,7 @@ class AuditLog extends Model
         'is_ai_generated' => 'boolean',
         'schema_version' => 'integer',
         'chain_sequence' => 'integer',
+        'hash_key_version' => 'integer',
         'last_verified_at' => 'datetime',
         'redacted_at' => 'datetime',
     ];
@@ -112,8 +114,11 @@ class AuditLog extends Model
      */
     public const VERIFICATION_REDACTED = 'redacted';
 
-    // Hash algorithm
+    // Hash algorithm of a row hashed before keying (hash_key_version 0)
     public const HASH_ALGORITHM = 'sha256';
+
+    // Hash algorithm of a row hashed with an integrity key (#665)
+    public const HASH_ALGORITHM_KEYED = 'hmac-sha256';
 
     // previous_hash for the first record
     public const GENESIS_HASH = 'genesis';
@@ -134,6 +139,12 @@ class AuditLog extends Model
      * Whether the chain lock table exists, checked once per process
      */
     private static ?bool $chainLockAvailable = null;
+
+    /**
+     * Whether the keyed chain's column and epoch table exist, checked once
+     * per process
+     */
+    private static ?bool $keyedChainAvailable = null;
 
     // ========================================
     // Severity constants
@@ -428,6 +439,13 @@ class AuditLog extends Model
     public const ACTION_API_KEY_REGENERATED = 'api_key_regenerated';
 
     public const ACTION_API_KEYS_REVOKED_ALL = 'api_keys_revoked_all';
+
+    // ========================================
+    // Action constants - integrity key (#665)
+    // ========================================
+    public const ACTION_INTEGRITY_KEY_CREATED = 'integrity_key_created';
+
+    public const ACTION_INTEGRITY_KEY_ROTATED = 'integrity_key_rotated';
 
     // ========================================
     // Action constants - Privacy related
@@ -844,6 +862,7 @@ class AuditLog extends Model
             self::ACTION_STEP_UP_AUTH_COMPLETED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT,
+            self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
         ];
 
         $sessionActions = [
@@ -920,6 +939,7 @@ class AuditLog extends Model
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
             self::ACTION_BACKUP_FAILED, self::ACTION_BACKUP_RESTORED,
             self::ACTION_BACKUP_RESTORE_FAILED, self::ACTION_BACKUP_ROLLED_BACK,
+            self::ACTION_INTEGRITY_KEY_ROTATED,
         ];
 
         $noticeActions = [
@@ -932,6 +952,7 @@ class AuditLog extends Model
             self::ACTION_STEP_UP_AUTH_REQUIRED, self::ACTION_SETTINGS_UPDATED,
             self::ACTION_MEMBER_CREATED, self::ACTION_ROLE_CHANGED,
             self::ACTION_BACKUP_CREATED, self::ACTION_BACKUP_DELETED,
+            self::ACTION_INTEGRITY_KEY_CREATED,
         ];
 
         if (in_array($action, $criticalActions)) {
@@ -1021,6 +1042,8 @@ class AuditLog extends Model
             self::ACTION_THEME_MIGRATIONS_ROLLED_BACK,  // Theme tables reverted (data can be dropped)
             self::ACTION_ROLE_CHANGED,          // Permission changed
             self::ACTION_AI_BULK_OPERATION,     // AI bulk operation
+            self::ACTION_INTEGRITY_KEY_CREATED, // Integrity key created
+            self::ACTION_INTEGRITY_KEY_ROTATED, // Integrity key rotated
         ];
 
         // Medium: Edit, update
@@ -1146,6 +1169,7 @@ class AuditLog extends Model
             self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,
+            self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
         ];
 
         $dangerous = array_filter($allActions, function ($action) {
@@ -1205,6 +1229,7 @@ class AuditLog extends Model
             self::ACTION_SETTINGS_UPDATED, self::ACTION_MEMBER_CREATED,
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,
+            self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
         ];
 
         $filtered = array_filter($allActions, function ($action) use ($minLevel) {
@@ -1221,12 +1246,21 @@ class AuditLog extends Model
     /**
      * Calculate hash of this record
      *
+     * A row of key version 0 is a plain SHA-256, as every row was before
+     * keying (#665); any other version is an HMAC-SHA256 with that
+     * version's chain key. The version itself is not hashed: changing it
+     * only selects a key the hash does not match.
+     *
      * @param  string|null  $previousHash  Hash of previous record
-     * @return string SHA-256 hash (64 characters)
+     * @param  int|null  $keyVersion  Key version to hash with (null = the row's own)
+     * @return string 64 hex characters
+     *
+     * @throws \RuntimeException When the key of that version is not configured
      */
-    public function calculateHash(?string $previousHash = null): string
+    public function calculateHash(?string $previousHash = null, ?int $keyVersion = null): string
     {
         $previousHash = $previousHash ?? $this->previous_hash ?? self::GENESIS_HASH;
+        $keyVersion ??= (int) ($this->hash_key_version ?? IntegrityKeyring::UNKEYED_VERSION);
 
         // Build data for hash calculation
         $data = implode('|', [
@@ -1245,7 +1279,16 @@ class AuditLog extends Model
             $previousHash,
         ]);
 
-        return hash(self::HASH_ALGORITHM, $data);
+        if ($keyVersion === IntegrityKeyring::UNKEYED_VERSION) {
+            return hash(self::HASH_ALGORITHM, $data);
+        }
+
+        $key = app(IntegrityKeyring::class)->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, $keyVersion);
+        if ($key === null) {
+            throw new \RuntimeException('Integrity key version '.$keyVersion.' is not configured');
+        }
+
+        return hash_hmac('sha256', $data, $key);
     }
 
     /**
@@ -1402,28 +1445,75 @@ class AuditLog extends Model
     }
 
     /**
-     * Forget whether the chain lock table exists (after migrating in tests).
+     * Whether the keyed chain's schema exists (#665), checked once per
+     * process. Before its migration has run, rows are hashed unkeyed.
+     */
+    private static function keyedChainAvailable(): bool
+    {
+        return self::$keyedChainAvailable ??= Schema::hasColumn('audit_logs', 'hash_key_version')
+            && Schema::hasTable('audit_log_key_epochs');
+    }
+
+    /**
+     * Forget whether the chain lock table and the keyed chain's schema
+     * exist (after migrating in tests).
      */
     public static function forgetChainLockAvailability(): void
     {
         self::$chainLockAvailable = null;
+        self::$keyedChainAvailable = null;
     }
 
     /**
      * Link this row after the given chain head and save it.
+     *
+     * The row is hashed with the current integrity key when one is
+     * configured; the first row a key version hashes records that
+     * version's epoch.
      */
     private function linkAfter(?self $previous): bool
     {
+        $keyring = app(IntegrityKeyring::class);
+        $keyVersion = self::keyedChainAvailable() ? $keyring->currentVersion() : null;
+
         $this->previous_hash = $previous?->record_hash ?? self::GENESIS_HASH;
         $this->chain_sequence = $previous ? ($previous->chain_sequence + 1) : 1;
-        $this->record_hash = $this->calculateHash($this->previous_hash);
-        $this->hash_algorithm = self::HASH_ALGORITHM;
 
-        return $this->save();
+        if ($keyVersion === null) {
+            $this->record_hash = $this->calculateHash($this->previous_hash, IntegrityKeyring::UNKEYED_VERSION);
+            $this->hash_algorithm = self::HASH_ALGORITHM;
+            if (self::keyedChainAvailable()) {
+                $this->hash_key_version = IntegrityKeyring::UNKEYED_VERSION;
+            }
+
+            return $this->save();
+        }
+
+        $this->hash_key_version = $keyVersion;
+        $this->record_hash = $this->calculateHash($this->previous_hash, $keyVersion);
+        $this->hash_algorithm = self::HASH_ALGORITHM_KEYED;
+
+        if (! $this->save()) {
+            return false;
+        }
+
+        AuditLogKeyEpoch::recordStart($keyVersion, (int) $this->id, $keyring);
+
+        return true;
+    }
+
+    /**
+     * Key version that hashed this row (0 = unkeyed).
+     */
+    public function hashKeyVersion(): int
+    {
+        return (int) ($this->hash_key_version ?? IntegrityKeyring::UNKEYED_VERSION);
     }
 
     /**
      * Verify hash of this record
+     *
+     * False as well when the row's key version is not configured.
      */
     public function verifyHash(): bool
     {
@@ -1431,7 +1521,11 @@ class AuditLog extends Model
             return false;
         }
 
-        $expectedHash = $this->calculateHash($this->previous_hash);
+        try {
+            $expectedHash = $this->calculateHash($this->previous_hash);
+        } catch (\RuntimeException) {
+            return false;
+        }
 
         return hash_equals($expectedHash, $this->record_hash);
     }

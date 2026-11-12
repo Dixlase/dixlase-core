@@ -42,6 +42,7 @@ return [
         'chain_valid' => '✓ ハッシュチェーンは正常です。',
         'chain_invalid' => '✗ ハッシュチェーンに問題が検出されました！',
         'tampered_records' => '改ざんが検知されたレコード:',
+        'invalid_epochs' => '鍵の開始記録 :count 件の署名が検証できません（書き換えられたか、その版の鍵が設定されていません）。',
         'and_more' => 'さらに :count 件...',
         'verifying_seal' => ':date の日次封印を検証中...',
         'seal_not_found' => '指定された日付の日次封印が見つかりません。',

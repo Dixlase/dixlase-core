@@ -43,6 +43,7 @@ use App\Models\Member;
 use App\Services\AuditLogIntegrityService;
 use App\Services\AuditService;
 use App\Services\Core\CoreUpdater;
+use App\Services\Security\IntegrityKeyring;
 use App\Support\Install\EnvFile;
 use App\Support\Install\InstallLogFile;
 use Illuminate\Support\Facades\Cache;
@@ -80,12 +81,21 @@ class InstallFinalizer
             Log::channel('install')->info('Session cookie named for this installation', ['cookie' => $sessionCookie]);
         }
 
+        $integrityKey = $this->newIntegrityKey();
+        if ($integrityKey !== null) {
+            $envUpdates['INTEGRITY_KEY'] = $integrityKey;
+        }
+
         EnvFile::update($envUpdates);
 
         // Apply immediately, so anything later in this process sees it.
         putenv('INSTALLED=true');
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
+        if ($integrityKey !== null) {
+            // So the chain built below is keyed from the first row.
+            config(['security.integrity_keys.current' => $integrityKey]);
+        }
 
         $baseline = $this->recordBaselineVersionHistory();
         // Before the chain is built, so the install's own entry is inside
@@ -95,6 +105,23 @@ class InstallFinalizer
         $this->scheduleInstallLogDiscard();
 
         return $sessionCookie;
+    }
+
+    /**
+     * A new integrity key for this site (#665), or null when one is already
+     * set (the installer, or an operator, put it in .env beforehand).
+     *
+     * Only a new install gets one this way: an existing site's .env is never
+     * written by an update, so its operator creates the key with
+     * `dls:integrity:key`.
+     */
+    private function newIntegrityKey(): ?string
+    {
+        if (EnvFile::read('INTEGRITY_KEY') !== '' || app(IntegrityKeyring::class)->isConfigured()) {
+            return null;
+        }
+
+        return IntegrityKeyring::generate(IntegrityKeyring::FIRST_VERSION);
     }
 
     /**

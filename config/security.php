@@ -186,4 +186,22 @@ return [
         'state_file' => 'app/private/security/scheduled-checks.json',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Integrity key
+    |--------------------------------------------------------------------------
+    |
+    | Keys the audit log hash chain and its daily seals (see
+    | App\Services\Security\IntegrityKeyring). Each value is
+    | `<version>:base64:<key>`; the current key signs, the previous keys
+    | (comma separated) only verify. Generate and rotate it with
+    | `php artisan dls:integrity:key`. When it is empty the chain stays
+    | unkeyed and the seals use AUDIT_LOG_SECRET, as before.
+    |
+    */
+    'integrity_keys' => [
+        'current' => env('INTEGRITY_KEY'),
+        'previous' => env('INTEGRITY_PREVIOUS_KEYS'),
+    ],
+
 ];

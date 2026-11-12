@@ -39,8 +39,11 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\AuditLogDailySeal;
+use App\Models\AuditLogKeyEpoch;
+use App\Services\Security\IntegrityKeyring;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @internal Core only. Do not reference from plugins/themes
@@ -51,11 +54,6 @@ use Illuminate\Support\Facades\Log;
  */
 class AuditLogIntegrityService
 {
-    /**
-     * Settings key for signature secret key
-     */
-    protected const SECRET_KEY_CONFIG = 'app.audit_log_secret';
-
     /**
      * Health states returned by getHealth()
      */
@@ -98,11 +96,68 @@ class AuditLogIntegrityService
     public const HEALTH_CACHE_TTL = 300;
 
     /**
-     * Default secret key (uses APP_KEY)
+     * Key of a daily seal of the given key version, or null when that
+     * version is not configured.
+     *
+     * Version 1 is every seal made before the integrity key existed, signed
+     * with AUDIT_LOG_SECRET or the application key; later versions use the
+     * integrity key of that version (#665).
      */
-    protected function getSecretKey(): string
+    protected function sealKey(int $version): ?string
     {
-        return config(self::SECRET_KEY_CONFIG) ?: config('app.key');
+        $keyring = app(IntegrityKeyring::class);
+
+        if ($version === IntegrityKeyring::LEGACY_SEAL_VERSION) {
+            $key = $keyring->legacySealKey();
+
+            return $key === '' ? null : $key;
+        }
+
+        return $keyring->key(IntegrityKeyring::PURPOSE_AUDIT_SEAL, $version);
+    }
+
+    /**
+     * Key version and key a new seal is signed with: the current integrity
+     * key, or the legacy seal key when none is configured.
+     *
+     * @return array{version:int, key:string}
+     */
+    protected function currentSealKey(): array
+    {
+        $current = app(IntegrityKeyring::class)->currentKey(IntegrityKeyring::PURPOSE_AUDIT_SEAL);
+
+        return $current ?? [
+            'version' => IntegrityKeyring::LEGACY_SEAL_VERSION,
+            'key' => (string) $this->sealKey(IntegrityKeyring::LEGACY_SEAL_VERSION),
+        ];
+    }
+
+    /**
+     * Where keying starts: the first row of the earliest key epoch whose
+     * signature verifies, and how many epochs failed to verify.
+     *
+     * @return array{keyed_from:int|null, invalid:int}
+     */
+    protected function keyEpochs(IntegrityKeyring $keyring): array
+    {
+        if (! Schema::hasTable('audit_log_key_epochs')) {
+            return ['keyed_from' => null, 'invalid' => 0];
+        }
+
+        $keyedFrom = null;
+        $invalid = 0;
+
+        foreach (AuditLogKeyEpoch::orderBy('first_log_id')->get() as $epoch) {
+            if (! $epoch->verifySignature($keyring)) {
+                $invalid++;
+
+                continue;
+            }
+
+            $keyedFrom ??= $epoch->first_log_id;
+        }
+
+        return ['keyed_from' => $keyedFrom, 'invalid' => $invalid];
     }
 
     /**
@@ -126,12 +181,16 @@ class AuditLogIntegrityService
 
         $logs = $query->get();
 
+        $keyring = app(IntegrityKeyring::class);
+        ['keyed_from' => $keyedFrom, 'invalid' => $invalidEpochs] = $this->keyEpochs($keyring);
+
         $result = [
             'total' => $logs->count(),
             'valid' => 0,
             'invalid' => 0,
             'redacted' => 0,
             'errors' => [],
+            'invalid_epochs' => $invalidEpochs,
             'first_id' => $logs->first()?->id,
             'last_id' => $logs->last()?->id,
         ];
@@ -145,10 +204,33 @@ class AuditLogIntegrityService
             $errors = [];
             $isRedacted = false;
 
+            // Key version. Once a key epoch exists, every later row must be
+            // keyed: an unkeyed row there is a keyed row rewritten without
+            // the key. A keyed row needs a valid epoch at or before it.
+            $keyVersion = $log->hashKeyVersion();
+            $keyAvailable = true;
+            if ($keyVersion === IntegrityKeyring::UNKEYED_VERSION) {
+                if ($keyedFrom !== null && $log->id >= $keyedFrom) {
+                    $isValid = false;
+                    $errors[] = 'unkeyed_after_keying';
+                }
+            } else {
+                if (! $keyring->has($keyVersion)) {
+                    $keyAvailable = false;
+                    $isValid = false;
+                    $errors[] = 'key_unavailable';
+                }
+                if ($keyedFrom === null || $log->id < $keyedFrom) {
+                    $isValid = false;
+                    $errors[] = 'key_epoch_missing';
+                }
+            }
+
             // Hash verification. A row redacted by a recorded erasure no
             // longer matches its own hash, so only its place in the chain
             // is checked below: the next row's previous_hash and the daily
-            // seal still pin its record_hash.
+            // seal still pin its record_hash. Without its key a row's hash
+            // cannot be checked at all; key_unavailable already says so.
             if ($log->isRedacted()) {
                 if ($this->isRecordedRedaction($log, $erasures)) {
                     $isRedacted = true;
@@ -156,7 +238,7 @@ class AuditLogIntegrityService
                     $isValid = false;
                     $errors[] = 'redaction_unrecorded';
                 }
-            } elseif (! $log->verifyHash()) {
+            } elseif ($keyAvailable && ! $log->verifyHash()) {
                 $isValid = false;
                 $errors[] = 'hash_mismatch';
             }
@@ -202,7 +284,7 @@ class AuditLogIntegrityService
             $previousSequence = $log->chain_sequence;
         }
 
-        $result['is_valid'] = $result['invalid'] === 0;
+        $result['is_valid'] = $result['invalid'] === 0 && $invalidEpochs === 0;
 
         return $result;
     }
@@ -308,6 +390,7 @@ class AuditLogIntegrityService
 
         $firstLog = $logs->first();
         $lastLog = $logs->last();
+        $sealKey = $this->currentSealKey();
 
         // Create seal
         $seal = new AuditLogDailySeal([
@@ -316,13 +399,13 @@ class AuditLogIntegrityService
             'last_log_id' => $lastLog->id,
             'log_count' => $logs->count(),
             'final_hash' => $lastLog->record_hash,
-            'key_version' => 1,
+            'key_version' => $sealKey['version'],
             'signature_algorithm' => 'hmac-sha256',
             'verification_status' => AuditLogDailySeal::STATUS_VALID,
         ]);
 
         // Generate signature
-        $seal->daily_signature = $seal->generateSignature($this->getSecretKey());
+        $seal->daily_signature = $seal->generateSignature($sealKey['key']);
         $seal->save();
 
         Log::channel('admin_activity')->info('Daily audit log seal created', [
@@ -365,8 +448,12 @@ class AuditLogIntegrityService
             'checks' => [],
         ];
 
-        // Signature verification
-        $signatureValid = $seal->verifySignature($this->getSecretKey());
+        // Signature verification, with the key of the seal's own version
+        $sealKey = $this->sealKey((int) $seal->key_version);
+        if ($sealKey === null) {
+            $result['checks']['key_available'] = false;
+        }
+        $signatureValid = $sealKey !== null && $seal->verifySignature($sealKey);
         $result['checks']['signature'] = $signatureValid;
 
         // Log count verification
@@ -560,7 +647,7 @@ class AuditLogIntegrityService
      * - empty:              no audit log entries yet
      * - ok
      *
-     * @return array{state:string,has_entries:bool,tampered:int,invalid_seals:int,stalled:int,unsealed_date:string|null,verified_since:\Carbon\Carbon|null,last_verified_at:\Carbon\Carbon|null}
+     * @return array{state:string,keyed:bool,has_entries:bool,tampered:int,invalid_seals:int,stalled:int,unsealed_date:string|null,verified_since:\Carbon\Carbon|null,last_verified_at:\Carbon\Carbon|null}
      */
     public function getHealth(): array
     {
@@ -611,6 +698,7 @@ class AuditLogIntegrityService
 
         return [
             'state' => $state,
+            'keyed' => app(IntegrityKeyring::class)->isConfigured(),
             'has_entries' => $hasEntries,
             'tampered' => $tampered,
             'invalid_seals' => $invalidSeals,

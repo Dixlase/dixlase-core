@@ -233,6 +233,11 @@ class AuditLogIntegrityCommand extends Command
 
         $this->error(__('admin/command/audit.integrity.chain_invalid'));
 
+        if (($result['invalid_epochs'] ?? 0) > 0) {
+            $this->newLine();
+            $this->warn(__('admin/command/audit.integrity.invalid_epochs', ['count' => $result['invalid_epochs']]));
+        }
+
         if (! empty($result['errors'])) {
             $this->newLine();
             $this->warn(__('admin/command/audit.integrity.tampered_records'));
