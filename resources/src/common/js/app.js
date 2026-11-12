@@ -55,6 +55,7 @@ import '../../components/mail-server/js/test';
 import '../../components/mail-server/js/verification';
 import '../../admin/js/layout';
 import '../../admin/settings/security/js/csp';
+import '../../admin/settings/security/js/csp-confirmation';
 import '../../admin/settings/base/js/maintenance';
 import '../../admin/settings/base/js/mode';
 import '../../admin/settings/security/js/captcha';
