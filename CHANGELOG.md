@@ -41,7 +41,7 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
-## [Unreleased]
+## [0.2.15] — 2026-11-12
 
 ### Added
 - Plugin API: `CaptchaHelper::verifyGlobally($request, $action)` verifies a CAPTCHA token for
@@ -49,14 +49,14 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   the globally configured CAPTCHA without the per-form gate, and returns a plain `bool` that
   fails closed. The caller gates on the no-form `shouldShowCaptcha()` itself, so a non-form
   endpoint can require a CAPTCHA through the `@api` surface instead of resolving the concrete
-  `CaptchaDriver` (#1010)
+  `CaptchaDriver` (#1010, #1011)
 
 ### Changed
 - CSP: the demo sign-up `form-action` and its `DEMO_BASE_DOMAIN` default (`demo.dixlase.org`)
   are no longer hardcoded in `config/csp/domains.php`. A hosted demo now supplies its own
   `form-action` (base domain and per-tenant subdomain wildcard) at runtime through a CSP
   policy provider (`CspPolicyProvider` / `CspPolicyRegistry`). Non-demo installs are
-  unaffected — the base `form-action` default (`'self'`) stays (#1003).
+  unaffected — the base `form-action` default (`'self'`) stays (#1003, #1004).
 
 ### Removed
 - Demo: the transitional fallbacks to the legacy demo runtime config are removed now that
@@ -64,7 +64,12 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   `demo.visible_plugin_slugs`, `DemoModeHelper::expiresAt()` no longer reads
   `dixlase.demo_expires_at`, and the `demo_expires_at` key is dropped from `config/dixlase.php`.
   A core install with no demo extension is unaffected — both already answered null in that case
-  (#1005).
+  (#1005, #1006).
+
+### Fixed
+- The security screens show their times in the display timezone instead of UTC: the latest
+  integrity scan on the overview, the scan history, the baseline and core-manifest times, the
+  scan detail and the CAPTCHA's last test (#765, #998)
 
 ## [0.2.14] — 2026-11-11
 
