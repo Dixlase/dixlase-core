@@ -35,89 +35,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-<div x-data="{
-    captchaEnabled: '{{ old('captcha_enabled', $settings['captcha_enabled']) ? '1' : '0' }}',
-    captchaDriver: '{{ old('captcha_driver', $settings['captcha_driver']) }}',
-    captchaVersion: '{{ old('captcha_google_version', $settings['captcha_google_version']) }}',
-    captchaSiteKey: '{{ old('captcha_site_key', $settings['captcha_site_key']) }}',
-    captchaSecretKey: '{{ old('captcha_secret_key', $settings['captcha_secret_key']) }}',
-    captchaProjectId: '{{ old('captcha_google_project_id', $settings['captcha_google_project_id']) }}',
-    providerKeys: {{ Js::from($settings['provider_keys']) }},
-    savedDriver: '{{ $settings['captcha_driver'] }}',
-    savedVersion: '{{ $settings['captcha_google_version'] }}',
-    savedMinScore: '{{ $settings['captcha_google_min_score'] }}',
-    captchaMinScore: '{{ old('captcha_google_min_score', $settings['captcha_google_min_score']) }}',
-    savedProjectId: '{{ $settings['captcha_google_project_id'] }}',
-    captchaSettingsChanged: false,
-    testedSnapshot: null,
-    init() {
-        this.$watch('captchaDriver', (newDriver, oldDriver) => {
-            if (newDriver !== oldDriver) {
-                this.switchProviderKeys(newDriver)
-            }
-        })
-        this.$watch('captchaSiteKey', () => this.checkSettingsChanged())
-        this.$watch('captchaSecretKey', () => this.checkSettingsChanged())
-        this.$watch('captchaVersion', () => this.checkSettingsChanged())
-        this.$watch('captchaMinScore', () => this.checkSettingsChanged())
-        this.$watch('captchaProjectId', () => this.checkSettingsChanged())
-        window.addEventListener('captcha-test-passed', () => this.markTested())
-    },
-    switchProviderKeys(newDriver) {
-        const keys = this.providerKeys[newDriver] || { site_key: '', secret_key: '' }
-        this.captchaSiteKey = keys.site_key || ''
-        this.captchaSecretKey = keys.secret_key || ''
-        this.resetAuthenticationStatus()
-        this.captchaSettingsChanged = true
-    },
-    currentSnapshot() {
-        return [
-            this.captchaDriver, this.captchaSiteKey, this.captchaSecretKey,
-            this.captchaVersion, this.captchaMinScore, this.captchaProjectId,
-        ].join('\u001f')
-    },
-    savedSnapshot() {
-        const savedKeys = this.providerKeys[this.savedDriver] || { site_key: '', secret_key: '' }
-        return [
-            this.savedDriver, savedKeys.site_key || '', savedKeys.secret_key || '',
-            this.savedVersion, this.savedMinScore, this.savedProjectId,
-        ].join('\u001f')
-    },
-    markTested() {
-        // Values that just passed the widget test; editing any of them afterwards
-        // drops the passed status again (the server enforces the same rule).
-        this.testedSnapshot = this.currentSnapshot()
-    },
-    checkSettingsChanged() {
-        const baseline = this.testedSnapshot ?? this.savedSnapshot()
-        if (this.currentSnapshot() === baseline) {
-            return
-        }
-        this.captchaSettingsChanged = true
-        const authInput = document.getElementById('captcha-authentication-result')
-        if (authInput && authInput.value === '1') {
-            this.resetAuthenticationStatus()
-        }
-    },
-    resetAuthenticationStatus() {
-        this.testedSnapshot = null
-        const authInput = document.getElementById('captcha-authentication-result')
-        if (authInput) {
-            authInput.value = '0'
-        }
-        const successDisplay = document.getElementById('captcha-success-display')
-        const requiredNotice = document.getElementById('auth-test-required-notice')
-        if (successDisplay) successDisplay.style.display = 'none'
-        if (requiredNotice) requiredNotice.style.display = 'block'
-        const testResult = document.getElementById('captcha-test-result')
-        if (testResult) testResult.style.display = 'none'
-        
-        // CAPTCHAウィジェットをクリア
-        if (typeof clearCaptchaWidget === 'function') {
-            clearCaptchaWidget()
-        }
-    }
-}">
+<div x-data="captchaSettings"
+     data-captcha-enabled="{{ old('captcha_enabled', $settings['captcha_enabled']) ? '1' : '0' }}"
+     data-captcha-driver="{{ old('captcha_driver', $settings['captcha_driver']) }}"
+     data-captcha-version="{{ old('captcha_google_version', $settings['captcha_google_version']) }}"
+     data-captcha-site-key="{{ old('captcha_site_key', $settings['captcha_site_key']) }}"
+     data-captcha-secret-key="{{ old('captcha_secret_key', $settings['captcha_secret_key']) }}"
+     data-captcha-project-id="{{ old('captcha_google_project_id', $settings['captcha_google_project_id']) }}"
+     data-captcha-min-score="{{ old('captcha_google_min_score', $settings['captcha_google_min_score']) }}"
+     data-provider-keys="{{ json_encode($settings['provider_keys']) }}"
+     data-saved-driver="{{ $settings['captcha_driver'] }}"
+     data-saved-version="{{ $settings['captcha_google_version'] }}"
+     data-saved-min-score="{{ $settings['captcha_google_min_score'] }}"
+     data-saved-project-id="{{ $settings['captcha_google_project_id'] }}">
     <form id="security-captcha-form" method="POST" action="{{ route('admin.settings.security.captcha.update') }}">
         @csrf
         
@@ -302,7 +232,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         <button type="button" 
                                 id="captcha-validate-button"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed mb-3"
-                                @click="validateCaptchaWidget()"
+                                @click="validateWidget()"
                                 :disabled="captchaEnabled === '0' || !captchaDriver"
                                 x-text="captchaSettingsChanged ? '{{ __('admin/settings/security/captcha.validate_button') }}' : '{{ $captchaTestResult ? __('admin/settings/security/captcha.revalidate_button') : __('admin/settings/security/captcha.validate_button') }}'">
                         </button>
