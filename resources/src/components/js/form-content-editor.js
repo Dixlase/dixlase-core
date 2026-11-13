@@ -62,7 +62,10 @@ marked.use({
 // A link's `{target="_blank" rel="..."}` (#1032) is for the server's
 // renderer; marked would print it as text, so the side-by-side preview drops
 // it and shows the plain link.
-const LINK_ATTRIBUTES = /(\]\([^)\n]*\))\{(?:\s*(?:target|rel)=(?:"[^"\n]*"|[^\s}]+))+\s*\}/g;
+// Items are separated by whitespace, which no value can contain, so the
+// pattern has one way to match and cannot backtrack exponentially.
+const LINK_ATTRIBUTE = '(?:target|rel)=(?:"[^"\\n]*"|[^\\s}"=]+)';
+const LINK_ATTRIBUTES = new RegExp('(\\]\\([^)\\n]*\\))\\{[ \\t]*' + LINK_ATTRIBUTE + '(?:[ \\t]+' + LINK_ATTRIBUTE + ')*[ \\t]*\\}', 'g');
 
 marked.use({
     hooks: {
