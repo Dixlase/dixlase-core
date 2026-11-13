@@ -40,4 +40,5 @@ return [
     'baseline_save_error' => 'Baseline save error',
     'scan_error' => 'File integrity scan error',
     'tampering_detected' => 'File tampering has been detected',
+    'baseline_untrusted' => 'File integrity baseline is not trusted; the scan made no comparison',
 ];

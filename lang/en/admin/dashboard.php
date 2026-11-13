@@ -237,6 +237,7 @@ return [
     'action_api_key_created' => 'API Key Created',
     'action_integrity_key_created' => 'Integrity Key Created',
     'action_integrity_key_rotated' => 'Integrity Key Rotated',
+    'action_integrity_baseline_regenerated' => 'Integrity Baseline Regenerated',
     'action_api_key_revoked' => 'API Key Revoked',
     'action_api_keys_revoked_all' => 'All API Keys Revoked',
     'action_api_key_regenerated' => 'API Key Regenerated',

@@ -324,6 +324,7 @@ class PluginAudit extends Command
     {
         return match ($permission) {
             'migrations.stock_migrator' => 'Remove the loadMigrationsFrom() call from the service provider. Extension migrations are applied by PluginMigrator / ThemeMigrator and recorded in their own ledgers; registering them with the stock migrator breaks a bare `php artisan migrate`.',
+            'dangerous_api.integrity_key' => 'Remove the reference to the integrity key (INTEGRITY_KEY, security.integrity_keys, IntegrityKeyring / IntegritySeal). It seals what core uses to notice tampering; no extension needs it, and declaring it does not make it acceptable.',
             default => "Set '{$permission}' to true",
         };
     }

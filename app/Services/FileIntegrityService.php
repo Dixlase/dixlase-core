@@ -43,6 +43,8 @@ use App\DTO\FileIntegrity\FileChangeDTO;
 use App\DTO\FileIntegrity\ScanResultDTO;
 use App\DTO\FileIntegrity\ScanTargetDTO;
 use App\Models\FileIntegrityAudit;
+use App\Services\Security\IntegrityKeyring;
+use App\Services\Security\IntegritySeal;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -127,6 +129,218 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $this->baselinePath = storage_path('app/dixlase/security');
     }
 
+    // ========================================
+    // Baseline seal (#803)
+    // ========================================
+
+    /**
+     * How far a baseline file can be trusted.
+     *
+     * A baseline is written with a seal made from the integrity key, so a
+     * party that can write files but not run code cannot replace it with one
+     * that matches files it has altered. Without a key, nothing is sealed and
+     * nothing changes from before.
+     *
+     * Returns null when the file does not exist, otherwise one of the
+     * IntegritySeal statuses.
+     */
+    public function baselineSealStatus(string $filename = 'core_hashes.json'): ?string
+    {
+        $data = $this->readBaselineFile($filename);
+        if ($data === null) {
+            return null;
+        }
+
+        $seal = $data['seal'] ?? null;
+        unset($data['seal']);
+
+        return $this->integritySeal()->check(
+            IntegrityKeyring::PURPOSE_FILE_BASELINE,
+            $this->sealMessage($filename, $data),
+            $seal,
+        );
+    }
+
+    /**
+     * Whether a scan may compare against the baseline, and what to report.
+     *
+     * With an integrity key configured:
+     * - no baseline: nothing is compared and none is generated, because the
+     *   file may have been removed so that the next scan adopts altered files
+     * - a seal that does not match, or names a key that is not configured:
+     *   nothing is compared, critical
+     * - no seal (written before the key existed, or stripped): compared, but
+     *   never better than a warning until the baseline is regenerated on purpose
+     *
+     * Without a key the scan behaves as it always has.
+     *
+     * @return array{exists: bool, compare: bool, floor: ?string, note: ?string}
+     */
+    public function assessBaseline(string $filename = 'core_hashes.json'): array
+    {
+        $status = $this->baselineSealStatus($filename);
+        $keyed = $this->integritySeal()->keyring()->isConfigured();
+
+        if (! $keyed) {
+            return ['exists' => $status !== null, 'compare' => $status !== null, 'floor' => null, 'note' => null];
+        }
+
+        return match ($status) {
+            null => [
+                'exists' => false,
+                'compare' => false,
+                'floor' => FileIntegrityAudit::STATUS_WARNING,
+                'note' => __('admin/command/integrity.baseline_missing_keyed'),
+            ],
+            IntegritySeal::VALID => ['exists' => true, 'compare' => true, 'floor' => null, 'note' => null],
+            IntegritySeal::UNSEALED => [
+                'exists' => true,
+                'compare' => true,
+                'floor' => FileIntegrityAudit::STATUS_WARNING,
+                'note' => __('admin/command/integrity.baseline_unsealed'),
+            ],
+            IntegritySeal::KEY_UNAVAILABLE => [
+                'exists' => true,
+                'compare' => false,
+                'floor' => FileIntegrityAudit::STATUS_CRITICAL,
+                'note' => __('admin/command/integrity.baseline_seal_key_unavailable', [
+                    'version' => (string) ($this->readBaselineFile($filename)['seal']['key_version'] ?? '?'),
+                ]),
+            ],
+            default => [
+                'exists' => true,
+                'compare' => false,
+                'floor' => FileIntegrityAudit::STATUS_CRITICAL,
+                'note' => __('admin/command/integrity.baseline_seal_invalid'),
+            ],
+        };
+    }
+
+    /**
+     * Seal a baseline that was written before the integrity key existed,
+     * without changing what it says.
+     *
+     * Used right after a key is first configured (at install, and by
+     * dls:integrity:key). Sealing the baseline as it stands keeps every
+     * difference since it was written visible; regenerating it would accept
+     * the current files instead. Only an unsealed baseline is touched.
+     */
+    public function sealExistingBaseline(string $filename = 'core_hashes.json'): bool
+    {
+        if ($this->baselineSealStatus($filename) !== IntegritySeal::UNSEALED
+            || ! $this->integritySeal()->keyring()->isConfigured()) {
+            return false;
+        }
+
+        try {
+            $this->writeBaselineFile($filename, (array) $this->readBaselineFile($filename));
+        } catch (\Throwable $e) {
+            Log::channel('admin_error')->error(__('services/file_integrity_service.baseline_save_error'), [
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function integritySeal(): IntegritySeal
+    {
+        return app(IntegritySeal::class);
+    }
+
+    /**
+     * What the seal covers: the file name (so one extension's baseline cannot
+     * stand in for core's) and everything in the file except the seal.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function sealMessage(string $filename, array $data): string
+    {
+        return 'dixlase-baseline|'.$filename.'|'.json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected function readBaselineFile(string $filename): ?array
+    {
+        $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
+        if (! File::exists($filePath)) {
+            return null;
+        }
+
+        $data = json_decode((string) File::get($filePath), true);
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
+     * Write a baseline with its seal, replacing the file in one step.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function writeBaselineFile(string $filename, array $data): void
+    {
+        if (! File::isDirectory($this->baselinePath)) {
+            File::makeDirectory($this->baselinePath, 0755, true);
+        }
+
+        unset($data['seal']);
+        $seal = $this->integritySeal()->sign(IntegrityKeyring::PURPOSE_FILE_BASELINE, $this->sealMessage($filename, $data));
+        if ($seal !== null) {
+            $data['seal'] = $seal;
+        }
+
+        $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
+        $tmpPath = $filePath.'.'.bin2hex(random_bytes(6)).'.tmp';
+        File::put($tmpPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if (! @rename($tmpPath, $filePath)) {
+            File::delete($tmpPath);
+
+            throw new \RuntimeException('Could not replace '.$filePath);
+        }
+    }
+
+    /**
+     * Raise a scan status to at least the given floor.
+     */
+    protected function statusAtLeast(string $status, ?string $floor): string
+    {
+        $rank = [
+            FileIntegrityAudit::STATUS_OK => 0,
+            FileIntegrityAudit::STATUS_WARNING => 1,
+            FileIntegrityAudit::STATUS_CRITICAL => 2,
+        ];
+
+        if ($floor === null || ($rank[$status] ?? 0) >= ($rank[$floor] ?? 0)) {
+            return $status;
+        }
+
+        return $floor;
+    }
+
+    /**
+     * Log a scan that could not compare because the baseline is not trusted.
+     *
+     * @param  array{exists: bool, compare: bool, floor: ?string, note: ?string}  $assessment
+     */
+    protected function reportUntrustedBaseline(FileIntegrityAudit $audit, array $assessment, string $filename): void
+    {
+        $context = [
+            'audit_id' => $audit->id,
+            'baseline' => $filename,
+            'seal' => $this->baselineSealStatus($filename) ?? 'missing',
+        ];
+
+        if ($assessment['floor'] === FileIntegrityAudit::STATUS_CRITICAL) {
+            Log::channel('admin_error')->critical(__('services/file_integrity_service.baseline_untrusted'), $context);
+        } else {
+            Log::channel('admin_error')->warning(__('services/file_integrity_service.baseline_untrusted'), $context);
+        }
+    }
+
     /**
      * Generate baseline for Core files
      */
@@ -170,8 +384,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 File::makeDirectory($this->baselinePath, 0755, true);
             }
 
-            $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
-            File::put($filePath, json_encode($baseline, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $this->writeBaselineFile($filename, $baseline);
 
             Log::channel('admin_activity')->info(__('services/file_integrity_service.baseline_generated'), [
                 'filename' => $filename,
@@ -202,8 +415,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 File::makeDirectory($this->baselinePath, 0755, true);
             }
 
-            $filePath = $this->baselinePath.DIRECTORY_SEPARATOR.$filename;
-            File::put($filePath, json_encode($baseline->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $this->writeBaselineFile($filename, $baseline->toArray());
 
             Log::channel('admin_activity')->info(__('services/file_integrity_service.baseline_generated'), [
                 'filename' => $filename,
@@ -296,11 +508,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $audit->save();
 
         try {
-            // Load baseline
-            $baseline = $this->loadBaselineArray();
+            $assessment = $this->assessBaseline();
+            $baseline = $assessment['exists'] ? $this->loadBaselineArray() : null;
 
-            if (! $baseline) {
-                // Generate and save baseline if it doesn't exist
+            if (! $assessment['exists'] && $assessment['floor'] === null) {
+                // No integrity key: the first scan writes the baseline, as before
                 $baseline = $this->generateCoreBaseline();
                 $this->saveBaselineArray($baseline);
 
@@ -316,6 +528,19 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 return $audit;
             }
 
+            if (! $assessment['compare']) {
+                $this->reportUntrustedBaseline($audit, $assessment, 'core_hashes.json');
+                $audit->update([
+                    'status' => $assessment['floor'],
+                    'finished_at' => now(),
+                    'duration_ms' => $startedAt->diffInMilliseconds(now()),
+                    'summary' => $assessment['note'],
+                    'baseline_version' => $baseline['meta']['app_version'] ?? null,
+                ]);
+
+                return $audit;
+            }
+
             // Get current state
             $currentState = $this->generateCoreBaseline();
 
@@ -325,8 +550,8 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             // Check for suspicious files
             $suspicious = $this->checkSuspiciousFiles();
 
-            // Determine status
-            $status = $this->determineStatus($result, $suspicious);
+            // Determine status (an unsealed baseline on a keyed site is never OK)
+            $status = $this->statusAtLeast($this->determineStatus($result, $suspicious), $assessment['floor']);
 
             // Update results
             $audit->update([
@@ -338,7 +563,7 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 'suspicious_files_count' => count($suspicious),
                 'finished_at' => now(),
                 'duration_ms' => $startedAt->diffInMilliseconds(now()),
-                'summary' => $this->generateSummary($result, $suspicious, $status),
+                'summary' => trim(($assessment['note'] ?? '').' '.$this->generateSummary($result, $suspicious, $status)),
                 'baseline_version' => $baseline['meta']['app_version'] ?? null,
                 'result_payload' => [
                     'changed' => $result['changed'],
@@ -662,6 +887,8 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         return array_merge($baseline['meta'], [
             'version' => $baseline['meta']['app_version'] ?? 'N/A',
             'files_count' => count($baseline['files'] ?? []),
+            'seal_status' => $this->baselineSealStatus($filename),
+            'seal_key_version' => is_array($baseline['seal'] ?? null) ? ($baseline['seal']['key_version'] ?? null) : null,
         ]);
     }
 
@@ -776,11 +1003,11 @@ class FileIntegrityService implements FileIntegrityServiceInterface
         $audit->save();
 
         try {
-            // Load baseline
-            $baseline = $this->loadBaseline($filename);
+            $assessment = $this->assessBaseline($filename);
+            $baseline = $assessment['exists'] ? $this->loadBaseline($filename) : null;
 
-            if (! $baseline) {
-                // Generate and save baseline if it doesn't exist
+            if (! $assessment['exists'] && $assessment['floor'] === null) {
+                // No integrity key: the first scan writes the baseline, as before
                 $baseline = $this->generateBaseline($target);
                 $this->saveBaseline($baseline, $filename);
 
@@ -815,6 +1042,38 @@ class FileIntegrityService implements FileIntegrityServiceInterface
                 );
             }
 
+            if (! $assessment['compare']) {
+                $this->reportUntrustedBaseline($audit, $assessment, $filename);
+                $audit->update([
+                    'status' => $assessment['floor'],
+                    'finished_at' => now(),
+                    'duration_ms' => $startedAt->diffInMilliseconds(now()),
+                    'summary' => $assessment['note'],
+                    'baseline_version' => $baseline?->appVersion,
+                ]);
+
+                return new ScanResultDTO(
+                    id: $scanId,
+                    scope: $target->scope,
+                    identifier: $target->identifier,
+                    status: (string) $assessment['floor'],
+                    trigger: $trigger,
+                    initiatedByType: $initiatedByType,
+                    initiatedById: $initiatedById,
+                    hashAlgo: $target->hashAlgo,
+                    baselineVersion: $baseline?->appVersion,
+                    totalFilesScanned: 0,
+                    changedFiles: [],
+                    addedFiles: [],
+                    removedFiles: [],
+                    suspiciousFiles: [],
+                    startedAt: $startedAt->toIso8601String(),
+                    finishedAt: now()->toIso8601String(),
+                    durationMs: (int) $startedAt->diffInMilliseconds(now()),
+                    summary: (string) $assessment['note'],
+                );
+            }
+
             // Get current state
             $currentBaseline = $this->generateBaseline($target);
 
@@ -843,10 +1102,13 @@ class FileIntegrityService implements FileIntegrityServiceInterface
             $suspiciousFiles = $this->checkSuspiciousFilesDTO();
 
             // Determine status
-            $status = $this->determineStatusDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles);
+            $status = $this->statusAtLeast(
+                $this->determineStatusDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles),
+                $assessment['floor'],
+            );
 
             // Generate summary
-            $summary = $this->generateSummaryDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles, $status);
+            $summary = trim(($assessment['note'] ?? '').' '.$this->generateSummaryDTO($changedFiles, $addedFiles, $removedFiles, $suspiciousFiles, $status));
 
             // Update results
             $audit->update([

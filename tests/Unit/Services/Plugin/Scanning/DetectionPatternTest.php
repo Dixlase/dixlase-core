@@ -540,6 +540,37 @@ PHP;
     }
 
     /**
+     * DangerousApiPattern: a reference to the integrity key is reported,
+     * in config files too (#803)
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function integrityKeyReferences(): array
+    {
+        return [
+            'env() in app code' => ["<?php\n\$k = env('INTEGRITY_KEY');\n", 'app/Service.php'],
+            'env() in a config file' => ["<?php\nreturn ['k' => env('INTEGRITY_KEY')];\n", 'config/foo.php'],
+            'previous keys' => ["<?php\n\$k = getenv('INTEGRITY_PREVIOUS_KEYS');\n", 'app/Service.php'],
+            'config key' => ["<?php\n\$k = config('security.integrity_keys.current');\n", 'app/Service.php'],
+            'keyring class' => ["<?php\n\$k = app(\\App\\Services\\Security\\IntegrityKeyring::class);\n", 'app/Service.php'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('integrityKeyReferences')]
+    public function test_dangerous_api_detects_integrity_key_references(string $content, string $path): void
+    {
+        $this->assertNotEmpty((new DangerousApiPattern('integrity_key'))->scan($content, $path));
+    }
+
+    public function test_dangerous_api_integrity_key_ignores_comments_and_other_keys(): void
+    {
+        $pattern = new DangerousApiPattern('integrity_key');
+
+        $this->assertEmpty($pattern->scan("<?php\n// INTEGRITY_KEY is core's\n", 'app/Service.php'));
+        $this->assertEmpty($pattern->scan("<?php\n\$k = env('PLUGIN_INTEGRITY_KEYWORD');\n", 'app/Service.php'));
+    }
+
+    /**
      * MemberDetectionPattern: use文のみは除外
      */
     public function test_member_excludes_use_import(): void

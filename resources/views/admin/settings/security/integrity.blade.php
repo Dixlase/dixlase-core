@@ -180,6 +180,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_files_count') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">{{ $baselineMeta['files_count'] ?? 'N/A' }}</p>
                 </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_seal') }}</p>
+                    @php($sealStatus = $baselineMeta['seal_status'] ?? 'unsealed')
+                    <p class="font-medium {{ in_array($sealStatus, ['invalid', 'key_unavailable'], true) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white' }}">
+                        {{ __('admin/settings/security/integrity.baseline_seal_'.$sealStatus, ['version' => $baselineMeta['seal_key_version'] ?? '?']) }}
+                    </p>
+                </div>
             </div>
         @else
             <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
@@ -465,7 +472,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="regenerate-baseline-form"
         icon-type="warning"
         confirm-color="blue"
-    />
+    >
+        <div class="mt-4 text-left">
+            <x-form-label for="regenerate-baseline-reason" :required="true">{{ __('admin/settings/security/integrity.regenerate_reason') }}</x-form-label>
+            <x-form-text id="regenerate-baseline-reason" name="reason" form="regenerate-baseline-form" :required="true" maxlength="500" class="w-full" />
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/integrity.regenerate_reason_help') }}</p>
+        </div>
+    </x-ui-modal>
     
     <form id="regenerate-baseline-form" method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" style="display: none;">
         @csrf

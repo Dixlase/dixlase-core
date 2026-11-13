@@ -447,6 +447,9 @@ class AuditLog extends Model
 
     public const ACTION_INTEGRITY_KEY_ROTATED = 'integrity_key_rotated';
 
+    /** The core file-integrity baseline was replaced on purpose (#803) */
+    public const ACTION_INTEGRITY_BASELINE_REGENERATED = 'integrity_baseline_regenerated';
+
     // ========================================
     // Action constants - Privacy related
     // ========================================
@@ -863,6 +866,7 @@ class AuditLog extends Model
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT,
             self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
+            self::ACTION_INTEGRITY_BASELINE_REGENERATED,
         ];
 
         $sessionActions = [
@@ -939,7 +943,7 @@ class AuditLog extends Model
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
             self::ACTION_BACKUP_FAILED, self::ACTION_BACKUP_RESTORED,
             self::ACTION_BACKUP_RESTORE_FAILED, self::ACTION_BACKUP_ROLLED_BACK,
-            self::ACTION_INTEGRITY_KEY_ROTATED,
+            self::ACTION_INTEGRITY_KEY_ROTATED, self::ACTION_INTEGRITY_BASELINE_REGENERATED,
         ];
 
         $noticeActions = [
@@ -1044,6 +1048,7 @@ class AuditLog extends Model
             self::ACTION_AI_BULK_OPERATION,     // AI bulk operation
             self::ACTION_INTEGRITY_KEY_CREATED, // Integrity key created
             self::ACTION_INTEGRITY_KEY_ROTATED, // Integrity key rotated
+            self::ACTION_INTEGRITY_BASELINE_REGENERATED, // Integrity baseline replaced
         ];
 
         // Medium: Edit, update
@@ -1170,6 +1175,7 @@ class AuditLog extends Model
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,
             self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
+            self::ACTION_INTEGRITY_BASELINE_REGENERATED,
         ];
 
         $dangerous = array_filter($allActions, function ($action) {
@@ -1230,6 +1236,7 @@ class AuditLog extends Model
             self::ACTION_MEMBER_UPDATED, self::ACTION_MEMBER_DELETED,
             self::ACTION_ROLE_CHANGED,
             self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
+            self::ACTION_INTEGRITY_BASELINE_REGENERATED,
         ];
 
         $filtered = array_filter($allActions, function ($action) use ($minLevel) {

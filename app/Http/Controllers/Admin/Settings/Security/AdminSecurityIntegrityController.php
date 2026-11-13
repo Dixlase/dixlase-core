@@ -39,8 +39,11 @@ use App\DTO\FileIntegrity\ScanTargetDTO;
 use App\Helpers\AdminModeHelper;
 use App\Helpers\DateTimeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
+use App\Models\AuditLog;
 use App\Models\FileIntegrityAudit;
+use App\Services\AuditService;
 use App\Services\FileIntegrityService;
+use App\Services\Security\IntegritySeal;
 use App\Services\Security\ScheduledSecurityCheckMonitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -170,12 +173,33 @@ class AdminSecurityIntegrityController extends AdminLoggedInController
      */
     public function regenerateBaseline(Request $request)
     {
+        // Replacing a baseline accepts whatever is on disk now as genuine, so
+        // it needs a reason and is recorded (#803). The very first baseline
+        // replaces nothing and needs neither.
+        $replacing = $this->fileIntegrityService->hasBaseline();
+        $validated = $request->validate([
+            'reason' => [$replacing ? 'required' : 'nullable', 'string', 'max:500'],
+        ]);
+
         $result = $this->fileIntegrityService->regenerateBaseline(
             ScanTargetDTO::core(),
             FileIntegrityAudit::TRIGGER_MANUAL,
             FileIntegrityAudit::INITIATED_BY_USER,
             Auth::id()
         );
+
+        if ($result && $replacing) {
+            app(AuditService::class)->log([
+                'action' => AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED,
+                'category' => AuditLog::getCategoryForAction(AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED),
+                'severity' => AuditLog::getDefaultSeverity(AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED),
+                'context' => [
+                    'reason' => (string) $validated['reason'],
+                    'sealed' => $this->fileIntegrityService->baselineSealStatus() === IntegritySeal::VALID,
+                    'triggered_by' => 'admin',
+                ],
+            ]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([

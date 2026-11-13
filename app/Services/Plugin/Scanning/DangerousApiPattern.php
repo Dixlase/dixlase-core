@@ -40,7 +40,8 @@ namespace App\Services\Plugin\Scanning;
  *
  * Detection patterns for dangerous API calls
  *
- * Detects direct use of exec, shell_exec, eval, system, passthru, and env()
+ * Detects direct use of exec, shell_exec, eval, system, passthru, env(), and
+ * references to the site's integrity key (dangerous_api.integrity_key)
  * Excludes matches within comment lines and string literals
  */
 class DangerousApiPattern extends DetectionPattern
@@ -63,6 +64,15 @@ class DangerousApiPattern extends DetectionPattern
             ],
             'env_access' => [
                 '/\benv\s*\(\s*[\'"][A-Z_]+[\'"]/i',
+            ],
+            // The integrity key seals the audit log, the file-integrity
+            // baseline and the enabled-plugins cache (#665, #803). No
+            // extension has a reason to read it; one that does can forge
+            // what core uses to notice tampering.
+            'integrity_key' => [
+                '/\bINTEGRITY_(?:PREVIOUS_)?KEYS?\b/',
+                '/\bsecurity\.integrity_keys\b/',
+                '/\bIntegrity(?:Keyring|Seal)\b/',
             ],
             default => [],
         };

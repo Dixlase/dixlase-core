@@ -39,6 +39,7 @@ namespace App\Console\Commands;
 
 use App\Models\AuditLog;
 use App\Services\AuditService;
+use App\Services\FileIntegrityService;
 use App\Services\Security\IntegrityKeyring;
 use App\Support\Install\EnvFile;
 use Illuminate\Console\Command;
@@ -135,6 +136,14 @@ class IntegrityKeyCommand extends Command
 
         EnvFile::update($values, $envPath);
 
+        // A first key also seals the file-integrity baseline as it stands, so
+        // whatever has changed since it was written stays visible (#803).
+        $baselineSealed = false;
+        if (! $rotate) {
+            config(['security.integrity_keys.current' => $values['INTEGRITY_KEY']]);
+            $baselineSealed = app(FileIntegrityService::class)->sealExistingBaseline();
+        }
+
         $action = $rotate ? AuditLog::ACTION_INTEGRITY_KEY_ROTATED : AuditLog::ACTION_INTEGRITY_KEY_CREATED;
         app(AuditService::class)->log([
             'action' => $action,
@@ -143,6 +152,7 @@ class IntegrityKeyCommand extends Command
             'context' => [
                 'key_version' => $newVersion,
                 'previous_version' => $currentVersion,
+                'baseline_sealed' => $baselineSealed,
                 'triggered_by' => 'cli',
             ],
         ]);
@@ -150,6 +160,9 @@ class IntegrityKeyCommand extends Command
         $this->info(__($rotate ? 'admin/command/integrity-key.rotated' : 'admin/command/integrity-key.created', [
             'version' => $newVersion,
         ]));
+        if ($baselineSealed) {
+            $this->line(__('admin/command/integrity-key.baseline_sealed'));
+        }
 
         if ($this->laravel->configurationIsCached()) {
             $this->warn(__('admin/command/integrity-key.config_cached'));
