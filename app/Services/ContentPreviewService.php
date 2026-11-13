@@ -40,6 +40,7 @@ namespace App\Services;
 use App\Enums\ContentEditorType;
 use App\Services\Editor\EditorManager;
 use App\Support\Content\Embed\ContentEmbedExtension;
+use App\Support\Content\Embed\HtmlEmbedExpander;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -125,7 +126,7 @@ class ContentPreviewService
                     'attributes' => self::MARKDOWN_ATTRIBUTES,
                 ], self::markdownExtensions()),
                 ContentEditorType::BLADE => Blade::render($content),
-                ContentEditorType::HTML => $content,
+                ContentEditorType::HTML => $this->expandEmbeds($content),
             };
 
             return shortcode_parse($html);
@@ -137,6 +138,19 @@ class ContentPreviewService
 
             return $content;
         }
+    }
+
+    /**
+     * Turn `@[service](URL)` lines of an HTML body into embeds (#1031)
+     *
+     * Markdown bodies get this from their converter. An extension that
+     * renders an HTML body itself calls it on that HTML, guarded with
+     * method_exists() for an older core. A marker counts only when it is
+     * alone in its paragraph; see {@see HtmlEmbedExpander}.
+     */
+    public function expandEmbeds(string $html): string
+    {
+        return app(HtmlEmbedExpander::class)->expand($html);
     }
 
     /**

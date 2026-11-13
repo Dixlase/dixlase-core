@@ -141,6 +141,11 @@ export function contentEditor() {
             return !this.isGuiEditor;
         },
 
+        // Markdown and HTML expand `@[service](URL)` embeds (#731, #1031).
+        get acceptsEmbeds() {
+            return this.editorType === 'markdown' || this.editorType === 'html';
+        },
+
         get showContentTab() {
             return this.isTextEditor && (this.activeTab === 'content' || !this.showAssetTabs);
         },
