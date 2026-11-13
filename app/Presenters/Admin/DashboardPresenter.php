@@ -50,6 +50,7 @@ use App\Enums\PluginHealthStatus;
 use App\Helpers\AdminHelper;
 use App\Helpers\CaptchaHelper;
 use App\Helpers\ConfigHelper;
+use App\Helpers\DateTimeHelper;
 use App\Models\AuditLog;
 use App\Models\CoreVersionHistory;
 use App\Models\FileIntegrityAudit;
@@ -535,9 +536,15 @@ class DashboardPresenter
             ]),
             AuditLogIntegrityService::HEALTH_EMPTY => __('admin/dashboard.audit_integrity_empty'),
             default => $auditHealth['last_verified_at'] !== null
-                ? __('admin/dashboard.audit_integrity_ok', ['date' => $auditHealth['last_verified_at']->format('Y-m-d')])
+                ? __('admin/dashboard.audit_integrity_ok', ['date' => DateTimeHelper::display($auditHealth['last_verified_at'], 'date')])
                 : __('admin/dashboard.audit_integrity_ok_unverified'),
         };
+        // Without an integrity key the per-row chain is unkeyed: whoever can
+        // write to the database can rewrite rows and recompute it (#665).
+        if ($auditHealth['state'] === AuditLogIntegrityService::HEALTH_OK && ! ($auditHealth['keyed'] ?? true)) {
+            $auditStatus = 'recommendation';
+            $auditDescription = __('admin/dashboard.audit_integrity_unkeyed');
+        }
         $items[] = [
             'key' => 'audit_log_integrity',
             'status' => $auditStatus,

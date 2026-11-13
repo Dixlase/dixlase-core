@@ -49,6 +49,7 @@ use App\Models\Plugin;
 use App\Models\PluginAudit;
 use App\Models\PluginVersionHistory;
 use App\Presenters\Admin\ExtensionCardPresenter;
+use App\Services\Admin\VisiblePluginsResolver;
 use App\Services\Csp\CspDiagnosticService;
 use App\Services\Csp\CspExtensionLoader;
 use App\Services\Extension\ExtensionAssetBuildReport;
@@ -105,20 +106,20 @@ class AdminPluginsSettingsController extends AdminLoggedInController
             $uninstalledPlugins[$i]['stale_latest_version'] = $freshness->newerRelease('plugin', (string) ($entry['directory'] ?? ''), $entry['slug'] ?? null, $entry['version'] ?? null);
         }
 
-        // Demo mode: restrict the plugin manager to a curated allowlist so that
-        // internal / infrastructure plugins (deploy, dev tooling, the demo
-        // orchestrator itself, etc.) are neither listed as installed nor offered
-        // for installation inside a demo tenant. The allowlist (plugin slugs) is
-        // populated at runtime by the demo orchestrator's tenant middleware;
-        // null (the default on normal sites) means no restriction.
-        $demoVisibleSlugs = config('demo.visible_plugin_slugs');
-        if (is_array($demoVisibleSlugs)) {
+        // Restrict the plugin manager to a curated allowlist when an extension
+        // asks for one, so that internal / infrastructure plugins are neither
+        // listed as installed nor offered for installation (e.g. inside a public
+        // demo). Extensions contribute the allowlist via
+        // VisiblePluginsProviderInterface; null means no restriction (the normal
+        // case). See VisiblePluginsResolver.
+        $visibleSlugs = app(VisiblePluginsResolver::class)->allowedSlugs();
+        if (is_array($visibleSlugs)) {
             $plugins = $plugins
-                ->filter(fn ($p) => in_array($p->slug, $demoVisibleSlugs, true))
+                ->filter(fn ($p) => in_array($p->slug, $visibleSlugs, true))
                 ->values();
             $uninstalledPlugins = array_values(array_filter(
                 $uninstalledPlugins,
-                fn ($p) => in_array($p['slug'] ?? null, $demoVisibleSlugs, true)
+                fn ($p) => in_array($p['slug'] ?? null, $visibleSlugs, true)
             ));
         }
 

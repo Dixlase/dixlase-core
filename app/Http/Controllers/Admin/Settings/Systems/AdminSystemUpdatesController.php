@@ -36,6 +36,7 @@
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Contracts\Backup\BackupServiceInterface;
+use App\Helpers\DateTimeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\Plugin;
 use App\Models\Theme;
@@ -142,7 +143,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'directory' => $p->directory,
                 'preselected' => $target['type'] === 'plugin' && $target['slug'] === $p->slug,
                 'updateFailedAt' => $p->update_failed_at,
-                'updateFailedAtFormatted' => $p->update_failed_at?->format('Y/m/d H:i'),
+                'updateFailedAtFormatted' => DateTimeHelper::display($p->update_failed_at, 'Y/m/d H:i'),
                 'updateFailureReason' => $p->update_failure_reason,
                 'releaseUrl' => $p->release_url,
                 'releaseNotes' => $p->release_notes,
@@ -160,7 +161,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
                 'directory' => $t->directory,
                 'preselected' => $target['type'] === 'theme' && $target['slug'] === $t->slug,
                 'updateFailedAt' => $t->update_failed_at,
-                'updateFailedAtFormatted' => $t->update_failed_at?->format('Y/m/d H:i'),
+                'updateFailedAtFormatted' => DateTimeHelper::display($t->update_failed_at, 'Y/m/d H:i'),
                 'updateFailureReason' => $t->update_failure_reason,
                 'releaseUrl' => $t->release_url,
                 'releaseNotes' => $t->release_notes,
@@ -178,7 +179,7 @@ class AdminSystemUpdatesController extends AdminLoggedInController
         $this->viewParams['themes'] = $themes;
         $this->viewParams['core'] = $core;
         $this->viewParams['lastCheckedAt'] = $lastCheckedAt;
-        $this->viewParams['lastCheckedAtFormatted'] = $lastCheckedAt?->format('Y/m/d H:i');
+        $this->viewParams['lastCheckedAtFormatted'] = DateTimeHelper::display($lastCheckedAt, 'Y/m/d H:i');
         $this->viewParams['totalCount'] = count($plugins) + count($themes) + ($core['available'] ? 1 : 0);
 
         // Version drift banner (Finding #5). When the on-disk VERSION file and
@@ -1056,7 +1057,7 @@ HTML;
             'release_notes' => $available ? $state->release_notes : null,
             'preselected' => $available && $target['type'] === 'core',
             'update_failed_at' => $state->update_failed_at,
-            'update_failed_at_formatted' => $state->update_failed_at?->format('Y/m/d H:i'),
+            'update_failed_at_formatted' => DateTimeHelper::display($state->update_failed_at, 'Y/m/d H:i'),
             'update_failure_reason' => $state->update_failure_reason,
             'can_rollback' => $rollbackPoint !== null,
             'rollback_to_version' => is_array($rollbackMeta) ? ($rollbackMeta['from'] ?? null) : null,

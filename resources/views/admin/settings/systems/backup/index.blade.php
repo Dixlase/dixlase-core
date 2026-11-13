@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <tbody>
                     @foreach($records as $record)
                         <tr>
-                            <td class="px-4 py-2 whitespace-nowrap">{{ $record->created_at?->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap"><x-ui-datetime :value="$record->created_at" format="full" /></td>
                             <td class="px-4 py-2">
                                 <div class="flex flex-wrap gap-1">
                                     @foreach($record->targets ?? [] as $target)

@@ -154,6 +154,11 @@ return [
 
         'publish_mode_help' => 'フロントページをファイルで保存しているときに使われます。変更すると監査ログに記録されます。',
 
+        'front_page_display_label' => 'フロントページの表示',
+        'front_page_display_help' => 'サイトのフロントページ（/）に何を表示するかを選びます。テーマのフロントページ・非表示（403）・インストール済みプラグインが提供するページから選べます。変更すると監査ログに記録されます。',
+        'front_page_display_theme' => 'テーマのフロントページ',
+        'front_page_display_forbidden' => '非表示（403）',
+
         'settings_updated' => 'フロントページの設定を更新しました。',
 
         'confirm_title' => '設定を保存',

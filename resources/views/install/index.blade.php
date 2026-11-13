@@ -82,7 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </button>
             <ul x-show="open" x-cloak x-collapse class="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4 pb-2">
                 <li>
-                    <strong>PHP 8.2+</strong>:
+                    <strong>PHP {{ $requirements['php_minimum'] }}+</strong>:
                     <span class="{{ $requirements['php'] ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                         {{ $requirements['php'] ? __('install/common.ok') : __('install/common.failed') }}
                     </span>

@@ -61,11 +61,13 @@ Demo mode banner for admin panel (sticky display when DIXLASE_DEMO_MODE is on)
             @if(config('dixlase.demo_account'))
                 <span><i class="fas fa-user mr-1" aria-hidden="true"></i>{{ __('admin/demo.account') }}: <strong>{{ config('dixlase.demo_account') }}</strong></span>
             @endif
-            @if(config('dixlase.demo_expires_at'))
+            {{-- The expiry comes from a DemoExpiryProvider an extension registers;
+                 core falls back to the legacy demo_expires_at config. --}}
+            @if($__demoExpiresAt = \App\Helpers\DemoModeHelper::expiresAt())
                 {{-- Rendered as an ISO-8601 UTC timestamp; the script below
                      rewrites it to each visitor's local time. The " UTC"
                      fallback text is what shows if JavaScript is disabled. --}}
-                <span class="whitespace-nowrap"><i class="fas fa-clock mr-1" aria-hidden="true"></i>{{ __('admin/demo.expires') }}: <time data-demo-localtime datetime="{{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->toIso8601String() }}">{{ \Illuminate\Support\Carbon::parse(config('dixlase.demo_expires_at'))->isoFormat('M/D HH:mm') }} UTC</time></span>
+                <span class="whitespace-nowrap"><i class="fas fa-clock mr-1" aria-hidden="true"></i>{{ __('admin/demo.expires') }}: <time data-demo-localtime datetime="{{ $__demoExpiresAt->toIso8601String() }}">{{ $__demoExpiresAt->isoFormat('M/D HH:mm') }} UTC</time></span>
             @endif
         </div>
     </div>

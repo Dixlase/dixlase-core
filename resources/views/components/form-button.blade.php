@@ -34,24 +34,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 @props([
-    'type' => 'button',      // ボタンのタイプ (button, submit, reset, link)
-    'variant' => 'primary',  // ボタンの色バリエーション (primary, secondary, success, warning, danger)
-    'size' => 'md',          // ボタンのサイズ (xs, sm, md, lg)
-    'class' => '',           // カスタムクラス
-    'label' => null,         // ボタンのテキスト（nullの場合はスロットを使用）
-    'icon' => null,          // アイコンクラス (例: 'fas fa-save')
-    'iconPosition' => 'left', // アイコンの位置 (left, right)
-    'disabled' => false,     // ボタンを無効にする
-    'form' => null,          // フォームのID
-    'id' => null,            // ボタンのID
-    'href' => null,          // リンク先URL (type='link'の時に使用)
+    'type' => 'button',      // Button type (button, submit, reset, link)
+    'variant' => 'primary',  // Color variant (primary, secondary, success, warning, danger)
+    'size' => 'md',          // Button size (xs, sm, md, lg)
+    'class' => '',           // Custom classes
+    'label' => null,         // Button text (the slot is used when null)
+    'icon' => null,          // Icon class (e.g. 'fas fa-save')
+    'iconPosition' => 'left', // Icon position (left, right)
+    'disabled' => false,     // Disable the button
+    'form' => null,          // ID of the form
+    'id' => null,            // Button ID
+    'href' => null,          // Link target URL (used when type='link')
     'xClick' => null,        // Alpine.js @click
     'xDisabled' => null,     // Alpine.js :disabled
     'xShow' => null,         // Alpine.js x-show
 ])
 
 @php
-    // バリエーションに応じたクラス設定
+    // Classes for each variant
     $variantClasses = [
         // disabled:bg-blue-400 — the shared disabled:opacity-50 fades whatever
         // background the variant has. blue-600 sits on the violet side of the
@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         'dark' => 'bg-gray-800 text-white hover:bg-gray-700 focus:ring-gray-500',
     ];
     
-    // サイズに応じたクラス設定
+    // Classes for each size
     $sizeClasses = [
         'xs' => 'px-2 py-1 text-xs',
         'sm' => 'px-3 py-1.5 text-sm',
@@ -91,13 +91,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         $sizeClasses[$size] ?? $sizeClasses['md'],
         $class
     ];
+
+    // Both branches forward this one list, so a prop cannot reach the markup from one and not the other.
+    // `onclick` stays in the list on purpose. The component no longer takes an onclick prop, and the CSP
+    // sets script-src-attr to 'none' in every preset but development, so a browser refuses an inline
+    // handler. Dropping the attribute keeps this component from emitting one; use xClick instead.
+    $forwardedAttributes = $attributes->except(['type', 'variant', 'size', 'class', 'label', 'icon', 'iconPosition', 'onclick', 'disabled', 'form', 'id', 'href', 'xClick', 'xDisabled', 'xShow']);
 @endphp
 
 @if ($type === 'link')
 <a href="{{ $href }}"
     @if ($id) id="{{ $id }}" @endif
+    @if ($xClick) @click="{{ $xClick }}" @endif
     @if ($xShow) x-show="{{ $xShow }}" @endif
     class="{{ implode(' ', $buttonClasses) }} {{ $disabled ? 'pointer-events-none' : '' }}"
+    {{ $forwardedAttributes }}
     >
     @if ($icon && $iconPosition === 'left')
         <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'mr-2' : '' }}"></i>
@@ -114,10 +122,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @endif
 </a>
 @else
-{{-- `onclick` stays in the except() list below on purpose. The component no longer takes an
-     onclick prop, and the CSP sets script-src-attr to 'none' in every preset but development,
-     so an inline handler is refused by the browser. Dropping the attribute here keeps this
-     component from emitting one at all; use xClick (Alpine's @click) instead. --}}
 <button type="{{ $type }}"
     @if ($id) id="{{ $id }}" @endif
     @if ($xClick) @click="{{ $xClick }}" @endif
@@ -126,7 +130,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     @if ($form) form="{{ $form }}" @endif
     class="{{ implode(' ', $buttonClasses) }}"
     @if ($disabled) disabled @endif
-    {{ $attributes->except(['type', 'variant', 'size', 'class', 'label', 'icon', 'iconPosition', 'onclick', 'disabled', 'form', 'id', 'href', 'xClick', 'xDisabled', 'xShow']) }}
+    {{ $forwardedAttributes }}
     >
     @if ($icon && $iconPosition === 'left')
         <i class="{{ $icon }} {{ ($label || $slot->isNotEmpty()) ? 'mr-2' : '' }}"></i>

@@ -5,7 +5,7 @@
 ## 前提条件
 
 - PHP 8.3 以上
-- MySQL 8.0 / MariaDB 10.6 以上
+- MySQL 8.4 / MariaDB 10.11 以上
 - SSHアクセス（推奨）またはFTPアクセス
 - Composer（サーバーにインストール済み、またはローカルで実行）
 

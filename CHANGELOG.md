@@ -41,6 +41,135 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ---
 
+## [Unreleased]
+
+### Added
+- Plugin API: `FrontPageProviderInterface` lets an extension choose what the site front page
+  (`/`) displays. A new per-site `front_page_display` setting takes `theme` (the default theme
+  front page), `forbidden` (a 403), or a registered provider's slug; when it names a provider,
+  core serves that provider's `renderFrontPage()` for `/`, falling back to the theme front page
+  while it is unavailable. Declare the `front-page` capability in `plugin.json` and tag the
+  provider on `plugin.capabilities`. This replaces taking over the `/` route and calling the
+  non-`@api` front controller directly (#1012)
+- Admin: the Front settings page has a **Front page display** control to choose what the site
+  front page (`/`) shows — the theme front page (the default), hidden (403), or a page from an
+  installed plugin that registers a front-page provider. The choice is the per-site
+  `front_page_display` setting, saved through an audited settings change and validated against
+  the available options (#1027)
+
+## [0.2.16] — 2026-11-13
+
+### Security
+- `grpc/grpc` moves from 1.82.0 to 1.85.0 (#1021). Releases below 1.84.1 bundle a CA store that
+  trusts compromised eMudhra intermediate CAs
+  ([GHSA-gvrc-7wf9-p7hg](https://github.com/grpc/grpc/security/advisories/GHSA-gvrc-7wf9-p7hg)).
+  It comes in through `google/gax`; nothing else in the lock moves
+
+### Fixed
+- The backup screens show their times in the display timezone instead of UTC: the created time
+  in the list and the detail, the retention date, and the restore history (#765, #1008). A
+  backup kept with no time limit still says so
+- The active session list, on the sessions page and on the member edit page, shows the start
+  time in the display timezone, and the exact time behind "last active" too (#765, #1018)
+
+## [0.2.15] — 2026-11-12
+
+### Added
+- Plugin API: `CaptchaHelper::verifyGlobally($request, $action)` verifies a CAPTCHA token for
+  an endpoint that is not one of core's named forms (e.g. a plugin's own POST endpoint), using
+  the globally configured CAPTCHA without the per-form gate, and returns a plain `bool` that
+  fails closed. The caller gates on the no-form `shouldShowCaptcha()` itself, so a non-form
+  endpoint can require a CAPTCHA through the `@api` surface instead of resolving the concrete
+  `CaptchaDriver` (#1010, #1011)
+
+### Changed
+- CSP: the demo sign-up `form-action` and its `DEMO_BASE_DOMAIN` default (`demo.dixlase.org`)
+  are no longer hardcoded in `config/csp/domains.php`. A hosted demo now supplies its own
+  `form-action` (base domain and per-tenant subdomain wildcard) at runtime through a CSP
+  policy provider (`CspPolicyProvider` / `CspPolicyRegistry`). Non-demo installs are
+  unaffected — the base `form-action` default (`'self'`) stays (#1003, #1004).
+
+### Removed
+- Demo: the transitional fallbacks to the legacy demo runtime config are removed now that
+  extensions supply these values through the seams. `VisiblePluginsResolver` no longer reads
+  `demo.visible_plugin_slugs`, `DemoModeHelper::expiresAt()` no longer reads
+  `dixlase.demo_expires_at`, and the `demo_expires_at` key is dropped from `config/dixlase.php`.
+  A core install with no demo extension is unaffected — both already answered null in that case
+  (#1005, #1006).
+
+### Fixed
+- The security screens show their times in the display timezone instead of UTC: the latest
+  integrity scan on the overview, the scan history, the baseline and core-manifest times, the
+  scan detail and the CAPTCHA's last test (#765, #998)
+
+## [0.2.14] — 2026-11-11
+
+### Added
+- Plugin API: `VisiblePluginsProviderInterface` lets an extension choose which plugins appear
+  on the plugins admin screen — for example a curated public demo that hides internal or
+  infrastructure plugins. Core aggregates the slugs from every registered provider; with none
+  registered, every plugin is shown. Declare the `visible-plugins` capability in `plugin.json`
+  and tag the provider on `plugin.capabilities` (#992, #994)
+- Plugin API: `App\Contracts\Demo\DemoExpiryProvider` lets an extension supply the demo
+  banner's sandbox expiry. Register it in the container
+  (`$this->app->singleton(DemoExpiryProvider::class, …)`); core asks it when rendering the
+  banner and falls back to the legacy `dixlase.demo_expires_at` config while none is
+  registered (#996, #997)
+
+### Changed
+- The CSP-report "dev tool" exclusion no longer hardcodes specific Vite dev-server ports.
+  Core keeps generic patterns (including Vite's default `:5173`); operators add their own
+  via `CSP_DEV_TOOL_PATTERNS` (comma-separated), merged into `config('csp.dev_tool_patterns')`.
+  Report-noise filtering only — no effect on the emitted policy (#999, #1000)
+
+### Fixed
+- `<x-form-button>` rendered as a link now forwards the attributes it is given, as the button
+  form already did, and `xClick` works on it (#941, #995). `onclick` is still dropped. Edit
+  links that already passed a `title`, in the member list and the Pages page list, now show it
+
+## [0.2.13] — 2026-11-10
+
+### Supported versions
+- The supported database floors are now the oldest versions their vendors still support:
+  **MySQL 8.4+** (was 8.0+), **MariaDB 10.11+** (was 10.6+), and **SQLite 3.35+**, which the
+  requirements now list (#987, #989). MySQL 8.0 and MariaDB 10.6 reached end of life in 2026.
+  No code changed: a site on an older server keeps running, but it is outside the supported
+  range. The development setup guide no longer lists PostgreSQL, which is neither supported
+  nor tested
+
+### Fixed
+- The install wizard checks for PHP 8.3, the floor core requires, and says "PHP 8.3+" (#988,
+  #990). It used to check for 8.2, so on PHP 8.2 it reported the requirement as met
+- A model's revisions come back newest first even when several were saved within the same
+  second (#985, #986). On some databases the oldest of them could come first
+- The admin sidebar opens full by default from 1024px (`lg`) instead of 1280px, so labels are
+  no longer cut off at 1024–1279px (#969, #971). A rail chosen by hand is still remembered
+- The overview pages' card grids switch at the same widths: one column below 768px, then two,
+  three from 1024px and four from 1280px (#970, #972)
+
+### Internal
+- CI runs every PHP version on SQLite, MySQL 9.7 and MariaDB 12.3, PHP 8.3 on the supported
+  floors (MySQL 8.4, MariaDB 10.11), and, as a warning only, on MySQL 8.0 and MariaDB 11.8
+  (#981, #982). The Migration Test moves to MySQL 8.4
+
+## [0.2.12] — 2026-11-10
+
+### Fixed
+- System Information opens on a site that runs on SQLite (#955, #956). It answered 500 there,
+  because it asked the database for its version with a query SQLite does not have; it now uses
+  the driver's own version call, which every driver supports. On MariaDB the page now shows the
+  plain version number (`10.11.6`) without the `-MariaDB-…` suffix
+- The log screens and the log download accept only a `YYYY-MM-DD` date for the day to show
+  (#968). Any other value counts as no date being chosen, instead of making the page fail
+
+### Changed
+- A fresh install bundles the OnePage theme v0.5.6 (#979). A core update does not change a
+  theme that is already installed
+
+### Internal
+- The core and plugin test suites run on every PHP version from 8.3 up: 8.3, 8.4, 8.5, and
+  8.6 while it is a development build (#973, #974)
+
 ## [0.2.11] — 2026-11-09
 
 ### Fixed

@@ -344,6 +344,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 {{-- CSP settings confirmation modal --}}
 @if(session('show_csp_confirmation'))
+@push('modals')
 <x-ui-modal
     id="cspConfirmationModal"
     :title="__('admin/settings/security/csp.confirmation_modal_title')"
@@ -371,8 +372,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
     </x-slot>
 </x-ui-modal>
-
-@push('scripts')
-    @vite('resources/src/admin/settings/security/js/csp-confirmation.js')
 @endpush
 @endif

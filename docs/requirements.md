@@ -34,8 +34,9 @@
 
 | Engine | Version |
 |--------|---------|
-| MariaDB | **10.6+** (recommended) |
-| MySQL | **8.0+** |
+| MariaDB | **10.11+** (recommended) |
+| MySQL | **8.4+** |
+| SQLite | **3.35+** |
 
 The default table prefix is `dls_`. UTF-8 (`utf8mb4`) character set is required.
 

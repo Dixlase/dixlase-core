@@ -66,6 +66,13 @@ use Illuminate\Support\Facades\Log;
  */
 class InstallController extends Controller
 {
+    /**
+     * The oldest PHP the wizard accepts. It has to match the floor in
+     * composer.json (`require.php`); InstallPhpFloorTest fails when the two
+     * disagree (#988).
+     */
+    public const MINIMUM_PHP_VERSION = '8.3.0';
+
     // List of available languages
     protected $availableLocales;
 
@@ -247,7 +254,8 @@ class InstallController extends Controller
         }
 
         return [
-            'php' => version_compare(PHP_VERSION, '8.2.0', '>='),
+            'php' => version_compare(PHP_VERSION, self::MINIMUM_PHP_VERSION, '>='),
+            'php_minimum' => implode('.', array_slice(explode('.', self::MINIMUM_PHP_VERSION), 0, 2)),
             'required_extensions' => $requiredExtensions,
             'recommended_extensions' => $recommendedExtensions,
             'optional_extensions' => $optionalExtensions,

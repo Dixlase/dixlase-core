@@ -10,7 +10,7 @@ Install Dixlase on Hostinger, one of the world's most popular hosting providers 
 
 - A Hostinger hosting account with hPanel access
 - PHP 8.3 or higher available on the server
-- MySQL 8.0 / MariaDB 10.6 or higher
+- MySQL 8.4 / MariaDB 10.11 or higher
 - SSH access via hPanel
 
 ## Steps

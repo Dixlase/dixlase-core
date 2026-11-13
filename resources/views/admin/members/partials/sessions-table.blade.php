@@ -73,9 +73,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             @endif
                         </td>
                         <td data-label="{{ __('admin/members/sessions.columns.ip_address') }}">{{ $session['ip_address'] ?? __('admin/members/sessions.unknown') }}</td>
-                        <td data-label="{{ __('admin/members/sessions.columns.started_at') }}">{{ $session['started_at']?->format('Y-m-d H:i') ?? __('admin/members/sessions.unknown') }}</td>
+                        <td data-label="{{ __('admin/members/sessions.columns.started_at') }}"><x-ui-datetime :value="$session['started_at']" format="datetime" :empty-label="__('admin/members/sessions.unknown')" /></td>
                         <td data-label="{{ __('admin/members/sessions.columns.last_activity') }}">
-                            <span title="{{ $session['last_activity']->format('Y-m-d H:i:s') }}">{{ $session['last_activity']->diffForHumans() }}</span>
+                            <span title="{{ \App\Helpers\DateTimeHelper::display($session['last_activity'], 'full') }}">{{ $session['last_activity']->diffForHumans() }}</span>
                         </td>
                         <td data-label="{{ __('admin/members/sessions.columns.actions') }}">
                             @unless($session['current'])

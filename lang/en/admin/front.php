@@ -153,6 +153,11 @@ return [
 
         'publish_mode_help' => 'Applies when the front page is stored as a file. Changing it is recorded in the audit log.',
 
+        'front_page_display_label' => 'Front page display',
+        'front_page_display_help' => 'Choose what the site front page (/) shows: the theme front page, a 403 that hides it, or a page supplied by an installed plugin. Changing it is recorded in the audit log.',
+        'front_page_display_theme' => 'Theme front page',
+        'front_page_display_forbidden' => 'Hidden (403)',
+
         'settings_updated' => 'Front page settings have been updated.',
 
         'confirm_title' => 'Save Settings',

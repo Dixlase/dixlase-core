@@ -10,7 +10,7 @@ SSH と Composer をサポートする開発者向けホスティング A2 Hosti
 
 - cPanel またはコントロールパネルアクセス付きの A2 Hosting アカウント
 - サーバーで PHP 8.3 以上が利用可能
-- MySQL 8.0 / MariaDB 10.6 以上
+- MySQL 8.4 / MariaDB 10.11 以上
 - Composer が利用可能な SSH アクセス
 
 ## 手順

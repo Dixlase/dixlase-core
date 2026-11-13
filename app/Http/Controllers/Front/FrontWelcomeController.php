@@ -38,6 +38,7 @@ namespace App\Http\Controllers\Front;
 use App\Enums\ContentEditorType;
 use App\Models\FrontPage;
 use App\Services\Editor\EditorManager;
+use App\Services\Front\FrontPageDisplayResolver;
 use App\Services\FrontPageContentService;
 use Illuminate\Support\Facades\App;
 
@@ -59,6 +60,14 @@ class FrontWelcomeController extends FrontController
      */
     public function index()
     {
+        // What the front page displays is a per-site setting: the theme front
+        // page (default, below), a 403, or an extension's front-page provider.
+        // Only when it resolves to an override do we skip the theme front page.
+        $override = app(FrontPageDisplayResolver::class)->resolveResponse(request());
+        if ($override !== null) {
+            return $override;
+        }
+
         // Get main content for front page (locale-aware; see findForFrontend)
         $frontPage = FrontPage::findForFrontend('main_content');
         $frontContent = null;

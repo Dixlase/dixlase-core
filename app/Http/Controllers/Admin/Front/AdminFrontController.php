@@ -42,6 +42,7 @@ use App\Actions\FrontPage\UpdateFrontPageAction;
 use App\Actions\Settings\UpdateSettingsAction;
 use App\Actors\MemberActor;
 use App\Contracts\Repositories\FrontSettingRepositoryInterface;
+use App\Contracts\Repositories\SiteSettingRepositoryInterface;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentPublishMode;
 use App\Enums\ContentStorageType;
@@ -58,6 +59,7 @@ use App\Services\Content\FileContentPublisher;
 use App\Services\Content\ScriptAuthoringPolicy;
 use App\Services\ContentPreviewService;
 use App\Services\Editor\EditorManager;
+use App\Services\Front\FrontPageDisplayResolver;
 use App\Services\FrontPageContentService;
 use App\Services\FrontPageRevisionService;
 use Illuminate\Http\JsonResponse;
@@ -73,6 +75,7 @@ class AdminFrontController extends AdminLoggedInController
      */
     public function __construct(
         protected FrontSettingRepositoryInterface $frontSettingRepository,
+        protected SiteSettingRepositoryInterface $siteSettingRepository,
         protected FrontPageContentService $contentService,
         protected ContentPreviewService $previewService,
     ) {
@@ -442,6 +445,15 @@ class AdminFrontController extends AdminLoggedInController
         $this->viewParams['schedulerRunning'] = app(FileContentPublisher::class)->schedulerRunning();
         $this->viewParams['fileSaveModeAvailable'] = FileContentPublisher::fileSaveModeAvailable();
 
+        $this->viewParams['frontPageDisplay'] = (string) $this->siteSettingRepository->get(
+            FrontPageDisplayResolver::SETTING_KEY,
+            FrontPageDisplayResolver::MODE_THEME,
+        );
+        $this->viewParams['frontPageDisplayOptions'] = [
+            FrontPageDisplayResolver::MODE_THEME => __('admin/front.settings.front_page_display_theme'),
+            FrontPageDisplayResolver::MODE_FORBIDDEN => __('admin/front.settings.front_page_display_forbidden'),
+        ] + app(FrontPageDisplayResolver::class)->availableProviders();
+
         return view('admin::front/settings', $this->viewParams);
     }
 
@@ -452,6 +464,8 @@ class AdminFrontController extends AdminLoggedInController
     {
         $actor = new MemberActor(AdminHelper::getMember());
 
+        $validated = $request->validated();
+
         UpdateSettingsAction::make(
             repository: $this->frontSettingRepository,
             settingsPage: 'front.settings',
@@ -461,7 +475,21 @@ class AdminFrontController extends AdminLoggedInController
                     FrontPage::PUBLISH_MODE_SETTING => $data['publish_mode'],
                 ]);
             },
-        )->execute($actor, $request->validated());
+        )->execute($actor, $validated);
+
+        // The front-page display mode is a per-site setting (read by
+        // FrontPageDisplayResolver), so it is written through the site-setting
+        // repository in its own audited change.
+        UpdateSettingsAction::make(
+            repository: $this->siteSettingRepository,
+            settingsPage: 'front.settings',
+            settingKeys: [FrontPageDisplayResolver::SETTING_KEY],
+            writeCallback: function ($repo, $data) {
+                $repo->setMultiple([
+                    FrontPageDisplayResolver::SETTING_KEY => $data['front_page_display'],
+                ]);
+            },
+        )->execute($actor, $validated);
 
         return redirect()->route('admin.front.settings')
             ->with('success', __('admin/front.settings.settings_updated'));

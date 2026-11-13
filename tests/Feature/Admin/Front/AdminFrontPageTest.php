@@ -820,10 +820,20 @@ class AdminFrontPageTest extends TestCase
         $response->assertViewIs('admin::front.settings');
     }
 
+    public function test_settings_page_shows_the_front_page_display_control(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')
+            ->get(route('admin.front.settings'));
+
+        $response->assertOk();
+        $response->assertSee(__('admin/front.settings.front_page_display_label'));
+        $response->assertSee('name="front_page_display"', false);
+    }
+
     public function test_update_settings_redirects_with_success(): void
     {
         $response = $this->actingAs($this->admin, 'member')
-            ->post(route('admin.front.settings.store'), ['publish_mode' => 'admin']);
+            ->post(route('admin.front.settings.store'), ['publish_mode' => 'admin', 'front_page_display' => 'theme']);
 
         $response->assertRedirect(route('admin.front.settings'));
         $response->assertSessionHas('success');
