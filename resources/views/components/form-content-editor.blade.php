@@ -62,6 +62,9 @@ Optional parts:
   - insertEmbed (on by default): an "Insert embed" button beside it, shown
     with the Markdown and HTML editors, that puts `@[service](URL)` at the
     cursor.
+  - insertLink (on by default): an "Insert link" button, shown with the
+    Markdown and HTML editors, that links the selection or inserts a link
+    at the cursor; Cmd/Ctrl+K in the field opens it as well.
 --}}
 
 @props([
@@ -105,6 +108,7 @@ Optional parts:
     'rightSidebar' => false,
     'insertImage' => true,
     'insertEmbed' => true,
+    'insertLink' => true,
 ])
 
 <div data-translations='@json($editorTranslations)'
@@ -294,12 +298,18 @@ Optional parts:
 
                 {{-- Markdown / HTML / Blade: one field --}}
                 <div x-show="showContentTab">
-                    @if ($insertImage || $insertEmbed)
+                    @if ($insertImage || $insertEmbed || $insertLink)
                         <div class="mb-2 flex flex-wrap items-center gap-2">
                             @if ($insertImage)
                                 <x-content-editor.insert-image
                                     :target="$contentFieldName"
                                     :selectorId="$contentFieldName.'_image_selector'"
+                                />
+                            @endif
+                            @if ($insertLink)
+                                <x-content-editor.insert-link
+                                    :target="$contentFieldName"
+                                    :modalId="$contentFieldName.'_link_modal'"
                                 />
                             @endif
                             @if ($insertEmbed)

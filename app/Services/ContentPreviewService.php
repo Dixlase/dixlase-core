@@ -71,10 +71,12 @@ class ContentPreviewService
     /**
      * Attributes an author may give a Markdown block or span with the
      * `{#id}` / `{.class}` syntax: an id for in-page links (a table of
-     * contents) and classes for styling. The extension drops every other
-     * attribute, so `{onclick=...}` or `{style=...}` never reach the page.
+     * contents) and classes for styling, plus `target` and `rel` for a
+     * link that opens a new window, which the editor's Insert link writes
+     * (#1032). The extension drops every other attribute, so
+     * `{onclick=...}` or `{style=...}` never reach the page.
      */
-    public const MARKDOWN_ATTRIBUTES = ['allow' => ['id', 'class']];
+    public const MARKDOWN_ATTRIBUTES = ['allow' => ['id', 'class', 'target', 'rel']];
 
     /**
      * CommonMark extensions every content Markdown render adds on top of

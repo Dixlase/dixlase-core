@@ -59,6 +59,22 @@ marked.use({
     }],
 });
 
+// A link's `{target="_blank" rel="..."}` (#1032) is for the server's
+// renderer; marked would print it as text, so the side-by-side preview drops
+// it and shows the plain link.
+// Items are separated by whitespace, which no value can contain, so the
+// pattern has one way to match and cannot backtrack exponentially.
+const LINK_ATTRIBUTE = '(?:target|rel)=(?:"[^"\\n]*"|[^\\s}"=]+)';
+const LINK_ATTRIBUTES = new RegExp('(\\]\\([^)\\n]*\\))\\{[ \\t]*' + LINK_ATTRIBUTE + '(?:[ \\t]+' + LINK_ATTRIBUTE + ')*[ \\t]*\\}', 'g');
+
+marked.use({
+    hooks: {
+        preprocess(markdown) {
+            return markdown.replace(LINK_ATTRIBUTES, '$1');
+        },
+    },
+});
+
 // Expose marked to window for use in Alpine components
 window.marked = marked;
 
