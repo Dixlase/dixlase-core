@@ -77,7 +77,7 @@ return [
     'error_notification_disabled' => 'エラー通知が無効です。本番環境では有効化を推奨します。',
     'file_integrity_status' => 'ファイル整合性',
     'file_content_status' => 'ファイル保存のコンテンツ',
-    'file_content_pending' => ':count 件に、公開していないファイルの変更があります。',
+    'file_content_pending' => ':count 件に、まだ反映していないファイルの変更があります。',
     'file_content_more' => 'ほか :count 件',
     'file_content_scheduler_stopped' => 'スケジューラ (cron) が動いていないため、ファイルの変更は、それを表示するページを開いたときにしか見つかりません。',
     'file_integrity_ok' => '直近のスキャンでファイル整合性に問題はありませんでした。',
