@@ -66,19 +66,30 @@ class ContentEmbedRenderer implements NodeRendererInterface
             throw new InvalidArgumentException('Incompatible node type: '.$node::class);
         }
 
-        $url = $this->parse($node->url);
+        return $this->renderEmbed($node->service, $node->url);
+    }
+
+    /**
+     * The HTML for one embed, whichever editor it was written in
+     *
+     * Markdown reaches it through the CommonMark node above, an HTML body
+     * through {@see HtmlEmbedExpander} (#1031), so the two never drift.
+     */
+    public function renderEmbed(string $service, string $rawUrl): string
+    {
+        $url = $this->parse($rawUrl);
         if ($url === null) {
-            return '<p>'.Xml::escape('@['.$node->service.']('.$node->url.')').'</p>';
+            return '<p>'.Xml::escape('@['.$service.']('.$rawUrl.')').'</p>';
         }
 
-        $html = match ($node->service) {
+        $html = match ($service) {
             'youtube' => $this->youtube($url),
             'x' => $this->xPost($url),
             'github' => $this->github($url),
             default => null,
         };
 
-        return $html ?? '<p><a href="'.Xml::escape($node->url).'">'.Xml::escape($node->url).'</a></p>';
+        return $html ?? '<p><a href="'.Xml::escape($rawUrl).'">'.Xml::escape($rawUrl).'</a></p>';
     }
 
     /**
