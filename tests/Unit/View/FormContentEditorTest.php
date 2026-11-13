@@ -138,12 +138,12 @@ class FormContentEditorTest extends TestCase
         $this->assertStringNotContainsString('contentEditorInsertImage', $html);
     }
 
-    public function test_the_insert_embed_button_shows_with_the_markdown_editor(): void
+    public function test_the_insert_embed_button_shows_with_the_markdown_and_html_editors(): void
     {
         $html = Blade::render('<x-form-content-editor contentFieldName="body" />');
 
         $this->assertStringContainsString('x-data="contentEditorInsertEmbed"', $html);
-        $this->assertStringContainsString("x-show=\"isEditorSelected('markdown')\"", $html);
+        $this->assertStringContainsString('x-show="acceptsEmbeds"', $html);
         $this->assertStringContainsString('data-modal-id="body_embed_modal"', $html);
     }
 

@@ -60,7 +60,8 @@ Optional parts:
   - insertImage (on by default): an "Insert image" button above the text
     field that puts a media library item at the cursor.
   - insertEmbed (on by default): an "Insert embed" button beside it, shown
-    with the Markdown editor, that puts `@[service](URL)` at the cursor.
+    with the Markdown and HTML editors, that puts `@[service](URL)` at the
+    cursor.
   - insertLink (on by default): an "Insert link" button, shown with the
     Markdown and HTML editors, that links the selection or inserts a link
     at the cursor; Cmd/Ctrl+K in the field opens it as well.

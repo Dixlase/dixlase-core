@@ -141,6 +141,11 @@ export function contentEditor() {
             return !this.isGuiEditor;
         },
 
+        // Markdown and HTML expand `@[service](URL)` embeds (#731, #1031).
+        get acceptsEmbeds() {
+            return this.editorType === 'markdown' || this.editorType === 'html';
+        },
+
         // Insert link writes Markdown or HTML (#1032).
         get acceptsLinks() {
             return this.editorType === 'markdown' || this.editorType === 'html';

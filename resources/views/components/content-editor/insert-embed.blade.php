@@ -36,8 +36,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 then puts `@[service](URL)` on a line of its own at the cursor of the
 editor's field (contentEditorInsertEmbed and contentEditorEmbedForm in
 resources/src/admin/js/content-editor.js). Core renders the line through
-ContentEmbedExtension (#731). Markdown only, so the button shows only while
-the Markdown editor is selected.
+ContentEmbedExtension (#731) in Markdown and through HtmlEmbedExpander in
+HTML (#1031), so the button shows while either editor is selected.
 
 @param string $target   id of the textarea to insert into
 @param string $modalId  id of the modal that asks for the URL
@@ -49,7 +49,7 @@ the Markdown editor is selected.
 ])
 
 <div x-data="contentEditorInsertEmbed"
-     x-show="isEditorSelected('markdown')"
+     x-show="acceptsEmbeds"
      data-modal-id="{{ $modalId }}"
      class="inline-flex">
     <x-form-button
