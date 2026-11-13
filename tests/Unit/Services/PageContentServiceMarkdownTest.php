@@ -137,7 +137,7 @@ class PageContentServiceMarkdownTest extends TestCase
         );
     }
 
-    public function test_attributes_other_than_id_and_class_are_dropped(): void
+    public function test_attributes_outside_the_allowlist_are_dropped(): void
     {
         $markdown = "## Title {#t onclick=\"alert(1)\" style=\"color:red\" data-x=1}\n\n[link](https://example.com){href=\"javascript:alert(1)\" onmouseover=\"x()\"}";
 
@@ -152,6 +152,21 @@ class PageContentServiceMarkdownTest extends TestCase
             $this->assertStringNotContainsString('data-x', $html);
             $this->assertStringNotContainsString('javascript:', $html);
             $this->assertStringNotContainsString('onmouseover', $html);
+        }
+    }
+
+    public function test_a_link_can_open_a_new_window(): void
+    {
+        // The form the editor's Insert link writes (#1032).
+        $markdown = "See [Dixlase](https://dixlase.org){target=\"_blank\" rel=\"noopener noreferrer\"}.\n\n[![logo](/logo.png)](/about){target=\"_blank\" rel=\"noopener noreferrer\"}";
+
+        foreach ([
+            $this->render($markdown),
+            app(ContentPreviewService::class)->render($markdown, ContentEditorType::MARKDOWN, false),
+        ] as $html) {
+            $this->assertStringContainsString('<a target="_blank" rel="noopener noreferrer" href="https://dixlase.org">Dixlase</a>', $html);
+            $this->assertStringContainsString('<a target="_blank" rel="noopener noreferrer" href="/about"><img src="/logo.png" alt="logo" /></a>', $html);
+            $this->assertStringNotContainsString('{target', $html);
         }
     }
 

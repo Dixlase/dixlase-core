@@ -59,6 +59,19 @@ marked.use({
     }],
 });
 
+// A link's `{target="_blank" rel="..."}` (#1032) is for the server's
+// renderer; marked would print it as text, so the side-by-side preview drops
+// it and shows the plain link.
+const LINK_ATTRIBUTES = /(\]\([^)\n]*\))\{(?:\s*(?:target|rel)=(?:"[^"\n]*"|[^\s}]+))+\s*\}/g;
+
+marked.use({
+    hooks: {
+        preprocess(markdown) {
+            return markdown.replace(LINK_ATTRIBUTES, '$1');
+        },
+    },
+});
+
 // Expose marked to window for use in Alpine components
 window.marked = marked;
 

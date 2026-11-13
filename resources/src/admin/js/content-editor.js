@@ -141,6 +141,11 @@ export function contentEditor() {
             return !this.isGuiEditor;
         },
 
+        // Insert link writes Markdown or HTML (#1032).
+        get acceptsLinks() {
+            return this.editorType === 'markdown' || this.editorType === 'html';
+        },
+
         get showContentTab() {
             return this.isTextEditor && (this.activeTab === 'content' || !this.showAssetTabs);
         },
@@ -839,6 +844,191 @@ export function contentEditorEmbedForm() {
 }
 
 /**
+ * Whether a link may point at the URL (#1032): http(s), mailto:, tel:, a
+ * site path ("/..." but not "//host") or an in-page "#anchor". Anything else
+ * -- javascript:, data: and the like -- is refused.
+ */
+export function linkUrlAllowed(url) {
+    const value = String(url || '').trim();
+    return /^(?:https?:\/\/\S+|mailto:\S+|tel:\S+|\/(?!\/)\S*|#\S*)$/i.test(value);
+}
+
+/**
+ * Whether the selected source is exactly one image: `![alt](src)` in
+ * Markdown, one `<img ...>` tag in HTML. Such a selection is linked as it is.
+ */
+export function selectionIsImage(selected, editorType) {
+    const value = String(selected || '').trim();
+    return editorType === 'markdown'
+        ? /^!\[[^\]\n]*\]\([^)\n]*\)$/.test(value)
+        : /^<img\b[^<>]*>$/i.test(value);
+}
+
+/**
+ * The link to insert (#1032). `inner` is used as written: the selected
+ * source, which may already hold markup. `text` is escaped for the editor's
+ * language. A new window adds target and rel; Markdown writes them in the
+ * `{...}` attribute syntax core's renderer accepts.
+ */
+export function linkMarkup(editorType, url, options) {
+    const opts = options || {};
+    const href = String(url || '').trim();
+    const newWindow = !!opts.newWindow;
+
+    if (editorType === 'markdown') {
+        const label = opts.inner !== undefined ? opts.inner : escapeMarkdownText(opts.text || href);
+        return '[' + label + '](' + markdownUrl(href) + ')'
+            + (newWindow ? '{target="_blank" rel="noopener noreferrer"}' : '');
+    }
+
+    const label = opts.inner !== undefined ? opts.inner : escapeHtmlAttribute(opts.text || href);
+    return '<a href="' + escapeHtmlAttribute(href) + '"'
+        + (newWindow ? ' target="_blank" rel="noopener noreferrer"' : '')
+        + '>' + label + '</a>';
+}
+
+/**
+ * "Insert link" button of the content editor (#1032). It remembers the
+ * field's selection and hands it to the dialog (contentEditorLinkForm)
+ * through a window event; Cmd/Ctrl+K in the field does the same.
+ */
+export function contentEditorInsertLink() {
+    return {
+        targetId: '',
+        modalId: '',
+
+        init() {
+            this.targetId = this.$el.dataset.target || '';
+            this.modalId = this.$el.dataset.modalId || '';
+            this._onKeydown = (event) => {
+                if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey
+                    && String(event.key).toLowerCase() === 'k' && this.fieldAccepts(event.target)) {
+                    event.preventDefault();
+                    this.open();
+                }
+            };
+            this.$nextTick(() => {
+                this._field = document.getElementById(this.targetId);
+                this._field?.addEventListener('keydown', this._onKeydown);
+            });
+        },
+
+        destroy() {
+            this._field?.removeEventListener('keydown', this._onKeydown);
+        },
+
+        fieldAccepts(field) {
+            const type = field?.dataset?.editorType;
+            return type === 'markdown' || type === 'html';
+        },
+
+        open() {
+            const field = document.getElementById(this.targetId);
+            if (!field) {
+                return;
+            }
+            const start = field.selectionStart ?? field.value.length;
+            const end = field.selectionEnd ?? start;
+            window.dispatchEvent(new CustomEvent('content-editor-link', {
+                detail: {
+                    modalId: this.modalId,
+                    targetId: this.targetId,
+                    start,
+                    end,
+                    selected: field.value.slice(start, end),
+                    editorType: field.dataset.editorType || 'html',
+                },
+            }));
+            if (typeof window.openModal === 'function') {
+                window.openModal(this.modalId);
+            }
+        },
+    };
+}
+
+/**
+ * The form inside the "Insert link" modal (#1032). Every field is declared
+ * here, as with the embed form.
+ */
+export function contentEditorLinkForm() {
+    return {
+        modalId: '',
+        invalidMessage: '',
+        url: '',
+        text: '',
+        // '1' / '0', as <x-form-toggle> writes it.
+        newWindow: '0',
+        error: '',
+        imageSelected: false,
+        _target: null,
+
+        init() {
+            this.modalId = this.$el.dataset.modalId || '';
+            this.invalidMessage = this.$el.dataset.invalid || '';
+            this._onOpen = (event) => {
+                if (event.detail?.modalId === this.modalId) {
+                    this.prepare(event.detail);
+                }
+            };
+            window.addEventListener('content-editor-link', this._onOpen);
+        },
+
+        destroy() {
+            window.removeEventListener('content-editor-link', this._onOpen);
+        },
+
+        prepare(detail) {
+            this._target = detail;
+            this.error = '';
+            this.url = '';
+            this.newWindow = '0';
+            this.imageSelected = selectionIsImage(detail.selected, detail.editorType);
+            // A selection spanning lines is source, not a label; keep it as written.
+            this.text = this.imageSelected ? '' : detail.selected;
+        },
+
+        showText() {
+            return !this.imageSelected;
+        },
+
+        insert() {
+            const target = this._target;
+            if (!linkUrlAllowed(this.url)) {
+                this.error = this.invalidMessage;
+                return;
+            }
+            const field = target ? document.getElementById(target.targetId) : null;
+            if (!field) {
+                return;
+            }
+            // The selection is wrapped as written while its text is untouched,
+            // so markup inside it (bold, an image) survives.
+            const keepSelection = target.selected !== '' && (this.imageSelected || this.text === target.selected);
+            const markup = linkMarkup(target.editorType, this.url, keepSelection
+                ? { inner: target.selected, newWindow: this.newWindow === '1' }
+                : { text: this.text, newWindow: this.newWindow === '1' });
+
+            this.close();
+            field.focus();
+            field.setRangeText(markup, target.start, target.end, 'end');
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            this._target = null;
+        },
+
+        cancel() {
+            this.close();
+        },
+
+        close() {
+            this.error = '';
+            if (typeof window.closeModal === 'function') {
+                window.closeModal(this.modalId);
+            }
+        },
+    };
+}
+
+/**
  * The Alpine side of <x-content-editor.sidebar-section>.
  *
  * The Blade component decides the initial state (data-open) and whether a
@@ -906,5 +1096,7 @@ Alpine.data('contentEditor', contentEditor);
 Alpine.data('contentEditorInsertImage', contentEditorInsertImage);
 Alpine.data('contentEditorInsertEmbed', contentEditorInsertEmbed);
 Alpine.data('contentEditorEmbedForm', contentEditorEmbedForm);
+Alpine.data('contentEditorInsertLink', contentEditorInsertLink);
+Alpine.data('contentEditorLinkForm', contentEditorLinkForm);
 Alpine.data('contentEditorStorageInfo', contentEditorStorageInfo);
 Alpine.data('contentEditorSidebarSection', contentEditorSidebarSection);

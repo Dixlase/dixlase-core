@@ -165,6 +165,35 @@ class FormContentEditorTest extends TestCase
         $this->assertStringNotContainsString('contentEditorInsertEmbed', $html);
     }
 
+    public function test_the_insert_link_button_shows_with_the_markdown_and_html_editors(): void
+    {
+        $html = Blade::render('<x-form-content-editor contentFieldName="body" />');
+
+        $this->assertStringContainsString('x-data="contentEditorInsertLink"', $html);
+        $this->assertStringContainsString('x-show="acceptsLinks"', $html);
+        $this->assertStringContainsString('data-target="body"', $html);
+        $this->assertStringContainsString('data-modal-id="body_link_modal"', $html);
+    }
+
+    public function test_the_insert_link_modal_asks_for_the_url_the_text_and_the_window(): void
+    {
+        $html = Blade::render("<x-form-content-editor contentFieldName=\"body\" />@stack('modals')");
+
+        $this->assertStringContainsString('id="body_link_modal"', $html);
+        $this->assertStringContainsString('x-data="contentEditorLinkForm"', $html);
+        $this->assertStringContainsString('id="body_link_modal_url"', $html);
+        $this->assertStringContainsString('id="body_link_modal_text"', $html);
+        $this->assertStringContainsString('id="body_link_modal_new_window"', $html);
+        $this->assertStringContainsString(e(__('components/content-editor.link.url_invalid')), $html);
+    }
+
+    public function test_the_insert_link_button_can_be_left_out(): void
+    {
+        $html = Blade::render('<x-form-content-editor :insertLink="false" />');
+
+        $this->assertStringNotContainsString('contentEditorInsertLink', $html);
+    }
+
     /**
      * @return array<string, mixed>
      */
