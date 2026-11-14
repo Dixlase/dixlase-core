@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-sync-alt"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    x-click="openModal('regenerate-baseline-modal')"
+                    x-click="$openModal('regenerate-baseline-modal')"
                 >
                     {{ __('admin/settings/security/integrity.regenerate_baseline') }}
                 </x-form-button>
@@ -211,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-search"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    x-click="openModal('scan-modal')"
+                    x-click="$openModal('scan-modal')"
                 >
                     {{ __('admin/settings/security/integrity.run_scan') }}
                 </x-form-button>
@@ -327,7 +327,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.scan_history') }}</h2>
                 
-                <div class="flex items-center space-x-2" x-data="{ bulkDeleteDays: 30 }">
+                <div class="flex items-center space-x-2" x-data="integrityBulkDelete">
                     <input type="number" x-model="bulkDeleteDays" min="1" class="w-20 px-2 py-1 text-md border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <x-form-button
                         type="button"
@@ -336,7 +336,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         icon="fas fa-trash"
                         :disabled="$viewOnly"
                         :title="$tooltipText"
-                        @click="document.getElementById('bulk-delete-days-input').value = bulkDeleteDays; openModal('bulk-delete-modal')"
+                        @click="confirmBulkDelete()"
                     >
                         {{ __('admin/settings/security/integrity.bulk_delete_audits') }}
                     </x-form-button>
@@ -408,7 +408,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <button type="button"
                                             @if($viewOnly) disabled @endif
                                             @if($viewOnly) title="{{ $tooltipText }}" @endif
-                                            @click="openModal('delete-audit-{{ $audit->id }}-modal')"
+                                            @click="$openModal('delete-audit-{{ $audit->id }}-modal')"
                                             class="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i class="fas fa-trash"></i>
                                         </button>

@@ -35,7 +35,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 @section('content')
 <div class="mx-auto">
-<div x-data="cspSettings()"
+<div x-data="cspSettings"
      data-csp-enabled="{{ old('csp_enabled', $settings['csp_enabled']) ? '1' : '0' }}"
      data-csp-mode="{{ old('csp_mode', $settings['csp_mode'] ?? $cspModeDefaultValue) }}"
      data-app-env="{{ config('app.env') }}"
@@ -176,7 +176,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <!-- ブロックリスト照合設定 -->
                 <fieldset class="mb-4" 
-                          x-data="cspBlocklistSettings()"
+                          x-data="cspBlocklistSettings"
                           data-blocklist-enabled="{{ old('csp_blocklist_check_enabled', $settings['csp_blocklist_check_enabled'] ?? false) ? '1' : '0' }}">
                     <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('admin/settings/security/csp.blocklist_check_title') }}</legend>
                     
@@ -360,14 +360,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             type="button"
             variant="secondary"
             :label="__('admin/settings/security/csp.confirmation_modal_cancel')"
-            @click="rollbackCspSettings()"
+            id="csp-confirmation-rollback"
             class="mx-2"
         />
         <x-form-button
             type="button"
             variant="primary"
             :label="__('admin/settings/security/csp.confirmation_modal_confirm')"
-            @click="confirmCspSettings()"
+            id="csp-confirmation-confirm"
             class="mx-2"
         />
     </x-slot>

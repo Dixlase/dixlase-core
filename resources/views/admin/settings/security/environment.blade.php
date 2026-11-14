@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 <div class="mx-auto">
 <div x-data="{ 
-    appEnv: '{{ old('app_env', $settings['app_env']) }}',
+    appEnv: '{{ in_array($appEnv = old('app_env', $settings['app_env']), ['local', 'staging', 'production'], true) ? $appEnv : '' }}',
     appDebug: '{{ old('app_debug', $settings['app_debug']) ? '1' : '0' }}'
 }">
     <form id="security-environment-form" method="POST" action="{{ route('admin.settings.security.environment.update') }}">
