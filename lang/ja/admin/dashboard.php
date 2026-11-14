@@ -237,6 +237,7 @@ return [
     'action_api_key_created' => 'API キー作成',
     'action_integrity_key_created' => '整合性の鍵を作成',
     'action_integrity_key_rotated' => '整合性の鍵をローテーション',
+    'action_integrity_baseline_regenerated' => '整合性のベースラインを作り直し',
     'action_api_key_revoked' => 'API キー失効',
     'action_api_keys_revoked_all' => 'API キーの一括失効',
     'action_api_key_regenerated' => 'API キー再生成',

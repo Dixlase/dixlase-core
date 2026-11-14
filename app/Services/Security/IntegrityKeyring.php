@@ -88,6 +88,12 @@ class IntegrityKeyring
 
     public const PURPOSE_AUDIT_EPOCH = 'audit-epoch';
 
+    /** Seal of a file-integrity baseline (core_hashes.json and friends, #803) */
+    public const PURPOSE_FILE_BASELINE = 'file-baseline';
+
+    /** MAC of the enabled-plugins cache read during register() (#803) */
+    public const PURPOSE_PLUGIN_CACHE = 'plugin-cache';
+
     /** Prefix of the HKDF info string, so a derived key is bound to Dixlase */
     private const INFO_PREFIX = 'dixlase-integrity:';
 

@@ -35,8 +35,12 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AuditLog;
 use App\Models\FileIntegrityAudit;
+use App\Services\AuditService;
 use App\Services\FileIntegrityService;
+use App\Services\Security\IntegrityKeyring;
+use App\Services\Security\IntegritySeal;
 use Illuminate\Console\Command;
 
 class IntegrityGenerateBaseline extends Command
@@ -47,7 +51,8 @@ class IntegrityGenerateBaseline extends Command
      * @var string
      */
     protected $signature = 'dls:integrity:generate-baseline
-                            {--force : 既存のベースラインを上書きする}';
+                            {--force : Replace an existing baseline}
+                            {--reason= : Why the current files are the expected ones; required with --force, recorded in the audit log}';
 
     /**
      * The console command description.
@@ -63,19 +68,26 @@ class IntegrityGenerateBaseline extends Command
     {
         $this->info(__('admin/command/integrity.generating_baseline'));
 
-        // Check existing baseline
-        if ($service->hasBaseline() && ! $this->option('force')) {
+        // Replacing a baseline accepts whatever is on disk now as genuine, so
+        // it is never a confirmation prompt away: it needs --force and a
+        // reason, and it is recorded in the audit log (#803).
+        $replacing = $service->hasBaseline();
+        $reason = trim((string) $this->option('reason'));
+
+        if ($replacing && ! $this->option('force')) {
             $meta = $service->getBaselineMeta();
-            $this->warn(__('admin/command/integrity.baseline_exists', [
+            $this->error(__('admin/command/integrity.force_required', [
                 'date' => $meta['generated_at'] ?? 'unknown',
                 'version' => $meta['app_version'] ?? 'unknown',
             ]));
 
-            if (! $this->confirm(__('admin/command/integrity.overwrite_confirm'))) {
-                $this->info(__('admin/command/integrity.cancelled'));
+            return Command::FAILURE;
+        }
 
-                return Command::SUCCESS;
-            }
+        if ($replacing && $reason === '') {
+            $this->error(__('admin/command/integrity.reason_required'));
+
+            return Command::FAILURE;
         }
 
         $this->output->write(__('admin/command/integrity.scanning_files'));
@@ -106,6 +118,21 @@ class IntegrityGenerateBaseline extends Command
                 'summary' => __('admin/command/integrity.baseline_generated'),
             ]);
 
+            $sealStatus = $service->baselineSealStatus();
+
+            if ($replacing) {
+                app(AuditService::class)->log([
+                    'action' => AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED,
+                    'category' => AuditLog::getCategoryForAction(AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED),
+                    'severity' => AuditLog::getDefaultSeverity(AuditLog::ACTION_INTEGRITY_BASELINE_REGENERATED),
+                    'context' => [
+                        'reason' => $reason,
+                        'sealed' => $sealStatus === IntegritySeal::VALID,
+                        'triggered_by' => 'cli',
+                    ],
+                ]);
+            }
+
             $this->newLine();
             $this->info(__('admin/command/integrity.baseline_success'));
             $this->table(
@@ -117,6 +144,10 @@ class IntegrityGenerateBaseline extends Command
                     [__('admin/command/integrity.generated_at'), $baseline['meta']['generated_at']],
                 ]
             );
+            $keyVersion = app(IntegrityKeyring::class)->currentVersion();
+            $this->line($sealStatus === IntegritySeal::VALID && $keyVersion !== null
+                ? __('admin/command/integrity.baseline_sealed_with', ['version' => $keyVersion])
+                : __('admin/command/integrity.baseline_not_sealed'));
 
             return Command::SUCCESS;
         }

@@ -210,7 +210,7 @@ In development CSP mode no violation deduction is applied.
 
 | Rule Key               | Deduction | Description                                    |
 |------------------------|-----------|------------------------------------------------|
-| `dangerous_api_exec`   | **-30**   | A dangerous API was detected, such as process execution (`exec`, `shell_exec`, ...) or direct `env()` access — critical |
+| `dangerous_api_exec`   | **-30**   | A dangerous API was detected, such as process execution (`exec`, `shell_exec`, ...), direct `env()` access, or a reference to the site's integrity key (`dangerous_api.integrity_key`) — critical |
 
 #### Extension API Version (`requires.dixlase_api`)
 
