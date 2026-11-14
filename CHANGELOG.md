@@ -43,6 +43,20 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+### Added
+- Plugin API: `FrontPageBodyProviderInterface` lets an extension supply the *body* of a theme's
+  front page — what a theme shows between its hero and its footer — while the theme keeps its own
+  layout. It is the body-granularity counterpart to `FrontPageProviderInterface`, which replaces
+  the whole response for `/`: a body provider may offer many choices (a page each, say) so an
+  operator picks a particular one, and rendering stays with the provider, so the plugin's own
+  display settings apply without the theme knowing any of their keys. `FrontPageBodyResolver`
+  aggregates the providers for a theme's chooser and renders the stored choice, returning null —
+  so the theme falls back to core's front page content — whenever the choice names a provider that
+  is absent, unavailable or can no longer resolve its id. Declare the `front-page-body` capability
+  in `plugin.json` and tag the provider on `plugin.capabilities`. The per-site
+  `front_page_display` setting is resolved first, so a body choice applies only while that
+  setting is `theme` (#1043)
+
 ## [0.2.17] — 2026-11-14
 
 Upgrading: run `php artisan migrate`. It adds the columns the keyed audit log needs; until it has
