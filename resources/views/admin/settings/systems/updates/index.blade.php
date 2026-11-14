@@ -63,6 +63,7 @@ file is governed by the AGPL terms below.
         <div class="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
             <p class="font-medium">{{ __('admin/settings/systems/updates.backup.recommendation_title') }}</p>
             <p class="text-xs text-yellow-700 dark:text-yellow-300">{{ __('admin/settings/systems/updates.backup.recommendation_body') }}</p>
+            <p class="text-xs text-yellow-700 dark:text-yellow-300">{{ __('admin/settings/systems/updates.backup.transient_error_note') }}</p>
             <p class="text-xs">
                 <a href="{{ route('admin.settings.systems.backup.index') }}" class="text-yellow-700 dark:text-yellow-300 underline hover:text-yellow-900 dark:hover:text-yellow-100">
                     {{ __('admin/settings/systems/updates.backup.recommendation_link') }}

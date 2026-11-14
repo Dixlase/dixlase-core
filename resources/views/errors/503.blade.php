@@ -24,6 +24,6 @@ license from exc-D inc. See LICENSE for details.
     'code' => '503',
     'title' => app()->getLocale() === 'ja' ? 'メンテナンス中' : 'Under Maintenance',
     'message' => app()->getLocale() === 'ja'
-        ? '現在メンテナンスを行っています。しばらくしてからもう一度お試しください。'
-        : 'The site is currently undergoing maintenance. Please check back shortly.',
+        ? '現在メンテナンスを行っています。しばらく待ってから、ブラウザでページを再読み込みしてください。'
+        : 'The site is currently undergoing maintenance. Please wait a moment, then reload the page in your browser.',
 ])
