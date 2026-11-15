@@ -79,8 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <section class="mt-8 transition-colors-unified {{ $disabled ? 'opacity-50 pointer-events-none' : '' }}" 
-    x-data='twoFaManagement(@json($routes), "{{ $csrfToken }}", @json($translations))'
-    x-init="window.twoFaManagementInstance = $data">
+    x-data='twoFaManagement(@json($routes), "{{ $csrfToken }}", @json($translations))'>
     <h2>{{ __('components/security/two-fa-management.title') }}</h2>
 
     <!-- Passkeyデバイス -->

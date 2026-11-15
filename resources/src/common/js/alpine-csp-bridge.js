@@ -69,6 +69,7 @@ export const BRIDGED_FACTORIES = Object.freeze([
     'passwordTools',
     'recoveryCodesModal',
     'tooltip',
+    'twoFaManagement',
     'twoFaProfileSettings',
 ]);
 

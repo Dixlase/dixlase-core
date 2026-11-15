@@ -76,18 +76,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     $currentPasskeyEnabled = $forcedPasskeyValue ?? $twoFaPasskeyEnabled;
 @endphp
 
-<div x-data="{
-    twoFaMode: '{{ old($twoFaModeName, (string) $twoFaModeValue) }}',
-    passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
-    isPasskeyEditable: {{ $isPasskeyEditable ? 'true' : 'false' }},
-    get twoFaEnabled() {
-        return this.twoFaMode !== '0';
-    },
-    get isPasskeyActuallyEnabled() {
-        // 編集可能な場合はpasskeyEnabledの値を使用、編集不可の場合は強制値を使用
-        return this.isPasskeyEditable ? this.passkeyEnabled : {{ $currentPasskeyEnabled ? 'true' : 'false' }};
-    }
-}">
+<div x-data="twoFaIndividualSettings"
+     data-two-fa-mode="{{ old($twoFaModeName, (string) $twoFaModeValue) }}"
+     data-passkey-enabled="{{ $currentPasskeyEnabled ? '1' : '0' }}"
+     data-passkey-editable="{{ $isPasskeyEditable ? '1' : '0' }}">
     {{-- 1. Two-factor authentication mode --}}
     @if($isTwoFaEditable)
         {{-- When following profile settings: editable --}}

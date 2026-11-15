@@ -69,31 +69,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 @if($enableRealtimeSwitch)
-    <div x-data="{
-        localTheme: '{{ $value }}',
-        savedTheme: '{{ $value }}',
-        applyLocalTheme(enableTransition = false) {
-            const isDark = this.localTheme === '2' || (this.localTheme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            
-            // トランジションを有効にする
-            if (enableTransition) {
-                document.documentElement.classList.add('theme-ready');
-            }
-            
-            // ダークモード/ライトモードのクラスを切り替え
-            document.documentElement.classList.toggle('dark', isDark);
-            document.documentElement.classList.toggle('light', !isDark);
-        },
-        resetToSavedTheme() {
-            this.localTheme = this.savedTheme;
-            this.applyLocalTheme(false);
-        }
-    }" x-init="
-        // 初期化時に保存された値でDOMをリセット（トランジションなし）
-        resetToSavedTheme();
-        // localThemeの変更を監視してリアルタイムに反映
-        $watch('localTheme', () => applyLocalTheme(true));
-    ">
+    <div x-data="appearanceModeSelector"
+         data-value="{{ $value }}">
         <x-form-radio-card-group
             :name="$name"
             :options="$appearanceOptions"

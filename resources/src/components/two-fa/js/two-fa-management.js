@@ -40,6 +40,10 @@ window.twoFaManagement = function (routes, csrfToken, translations) {
         currentDeviceId: null,
 
         init() {
+            // The window.* helpers below (registerPasskey, deletePasskey, ...)
+            // reach this instance through it.
+            window.twoFaManagementInstance = this;
+
             // DOMContentLoadedイベントリスナーを設定
             this.setupEventListeners();
         },
