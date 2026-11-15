@@ -114,6 +114,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
+    document.getElementById('csp-confirmation-rollback')?.addEventListener('click', window.rollbackCspSettings);
+    document.getElementById('csp-confirmation-confirm')?.addEventListener('click', window.confirmCspSettings);
+
     // 通知表示関数
     function showNotification(type, message) {
         // 既存の通知システムを使用

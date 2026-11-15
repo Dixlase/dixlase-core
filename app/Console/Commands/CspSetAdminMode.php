@@ -74,7 +74,7 @@ class CspSetAdminMode extends Command
 
             // Validate mode
             $validModes = ['same', 'development', 'standard', 'strict'];
-            if (! in_array($mode, $validModes)) {
+            if (! in_array($mode, $validModes, true)) {
                 $this->error(__('console/commands/csp_set_admin_mode.invalid_mode', ['mode' => $mode]));
                 $this->info(__('console/commands/csp_set_admin_mode.valid_modes').implode(', ', $validModes));
 

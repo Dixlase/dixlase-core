@@ -43,6 +43,7 @@ return [
     'show_intro' => 'Add these lines to .env (nothing was written):',
     'created' => 'Integrity key version :version written to .env. New audit log rows and daily seals are signed with it.',
     'rotated' => 'Integrity key version :version written to .env. The previous key was moved to INTEGRITY_PREVIOUS_KEYS; keep it there for as long as rows and seals signed with it are kept.',
+    'baseline_sealed' => 'The existing file-integrity baseline was sealed with the new key, unchanged.',
     'config_cached' => 'The configuration is cached. Run `php artisan config:cache` so the new key takes effect.',
     'restart_hint' => 'Restart long-running processes (queue workers, the scheduler) so they read the new key.',
 ];

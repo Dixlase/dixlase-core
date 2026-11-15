@@ -58,6 +58,14 @@ Each entry is `<version>:base64:<key>`, with a version of 2 or more and at least
 bytes of key. The chain, the seals and the key epochs (below) each use their own key,
 derived from that secret with HKDF.
 
+The same key also seals two files core trusts outside the database: the
+[file-integrity baseline](../security/file-integrity-check.md#seal) and the list of enabled
+plugins that is read at boot before the database is reachable
+(`storage/framework/cache/enabled_plugins.json`). A cache that does not verify is treated as
+missing: no plugin providers register for that request, the mismatch is logged, and the
+cache is rebuilt from the database. The plugin scanner reports any extension code that
+refers to the key (`dangerous_api.integrity_key`).
+
 It is kept in `.env` because that is outside the database, which is what the chain
 guards, and outside the backup archive. Restoring a backup on another server therefore
 needs the key copied over by hand; without it the restored rows and seals fail with
@@ -75,6 +83,9 @@ php artisan dls:integrity:key --show   # prints the line instead, for a read-onl
 
 Nothing writes `.env` during an update. Until the key exists, Site Health recommends
 creating it, the chain stays unkeyed and the seals keep the old key.
+
+Creating the first key also seals the existing file-integrity baseline as it stands,
+without regenerating it.
 
 ### Rotating the key
 

@@ -65,7 +65,7 @@ class CspSetMode extends Command
 
             // Validate mode
             $validModes = ['development', 'standard', 'strict'];
-            if (! in_array($mode, $validModes)) {
+            if (! in_array($mode, $validModes, true)) {
                 $this->error(__('console/commands/csp_set_mode.invalid_mode', ['mode' => $mode]));
                 $this->info(__('console/commands/csp_set_mode.csp_valid_modes').implode(', ', $validModes));
 

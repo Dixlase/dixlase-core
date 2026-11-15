@@ -468,6 +468,7 @@ return [
         'perm_modify_routes' => 'Modify Routes',
         'perm_exec' => 'Execute Commands',
         'perm_env_access' => 'Environment Variables',
+        'perm_integrity_key' => 'Integrity Key',
         'perm_npm_lifecycle_scripts' => 'npm Install Scripts',
         'perm_file_write' => 'File Write',
         'perm_network' => 'External Network',

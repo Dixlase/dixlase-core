@@ -40,4 +40,5 @@ return [
     'baseline_save_error' => 'Baseline保存エラー',
     'scan_error' => 'ファイル整合性スキャンエラー',
     'tampering_detected' => 'ファイル改ざんを検知しました',
+    'baseline_untrusted' => 'ファイル整合性のベースラインが信頼できないため、スキャンは比較を行いませんでした',
 ];

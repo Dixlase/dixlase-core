@@ -118,7 +118,7 @@ return [
         'confirm_message' => 'フロントページのコンテンツへの変更を保存しますか？',
 
         'save_success' => 'フロントページのコンテンツを更新しました。',
-        'publish_file_success' => 'ファイルの変更を公開しました。',
+        'publish_file_success' => 'ファイルの変更を反映しました。',
 
         'sidebar_open' => 'サイドバーを開く',
         'sidebar_close' => 'サイドバーを閉じる',

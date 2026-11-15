@@ -117,7 +117,7 @@ return [
         'confirm_message' => 'Save the changes to the front page content?',
 
         'save_success' => 'Front page content has been updated.',
-        'publish_file_success' => 'The file changes have been published.',
+        'publish_file_success' => 'The file changes have been applied.',
 
         'sidebar_open' => 'Open sidebar',
         'sidebar_close' => 'Close sidebar',

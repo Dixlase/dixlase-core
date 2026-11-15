@@ -40,7 +40,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Console;
 
 use App\Models\AuditLog;
+use App\Services\FileIntegrityService;
 use App\Services\Security\IntegrityKeyring;
+use App\Services\Security\IntegritySeal;
 use App\Support\Install\EnvFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -64,6 +66,9 @@ class IntegrityKeyCommandTest extends TestCase
         File::makeDirectory($this->dir, 0755, true);
         File::put($this->dir.'/.env', "APP_NAME=Dixlase\nINTEGRITY_KEY=\n");
         $this->app->useEnvironmentPath($this->dir);
+        // The first key seals the baseline in storage; keep it off the real one.
+        File::makeDirectory($this->dir.'/storage', 0755, true);
+        $this->app->useStoragePath($this->dir.'/storage');
     }
 
     protected function tearDown(): void
@@ -85,6 +90,21 @@ class IntegrityKeyCommandTest extends TestCase
         $this->assertSame(AuditLog::CATEGORY_SECURITY, $row->category);
         $this->assertSame(2, $row->context['key_version']);
         $this->assertStringNotContainsString(substr($key, 9, 20), json_encode($row->context));
+    }
+
+    public function test_the_first_key_seals_the_existing_baseline_unchanged(): void
+    {
+        $service = new FileIntegrityService();
+        $service->saveBaselineArray([
+            'meta' => ['app_version' => '0.0.0-test'],
+            'files' => ['app/Example.php' => str_repeat('a', 64)],
+        ]);
+        $this->assertSame(IntegritySeal::UNSEALED, $service->baselineSealStatus());
+
+        $this->artisan('dls:integrity:key')->assertSuccessful();
+
+        $this->assertSame(IntegritySeal::VALID, $service->baselineSealStatus());
+        $this->assertTrue(AuditLog::where('action', AuditLog::ACTION_INTEGRITY_KEY_CREATED)->sole()->context['baseline_sealed']);
     }
 
     public function test_it_leaves_an_existing_key_alone_without_rotate(): void

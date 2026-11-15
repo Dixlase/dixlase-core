@@ -39,6 +39,8 @@ namespace App\Services\Core;
 
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
+use App\Services\Security\IntegrityKeyring;
+use App\Services\Security\IntegritySeal;
 use Closure;
 
 /**
@@ -65,9 +67,19 @@ class CoreIntegrityBaselineRefresher
      *
      * Null when there is no baseline yet: nothing to preserve, so the
      * update may write one.
+     *
+     * With an integrity key set (#803), only a baseline whose seal verifies
+     * can match. A missing, unsealed or mis-sealed one returns false, so the
+     * update leaves it alone: otherwise removing or replacing the file before
+     * an update would get altered files sealed into the new baseline.
      */
     public function treeMatchesBaseline(): ?bool
     {
+        $keyed = app(IntegrityKeyring::class)->isConfigured();
+        if ($keyed && $this->integrity->baselineSealStatus() !== IntegritySeal::VALID) {
+            return false;
+        }
+
         $baseline = $this->integrity->loadBaselineArray();
         if ($baseline === null || ! isset($baseline['files'])) {
             return null;
@@ -93,7 +105,7 @@ class CoreIntegrityBaselineRefresher
     public function refreshAfter(?bool $matchedBefore, ?int $appliedById, Closure $log): void
     {
         if ($matchedBefore === false) {
-            $log('WARNING: core files did not match the integrity baseline before this operation, so the baseline was left unchanged. Review Security → File integrity, then regenerate it there once the tree is confirmed.');
+            $log('WARNING: core files did not match a trusted integrity baseline before this operation (it differed, or is missing, unsealed or does not match its seal), so the baseline was left unchanged. Review Security → File integrity, then regenerate it there once the tree is confirmed.');
 
             return;
         }

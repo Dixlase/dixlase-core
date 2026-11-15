@@ -40,6 +40,7 @@ namespace App\Services;
 use App\Enums\ContentEditorType;
 use App\Services\Editor\EditorManager;
 use App\Support\Content\Embed\ContentEmbedExtension;
+use App\Support\Content\Embed\HtmlEmbedExpander;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -70,10 +71,12 @@ class ContentPreviewService
     /**
      * Attributes an author may give a Markdown block or span with the
      * `{#id}` / `{.class}` syntax: an id for in-page links (a table of
-     * contents) and classes for styling. The extension drops every other
-     * attribute, so `{onclick=...}` or `{style=...}` never reach the page.
+     * contents) and classes for styling, plus `target` and `rel` for a
+     * link that opens a new window, which the editor's Insert link writes
+     * (#1032). The extension drops every other attribute, so
+     * `{onclick=...}` or `{style=...}` never reach the page.
      */
-    public const MARKDOWN_ATTRIBUTES = ['allow' => ['id', 'class']];
+    public const MARKDOWN_ATTRIBUTES = ['allow' => ['id', 'class', 'target', 'rel']];
 
     /**
      * CommonMark extensions every content Markdown render adds on top of
@@ -125,7 +128,7 @@ class ContentPreviewService
                     'attributes' => self::MARKDOWN_ATTRIBUTES,
                 ], self::markdownExtensions()),
                 ContentEditorType::BLADE => Blade::render($content),
-                ContentEditorType::HTML => $content,
+                ContentEditorType::HTML => $this->expandEmbeds($content),
             };
 
             return shortcode_parse($html);
@@ -137,6 +140,19 @@ class ContentPreviewService
 
             return $content;
         }
+    }
+
+    /**
+     * Turn `@[service](URL)` lines of an HTML body into embeds (#1031)
+     *
+     * Markdown bodies get this from their converter. An extension that
+     * renders an HTML body itself calls it on that HTML, guarded with
+     * method_exists() for an older core. A marker counts only when it is
+     * alone in its paragraph; see {@see HtmlEmbedExpander}.
+     */
+    public function expandEmbeds(string $html): string
+    {
+        return app(HtmlEmbedExpander::class)->expand($html);
     }
 
     /**

@@ -50,65 +50,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <fieldset {{ ($modeData['isReadOnly'] ?? false) ? 'disabled' : '' }}>
 
         <!-- 拡張機能セキュリティ設定 -->
-        <section x-data="{
-            preset: '{{ old('extension_security_preset', $settings['extension_security_preset']) }}',
-            requireSignature: {{ old('extension_require_signature', $settings['extension_require_signature']) ? 'true' : 'false' }},
-            requirePermissionDefinition: {{ old('extension_require_permission_definition', $settings['extension_require_permission_definition']) ? 'true' : 'false' }},
-            allowUndefinedPermissions: {{ old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions']) ? 'true' : 'false' }},
-            pluginMaxHealthLevel: {{ old('extension_plugin_max_health_level', $settings['extension_plugin_max_health_level']) }},
-            themeMaxHealthLevel: {{ old('extension_theme_max_health_level', $settings['extension_theme_max_health_level']) }},
-            allowLogicThemes: {{ old('extension_allow_logic_themes', $settings['extension_allow_logic_themes']) ? 'true' : 'false' }},
-            permissionMismatchAction: '{{ old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action']) }}',
-            
-            applyPreset(presetValue) {
-                const presets = {
-                    'strict': {
-                        requireSignature: true,
-                        requirePermissionDefinition: true,
-                        allowUndefinedPermissions: false,
-                        pluginMaxHealthLevel: 0,
-                        themeMaxHealthLevel: 0,
-                        allowLogicThemes: false
-                    },
-                    'balanced': {
-                        requireSignature: false,
-                        requirePermissionDefinition: false,
-                        allowUndefinedPermissions: true,
-                        pluginMaxHealthLevel: 1,
-                        themeMaxHealthLevel: 2,
-                        allowLogicThemes: true
-                    },
-                    'development': {
-                        requireSignature: false,
-                        requirePermissionDefinition: false,
-                        allowUndefinedPermissions: true,
-                        pluginMaxHealthLevel: 3,
-                        themeMaxHealthLevel: 3,
-                        allowLogicThemes: true
-                    }
-                };
-                
-                if (presets[presetValue]) {
-                    const p = presets[presetValue];
-                    this.requireSignature = p.requireSignature;
-                    this.requirePermissionDefinition = p.requirePermissionDefinition;
-                    this.allowUndefinedPermissions = p.allowUndefinedPermissions;
-                    this.pluginMaxHealthLevel = p.pluginMaxHealthLevel;
-                    this.themeMaxHealthLevel = p.themeMaxHealthLevel;
-                    this.allowLogicThemes = p.allowLogicThemes;
-                }
-            },
-            
-            getHealthLevelClass(level) {
-                const classes = {
-                    0: 'text-green-600 dark:text-green-400',
-                    1: 'text-yellow-600 dark:text-yellow-400',
-                    2: 'text-orange-600 dark:text-orange-400',
-                    3: 'text-gray-600 dark:text-gray-400'
-                };
-                return classes[level] || classes[0];
-            }
-        }" x-init="$watch('preset', (value) => { if (value !== 'custom') applyPreset(value); })">
+        <section x-data="extensionSecuritySettings"
+                 data-preset="{{ old('extension_security_preset', $settings['extension_security_preset']) }}"
+                 data-require-signature="{{ old('extension_require_signature', $settings['extension_require_signature']) ? '1' : '0' }}"
+                 data-require-permission-definition="{{ old('extension_require_permission_definition', $settings['extension_require_permission_definition']) ? '1' : '0' }}"
+                 data-allow-undefined-permissions="{{ old('extension_allow_undefined_permissions', $settings['extension_allow_undefined_permissions']) ? '1' : '0' }}"
+                 data-plugin-max-health-level="{{ old('extension_plugin_max_health_level', $settings['extension_plugin_max_health_level']) }}"
+                 data-theme-max-health-level="{{ old('extension_theme_max_health_level', $settings['extension_theme_max_health_level']) }}"
+                 data-allow-logic-themes="{{ old('extension_allow_logic_themes', $settings['extension_allow_logic_themes']) ? '1' : '0' }}"
+                 data-permission-mismatch-action="{{ old('extension_permission_mismatch_action', $settings['extension_permission_mismatch_action']) }}">
             <h2>{{ __('admin/settings/security/extensions.security.title') }}</h2>
             <p>{{ __('admin/settings/security/extensions.security.description') }}</p>
 
@@ -471,42 +421,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </section>
 
         <!-- 拡張機能ソース設定 -->
-        <section x-data="{
-            sourceType: '{{ old('extension_source_type', $settings['extension_source_type'] ?? 'github') }}',
-            testStatus: 'idle',
-            testMessage: '',
-            testDetails: {},
-
-            async testConnection() {
-                this.testStatus = 'testing';
-                this.testMessage = '';
-                this.testDetails = {};
-
-                try {
-                    const tokenInput = document.getElementById('extension_source_token');
-                    const response = await fetch('{{ route('admin.settings.security.extensions.test-source') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            type: this.sourceType,
-                            token: tokenInput ? tokenInput.value : '',
-                        }),
-                    });
-
-                    const data = await response.json();
-                    this.testStatus = data.success ? 'success' : 'failed';
-                    this.testMessage = data.message || '';
-                    this.testDetails = data.details || {};
-                } catch (error) {
-                    this.testStatus = 'failed';
-                    this.testMessage = error.message;
-                }
-            }
-        }">
+        <section x-data="extensionSourceSettings"
+                 data-source-type="{{ old('extension_source_type', $settings['extension_source_type'] ?? 'github') }}"
+                 data-test-url="{{ route('admin.settings.security.extensions.test-source') }}">
             <h2>{{ __('admin/settings/security/extensions.source.title') }}</h2>
             <p>{{ __('admin/settings/security/extensions.source.description') }}</p>
 

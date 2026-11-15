@@ -20,6 +20,8 @@
  * CAPTCHA設定ページ用JavaScript
  */
 
+import Alpine from 'alpinejs';
+
 /**
  * 設定値を読み取るヘルパー
  */
@@ -241,3 +243,115 @@ window.clearCaptchaWidget = function () {
         } catch (e) { /* ignore */ }
     }
 };
+
+/**
+ * CAPTCHA settings form.
+ *
+ * The saved values are read from the element's data attributes.
+ */
+Alpine.data('captchaSettings', () => ({
+    captchaEnabled: '0',
+    captchaDriver: '',
+    captchaVersion: '',
+    captchaSiteKey: '',
+    captchaSecretKey: '',
+    captchaProjectId: '',
+    providerKeys: {},
+    savedDriver: '',
+    savedVersion: '',
+    savedMinScore: '',
+    captchaMinScore: '',
+    savedProjectId: '',
+    captchaSettingsChanged: false,
+    testedSnapshot: null,
+
+    init() {
+        const { dataset } = this.$el;
+
+        this.captchaEnabled = dataset.captchaEnabled;
+        this.captchaDriver = dataset.captchaDriver;
+        this.captchaVersion = dataset.captchaVersion;
+        this.captchaSiteKey = dataset.captchaSiteKey;
+        this.captchaSecretKey = dataset.captchaSecretKey;
+        this.captchaProjectId = dataset.captchaProjectId;
+        this.providerKeys = JSON.parse(dataset.providerKeys);
+        this.savedDriver = dataset.savedDriver;
+        this.savedVersion = dataset.savedVersion;
+        this.savedMinScore = dataset.savedMinScore;
+        this.captchaMinScore = dataset.captchaMinScore;
+        this.savedProjectId = dataset.savedProjectId;
+
+        this.$watch('captchaDriver', (newDriver, oldDriver) => {
+            if (newDriver !== oldDriver) {
+                this.switchProviderKeys(newDriver);
+            }
+        });
+        this.$watch('captchaSiteKey', () => this.checkSettingsChanged());
+        this.$watch('captchaSecretKey', () => this.checkSettingsChanged());
+        this.$watch('captchaVersion', () => this.checkSettingsChanged());
+        this.$watch('captchaMinScore', () => this.checkSettingsChanged());
+        this.$watch('captchaProjectId', () => this.checkSettingsChanged());
+        window.addEventListener('captcha-test-passed', () => this.markTested());
+    },
+
+    validateWidget() {
+        window.validateCaptchaWidget();
+    },
+
+    switchProviderKeys(newDriver) {
+        const keys = this.providerKeys[newDriver] || { site_key: '', secret_key: '' };
+        this.captchaSiteKey = keys.site_key || '';
+        this.captchaSecretKey = keys.secret_key || '';
+        this.resetAuthenticationStatus();
+        this.captchaSettingsChanged = true;
+    },
+
+    currentSnapshot() {
+        return [
+            this.captchaDriver, this.captchaSiteKey, this.captchaSecretKey,
+            this.captchaVersion, this.captchaMinScore, this.captchaProjectId,
+        ].join('\u001f');
+    },
+
+    savedSnapshot() {
+        const savedKeys = this.providerKeys[this.savedDriver] || { site_key: '', secret_key: '' };
+        return [
+            this.savedDriver, savedKeys.site_key || '', savedKeys.secret_key || '',
+            this.savedVersion, this.savedMinScore, this.savedProjectId,
+        ].join('\u001f');
+    },
+
+    markTested() {
+        // Values that just passed the widget test; editing any of them afterwards
+        // drops the passed status again (the server enforces the same rule).
+        this.testedSnapshot = this.currentSnapshot();
+    },
+
+    checkSettingsChanged() {
+        const baseline = this.testedSnapshot ?? this.savedSnapshot();
+        if (this.currentSnapshot() === baseline) {
+            return;
+        }
+        this.captchaSettingsChanged = true;
+        const authInput = document.getElementById('captcha-authentication-result');
+        if (authInput && authInput.value === '1') {
+            this.resetAuthenticationStatus();
+        }
+    },
+
+    resetAuthenticationStatus() {
+        this.testedSnapshot = null;
+        const authInput = document.getElementById('captcha-authentication-result');
+        if (authInput) {
+            authInput.value = '0';
+        }
+        const successDisplay = document.getElementById('captcha-success-display');
+        const requiredNotice = document.getElementById('auth-test-required-notice');
+        if (successDisplay) successDisplay.style.display = 'none';
+        if (requiredNotice) requiredNotice.style.display = 'block';
+        const testResult = document.getElementById('captcha-test-result');
+        if (testResult) testResult.style.display = 'none';
+
+        window.clearCaptchaWidget();
+    },
+}));

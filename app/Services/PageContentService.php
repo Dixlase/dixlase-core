@@ -156,7 +156,7 @@ class PageContentService
         try {
             return match ($editorType) {
                 ContentEditorType::MARKDOWN => $this->renderMarkdown($content),
-                ContentEditorType::HTML => $content,
+                ContentEditorType::HTML => app(ContentPreviewService::class)->expandEmbeds($content),
                 ContentEditorType::BLADE => $storageType === ContentStorageType::FILE
                     ? $content // Blade files are rendered separately
                     : $content,

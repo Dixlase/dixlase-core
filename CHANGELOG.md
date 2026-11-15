@@ -43,6 +43,11 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+## [0.2.17] — 2026-11-14
+
+Upgrading: run `php artisan migrate`. It adds the columns the keyed audit log needs; until it has
+run, audit rows are written unkeyed as before.
+
 ### Added
 - Plugin API: `FrontPageProviderInterface` lets an extension choose what the site front page
   (`/`) displays. A new per-site `front_page_display` setting takes `theme` (the default theme
@@ -50,12 +55,26 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
   core serves that provider's `renderFrontPage()` for `/`, falling back to the theme front page
   while it is unavailable. Declare the `front-page` capability in `plugin.json` and tag the
   provider on `plugin.capabilities`. This replaces taking over the `/` route and calling the
-  non-`@api` front controller directly (#1012)
+  non-`@api` front controller directly (#1012, #1014)
 - Admin: the Front settings page has a **Front page display** control to choose what the site
   front page (`/`) shows — the theme front page (the default), hidden (403), or a page from an
   installed plugin that registers a front-page provider. The choice is the per-site
   `front_page_display` setting, saved through an audited settings change and validated against
-  the available options (#1027)
+  the available options (#1027, #1028)
+- The audit log hash chain is keyed with a rotatable integrity key (#665, #1024). New rows are
+  HMAC-SHA256 and record their key version; rows written before keying keep verifying. Daily
+  seals are signed with the same key, each verified with the key of its own version. Create the
+  key with `php artisan dls:integrity:key` (`--rotate` adds a new version). A new install gets
+  one from the installer; an existing site keeps working unkeyed until the key is created, and
+  Site Health recommends creating it
+
+### Fixed
+- The remaining admin screens show their times in the display timezone instead of UTC: the
+  front page and online plugin detail "last update", the updates screen (last check and failed
+  updates), the last permission scan on extension cards, the last audit log verification on the
+  dashboard, and the media upload times (#765, #1022)
+- Saving the CSP settings no longer ends in a server error on a site that runs from built
+  assets, and the confirmation dialog opens after saving (#1013, #1015)
 
 ## [0.2.16] — 2026-11-13
 

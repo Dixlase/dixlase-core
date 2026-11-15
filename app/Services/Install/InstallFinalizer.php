@@ -43,6 +43,7 @@ use App\Models\Member;
 use App\Services\AuditLogIntegrityService;
 use App\Services\AuditService;
 use App\Services\Core\CoreUpdater;
+use App\Services\FileIntegrityService;
 use App\Services\Security\IntegrityKeyring;
 use App\Support\Install\EnvFile;
 use App\Support\Install\InstallLogFile;
@@ -97,6 +98,10 @@ class InstallFinalizer
             config(['security.integrity_keys.current' => $integrityKey]);
         }
 
+        // The installer wrote the file-integrity baseline before the key
+        // existed; seal it as written (#803).
+        $this->sealInstallBaseline();
+
         $baseline = $this->recordBaselineVersionHistory();
         // Before the chain is built, so the install's own entry is inside
         // that pass rather than left behind it.
@@ -105,6 +110,23 @@ class InstallFinalizer
         $this->scheduleInstallLogDiscard();
 
         return $sessionCookie;
+    }
+
+    /**
+     * Seal the file-integrity baseline the installer has just written.
+     *
+     * A no-op when there is no key, no baseline, or it is sealed already.
+     * Never fails the install: an unsealed baseline is reported by the scan.
+     */
+    private function sealInstallBaseline(): void
+    {
+        try {
+            if (app(FileIntegrityService::class)->sealExistingBaseline()) {
+                Log::channel('install')->info('File integrity baseline sealed with the integrity key');
+            }
+        } catch (\Throwable $e) {
+            Log::channel('install')->warning('Could not seal the file integrity baseline', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

@@ -42,16 +42,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.settings.security.two-fa.update') }}" id="two-fa-settings-form">
         @csrf
 
-        <div x-data="{
-            twoFaMode: '{{ old('two_fa_mode', (string) $twoFaMode) }}',
-            passkeyMode: '{{ old('two_fa_passkey_mode', (string) $twoFaPasskeyMode) }}',
-            get twoFaEnabled() {
-                return this.twoFaMode !== '0';
-            },
-            get passkeyEnabled() {
-                return this.passkeyMode !== '0';
-            }
-        }">
+        <div x-data="twoFaGlobalSettings"
+             data-two-fa-mode="{{ old('two_fa_mode', (string) $twoFaMode) }}"
+             data-passkey-mode="{{ old('two_fa_passkey_mode', (string) $twoFaPasskeyMode) }}">
             <!-- 二段階認証基本設定 -->
             <section>
                 <h2>{{ __('admin/settings/security/two-fa.two_fa_basic_settings') }}</h2>

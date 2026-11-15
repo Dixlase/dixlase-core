@@ -17,7 +17,7 @@ The file integrity check is a security feature that detects tampering with Dixla
 
 ### What Is a Baseline?
 
-A baseline is a record of SHA-256 hash values for core files in their normal state. It is created during the initial scan or when the baseline is regenerated.
+A baseline is a record of SHA-256 hash values for core files in their normal state. The installer creates it. When the site has no [integrity key](../maintenance/audit-log-integrity.md#integrity-key), the first scan also creates one if it is missing; with a key, a missing baseline is reported and is never recreated automatically (see [Seal](#seal)).
 
 ### Storage Location
 
@@ -40,16 +40,40 @@ storage/app/dixlase/security/core_hashes.json
         "app/Http/Controllers/Controller.php": "abc123...",
         "config/app.php": "def456...",
         ...
+    },
+    "seal": {
+        "key_version": 2,
+        "mac": "9f2c..."
     }
 }
 ```
+
+### Seal
+
+When the site has an integrity key (`INTEGRITY_KEY` in `.env`), the baseline carries a `seal`: an HMAC over the file name and everything else in the file, made with a key derived from the integrity key. Without a key there is no seal and the baseline works as before.
+
+The seal is aimed at a party that can **write files but not run code**, such as a file-write bug, a restored archive or a sync into `storage/`. Such a party cannot replace the baseline with one that matches files it altered. It does not stop code running inside the application, which can read the same `.env`. Out-of-band verification is a separate measure.
+
+With a key, a scan treats the baseline as follows:
+
+| Baseline | Scan result |
+|---|---|
+| Seal verifies | Compared as usual |
+| No seal (written before the key, or stripped) | Compared, but never better than **WARNING** until the baseline is regenerated |
+| Seal does not match | **CRITICAL**; no comparison is made |
+| Seal names a key version that is not configured | **CRITICAL**; no comparison is made |
+| Missing | **WARNING**; no baseline is created |
+
+When the first key is created (by the installer, or with `php artisan dls:integrity:key`), the existing baseline is sealed as it stands, without being regenerated. Any difference since it was written therefore stays visible.
+
+A core update refreshes the baseline on its own only when the tree matched a baseline whose seal verifies before the update started.
 
 ### When to Regenerate the Baseline
 
 Regenerate the baseline in the following cases:
 
-1. **After a Dixlase update**
-   - Core files will have been updated
+1. **After a Dixlase update that did not refresh it**
+   - The update refreshes the baseline itself when the files matched it beforehand; otherwise the scan keeps reporting the updated files
 
 2. **After intentionally modifying core files**
    - When applying bug fixes or customizations
@@ -195,9 +219,14 @@ php artisan dls:integrity:scan
 # Scheduled execution
 php artisan dls:integrity:scan --scheduled
 
-# Regenerate the baseline (overwrites the existing one)
-php artisan dls:integrity:generate-baseline --force
+# Create the first baseline
+php artisan dls:integrity:generate-baseline
+
+# Replace an existing baseline (needs a reason, recorded in the audit log)
+php artisan dls:integrity:generate-baseline --force --reason="Reviewed the files changed by the update"
 ```
+
+Replacing a baseline accepts whatever is on disk as genuine, so it is a deliberate action. The command refuses without `--force` and `--reason`, and the admin screen asks for a reason. Both record `integrity_baseline_regenerated` in the audit log with that reason.
 
 ## Other Scheduled Security Checks
 
@@ -242,7 +271,7 @@ the admin panel can update this file.
 
 - **OK**: All files are normal
 - **WARNING**: Minor issues detected
-- **CRITICAL**: Serious tampering detected
+- **CRITICAL**: Serious tampering detected, or the baseline does not match its seal (see [Seal](#seal))
 
 ### Detected Issues
 
@@ -296,6 +325,7 @@ chown -R www-data:www-data storage/app/dixlase/security
 1. **Protect the baseline file**
    - Set appropriate permissions on `storage/app/dixlase/security/`
    - Prevent unauthorized access
+   - Set an integrity key so the baseline is sealed (`php artisan dls:integrity:key`)
 
 2. **Regular scanning**
    - Verify that the automatic schedule is running correctly
@@ -320,6 +350,10 @@ chown -R www-data:www-data storage/app/dixlase/security
 - **Scheduled checks and admin banners**: `app/Services/Security/ScheduledSecurityCheckMonitor.php`, `app/Console/Commands/ExtensionsRescan.php`
 
 ## Changelog
+
+- **2026-11-14**: Sealed baseline (#803)
+  - With an integrity key, the baseline is sealed and a missing one is no longer recreated by a scan
+  - Replacing a baseline needs `--force` and `--reason`, and is recorded in the audit log
 
 - **2026-10-19**: Corrected the scope
   - `public/build` is not scanned; removed it from the scanned list and added "Not Scanned"

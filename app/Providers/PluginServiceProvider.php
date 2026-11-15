@@ -38,6 +38,7 @@ namespace App\Providers;
 use App\Helpers\PluginHelper;
 use App\Models\Plugin;
 use App\Services\Extension\ExtensionCompatibilityChecker;
+use App\Services\Plugin\EnabledPluginsCache;
 use App\Services\Plugin\GuardedPluginLoader;
 use App\Services\Plugin\PluginBootFailures;
 use App\Traits\PluginLoaderTrait;
@@ -218,51 +219,35 @@ class PluginServiceProvider extends ServiceProvider
      * Get list of enabled plugins from cache file
      * Cannot access DB during register() phase, so return empty array if no cache
      *
+     * The cache is JSON with a MAC (#803); one that does not verify counts
+     * as no cache, so nothing registers until boot() rebuilds it.
+     *
      * @return array Array of plugin directory names
      */
     protected function getEnabledPluginsFromCache(): array
     {
-        $cachePath = storage_path('framework/cache/enabled_plugins.php');
+        try {
+            return EnabledPluginsCache::make()->read();
+        } catch (\Throwable $e) {
+            Log::warning('Could not read the enabled-plugins cache', ['error' => $e->getMessage()]);
 
-        if (File::exists($cachePath)) {
-            try {
-                $cached = require $cachePath;
-                if (is_array($cached)) {
-                    return $cached;
-                }
-            } catch (\Exception $e) {
-                // Ignore cache loading errors
-            }
+            return [];
         }
-
-        // Return empty array if no cache
-        // Cannot access DB during register() phase
-        // Cache is created during boot() phase
-        return [];
     }
 
     /**
      * Update cache of enabled plugins (from collection)
+     *
+     * Written only when the list changed, and replaced in one step.
      *
      * @param  \Illuminate\Support\Collection  $enabledPlugins  Collection of enabled plugins
      */
     protected function updateEnabledPluginsCache($enabledPlugins): void
     {
         try {
-            $directories = $enabledPlugins->pluck('directory')->toArray();
-
-            // Save to cache file
-            $cachePath = storage_path('framework/cache/enabled_plugins.php');
-            $cacheDir = dirname($cachePath);
-
-            if (! File::isDirectory($cacheDir)) {
-                File::makeDirectory($cacheDir, 0755, true);
-            }
-
-            $content = "<?php\n\n// Generated at: ".now()->toDateTimeString()."\n\nreturn ".var_export($directories, true).";\n";
-            File::put($cachePath, $content);
-        } catch (\Exception $e) {
-            // Failed to update cache
+            EnabledPluginsCache::make()->write($enabledPlugins->pluck('directory')->all());
+        } catch (\Throwable $e) {
+            // Failed to update cache; register() falls back to no cache
         }
     }
 
@@ -280,20 +265,10 @@ class PluginServiceProvider extends ServiceProvider
             }
 
             $enabledPlugins = Plugin::enabled()->pluck('directory')->toArray();
-
-            // Save to cache file
-            $cachePath = storage_path('framework/cache/enabled_plugins.php');
-            $cacheDir = dirname($cachePath);
-
-            if (! File::isDirectory($cacheDir)) {
-                File::makeDirectory($cacheDir, 0755, true);
-            }
-
-            $content = "<?php\n\n// Generated at: ".now()->toDateTimeString()."\n\nreturn ".var_export($enabledPlugins, true).";\n";
-            File::put($cachePath, $content);
+            EnabledPluginsCache::make()->write($enabledPlugins);
 
             return $enabledPlugins;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Failed to refresh cache
         }
 
@@ -305,11 +280,7 @@ class PluginServiceProvider extends ServiceProvider
      */
     public static function clearEnabledPluginsCache(): void
     {
-        $cachePath = storage_path('framework/cache/enabled_plugins.php');
-
-        if (File::exists($cachePath)) {
-            File::delete($cachePath);
-        }
+        EnabledPluginsCache::make()->clear();
     }
 
     /**

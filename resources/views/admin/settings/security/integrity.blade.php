@@ -153,7 +153,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-sync-alt"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    x-click="openModal('regenerate-baseline-modal')"
+                    x-click="$openModal('regenerate-baseline-modal')"
                 >
                     {{ __('admin/settings/security/integrity.regenerate_baseline') }}
                 </x-form-button>
@@ -179,6 +179,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_files_count') }}</p>
                     <p class="font-medium text-gray-900 dark:text-white">{{ $baselineMeta['files_count'] ?? 'N/A' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('admin/settings/security/integrity.baseline_seal') }}</p>
+                    @php($sealStatus = $baselineMeta['seal_status'] ?? 'unsealed')
+                    <p class="font-medium {{ in_array($sealStatus, ['invalid', 'key_unavailable'], true) ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white' }}">
+                        {{ __('admin/settings/security/integrity.baseline_seal_'.$sealStatus, ['version' => $baselineMeta['seal_key_version'] ?? '?']) }}
+                    </p>
                 </div>
             </div>
         @else
@@ -211,7 +218,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-search"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    x-click="openModal('scan-modal')"
+                    x-click="$openModal('scan-modal')"
                 >
                     {{ __('admin/settings/security/integrity.run_scan') }}
                 </x-form-button>
@@ -327,7 +334,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white !mb-0">{{ __('admin/settings/security/integrity.scan_history') }}</h2>
                 
-                <div class="flex items-center space-x-2" x-data="{ bulkDeleteDays: 30 }">
+                <div class="flex items-center space-x-2" x-data="integrityBulkDelete">
                     <input type="number" x-model="bulkDeleteDays" min="1" class="w-20 px-2 py-1 text-md border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <x-form-button
                         type="button"
@@ -336,7 +343,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         icon="fas fa-trash"
                         :disabled="$viewOnly"
                         :title="$tooltipText"
-                        @click="document.getElementById('bulk-delete-days-input').value = bulkDeleteDays; openModal('bulk-delete-modal')"
+                        @click="confirmBulkDelete()"
                     >
                         {{ __('admin/settings/security/integrity.bulk_delete_audits') }}
                     </x-form-button>
@@ -408,7 +415,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         <button type="button"
                                             @if($viewOnly) disabled @endif
                                             @if($viewOnly) title="{{ $tooltipText }}" @endif
-                                            @click="openModal('delete-audit-{{ $audit->id }}-modal')"
+                                            @click="$openModal('delete-audit-{{ $audit->id }}-modal')"
                                             class="text-red-600 dark:text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -465,7 +472,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         form="regenerate-baseline-form"
         icon-type="warning"
         confirm-color="blue"
-    />
+    >
+        <div class="mt-4 text-left">
+            <x-form-label for="regenerate-baseline-reason" :required="true">{{ __('admin/settings/security/integrity.regenerate_reason') }}</x-form-label>
+            <x-form-text id="regenerate-baseline-reason" name="reason" form="regenerate-baseline-form" :required="true" maxlength="500" class="w-full" />
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ __('admin/settings/security/integrity.regenerate_reason_help') }}</p>
+        </div>
+    </x-ui-modal>
     
     <form id="regenerate-baseline-form" method="POST" action="{{ route('admin.settings.security.integrity.regenerate-baseline') }}" style="display: none;">
         @csrf
