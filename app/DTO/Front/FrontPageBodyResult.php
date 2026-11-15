@@ -41,15 +41,26 @@ use Illuminate\Contracts\Support\Renderable;
 use JsonSerializable;
 
 /**
- * Front page source render result DTO
+ * Front page body render result DTO
  *
  * What a provider hands back from renderFrontPageBody(): the body of the front
- * page, plus the things a body cannot express on its own.
+ * page, plus the few things a body cannot express on its own.
  *
- * A plugin's own front-end view is a whole page — it extends the theme layout, sets
- * the title, and pushes its stylesheets. None of that survives being placed inside a
- * theme's own layout, so those concerns travel here instead and the theme applies
- * them where they belong.
+ * A plugin's own front-end view is a whole page — it extends the theme layout,
+ * sets the title, and pushes its stylesheets. None of that survives being placed
+ * inside a theme's own layout, so those concerns travel here instead and the theme
+ * applies them where they belong: `title` to the `title` section that `@pageTitle`
+ * renders, and the asset URLs to the theme's style and script stacks.
+ *
+ * **Deliberately not carried: the canonical URL.** More than one extension may
+ * already emit `<link rel="canonical">` for a request, and a second tag is not an
+ * override — search engines treat conflicting canonicals as none at all. A provider
+ * that serves the same content at its own address too settles that itself, the same
+ * way it does on its own route, and a theme never emits one on a provider's behalf.
+ *
+ * Nor is a response header such as `Cache-Control: no-store`: a theme renders inside
+ * core's front controller and owns no response. A provider that must not have its
+ * content stored does not offer that content as a front page body.
  *
  * The content is trusted HTML: the provider is responsible for escaping it, exactly
  * as it is when it renders its own page.
@@ -61,15 +72,10 @@ final readonly class FrontPageBodyResult implements JsonSerializable
     /**
      * @param  Renderable|string  $content  The body, without a surrounding layout
      * @param  string|null  $title  Page title for the document head; null keeps the theme's
-     * @param  string|null  $description  Meta description; null keeps the theme's
+     * @param  string|null  $description  Meta description for a theme that emits one;
+     *                                    null keeps the theme's
      * @param  array<int, string>  $styleUrls  Stylesheet URLs the body needs
      * @param  array<int, string>  $scriptUrls  Script URLs the body needs
-     * @param  string|null  $canonicalUrl  Canonical URL when this body is also served at its
-     *                                     own address, so the two do not compete
-     * @param  bool  $noStore  True when the response must not be stored by caches —
-     *                         an unpublished page shown to a signed-in editor, for one
-     * @param  string|null  $adminEditUrl  Where an editor edits this content
-     * @param  string|null  $adminEditLabel  Label for that link (recommended: a translation key)
      * @param  array<string, mixed>  $meta  Provider-specific metadata
      */
     public function __construct(
@@ -78,10 +84,6 @@ final readonly class FrontPageBodyResult implements JsonSerializable
         public ?string $description = null,
         public array $styleUrls = [],
         public array $scriptUrls = [],
-        public ?string $canonicalUrl = null,
-        public bool $noStore = false,
-        public ?string $adminEditUrl = null,
-        public ?string $adminEditLabel = null,
         public array $meta = [],
     ) {}
 
@@ -124,10 +126,6 @@ final readonly class FrontPageBodyResult implements JsonSerializable
             'description' => $this->description,
             'style_urls' => $this->styleUrls,
             'script_urls' => $this->scriptUrls,
-            'canonical_url' => $this->canonicalUrl,
-            'no_store' => $this->noStore,
-            'admin_edit_url' => $this->adminEditUrl,
-            'admin_edit_label' => $this->adminEditLabel,
             'meta' => $this->meta,
         ];
     }
