@@ -167,7 +167,7 @@ Can be reused from plugin/theme by passing the following properties:
                                     @csrf
                                     <button type="button"
                                             @if($viewOnly) disabled @endif
-                                            @click="openModal('restore-modal-{{ $revision->id }}')"
+                                            @click="$openModal('restore-modal-{{ $revision->id }}')"
                                             class="text-amber-600 hover:text-amber-800 dark:text-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="{{ $viewOnly ? $tooltipText : __($translationPrefix.'.restore') }}">
                                         <i class="fas fa-rotate-left"></i>

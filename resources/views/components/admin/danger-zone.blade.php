@@ -70,7 +70,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('components/admin/danger-zone.unlock_lockout_button')"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('unlockLockoutModal')"
+                @click="$openModal('unlockLockoutModal')"
             />
         </fieldset>
     @endif
@@ -85,7 +85,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('components/admin/danger-zone.force_logout_button')"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('forceLogoutModal')"
+                @click="$openModal('forceLogoutModal')"
             />
         </fieldset>
     @endif
@@ -100,7 +100,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 :label="__('components/admin/danger-zone.delete_' . $entityType . '_button')"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('delete{{ ucfirst($entityType) }}Modal')"
+                @click="$openModal('delete{{ ucfirst($entityType) }}Modal')"
             />
         </fieldset>
     @endif

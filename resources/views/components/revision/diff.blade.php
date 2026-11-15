@@ -131,7 +131,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 <button type="button"
                         @if($viewOnly) disabled @endif
                         @if($viewOnly) title="{{ $tooltipText }}" @endif
-                        @click="openModal('restore-modal-{{ $revision->id }}')"
+                        @click="$openModal('restore-modal-{{ $revision->id }}')"
                         class="inline-flex items-center gap-2 rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-rotate-left"></i>
                     {{ __($translationPrefix.'.restore') }}
@@ -181,7 +181,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <button type="button"
                     @if($viewOnly) disabled @endif
                     @if($viewOnly) title="{{ $tooltipText }}" @endif
-                    @click="openModal('note-modal-{{ $revision->id }}')"
+                    @click="$openModal('note-modal-{{ $revision->id }}')"
                     class="shrink-0 rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
                 {{ __($translationPrefix.'.note_save') }}
             </button>
