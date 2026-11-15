@@ -88,6 +88,9 @@ class IntegrityKeyring
 
     public const PURPOSE_AUDIT_EPOCH = 'audit-epoch';
 
+    /** Signature of an audit-log retention point (#1048) */
+    public const PURPOSE_AUDIT_RETENTION = 'audit-retention';
+
     /** Seal of a file-integrity baseline (core_hashes.json and friends, #803) */
     public const PURPOSE_FILE_BASELINE = 'file-baseline';
 

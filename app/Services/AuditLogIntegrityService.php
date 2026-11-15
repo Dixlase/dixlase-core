@@ -40,6 +40,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\AuditLogDailySeal;
 use App\Models\AuditLogKeyEpoch;
+use App\Models\AuditLogRetentionPoint;
 use App\Services\Security\IntegrityKeyring;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -198,6 +199,8 @@ class AuditLogIntegrityService
         $previousHash = null;
         $previousSequence = 0;
         $erasures = [];
+        /** @var AuditLogRetentionPoint|false|null $retentionPoint */
+        $retentionPoint = null;
 
         foreach ($logs as $log) {
             $isValid = true;
@@ -254,9 +257,14 @@ class AuditLogIntegrityService
                     $errors[] = 'sequence_gap';
                 }
             } elseif ($log->previous_hash !== AuditLog::GENESIS_HASH && $fromId === null) {
-                // If first record is not genesis (only when range is not specified)
-                $isValid = false;
-                $errors[] = 'invalid_genesis';
+                // The first record has to be the genesis row (only when the
+                // range is not specified), or the row a retention run left
+                // first, as its latest valid retention point records (#1048)
+                $retentionPoint ??= AuditLogRetentionPoint::latestValid($keyring) ?? false;
+                if ($retentionPoint === false || ! $retentionPoint->anchors($log)) {
+                    $isValid = false;
+                    $errors[] = 'invalid_genesis';
+                }
             }
 
             if ($isValid && $isRedacted) {

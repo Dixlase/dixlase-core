@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Admin\Settings\Systems;
 
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Systems\AdminSystemDatabaseCleanupRequest;
@@ -77,9 +78,9 @@ class AdminSystemDatabaseController extends AdminLoggedInController
         try {
             if ($type === 'all') {
                 $allDays = (int) $request->input('all_days', 30);
-                $result = $this->cleanupService->cleanupAll($allDays, true);
+                $result = $this->cleanupService->cleanupAll($allDays, true, AdminHelper::getMember(), 'admin_database');
             } else {
-                $result = $this->cleanupService->cleanup($type, $days, true);
+                $result = $this->cleanupService->cleanup($type, $days, true, AdminHelper::getMember(), 'admin_database');
             }
 
             if ($result['success']) {
