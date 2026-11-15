@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-11-06
+**Last Updated:** 2026-11-14
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -117,6 +117,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
 | `App\Contracts\Extension\ProvidesSettingsDefaultsInterface` | Opt-in contract for extensions that own a `name` / `value` settings |
 | `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | File integrity check service contract |
+| `App\Contracts\Front\FrontPageBodyProviderInterface` | Front Page Body Provider Contract |
 | `App\Contracts\Front\FrontPageProviderInterface` | Front Page Provider Contract |
 | `App\Contracts\I18n\LocaleUrlRouting` | Tells whether front URLs on this site carry a leading locale segment. |
 | `App\Contracts\I18n\LocalizedUrlProvider` | Exposes alternate-language URLs for the current request. |
@@ -275,23 +276,29 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.10 Licensing DTOs
+### 4.10 Front DTOs
+
+- `App\DTO\Front\FrontPageBodyContext`
+- `App\DTO\Front\FrontPageBodyDTO`
+- `App\DTO\Front\FrontPageBodyResult`
+
+### 4.11 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.11 Logging DTOs
+### 4.12 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.12 Mail DTOs
+### 4.13 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.13 Plugin Integration DTOs
+### 4.14 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -308,23 +315,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.14 Plugin Privacy DTOs
+### 4.15 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.15 Plugin DTOs
+### 4.16 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.16 RouteSlug DTOs
+### 4.17 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.17 Security DTOs
+### 4.18 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
