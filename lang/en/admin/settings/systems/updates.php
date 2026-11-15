@@ -128,6 +128,7 @@ return [
         'recommendation_title' => 'Recommended: take a backup before updating',
         'recommendation_body' => 'A botched update can leave files or DB schema in an inconsistent state. Take a backup first so you can restore from the backup page if anything goes wrong.',
         'recommendation_link' => 'Open the backup management page',
+        'transient_error_note' => 'While an update is running, an error page (503 or 500) may appear for a moment. If it does, wait a minute or two and reload the page in your browser.',
         'checkbox_label' => 'Take a backup before updating',
     ],
 
