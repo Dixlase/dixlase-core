@@ -126,6 +126,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
 | `App\Contracts\Multilingual\SingletonTranslationResolver` | Storage operations for **singleton** translatable content. |
 | `App\Contracts\Multilingual\TranslatableContentProvider` | Primary-locale value source for **singleton** translatable content. |
+| `App\Contracts\Multilingual\TranslatableContentTypes` | Tells whether a translatable content type is registered on this site. |
 | `App\Contracts\Revisionable` | Each plugin/theme has its own revision table and Eloquent model, and by |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |

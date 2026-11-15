@@ -38,6 +38,7 @@
 namespace App\Helpers;
 
 use App\Contracts\I18n\LocaleUrlRouting;
+use App\Contracts\Multilingual\TranslatableContentTypes;
 use App\Contracts\Site\SiteContextInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as RequestFacade;
@@ -271,6 +272,25 @@ class LocaleHelper
         $routing = app(LocaleUrlRouting::class);
 
         return $routing instanceof LocaleUrlRouting && $routing->isEnabled();
+    }
+
+    /**
+     * Whether a translatable content type is registered on this site.
+     *
+     * The key is the one an extension declares under
+     * `multilingual_content.types` in its manifest. The answer comes from
+     * the translation provider, through the TranslatableContentTypes
+     * contract; with no such provider installed it is false.
+     */
+    public static function translatableTypeRegistered(string $key): bool
+    {
+        if ($key === '' || ! app()->bound(TranslatableContentTypes::class)) {
+            return false;
+        }
+
+        $types = app(TranslatableContentTypes::class);
+
+        return $types instanceof TranslatableContentTypes && $types->isRegistered($key);
     }
 
     /**
