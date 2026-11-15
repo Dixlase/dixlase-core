@@ -132,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  data-appearance-mode="{{ $appearanceMode }}"
                  data-preview-theme="{{ $appearanceMode === '1' ? 'light' : 'dark' }}"
                  x-init="$el.dataset.previewTheme = resolvePreviewTheme($el.dataset.appearanceMode)"
-                 @appearance-changed.window="$el.dataset.appearanceMode = $event.detail.mode; $el.dataset.previewTheme = resolvePreviewTheme($event.detail.mode)"
+                 @appearance-changed.window="applyPreviewAppearance($el, $event.detail.mode)"
                  :style="'visibility: ' + (_previewReady ? 'visible' : 'hidden') + '; width: ' + previewDeviceWidth + 'px; transform: scale(' + previewScale + '); transform-origin: top left; margin: 0;'"
                  style="visibility: hidden;"
                  class="relative">
@@ -174,6 +174,12 @@ window.previewContainerMixin = function(outerId = 'preview-outer', innerId = 'pr
             if (mode === '1') return 'light';
             if (mode === '2') return 'dark';
             return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        },
+
+        // Follow an appearance-mode change made elsewhere on the page.
+        applyPreviewAppearance(el, mode) {
+            el.dataset.appearanceMode = mode;
+            el.dataset.previewTheme = this.resolvePreviewTheme(mode);
         },
 
         initPreviewContainer() {
