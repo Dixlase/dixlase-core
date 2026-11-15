@@ -3,7 +3,7 @@
 > **Notice — Interim Version.** This document is an interim version of the Dixlase Plugin API boundary definition, published so that the Plugin and Theme Exception (see `LICENSE-EXCEPTIONS`) has a referenceable API boundary from the initial release. The boundary definition may be refined in future releases; the version that applies to a given release is the one distributed with that release.
 
 **Version:** dev
-**Last Updated:** 2026-11-14
+**Last Updated:** 2026-11-15
 **Purpose:** Define the public Plugin API boundary for the AGPL license exception clause (see LICENSE-EXCEPTIONS)
 
 This document defines all components that form the "Plugin API" -- the public interfaces,
@@ -637,6 +637,7 @@ The remaining services are accessed via their respective interfaces (see Section
 - `App\Services\Media\MediaImporter`
 - `App\Services\Media\MediaImportResult`
 - `App\Services\Media\MediaUploadLimits`
+- `App\Services\Front\FrontPageBodyResolver`
 
 ### 9.3 Mail & Logging
 
