@@ -66,7 +66,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-sign-out-alt"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('forceLogoutAllModal')"
+                @click="$openModal('forceLogoutAllModal')"
             />
         </div>
     </div>
