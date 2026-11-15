@@ -114,11 +114,15 @@ interface FrontPageBodyProviderInterface extends PluginCapabilityInterface
      * unpublished, for instance. The caller then falls back to core's front page
      * content; returning null is the documented way to decline, not an error.
      *
-     * The result carries the body plus the concerns a body cannot express on its own:
-     * the title and description for SEO, the provider's own asset URLs, a canonical
-     * URL, whether the response may be stored, and an admin edit link.
+     * The result carries the body plus the few concerns a body cannot express on its
+     * own: the page title, a meta description, and the provider's own asset URLs.
      * Implementations must not emit a surrounding layout: the theme places the body
      * inside its own.
+     *
+     * A canonical URL is deliberately not among them, and neither is a response
+     * header — see FrontPageBodyResult for why. A provider that also serves this
+     * content at its own address settles the canonical itself, exactly as it does on
+     * its own route.
      *
      * @param  string  $bodyId  The id of a FrontPageBodyDTO this provider offered
      * @param  FrontPageBodyContext  $context  Where and how the body is being rendered

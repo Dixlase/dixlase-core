@@ -38,10 +38,6 @@ class FrontPageBodyResultTest extends TestCase
         $this->assertNull($result->description);
         $this->assertSame([], $result->styleUrls);
         $this->assertSame([], $result->scriptUrls);
-        $this->assertNull($result->canonicalUrl);
-        $this->assertFalse($result->noStore);
-        $this->assertNull($result->adminEditUrl);
-        $this->assertNull($result->adminEditLabel);
         $this->assertSame([], $result->meta);
     }
 
@@ -103,10 +99,6 @@ class FrontPageBodyResultTest extends TestCase
             description: 'Latest posts',
             styleUrls: ['/css/blog.css'],
             scriptUrls: ['/js/blog.js'],
-            canonicalUrl: 'https://example.test/blog',
-            noStore: true,
-            adminEditUrl: 'https://example.test/edit',
-            adminEditLabel: 'Edit',
             meta: ['foo' => 'bar'],
         );
 
@@ -116,10 +108,6 @@ class FrontPageBodyResultTest extends TestCase
             'description' => 'Latest posts',
             'style_urls' => ['/css/blog.css'],
             'script_urls' => ['/js/blog.js'],
-            'canonical_url' => 'https://example.test/blog',
-            'no_store' => true,
-            'admin_edit_url' => 'https://example.test/edit',
-            'admin_edit_label' => 'Edit',
             'meta' => ['foo' => 'bar'],
         ], $result->jsonSerialize());
     }
@@ -127,5 +115,26 @@ class FrontPageBodyResultTest extends TestCase
     public function test_dto_is_readonly(): void
     {
         $this->assertTrue((new ReflectionClass(FrontPageBodyResult::class))->isReadOnly());
+    }
+
+    /**
+     * A canonical URL, a response header and an admin edit link are deliberately not
+     * carried: a second `<link rel="canonical">` is not an override, a theme owns no
+     * response, and the front page's edit link is core's. Adding a field later is
+     * additive; removing one is breaking, so the shape is pinned here.
+     */
+    public function test_the_result_carries_only_what_a_theme_can_apply(): void
+    {
+        $names = array_map(
+            fn (\ReflectionProperty $p) => $p->getName(),
+            (new ReflectionClass(FrontPageBodyResult::class))->getProperties(),
+        );
+
+        sort($names);
+
+        $this->assertSame(
+            ['content', 'description', 'meta', 'scriptUrls', 'styleUrls', 'title'],
+            $names,
+        );
     }
 }
