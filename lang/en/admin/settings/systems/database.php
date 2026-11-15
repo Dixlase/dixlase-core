@@ -116,7 +116,7 @@ return [
     ],
     'audit_logs' => [
         'name' => 'Audit Logs',
-        'description' => 'Delete audit log records older than the specified retention period',
+        'description' => 'Delete audit log records older than the specified retention period, in whole days, with their daily seals. The cleanup is recorded in the audit log, and at least one day is always kept',
         'default_days' => '365 days',
     ],
     'api_request_logs' => [

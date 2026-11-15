@@ -198,6 +198,19 @@ Each completed day is pinned by a daily seal. Deleting or inserting a row, or re
 | `daily_signature` | The seal's HMAC-SHA256 |
 | `key_version` | Seal key version (see "Versions") |
 
+## Retention (Deleting Old Rows)
+
+Old audit rows are deleted through one path, whichever screen or command starts it: the cleanup on the audit log screen, the **Audit Logs** entry on the database screen, and `php artisan dls:cleanup --type=audit_logs --days=N`. All three are super-administrator or operator actions, and all three do the same thing:
+
+1. **Record the run first.** An `audit_log.cleanup` row (actor, number of days, cutoff, expected count, and where it came from) is written before anything is deleted, so the deletion is part of the chain it shortens. If that row cannot be written, nothing is deleted.
+2. **Delete whole days from the start of the chain.** The cutoff is moved back to the start of a day, and rows are removed from the start of the chain by id, so what is left has no holes. At least one day is always kept; asking for `0` days is refused.
+3. **Retire the seals of the deleted rows.** A daily seal that covered a deleted row is removed with it, so seal verification no longer reports those days.
+4. **Record a retention point.** The first chained row left, and the `previous_hash` it carries, are stored in `audit_log_retention_points`, signed with the integrity key (or with `AUDIT_LOG_SECRET` / `APP_KEY` on a site without one). Full-chain verification accepts that row in place of the genesis row only when it matches the latest point whose signature verifies.
+
+Rows deleted any other way — directly in the database, or past the latest retention point — are still reported: the first row then matches no valid point (`invalid_genesis`), and the seals of the affected days fail.
+
+**A site that deleted rows before this existed** reports `invalid_genesis` and failed seals for those days. Run a retention once (any number of days that keeps the rows you want): even when it has nothing left to delete, it adopts the current first row as a retention point and removes the seals of rows that are gone. That run is in the audit log like any other. Then run `audit:integrity verify --all` so the rows marked as tampered are verified again.
+
 ## Commands
 
 ### Building the Hash Chain
@@ -432,7 +445,7 @@ periodically (see "Verifying Integrity").
 | `hash_mismatch` | Record hash does not match |
 | `chain_broken` | Link to the previous record is broken |
 | `sequence_gap` | Gap in the sequence numbers |
-| `invalid_genesis` | Invalid first record |
+| `invalid_genesis` | The first record is neither the genesis record nor the one the latest valid retention point records (see "Retention") |
 | `redaction_unrecorded` | The record is marked redacted, but no recorded erasure explains it |
 | `key_unavailable` | The record's key version is not configured (its key was removed from `.env`) |
 | `unkeyed_after_keying` | An unkeyed record after the point where keying started |

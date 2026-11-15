@@ -450,6 +450,9 @@ class AuditLog extends Model
     /** The core file-integrity baseline was replaced on purpose (#803) */
     public const ACTION_INTEGRITY_BASELINE_REGENERATED = 'integrity_baseline_regenerated';
 
+    /** Audit log rows deleted by retention (#1048) */
+    public const ACTION_AUDIT_LOG_CLEANUP = 'audit_log.cleanup';
+
     // ========================================
     // Action constants - Privacy related
     // ========================================
@@ -1415,6 +1418,29 @@ class AuditLog extends Model
             'linked' => $linked,
             'complete' => $pending->count() <= $limit,
         ];
+    }
+
+    /**
+     * Run a callback in a transaction holding the chain lock, after linking
+     * the rows that are still waiting.
+     *
+     * For work that has to see the chain stand still, such as retention
+     * cutting rows off its start (#1048): no row is written or linked
+     * until the callback returns.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public static function underChainLock(callable $callback): mixed
+    {
+        return DB::transaction(function () use ($callback) {
+            self::acquireChainLock();
+            self::linkPendingLocked(self::CHAIN_CATCH_UP_LIMIT);
+
+            return $callback();
+        });
     }
 
     /**
