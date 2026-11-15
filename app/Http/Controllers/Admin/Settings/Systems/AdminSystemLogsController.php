@@ -37,11 +37,11 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Enums\LogLevel;
 use App\Enums\MemberRole;
-use App\Facades\Audit;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
+use App\Services\AuditLogRetentionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -751,20 +751,18 @@ class AdminSystemLogsController extends AdminLoggedInController
         ]);
         $days = (int) $validated['days'];
 
-        $cutoff = now()->subDays($days);
-        $count = AuditLog::where('occurred_at', '<', $cutoff)->count();
+        // One path deletes audit rows: it records the run first, keeps whole
+        // days and retires the seals of what it removes (#1048).
+        try {
+            $count = app(AuditLogRetentionService::class)->prune($days, $member, 'admin_logs')['deleted'];
+        } catch (\Throwable $e) {
+            // Either the run could not be recorded, so nothing was started,
+            // or the deletion failed inside its transaction and rolled back
+            Log::error('Audit log retention failed', ['error' => $e->getMessage()]);
 
-        // Record the cleanup itself before the rows go, so the deletion is
-        // part of the chain it shortens.
-        Audit::log([
-            'category' => 'system',
-            'action' => 'audit_log.cleanup',
-            'actor' => $member,
-            'severity' => 'high',
-            'context' => ['older_than_days' => $days, 'deleted' => $count],
-        ]);
-
-        AuditLog::where('occurred_at', '<', $cutoff)->delete();
+            return redirect()->route('admin.settings.systems.logs.index')
+                ->with('error', __('admin/settings/systems/logs/index.cleanup_failed'));
+        }
 
         return redirect()->route('admin.settings.systems.logs.index')
             ->with('success', __('admin/settings/systems/logs/index.cleanup_success', ['count' => $count]));
