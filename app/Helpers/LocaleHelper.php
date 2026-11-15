@@ -37,6 +37,7 @@
 
 namespace App\Helpers;
 
+use App\Contracts\I18n\EnabledLocales;
 use App\Contracts\I18n\LocaleUrlRouting;
 use App\Contracts\Site\SiteContextInterface;
 use Illuminate\Support\Facades\Auth;
@@ -271,6 +272,87 @@ class LocaleHelper
         $routing = app(LocaleUrlRouting::class);
 
         return $routing instanceof LocaleUrlRouting && $routing->isEnabled();
+    }
+
+    /**
+     * The locale codes this site publishes content in.
+     *
+     * The answer comes from the translation provider, through the
+     * EnabledLocales contract. With no provider installed the site is
+     * single-language, and the list holds only the site's primary locale.
+     * The default locale is always in the list, first when the provider
+     * left it out, and no code appears twice.
+     *
+     * @return list<string>
+     */
+    public static function enabledLocales(): array
+    {
+        $provider = self::enabledLocalesProvider();
+        $default = self::defaultEnabledLocale();
+
+        if ($provider === null) {
+            return [$default];
+        }
+
+        $locales = array_values(array_unique(array_filter(
+            $provider->locales(),
+            static fn ($locale): bool => is_string($locale) && $locale !== '',
+        )));
+
+        if (! in_array($default, $locales, true)) {
+            array_unshift($locales, $default);
+        }
+
+        return $locales;
+    }
+
+    /**
+     * The locale used when a request names none.
+     *
+     * Comes from the translation provider when one is installed; otherwise,
+     * or when the provider gives no code, it is the site's primary locale.
+     */
+    public static function defaultEnabledLocale(): string
+    {
+        $provider = self::enabledLocalesProvider();
+        $locale = $provider?->defaultLocale();
+
+        return is_string($locale) && $locale !== '' ? $locale : self::getSiteDefaultLocale();
+    }
+
+    /**
+     * Whether this site publishes content in the given locale.
+     */
+    public static function isLocaleEnabled(string $locale): bool
+    {
+        return in_array($locale, self::enabledLocales(), true);
+    }
+
+    /**
+     * Whether the operator fixed the default locale, so a request without
+     * an explicit locale always gets defaultEnabledLocale().
+     *
+     * False when no translation provider is installed: a single-language
+     * site has nothing to choose between.
+     */
+    public static function defaultLocaleIsPinned(): bool
+    {
+        return self::enabledLocalesProvider()?->defaultLocaleIsPinned() ?? false;
+    }
+
+    /**
+     * The bound translation provider's locale list, or null when none is
+     * bound or the binding does not implement the contract.
+     */
+    private static function enabledLocalesProvider(): ?EnabledLocales
+    {
+        if (! app()->bound(EnabledLocales::class)) {
+            return null;
+        }
+
+        $provider = app(EnabledLocales::class);
+
+        return $provider instanceof EnabledLocales ? $provider : null;
     }
 
     /**
