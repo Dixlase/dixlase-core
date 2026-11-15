@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         icon="fas fa-save"
         :disabled="$viewOnly"
         :title="$tooltipText"
-        @click="openModal('{{ $id_confirmation }}')"
+        @click="$openModal('{{ $id_confirmation }}')"
         class="save-button mx-2"
     />
 

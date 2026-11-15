@@ -97,7 +97,7 @@ Props:
                     size="sm"
                     :label="__('common.file_changes.publish')"
                     icon="fas fa-upload"
-                    @click="openModal('{{ $modalId }}')"
+                    @click="$openModal('{{ $modalId }}')"
                 />
             @endif
         </div>
