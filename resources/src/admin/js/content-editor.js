@@ -263,6 +263,13 @@ export function contentEditor() {
             return window.marked ? window.marked.parse(this.content || '') : '';
         },
 
+        // Render the inline Markdown preview into el. Called from x-effect,
+        // so it re-runs whenever the content changes, as x-html did; the
+        // @alpinejs/csp build does not allow x-html.
+        renderMarkdownPreview(el) {
+            el.innerHTML = this.markdownHtml();
+        },
+
         previewToggleClass() {
             return this.previewVisible
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700'

@@ -338,7 +338,7 @@ Optional parts:
                                 {{ __('common.content_editor.preview') }}
                             </div>
                             <div class="min-h-96 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 prose dark:prose-invert max-w-none overflow-auto"
-                                 x-html="markdownHtml()"></div>
+                                 x-effect="renderMarkdownPreview($el)"></div>
                         </div>
                     </div>
                     <div x-show="isEditorSelected('blade')" x-cloak class="mt-2 text-sm text-gray-600 dark:text-gray-400">

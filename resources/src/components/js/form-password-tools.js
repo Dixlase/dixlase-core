@@ -282,12 +282,13 @@ window.passwordTools = function (config = {}) {
             return 'fas fa-times text-red-600 dark:text-red-400';
         },
 
-        // 一致アイコンのHTML（完全に置き換え）
-        get matchIconHtml() {
+        // Icon classes for the match indicator, bound with :class because the
+        // @alpinejs/csp build does not allow x-html.
+        get matchIconClass() {
             if (this.isPasswordMatching) {
-                return '<i class="fas fa-check text-green-600 dark:text-green-400"></i>';
+                return 'fas fa-check text-green-600 dark:text-green-400';
             }
-            return '<i class="fas fa-times text-red-600 dark:text-red-400"></i>';
+            return 'fas fa-times text-red-600 dark:text-red-400';
         },
 
         // 要件アイコンのクラス
