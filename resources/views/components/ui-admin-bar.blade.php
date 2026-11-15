@@ -314,7 +314,7 @@ still wins.
          x-transition:enter-start="opacity-0 backdrop-blur-none"
          x-transition:leave="transition-all ease-in duration-200"
          x-transition:leave-end="opacity-0 backdrop-blur-none"
-         @click="openSidebar = false; openUserMenu = false"
+         @click="closeDrawers()"
          x-cloak
          class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[10005]"
          aria-hidden="true"></div>

@@ -34,17 +34,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
 <div x-show="!isHorizontal && previewVisible" x-cloak
-     x-data="{ _btnRight: 16 }"
-     x-init="
-        const updatePos = () => {
-            const main = document.getElementById('admin-main-content');
-            if (main) {
-                _btnRight = Math.max(16, window.innerWidth - main.getBoundingClientRect().right + 16);
-            }
-        };
-        updatePos();
-        new ResizeObserver(updatePos).observe(document.getElementById('admin-main-content'));
-     "
+     x-data="contentEditorScrollButtons"
      class="fixed z-40 flex flex-col gap-2"
      :style="'right: ' + _btnRight + 'px; bottom: 4.5rem;'">
     <button type="button" @click="scrollToEditor()"
