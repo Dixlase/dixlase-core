@@ -254,7 +254,23 @@ jobs:
         id: stage
         run: |
           TAG="${{ steps.ref.outputs.ref }}"
-          WRAPPER="dist/dixlase-${TAG}"
+
+          # The ref is also used as a file name component (the wrapper
+          # directory and the archive). A branch name carries a `/`, which
+          # turns that component into a path: `zip` then cannot create
+          # `../dixlase-fix/517-....zip` and the build dies at the last
+          # step, after Composer, npm and the asset builds. The branch
+          # naming convention puts a `/` in nearly every branch, so the
+          # workflow_dispatch test path the release procedure asks for
+          # failed for nearly every branch (#533).
+          #
+          # So keep two values: TAG stays the real ref, because the release
+          # manifest's `version` comes from it, and SLUG is the file-name
+          # form. A tag has no character outside the set, so for a real
+          # release SLUG == TAG and the published asset names do not move.
+          SLUG="$(printf '%s' "$TAG" | sed 's/[^A-Za-z0-9._-]/-/g')"
+
+          WRAPPER="dist/dixlase-${SLUG}"
           mkdir -p "$WRAPPER"
 
           # rsync into a wrapper directory so the ZIP extracts as
@@ -278,6 +294,7 @@ jobs:
           done
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
           echo "wrapper=$WRAPPER" >> "$GITHUB_OUTPUT"
           echo "Staged: $(du -sh "$WRAPPER" | cut -f1)"
 
@@ -390,9 +407,11 @@ jobs:
       - name: Build ZIP
         id: zip
         run: |
-          ZIP_NAME="dixlase-${{ steps.stage.outputs.tag }}.zip"
+          # steps.stage.outputs.slug, not .tag: see the note in "Stage
+          # distribution tree". For a tag the two are identical.
+          ZIP_NAME="dixlase-${{ steps.stage.outputs.slug }}.zip"
           LATEST_ALIAS="dixlase-core.zip"
-          (cd dist && zip -rq "../$ZIP_NAME" "dixlase-${{ steps.stage.outputs.tag }}")
+          (cd dist && zip -rq "../$ZIP_NAME" "dixlase-${{ steps.stage.outputs.slug }}")
           # Versionless alias of the same archive. Lets external links use
           # the static `releases/latest/download/dixlase-core.zip` URL,
           # which GitHub auto-resolves to whichever release is currently
@@ -416,7 +435,7 @@ jobs:
         # If a future exclude change re-introduces the strip we want the
         # release build to fail here rather than ship a broken ZIP.
         run: |
-          CRITICAL="dixlase-${{ steps.stage.outputs.tag }}/vendor/laravel/framework/src/Illuminate/Foundation/resources/exceptions/renderer/dist/styles.css"
+          CRITICAL="dixlase-${{ steps.stage.outputs.slug }}/vendor/laravel/framework/src/Illuminate/Foundation/resources/exceptions/renderer/dist/styles.css"
           if ! unzip -l "${{ steps.zip.outputs.name }}" | grep -qF "$CRITICAL"; then
             echo "::error::Release ZIP is missing $CRITICAL. This means the exception-page renderer cannot render at runtime — any error during an install / update / rollback will surface as a file_get_contents fatal that hides the real cause. Check .github/release-dist-exclude.txt for an overly broad exclude pattern (see Round 4 Finding A)."
             exit 1
@@ -430,7 +449,7 @@ jobs:
           # version's stylesheet silently, because the page is complete and
           # its byte size barely moves. The link belongs to the consuming
           # side; an empty directory in the archive is correct.
-          THEME_PUBLIC="dixlase-${{ steps.stage.outputs.tag }}/public/assets/themes/"
+          THEME_PUBLIC="dixlase-${{ steps.stage.outputs.slug }}/public/assets/themes/"
           STRAY=$(unzip -l "${{ steps.zip.outputs.name }}" | awk -v p="$THEME_PUBLIC" '$4 ~ "^" p && $1 != "0" {print $4}')
           if [ -n "$STRAY" ]; then
             echo "::error::Release ZIP carries files under public/assets/themes/, which must stay empty (see #898). A theme's built assets reach a site through themes/<Theme>/resources/assets and a symlink the install or the update creates. Files found:" >&2
