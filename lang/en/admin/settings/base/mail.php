@@ -42,6 +42,13 @@ return [
     'admin_email_help' => 'Enter the system administrator email address.',
     'admin_email_mail_test_required' => 'Mail server test is not complete. To use error notifications, please complete connection test, send test, and receive test.',
     'settings_updated' => 'Mail settings have been updated.',
+    'tests_reset' => [
+        'saved' => 'The three mail tests (connection, send, receive) are back to not run, because a delivery setting changed. Run them again below.',
+        'accounts' => 'Until they pass, no sign-in code is e-mailed to the :count accounts with two-factor authentication: they sign in with a recovery code instead.',
+        'accounts_without_codes' => ':count of them have no recovery code left and sign in with their password alone.',
+        'banner_title' => 'The mail tests are not complete',
+        'open_settings' => 'Open mail settings',
+    ],
     'test_session_cleared' => 'Mail test session has been cleared.',
     'mail_test_complete' => 'Mail Function Test Complete',
     'mail_test_incomplete' => 'Mail Function Test Incomplete',

@@ -42,6 +42,7 @@ use App\Helpers\EnvHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Http\Requests\Admin\Settings\Base\AdminBaseMailUpdateRequest;
 use App\Http\Requests\MailServerRequest;
+use App\Services\Mail\MailTestStatusMonitor;
 use App\Traits\MailTestTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -132,12 +133,13 @@ class AdminBaseMailController extends AdminLoggedInController
     public function update(AdminBaseMailUpdateRequest $request)
     {
         $actor = new \App\Actors\MemberActor(\App\Helpers\AdminHelper::getMember());
+        $testsReset = false;
 
         \App\Actions\Settings\UpdateSettingsAction::make(
             repository: $this->baseSettingRepository,
             settingsPage: 'base.mail',
             settingKeys: static::SETTING_KEYS,
-            writeCallback: function ($repo, $data) {
+            writeCallback: function ($repo, $data) use (&$testsReset) {
                 // Data for .env
                 $envData = [
                     'mail_mailer' => $data['mail_mailer'],
@@ -190,6 +192,7 @@ class AdminBaseMailController extends AdminLoggedInController
                     $repo->set('mail_receive_test_date', null);
                     $repo->set('mail_verification_token', null);
                     session()->forget('mail_test_results');
+                    $testsReset = true;
                 } else {
                     $sessionTestResults = session('mail_test_results', []);
                     if (! empty($sessionTestResults)) {
@@ -203,8 +206,16 @@ class AdminBaseMailController extends AdminLoggedInController
             sensitiveKeys: static::SENSITIVE_KEYS,
         )->execute($actor, $request->validated());
 
-        return redirect()->route('admin.settings.base.mail')
+        $redirect = redirect()->route('admin.settings.base.mail')
             ->with('success', __('admin/settings/base/mail.settings_updated'));
+
+        // Saying so here, while the operator is still on the screen, keeps
+        // the reset from going unnoticed (an SMTP password rotation causes it).
+        if ($testsReset) {
+            $redirect->with('warning', app(MailTestStatusMonitor::class)->resetMessage());
+        }
+
+        return $redirect;
     }
 
     /**
