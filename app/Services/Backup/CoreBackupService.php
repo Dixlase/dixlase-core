@@ -808,9 +808,11 @@ class CoreBackupService implements BackupServiceInterface
             'verification_status' => BackupRecord::VERIFICATION_UNCHECKED,
             'retention_until' => $retentionUntil,
             'status' => BackupRecord::STATUS_COMPLETED,
-            'metadata' => [
+            'metadata' => array_filter([
                 'duration_seconds' => $durationSeconds,
-            ],
+                // Who asked for it: 'scheduled' for the daily schedule.
+                'trigger' => isset($options['trigger']) ? (string) $options['trigger'] : null,
+            ], fn ($value) => $value !== null),
             'note' => isset($options['note']) ? (string) $options['note'] : null,
         ]);
     }

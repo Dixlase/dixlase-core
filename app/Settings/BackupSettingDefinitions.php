@@ -103,5 +103,18 @@ class BackupSettingDefinitions
             default: null,
             type: 'string',
         ));
+
+        // The scheduled backup (App\Services\Backup\BackupSchedule).
+        // null means not configured: on, daily, the database only.
+        // `enabled` is '1'/'0', `frequency` is daily / weekly, and
+        // `targets` is a JSON array like `backup.default_targets`.
+        foreach (['backup.schedule.enabled', 'backup.schedule.frequency', 'backup.schedule.targets'] as $name) {
+            $registry->register(new SettingDefinition(
+                name: $name,
+                scope: SettingScope::PerSite,
+                default: null,
+                type: 'string',
+            ));
+        }
     }
 }

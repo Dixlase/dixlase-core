@@ -139,6 +139,38 @@ Schedule::command('dls:extensions:rescan')
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/extension-rescan.log'));
 
+// Scheduled backup (cleanup at 2:15 AM, backup at 2:30 AM)
+//
+// The cleanup deletes backups whose retention has run out, the scheduled ones
+// included, before the new one takes disk space. The backup runs when the
+// backup settings say so (on, daily, database only, 14 days, until changed):
+// the tick is daily and BackupSchedule::isDue() decides, so changing the
+// schedule on the settings screen needs no cron change. A failure raises an
+// admin banner and the admin notification mail; see BackupScheduleMonitor.
+Schedule::command('dls:backup:cleanup')
+    ->dailyAt(\App\Services\Backup\BackupSchedule::CLEANUP_AT)
+    ->when(fn () => \App\Services\Backup\BackupSchedule::siteInstalled())
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/backup.log'));
+
+Schedule::command('dls:backup:create --scheduled')
+    ->dailyAt(\App\Services\Backup\BackupSchedule::RUN_AT)
+    ->when(function () {
+        if (! \App\Services\Backup\BackupSchedule::siteInstalled()) {
+            return false;
+        }
+
+        try {
+            return app(\App\Services\Backup\BackupSchedule::class)->isDue();
+        } catch (\Throwable) {
+            return false;
+        }
+    })
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/backup.log'));
+
 // Maintenance mode auto-release check (runs every minute)
 Schedule::command('maintenance:check-auto-release')
     ->everyMinute()

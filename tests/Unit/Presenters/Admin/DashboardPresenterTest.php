@@ -43,9 +43,9 @@ class DashboardPresenterTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * siteHealth は12項目を返すことを確認
+     * siteHealth returns fourteen items.
      */
-    public function test_site_health_returns_thirteen_items(): void
+    public function test_site_health_returns_fourteen_items(): void
     {
         $safeModeService = Mockery::mock(SafeModeService::class);
         $safeModeService->shouldReceive('hasAnyActive')->andReturn(false);
@@ -61,10 +61,11 @@ class DashboardPresenterTest extends TestCase
 
         $result = DashboardPresenter::siteHealth($user);
 
-        $this->assertCount(13, $result);
+        $this->assertCount(14, $result);
 
         $keys = array_column($result, 'key');
         $this->assertContains('maintenance_mode', $keys);
+        $this->assertContains('backup', $keys);
         $this->assertContains('safe_mode', $keys);
         $this->assertContains('environment', $keys);
         $this->assertContains('https', $keys);

@@ -24,6 +24,8 @@ namespace App\Console\Commands\Backup;
 
 use App\Contracts\Backup\BackupServiceInterface;
 use App\DTO\Backup\BackupResultDTO;
+use App\Services\Backup\BackupSchedule;
+use App\Services\Backup\BackupScheduleMonitor;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,6 +38,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  *   php artisan dls:backup:create --targets=database
  *   php artisan dls:backup:create --targets=database,media,private --retention=30
  *   php artisan dls:backup:create --targets=database --format=json
+ *   php artisan dls:backup:create --scheduled
+ *
+ * --scheduled is what routes/console.php runs: targets and retention come
+ * from the schedule settings (BackupSchedule) unless given, the record is
+ * marked as scheduled, and the outcome goes to BackupScheduleMonitor, which
+ * warns the administrators when it failed.
  *
  * With --format=json the command writes exactly one JSON object to stdout
  * and everything else to stderr, so a tool can read the record id without
@@ -51,12 +59,18 @@ class BackupCreateCommand extends Command
     protected $signature = 'dls:backup:create
                             {--targets= : Comma-separated targets (database,media,private,custom,logs). Defaults to all except logs.}
                             {--retention= : Retention period in days. Leave empty to keep indefinitely.}
-                            {--format=text : Output format: text, or json for one machine-readable object on stdout.}';
+                            {--format=text : Output format: text, or json for one machine-readable object on stdout.}
+                            {--scheduled : Run as the scheduled backup: use the schedule settings and report a failure to the administrators.}';
 
     protected $description = 'Create a new backup';
 
-    public function handle(BackupServiceInterface $backupService): int
-    {
+    public function handle(
+        BackupServiceInterface $backupService,
+        BackupSchedule $schedule,
+        BackupScheduleMonitor $monitor,
+    ): int {
+        $scheduled = (bool) $this->option('scheduled');
+
         $format = strtolower((string) $this->option('format'));
         if (! in_array($format, [self::FORMAT_TEXT, self::FORMAT_JSON], true)) {
             $this->error("Unknown format: {$format}. Use text or json.");
@@ -68,6 +82,8 @@ class BackupCreateCommand extends Command
         $targetsOption = (string) $this->option('targets');
         if ($targetsOption !== '') {
             $targets = array_values(array_filter(array_map('trim', explode(',', $targetsOption))));
+        } elseif ($scheduled) {
+            $targets = $schedule->targets();
         } else {
             $targets = $backupService->getDefaultTargets();
         }
@@ -91,6 +107,11 @@ class BackupCreateCommand extends Command
         $retention = $this->option('retention');
         if ($retention !== null && $retention !== '') {
             $options['retention_days'] = (int) $retention;
+        } elseif ($scheduled) {
+            $options['retention_days'] = $schedule->retentionDays();
+        }
+        if ($scheduled) {
+            $options['trigger'] = 'scheduled';
         }
 
         $this->progress('Creating backup with targets: '.implode(', ', $targets), $json);
@@ -98,18 +119,24 @@ class BackupCreateCommand extends Command
             $this->progress("Retention: {$options['retention_days']} days", $json);
         }
 
-        if ($json) {
-            try {
-                $result = $backupService->backup($targets, $options);
-            } catch (\Throwable $e) {
-                $result = BackupResultDTO::failure($e->getMessage());
+        try {
+            $result = $backupService->backup($targets, $options);
+        } catch (\Throwable $e) {
+            if (! $json && ! $scheduled) {
+                throw $e;
             }
+            $result = BackupResultDTO::failure($e->getMessage());
+        }
+
+        if ($scheduled) {
+            $monitor->recordScheduledRun($result);
+        }
+
+        if ($json) {
             $this->emitJson($result, $targets);
 
             return $result->success ? self::SUCCESS : self::FAILURE;
         }
-
-        $result = $backupService->backup($targets, $options);
 
         if (! $result->success) {
             $this->error('Backup failed: '.$result->error);

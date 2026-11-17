@@ -26,8 +26,23 @@ return [
         'exclude_vendor_help' => 'When excluded, a restore may leave plugin/theme sources and their dependency versions out of sync. Turn this off if you want fully self-contained restores.',
         'exclusions_help' => 'Directories excluded from a backup are also protected (neither deleted nor overwritten) when that backup is restored. .git is always excluded and protected.',
         'default_retention_label' => 'Default Retention Period (days)',
-        'default_retention_help' => 'After this period, backups become eligible for cleanup via the database management page. Leave blank to keep backups indefinitely by default.',
+        'default_retention_help' => 'Backups older than this are deleted by the daily cleanup. Scheduled backups use it too. Leave blank to keep manual backups indefinitely and scheduled ones for 14 days. A change applies to backups created after it.',
         'save_button' => 'Save Settings',
+    ],
+
+    'schedule' => [
+        'label' => 'Scheduled Backup',
+        'enabled_label' => 'Take backups automatically',
+        'enabled_help' => 'Runs at :time (server time) and is kept for :days days, following the default retention period above. Needs the scheduler (cron) to be running.',
+        'frequency_label' => 'Frequency',
+        'frequency_daily' => 'Daily',
+        'frequency_weekly' => 'Weekly (Sunday)',
+        'targets_label' => 'Scheduled backup targets',
+        'targets_help' => 'Media can be large; including it in a daily backup multiplies the disk space used by the retention period.',
+        'failed_title' => 'The scheduled backup failed',
+        'failed_message' => 'The scheduled backup has failed :count time(s) in a row: :error',
+        'failed_mail' => 'The scheduled backup of this site failed: :error. Until a scheduled backup succeeds again, this site has no new backups. Check the backup screen and the storage space.',
+        'open_backups' => 'Open backups',
     ],
 
     'targets' => [
@@ -49,6 +64,8 @@ return [
         'targets_required' => 'Please select at least one default backup target.',
         'target_invalid' => 'The selected backup target is invalid.',
         'retention_invalid' => 'Default retention period must be a positive integer between 1 and 3650 days.',
+        'schedule_targets_required' => 'Please select at least one target for the scheduled backup.',
+        'schedule_frequency_invalid' => 'The selected frequency is invalid.',
     ],
 
     'placeholder' => 'This page is under construction. The full UI will be available in an upcoming release.',
