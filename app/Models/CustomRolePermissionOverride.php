@@ -58,7 +58,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property PermissionGrantType $grant_type
  * @property int|null $updated_by
  */
-class CustomRolePermissionOverride extends Model
+final class CustomRolePermissionOverride extends Model
 {
     use BelongsToSite;
 
