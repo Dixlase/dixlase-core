@@ -211,12 +211,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(LegalPageService::class);
 
         // Register system warning banner registry as singleton. Core registers
-        // one provider of its own: the alerts raised by the scheduled security
-        // checks (extension rescan, audit log verification, core manifest).
+        // two providers of its own: the alerts raised by the scheduled security
+        // checks (extension rescan, audit log verification, core manifest), and
+        // mail tests left incomplete while accounts depend on e-mailed codes.
         $this->app->singleton(\App\Services\SystemWarningService::class, function () {
             $service = new \App\Services\SystemWarningService();
             $service->register(
                 fn (): array => app(\App\Services\Security\ScheduledSecurityCheckMonitor::class)->banners()
+            );
+            $service->register(
+                fn (): array => app(\App\Services\Mail\MailTestStatusMonitor::class)->banners()
             );
 
             return $service;
