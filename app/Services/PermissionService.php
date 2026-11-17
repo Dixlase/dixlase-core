@@ -41,6 +41,7 @@ namespace App\Services;
 
 use App\Enums\MemberRole;
 use App\Enums\Permission;
+use App\Enums\PermissionGrantType;
 use App\Models\Member;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -96,6 +97,13 @@ class PermissionService
         // Super Admin has all permissions
         if ($role === MemberRole::SUPER_ADMIN) {
             return true;
+        }
+
+        // An explicit override of the member's custom role decides before the
+        // preset does: a deny refuses, a grant allows.
+        $override = CustomRolePermissionResolver::overrideFor($member, $permission->value);
+        if ($override !== null) {
+            return $override === PermissionGrantType::Grant;
         }
 
         // Check role-based permission
@@ -223,7 +231,25 @@ class PermissionService
             return [];
         }
 
-        return Permission::forRole($role);
+        $permissions = Permission::forRole($role);
+
+        if ($role === MemberRole::SUPER_ADMIN) {
+            return $permissions;
+        }
+
+        $overrides = CustomRolePermissionResolver::overridesFor($member);
+        if ($overrides === []) {
+            return $permissions;
+        }
+
+        return array_values(array_filter(
+            Permission::cases(),
+            static fn (Permission $permission): bool => match ($overrides[$permission->value] ?? null) {
+                PermissionGrantType::Deny->value => false,
+                PermissionGrantType::Grant->value => true,
+                default => in_array($permission, $permissions, true),
+            },
+        ));
     }
 
     /**
