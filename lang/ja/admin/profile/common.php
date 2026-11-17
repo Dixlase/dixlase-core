@@ -47,7 +47,7 @@ return [
     'login_notification_global_setting_help' => 'この設定はメンバー全体設定で制御されています。',
     'single_method_available' => '利用可能な認証方法',
     'submit' => 'プロフィールを更新',
-    'updated_with_email_verification' => 'プロフィールが更新されました。<br>新しいメールアドレスに認証メールを送信しました。<br>メールを確認してメールアドレスの変更を完了してください。',
+    'updated_with_email_verification' => 'プロフィールが更新されました。新しいメールアドレスに認証メールを送信しました。メールを確認してメールアドレスの変更を完了してください。',
     'confirm_title' => 'プロフィール更新の確認',
     'confirm_message' => 'プロフィールを更新しますか？',
     'email_verification_success' => 'メールアドレスの変更が完了しました。',

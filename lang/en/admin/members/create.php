@@ -40,7 +40,7 @@ return [
     'create_confirmation_message' => 'Do you want to create a member with this content?',
     'messages' => [
         'created' => 'New member has been created.',
-        'created_with_verification_email' => 'A new member has been created.<br>A verification email has been sent to the created account\'s email address. <br>Please notify the member to complete account verification.',
+        'created_with_verification_email' => 'A new member has been created. A verification email has been sent to the created account\'s email address. Please notify the member to complete account verification.',
         'created_but_email_failed' => 'New member has been created, but failed to send verification email.',
     ],
 ];
