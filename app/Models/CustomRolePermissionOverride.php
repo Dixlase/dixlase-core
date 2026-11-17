@@ -87,8 +87,8 @@ final class CustomRolePermissionOverride extends Model
             CustomRolePermissionResolver::forget($override->custom_role_id, $override->site_id);
         };
 
-        static::saved($forget);
-        static::deleted($forget);
+        self::saved($forget);
+        self::deleted($forget);
     }
 
     public function customRole(): BelongsTo
