@@ -56,6 +56,14 @@ window.adminBar = function () {
                     this.$el.classList.add('transition-colors', 'duration-[150ms]');
                 }, 100);
             }
-        }
+        },
+
+        /**
+         * Close both mobile drawers (the overlay behind them was clicked).
+         */
+        closeDrawers() {
+            this.openSidebar = false;
+            this.openUserMenu = false;
+        },
     };
 };

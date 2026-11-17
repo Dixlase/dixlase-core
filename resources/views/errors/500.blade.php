@@ -25,6 +25,6 @@ license from exc-D inc. See LICENSE for details.
     'code' => '500',
     'title' => app()->getLocale() === 'ja' ? 'サーバーエラー' : 'Server Error',
     'message' => app()->getLocale() === 'ja'
-        ? 'サーバーで問題が発生しました。しばらくしてからもう一度お試しください。'
-        : 'Something went wrong on the server. Please try again later.',
+        ? 'サーバーで問題が発生しました。しばらく待ってから、ブラウザでページを再読み込みしてください。問題が続く場合は、サイトの管理者にお問い合わせください。'
+        : 'Something went wrong on the server. Please wait a moment, then reload the page in your browser. If the problem continues, contact the site administrator.',
 ])

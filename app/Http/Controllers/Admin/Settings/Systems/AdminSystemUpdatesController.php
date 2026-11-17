@@ -817,9 +817,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
      */
     protected function inProgressHtmlResponse(string $title, string $message, string $elapsedLabel, string $refreshNote): \Illuminate\Http\Response
     {
+        $lang = e(str_replace('_', '-', app()->getLocale()));
+
+        // Colours follow the admin panel's dark mode (black page, Tailwind
+        // gray-800 card, gray-700 border) so the placeholder reads as part
+        // of the admin rather than a separate screen.
         $html = <<<HTML
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="{$lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -828,14 +833,14 @@ class AdminSystemUpdatesController extends AdminLoggedInController
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-.card{max-width:480px;width:100%;padding:2rem;background:#1e293b;border:1px solid #334155;border-radius:0.75rem;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.3)}
-.spinner{display:inline-block;width:40px;height:40px;border:3px solid #475569;border-top-color:#60a5fa;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.25rem}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#000;color:#f3f4f6;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.card{max-width:480px;width:100%;padding:2rem;background:#1e2939;border:1px solid #364153;border-radius:0.75rem;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.3)}
+.spinner{display:inline-block;width:40px;height:40px;border:3px solid #4a5565;border-top-color:#60a5fa;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.25rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-h1{font-size:1.125rem;font-weight:600;margin:0 0 0.75rem;color:#f8fafc}
-p{margin:0.5rem 0;color:#cbd5e1;font-size:0.875rem;line-height:1.5}
-.elapsed{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.8125rem;color:#94a3b8;margin-top:1rem}
-.refresh{font-size:0.75rem;color:#64748b;margin-top:1.5rem}
+h1{font-size:1.125rem;font-weight:600;margin:0 0 0.75rem;color:#fff}
+p{margin:0.5rem 0;color:#d1d5dc;font-size:0.875rem;line-height:1.5}
+.elapsed{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.8125rem;color:#99a1af;margin-top:1rem}
+.refresh{font-size:0.75rem;color:#6a7282;margin-top:1.5rem}
 </style>
 </head>
 <body>

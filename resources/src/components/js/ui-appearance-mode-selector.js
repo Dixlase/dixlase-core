@@ -18,6 +18,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import Alpine from 'alpinejs';
+
 /**
  * Appearance Form Component
  * 
@@ -44,3 +46,39 @@ export default function appearanceForm() {
 
 // グローバルに登録
 window.appearanceForm = appearanceForm;
+
+/**
+ * Appearance mode picker with live switching (<x-ui-appearance-mode-selector
+ * :enableRealtimeSwitch="true">).
+ *
+ * The saved mode is read from data-value: '0' follows the OS, '1' is light
+ * and '2' is dark. Picking a mode applies it to the page at once; the page
+ * starts from the saved mode so an unsaved pick does not survive a reload.
+ */
+Alpine.data('appearanceModeSelector', () => ({
+    localTheme: '0',
+    savedTheme: '0',
+
+    init() {
+        this.savedTheme = this.$el.dataset.value;
+        this.resetToSavedTheme();
+        this.$watch('localTheme', () => this.applyLocalTheme(true));
+    },
+
+    applyLocalTheme(enableTransition = false) {
+        const isDark = this.localTheme === '2'
+            || (this.localTheme === '0' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        if (enableTransition) {
+            document.documentElement.classList.add('theme-ready');
+        }
+
+        document.documentElement.classList.toggle('dark', isDark);
+        document.documentElement.classList.toggle('light', !isDark);
+    },
+
+    resetToSavedTheme() {
+        this.localTheme = this.savedTheme;
+        this.applyLocalTheme(false);
+    },
+}));

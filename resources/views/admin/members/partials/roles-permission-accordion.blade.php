@@ -150,33 +150,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endphp
                 
                 <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4 mb-2 {{ $indentClass }}"
-                     x-data="{
-                         accessIndex: {{ $accessRoleIndex }},
-                         viewIndex: {{ $viewRoleIndex }},
-                         roleValues: {{ json_encode(array_values($roleValues)) }},
-                         get accessValue() { return this.roleValues[this.accessIndex] || this.roleValues[0]; },
-                         get viewValue() { return this.roleValues[this.viewIndex] || this.roleValues[0]; },
-                         init() {
-                             // accessIndexの変更を監視
-                             this.$watch('accessIndex', (newValue, oldValue) => {
-                                 // 編集権限が閲覧権限より下にならないように制限
-                                 if (parseInt(newValue) < parseInt(this.viewIndex)) {
-                                     this.$nextTick(() => {
-                                         this.accessIndex = this.viewIndex;
-                                     });
-                                 }
-                             });
-                             // viewIndexの変更を監視
-                             this.$watch('viewIndex', (newValue, oldValue) => {
-                                 // 閲覧権限を上げたときに編集権限がそれより下なら自動的に上げる
-                                 if (parseInt(this.accessIndex) < parseInt(newValue)) {
-                                     this.$nextTick(() => {
-                                         this.accessIndex = newValue;
-                                     });
-                                 }
-                             });
-                         }
-                     }">
+                     x-data="rolePermissionRange"
+                     data-access-index="{{ $accessRoleIndex }}"
+                     data-view-index="{{ $viewRoleIndex }}"
+                     data-role-values="{{ json_encode(array_values($roleValues)) }}">
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- View Permissions (閲覧権限) -->
                         <fieldset class="permission-section">

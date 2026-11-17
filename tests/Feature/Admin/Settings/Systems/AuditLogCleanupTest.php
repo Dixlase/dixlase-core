@@ -35,11 +35,16 @@
 
 namespace Tests\Feature\Admin\Settings\Systems;
 
+use App\Enums\AdminMode;
 use App\Enums\MemberRole;
+use App\Helpers\AdminModeHelper;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Models\AuditLog;
 use App\Models\Member;
+use App\Models\SiteSetting;
+use App\Services\AuditLogIntegrityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -80,6 +85,7 @@ class AuditLogCleanupTest extends TestCase
 
     protected function tearDown(): void
     {
+        AdminModeHelper::clearCache();
         putenv('INSTALLED=false');
         unset($_ENV['INSTALLED']);
 
@@ -95,6 +101,15 @@ class AuditLogCleanupTest extends TestCase
             'role' => $role,
             'status' => 1,
         ]);
+    }
+
+    /**
+     * The database screen is hidden in simple mode, which refuses its POST
+     */
+    private function useAdvancedMode(): void
+    {
+        SiteSetting::setValue('admin_mode', (string) AdminMode::Advanced->value);
+        AdminModeHelper::clearCache();
     }
 
     private function fixtureRows(): int
@@ -137,5 +152,34 @@ class AuditLogCleanupTest extends TestCase
 
         $this->assertSame(['fixture.5'], DB::table('audit_logs')->where('category', 'test')->pluck('action')->all());
         $this->assertTrue(DB::table('audit_logs')->where('action', 'audit_log.cleanup')->exists());
+    }
+
+    public function test_the_database_screen_prunes_the_audit_log_through_retention(): void
+    {
+        $this->useAdvancedMode();
+        $member = $this->member(MemberRole::SUPER_ADMIN);
+
+        $this->actingAs($member, 'member')
+            ->post(route('admin.settings.systems.database.cleanup'), ['type' => 'audit_logs', 'days' => 100])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame(['fixture.5'], DB::table('audit_logs')->where('category', 'test')->pluck('action')->all());
+        $row = AuditLog::where('action', AuditLog::ACTION_AUDIT_LOG_CLEANUP)->sole();
+        $this->assertSame('admin_database', $row->context['via']);
+        $this->assertSame($member->id, (int) $row->actor_id);
+        $this->assertTrue(app(AuditLogIntegrityService::class)->verifyChain()['is_valid']);
+    }
+
+    public function test_the_database_screen_cannot_empty_the_audit_log(): void
+    {
+        $this->useAdvancedMode();
+
+        $this->actingAs($this->member(MemberRole::SUPER_ADMIN), 'member')
+            ->post(route('admin.settings.systems.database.cleanup'), ['type' => 'audit_logs', 'days' => 0])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame(3, $this->fixtureRows());
     }
 }

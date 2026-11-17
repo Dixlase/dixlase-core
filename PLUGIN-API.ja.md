@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-11-06
+**最終更新日:** 2026-11-15
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -117,7 +117,9 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Extension\ExtensionSourceInterface` | Extension Source Provider Interface |
 | `App\Contracts\Extension\ProvidesSettingsDefaultsInterface` | Opt-in contract for extensions that own a `name` / `value` settings |
 | `App\Contracts\FileIntegrity\FileIntegrityServiceInterface` | File integrity check service contract |
+| `App\Contracts\Front\FrontPageBodyProviderInterface` | Front Page Body Provider Contract |
 | `App\Contracts\Front\FrontPageProviderInterface` | Front Page Provider Contract |
+| `App\Contracts\I18n\EnabledLocales` | Tells which locales this site publishes content in, and which one is the default. |
 | `App\Contracts\I18n\LocaleUrlRouting` | Tells whether front URLs on this site carry a leading locale segment. |
 | `App\Contracts\I18n\LocalizedUrlProvider` | Exposes alternate-language URLs for the current request. |
 | `App\Contracts\I18n\MissingTranslationHandler` | Decides what to do when a route exists but no translation is available |
@@ -126,6 +128,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
 | `App\Contracts\Multilingual\SingletonTranslationResolver` | Storage operations for **singleton** translatable content. |
 | `App\Contracts\Multilingual\TranslatableContentProvider` | Primary-locale value source for **singleton** translatable content. |
+| `App\Contracts\Multilingual\TranslatableContentTypes` | Tells whether a translatable content type is registered on this site. |
 | `App\Contracts\Revisionable` | Each plugin/theme has its own revision table and Eloquent model, and by |
 | `App\Contracts\RouteSlugProvider` | Route Slug Provider Interface |
 | `App\Contracts\Security\PolicyEvaluatorInterface` | Attribute-Based Access Control (ABAC) hook for `PermissionService`. |
@@ -275,23 +278,29 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.10 Licensing DTOs
+### 4.10 Front DTOs
+
+- `App\DTO\Front\FrontPageBodyContext`
+- `App\DTO\Front\FrontPageBodyDTO`
+- `App\DTO\Front\FrontPageBodyResult`
+
+### 4.11 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.11 Logging DTOs
+### 4.12 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.12 Mail DTOs
+### 4.13 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.13 Plugin Integration DTOs
+### 4.14 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -308,23 +317,23 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.14 Plugin Privacy DTOs
+### 4.15 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.15 Plugin DTOs
+### 4.16 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.16 RouteSlug DTOs
+### 4.17 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.17 Security DTOs
+### 4.18 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
@@ -628,6 +637,7 @@ return [
 - `App\Services\Media\MediaImporter`
 - `App\Services\Media\MediaImportResult`
 - `App\Services\Media\MediaUploadLimits`
+- `App\Services\Front\FrontPageBodyResolver`
 
 ### 9.3 メール & ログ
 

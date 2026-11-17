@@ -43,6 +43,74 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+## [0.2.18] — 2026-11-16
+
+Upgrading: run `php artisan migrate`. It adds the table that records where audit log retention
+cut the chain. `php artisan dls:integrity:generate-baseline --force` now also needs
+`--reason="…"` to replace an existing baseline; scripts that pass `--force` alone fail until they
+add it.
+
+### Security
+- `laravel/framework` moves from 13.33.0 to 13.40.0, with its dependencies (#1038, #1040).
+  Releases below 13.40.0 are affected by
+  [GHSA-63hm-g96r-2m2q](https://github.com/advisories/GHSA-63hm-g96r-2m2q) (low)
+- The file-integrity baselines and the enabled-plugins cache are sealed with the integrity key,
+  so a party that can write files but not run code can no longer produce versions core accepts.
+  Replacing a baseline requires a reason (`--reason` on the command, a field in the admin modal)
+  and is recorded in the audit log (#803, #1037)
+
+### Added
+- Plugin API: `FrontPageBodyProviderInterface` lets an extension supply the *body* of a theme's
+  front page — what a theme shows between its hero and its footer — while the theme keeps its own
+  layout. It is the body-granularity counterpart to `FrontPageProviderInterface`, which replaces
+  the whole response for `/`: a body provider may offer many choices (a page each, say) so an
+  operator picks a particular one, and rendering stays with the provider, so the plugin's own
+  display settings apply without the theme knowing any of their keys. `FrontPageBodyResolver`
+  aggregates the providers for a theme's chooser and renders the stored choice, returning null —
+  so the theme falls back to core's front page content — whenever the choice names a provider that
+  is absent, unavailable or can no longer resolve its id. Declare the `front-page-body` capability
+  in `plugin.json` and tag the provider on `plugin.capabilities`. The per-site
+  `front_page_display` setting is resolved first, so a body choice applies only while that
+  setting is `theme` (#1043, #1046, #1060, #1061)
+- Plugin API: `App\Contracts\I18n\EnabledLocales` gives extensions the site's enabled locales and
+  its default without reading a translation provider's classes or config. `LocaleHelper` answers
+  for a single-language site when nothing is bound (#624, #1053)
+- Plugin API: `App\Contracts\Multilingual\TranslatableContentTypes` tells an extension whether the
+  translation provider took up a content type it declares in `plugin.json`, through
+  `LocaleHelper::translatableTypeRegistered()` (#814, #1054)
+- Content editor: **Insert embed** is available in the HTML editor too, and an `@[service](URL)`
+  line alone in its paragraph becomes an embed in an HTML body, with its CSP origin added the same
+  way as in Markdown (#1031, #1033)
+- Content editor: an **Insert link** button (also Cmd/Ctrl+K) in the Markdown and HTML editors,
+  with an "Open in a new window" switch. `javascript:`, `data:` and similar URLs are refused
+  (#1032, #1034)
+
+### Changed
+- A file changed outside the admin is now said to be **applied**, not published, on the edit
+  screen, the dashboard banner, the alert mail and the integrity command. Applying copies the file
+  into what the site serves; whether visitors see the record is still decided by its status
+  (#1026, #1029)
+- The update screen and the 503 / 500 pages shown during an update say what to do (wait and
+  reload, or contact the site administrator), and the in-progress page matches the admin palette
+  (#1044, #1045)
+- More admin screens and shared components register their Alpine data instead of writing inline
+  expressions, in preparation for the CSP build of Alpine: the security settings, the member
+  screens, and the shared form, dialog, two-factor and appearance components (#589, #1030, #1041,
+  #1055, #1056, #1057, #1058)
+
+### Fixed
+- Deleting old audit rows no longer makes seal and chain verification report tampering. Every
+  path that deletes audit rows records the cleanup first, cuts whole days from the start of the
+  chain, retires the seals of the deleted days and records a signed retention point that
+  verification accepts in place of the first row. The database cleanup screen and
+  `dls:cleanup --type=audit_logs` go through the same path and no longer empty the table with
+  `days = 0`. A site that pruned rows the old way recovers by running retention once (#1048,
+  #1059)
+- The CSP commands check the mode strictly, so static analysis passes with Laravel 13.40 (#1039,
+  #1040)
+- `PLUGIN-API.md` lists `FrontPageBodyResolver`, and `PLUGIN-API.ja.md` catches up with the
+  front-page body contract and DTOs (#1062)
+
 ## [0.2.17] — 2026-11-14
 
 Upgrading: run `php artisan migrate`. It adds the columns the keyed audit log needs; until it has

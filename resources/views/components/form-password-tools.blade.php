@@ -187,7 +187,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-500 dark:text-white password-confirmation-input"
                 />
                 <!-- パスワード一致判定アイコン -->
-                <div x-show="showMatchIndicator" x-transition class="absolute top-0 right-2 h-full flex items-center" x-html="matchIconHtml">
+                <div x-show="showMatchIndicator" x-transition class="absolute top-0 right-2 h-full flex items-center">
+                    <i :class="matchIconClass" aria-hidden="true"></i>
                 </div>
             </div>
         </fieldset>
@@ -198,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <p x-text="strengthMessage" class="text-sm mt-1 text-gray-700 dark:text-gray-300 h-[1em]"></p>
 
     <div class="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg mt-2">
-        <div :class="strengthBarColor" class="h-2 rounded-lg transition-all" :style="`width: ${strengthBarWidth}`"></div>
+        <div :class="strengthBarColor" class="h-2 rounded-lg transition-all" :style="'width: ' + strengthBarWidth"></div>
     </div>
 
     <!-- パスワード要件リスト -->

@@ -46,7 +46,9 @@ import '../../admin/two-fa/js/passkey-prompt-modal';
 import '../../components/two-fa/js/two-fa-profile-settings';
 import '../../components/two-fa/js/webauthn-utils';
 import '../../components/two-fa/js/two-fa-management';
+import '../../components/two-fa/js/two-fa-individual-settings';
 import '../../components/js/form-content-editor';
+import '../../components/js/content-editor-scroll-buttons';
 import '../../components/js/content-preview-mixin';
 import '../../components/media/js/selector';
 import '../../components/media/js/selector-upload';
@@ -71,6 +73,7 @@ import '../../admin/settings/themes/js/audit';
 import '../../admin/settings/themes/js/online-themes';
 import '../../admin/js/login-flow';
 import '../../admin/js/getting-started-card';
+import '../../admin/members/js/role-permission-range';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 import { registerCspBridge } from './alpine-csp-bridge';

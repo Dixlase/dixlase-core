@@ -38,6 +38,7 @@
 namespace App\Services;
 
 use App\Support\ExtensionDirectories;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -175,8 +176,11 @@ class DatabaseCleanupService
 
     /**
      * Execute database cleanup
+     *
+     * @param  Model|null  $actor  Who asked, recorded when the audit log is pruned
+     * @param  string  $via  Where the run came from, recorded when the audit log is pruned
      */
-    public function cleanup(string $type, int $days, bool $force = false): array
+    public function cleanup(string $type, int $days, bool $force = false, ?Model $actor = null, string $via = 'cli'): array
     {
         $config = $this->getCleanupConfig($type);
 
@@ -186,6 +190,13 @@ class DatabaseCleanupService
                 'message' => "Cleanup configuration not found for type: {$type}",
                 'count' => 0,
             ];
+        }
+
+        // The audit log is never deleted as a plain table: retention has to
+        // record itself, keep whole days and retire the seals of the rows
+        // it removes, or every later verification reports tampering (#1048).
+        if (($config['table'] ?? null) === 'audit_logs') {
+            return $this->pruneAuditLog($days, $actor, $via);
         }
 
         try {
@@ -251,9 +262,46 @@ class DatabaseCleanupService
     }
 
     /**
-     * Clean up all tables
+     * Prune the audit log through its retention path.
+     *
+     * @return array{success:bool, message:string, count:int}
      */
-    public function cleanupAll(int $days, bool $force = false): array
+    protected function pruneAuditLog(int $days, ?Model $actor, string $via): array
+    {
+        if ($days < 1) {
+            return [
+                'success' => false,
+                'message' => 'The audit log keeps at least one day; it cannot be emptied',
+                'count' => 0,
+            ];
+        }
+
+        try {
+            $result = app(AuditLogRetentionService::class)->prune($days, $actor, $via);
+        } catch (\Throwable $e) {
+            Log::error('Audit log retention failed', ['error' => $e->getMessage()]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'count' => 0,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => "Successfully deleted {$result['deleted']} records",
+            'count' => $result['deleted'],
+        ];
+    }
+
+    /**
+     * Clean up all tables
+     *
+     * @param  Model|null  $actor  Who asked, recorded when the audit log is pruned
+     * @param  string  $via  Where the run came from, recorded when the audit log is pruned
+     */
+    public function cleanupAll(int $days, bool $force = false, ?Model $actor = null, string $via = 'cli'): array
     {
         $results = [];
         $totalCount = 0;
@@ -264,7 +312,7 @@ class DatabaseCleanupService
                 continue;
             }
 
-            $result = $this->cleanup($type, $days, $force);
+            $result = $this->cleanup($type, $days, $force, $actor, $via);
             $results[$type] = $result;
             $totalCount += $result['count'];
         }
