@@ -23,6 +23,7 @@
 namespace App\Http\Requests\Admin\Settings\Systems;
 
 use App\Contracts\Backup\BackupServiceInterface;
+use App\Services\Backup\BackupSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AdminSystemBackupSettingsRequest extends FormRequest
@@ -46,6 +47,10 @@ class AdminSystemBackupSettingsRequest extends FormRequest
             // Unchecked toggles are simply absent from the request
             'exclude_node_modules' => ['nullable', 'boolean'],
             'exclude_vendor' => ['nullable', 'boolean'],
+            'schedule_enabled' => ['nullable', 'boolean'],
+            'schedule_frequency' => ['required', 'string', 'in:'.implode(',', BackupSchedule::FREQUENCIES)],
+            'schedule_targets' => ['required', 'array', 'min:1'],
+            'schedule_targets.*' => ['string', 'in:'.implode(',', $availableTargets)],
         ];
     }
 
@@ -58,6 +63,10 @@ class AdminSystemBackupSettingsRequest extends FormRequest
             'default_targets.required' => __('admin/settings/systems/backup/settings.validation.targets_required'),
             'default_targets.min' => __('admin/settings/systems/backup/settings.validation.targets_required'),
             'default_targets.*.in' => __('admin/settings/systems/backup/settings.validation.target_invalid'),
+            'schedule_targets.required' => __('admin/settings/systems/backup/settings.validation.schedule_targets_required'),
+            'schedule_targets.min' => __('admin/settings/systems/backup/settings.validation.schedule_targets_required'),
+            'schedule_targets.*.in' => __('admin/settings/systems/backup/settings.validation.target_invalid'),
+            'schedule_frequency.in' => __('admin/settings/systems/backup/settings.validation.schedule_frequency_invalid'),
             'default_retention_days.integer' => __('admin/settings/systems/backup/settings.validation.retention_invalid'),
             'default_retention_days.min' => __('admin/settings/systems/backup/settings.validation.retention_invalid'),
             'default_retention_days.max' => __('admin/settings/systems/backup/settings.validation.retention_invalid'),

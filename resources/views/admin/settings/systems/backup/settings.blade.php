@@ -87,6 +87,68 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @enderror
         </div>
 
+        {{-- Scheduled backup --}}
+        <div class="mb-6">
+            <p class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
+                {{ __('admin/settings/systems/backup/settings.schedule.label') }}
+            </p>
+            <div class="space-y-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div>
+                    <x-form-toggle
+                        :label="__('admin/settings/systems/backup/settings.schedule.enabled_label')"
+                        id="scheduleEnabled"
+                        name="schedule_enabled"
+                        :checked="old('schedule_enabled', $scheduleEnabled)"
+                    />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ __('admin/settings/systems/backup/settings.schedule.enabled_help', ['time' => $scheduleRunAt, 'days' => $scheduleRetentionDays]) }}
+                    </p>
+                </div>
+                <div>
+                    <label for="scheduleFrequency" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+                        {{ __('admin/settings/systems/backup/settings.schedule.frequency_label') }}
+                    </label>
+                    <x-form-select
+                        id="scheduleFrequency"
+                        name="schedule_frequency"
+                        width="auto"
+                        :value="old('schedule_frequency', $scheduleFrequency)"
+                        :options="[
+                            'daily' => __('admin/settings/systems/backup/settings.schedule.frequency_daily'),
+                            'weekly' => __('admin/settings/systems/backup/settings.schedule.frequency_weekly'),
+                        ]"
+                    />
+                    <x-form-error name="schedule_frequency" />
+                </div>
+                <div>
+                    <p class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
+                        {{ __('admin/settings/systems/backup/settings.schedule.targets_label') }}
+                    </p>
+                    <div class="space-y-2">
+                        @foreach($availableTargets as $target)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox"
+                                       name="schedule_targets[]"
+                                       value="{{ $target }}"
+                                       class="checkbox-common"
+                                       @if(in_array($target, old('schedule_targets', $scheduleTargets), true)) checked @endif>
+                                <span class="text-sm text-gray-700 dark:text-gray-200">
+                                    {{ __('admin/settings/systems/backup/settings.targets.' . $target) }}
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        {{ __('admin/settings/systems/backup/settings.schedule.targets_help') }}
+                    </p>
+                    @error('schedule_targets')
+                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
         {{-- Source-tree exclusions (plugins/themes targets) --}}
         <div class="mb-6">
             <p class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">

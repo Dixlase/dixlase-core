@@ -1,6 +1,6 @@
 # Backup Commands
 
-Backups can be created from the command line as well as from the admin panel. This page covers the `dls:backup:create` command and the machine-readable output a script can rely on.
+Backups can be created from the command line as well as from the admin panel. This page covers the scheduled backup, the `dls:backup:create` command and the machine-readable output a script can rely on.
 
 ## Creating a Backup
 
@@ -17,6 +17,27 @@ php artisan dls:backup:create --targets=database,media,private --retention=30
 | `--format=` | `text` (the default) or `json`. |
 
 `dls:backup:list` shows the backups that have been recorded.
+
+## Scheduled Backups
+
+A site takes backups on its own once the scheduler is running (cron calling `php artisan schedule:run` every minute). Nothing has to be set up on the site itself; a fresh install starts with:
+
+| Setting | Default |
+| --- | --- |
+| Scheduled backup | On |
+| Frequency | Daily (weekly runs on Sunday) |
+| Time | 02:30, server time |
+| Targets | Database only |
+| Kept for | The default retention period of the backup settings; 14 days when that is blank |
+
+The database alone is the default so that a nightly copy of a large media library does not fill the disk. Add other targets on the settings screen when the disk allows it: a daily backup is kept once per day of retention.
+
+Change or turn it off at **Global Settings > System > Backup > Backup Settings**. The scheduler re-reads the settings on every run, so cron never needs changing.
+
+- **Cleanup.** `dls:backup:cleanup` runs every day at 02:15, whether or not the scheduled backup is on, and deletes the backups whose retention has run out. Retention is fixed when a backup is created, so changing the default retention period affects only the backups created afterwards. A manual backup created without a retention period is never deleted by the cleanup.
+- **When a scheduled backup fails**, the administrator notification mail is sent once (when it is configured), and a warning banner stays on the admin pages of the members who can edit the backup settings until a scheduled backup succeeds again. The output of both commands goes to `storage/logs/backup.log`.
+- **Site Health** on the dashboard warns when the last scheduled backup failed, when no backup has been taken for one interval plus a day (2 days for daily, 8 days for weekly), and when the scheduler is not running. It recommends turning the schedule on when it is off.
+- `dls:backup:create --scheduled` is the command the scheduler runs. It takes the targets and retention from these settings unless `--targets` or `--retention` are given, and marks the backup as scheduled (`metadata.trigger`).
 
 ## Machine-Readable Output (`--format=json`)
 

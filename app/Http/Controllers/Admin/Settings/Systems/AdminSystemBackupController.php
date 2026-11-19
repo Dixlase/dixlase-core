@@ -31,6 +31,7 @@ use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupSettingsRequest;
 use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 use App\Models\SiteSetting;
+use App\Services\Backup\BackupSchedule;
 use App\Services\Backup\CoreRestoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,6 +153,13 @@ class AdminSystemBackupController extends AdminLoggedInController
         $this->viewParams['defaultRetentionDays'] = $this->resolveDefaultRetentionDays();
         $this->viewParams['excludeNodeModules'] = $this->resolveExclusionFlag(self::SETTING_EXCLUDE_NODE_MODULES);
         $this->viewParams['excludeVendor'] = $this->resolveExclusionFlag(self::SETTING_EXCLUDE_VENDOR);
+
+        $schedule = app(BackupSchedule::class);
+        $this->viewParams['scheduleEnabled'] = $schedule->enabled();
+        $this->viewParams['scheduleFrequency'] = $schedule->frequency();
+        $this->viewParams['scheduleTargets'] = $schedule->targets();
+        $this->viewParams['scheduleRetentionDays'] = $schedule->retentionDays();
+        $this->viewParams['scheduleRunAt'] = BackupSchedule::RUN_AT;
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.settings');
 
         return view('admin::settings.systems.backup.settings', $this->viewParams);
@@ -175,6 +183,10 @@ class AdminSystemBackupController extends AdminLoggedInController
         // Unchecked toggles are absent from the request entirely
         SiteSetting::setValue(self::SETTING_EXCLUDE_NODE_MODULES, $request->boolean('exclude_node_modules') ? '1' : '0');
         SiteSetting::setValue(self::SETTING_EXCLUDE_VENDOR, $request->boolean('exclude_vendor') ? '1' : '0');
+
+        SiteSetting::setValue(BackupSchedule::SETTING_ENABLED, $request->boolean('schedule_enabled') ? '1' : '0');
+        SiteSetting::setValue(BackupSchedule::SETTING_FREQUENCY, $validated['schedule_frequency']);
+        SiteSetting::setValue(BackupSchedule::SETTING_TARGETS, json_encode(array_values($validated['schedule_targets'])));
 
         return redirect()
             ->route('admin.settings.systems.backup.settings')

@@ -61,6 +61,8 @@ use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use App\Models\Theme;
 use App\Services\AuditLogIntegrityService;
+use App\Services\Backup\BackupSchedule;
+use App\Services\Backup\BackupScheduleMonitor;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\FileContentRegistry;
 use App\Services\Core\DependencyIntegrityService;
@@ -231,6 +233,53 @@ class DashboardPresenter
      *
      * @return array<string, mixed>|null
      */
+    /**
+     * Whether backups are being taken (#635).
+     *
+     * A failed scheduled run or a gap longer than one interval plus a day is
+     * a warning; a schedule that is off, or a site with no backup yet, is a
+     * recommendation, because the operator may take backups some other way.
+     *
+     * @return array<string, mixed>
+     */
+    private static function backupItem(): array
+    {
+        $schedule = app(BackupSchedule::class);
+        $health = $schedule->health();
+        $failure = $health['state'] === BackupSchedule::HEALTH_DISABLED
+            ? null
+            : app(BackupScheduleMonitor::class)->failure();
+        $schedulerRunning = app(FileContentPublisher::class)->schedulerRunning();
+        $lastDate = $health['last_backup_at'] !== null
+            ? DateTimeHelper::display($health['last_backup_at'], 'datetime')
+            : null;
+
+        [$status, $description] = match (true) {
+            $failure !== null => ['warning', __('admin/dashboard.backup_failed', ['error' => $failure['error']])],
+            $health['state'] === BackupSchedule::HEALTH_DISABLED => ['recommendation', __('admin/dashboard.backup_disabled')],
+            $health['state'] === BackupSchedule::HEALTH_NEVER => ['recommendation', __('admin/dashboard.backup_never', ['time' => BackupSchedule::RUN_AT])],
+            $health['state'] === BackupSchedule::HEALTH_OVERDUE => ['warning', __('admin/dashboard.backup_overdue', ['date' => $lastDate])],
+            default => ['ok', __('admin/dashboard.backup_ok', ['date' => $lastDate])],
+        };
+
+        // With the scheduler stopped, no backup is coming: a site that has
+        // none yet is then a warning too.
+        if ($status !== 'ok' && $health['state'] !== BackupSchedule::HEALTH_DISABLED && ! $schedulerRunning) {
+            $status = 'warning';
+            $description .= ' '.__('admin/dashboard.backup_scheduler_stopped');
+        }
+
+        return [
+            'key' => 'backup',
+            'status' => $status,
+            'icon' => 'fas fa-box-archive',
+            'label' => __('admin/dashboard.backup_status'),
+            'description' => $description,
+            ...self::link('admin.settings.systems.backup.settings'),
+            'requires_advanced_mode' => false,
+        ];
+    }
+
     private static function fileContentItem(): ?array
     {
         $registry = app(FileContentRegistry::class);
@@ -554,6 +603,8 @@ class DashboardPresenter
             ...self::link('admin.settings.systems.logs.index'),
             'requires_advanced_mode' => true,
         ];
+
+        $items[] = self::backupItem();
 
         // Dependency integrity (vendor/ vs composer.lock)
         //
