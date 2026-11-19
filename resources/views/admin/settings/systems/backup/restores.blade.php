@@ -140,18 +140,31 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{-- Rollback form + rollback confirmation modal (only for records where canRollback() is true) --}}
     @foreach($records as $record)
         @if($record->canRollback())
+            @php
+                // Same rule as a restore: a snapshot whose signature does not
+                // verify needs the confirmation to say so (#635).
+                $signatureStatus = $snapshotSignatureStatuses[$record->pre_restore_backup_id] ?? 'not_checked';
+                $signatureRefused = ! in_array($signatureStatus, ['valid', 'not_checked'], true);
+            @endphp
             <form id="rollbackRestoreForm{{ $record->id }}"
                   action="{{ route('admin.settings.systems.backup.restores.rollback', $record) }}"
                   method="POST"
                   class="hidden">
                 @csrf
+                @if($signatureRefused)
+                    <input type="hidden" name="allow_unverified_signature" value="1">
+                @endif
             </form>
 
             <x-ui-modal
                 id="rollbackRestoreModal{{ $record->id }}"
                 :title="__('admin/settings/systems/backup/restores.rollback_modal.title')"
-                :message="__('admin/settings/systems/backup/restores.rollback_modal.message')"
-                :confirm-label="__('admin/settings/systems/backup/restores.rollback_modal.confirm_label')"
+                :message="$signatureRefused
+                    ? __('admin/settings/systems/backup/restores.rollback_modal.unverified_message', ['reason' => __('admin/settings/systems/backup/index.signature_statuses.' . $signatureStatus)])
+                    : __('admin/settings/systems/backup/restores.rollback_modal.message')"
+                :confirm-label="$signatureRefused
+                    ? __('admin/settings/systems/backup/restores.rollback_modal.unverified_confirm_label')
+                    : __('admin/settings/systems/backup/restores.rollback_modal.confirm_label')"
                 :cancel-label="__('admin/settings/systems/backup/restores.rollback_modal.cancel_label')"
                 icon-type="warning"
                 confirm-color="yellow"

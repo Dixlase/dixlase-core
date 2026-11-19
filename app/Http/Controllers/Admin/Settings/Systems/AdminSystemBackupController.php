@@ -31,6 +31,7 @@ use App\Http\Requests\Admin\Settings\Systems\AdminSystemBackupSettingsRequest;
 use App\Models\BackupRecord;
 use App\Models\RestoreRecord;
 use App\Models\SiteSetting;
+use App\Services\Backup\BackupArchiveSigner;
 use App\Services\Backup\BackupSchedule;
 use App\Services\Backup\CoreRestoreService;
 use Illuminate\Http\RedirectResponse;
@@ -89,6 +90,7 @@ class AdminSystemBackupController extends AdminLoggedInController
             ->withQueryString();
 
         $this->viewParams['records'] = $records;
+        $this->viewParams['signatureStatuses'] = $this->signatureStatuses($records->getCollection()->all());
         $this->viewParams['perPageOptions'] = self::PER_PAGE_OPTIONS;
         $this->viewParams['currentPerPage'] = $perPage;
         $this->viewParams['availableTargets'] = $this->backupService->getAvailableTargets();
@@ -105,6 +107,7 @@ class AdminSystemBackupController extends AdminLoggedInController
     public function show(BackupRecord $backup)
     {
         $this->viewParams['record'] = $backup;
+        $this->viewParams['signatureStatus'] = app(BackupArchiveSigner::class)->check($backup);
         $this->viewParams['fileExists'] = $backup->file_path && file_exists($backup->file_path);
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup');
 
@@ -138,6 +141,9 @@ class AdminSystemBackupController extends AdminLoggedInController
             ->get();
 
         $this->viewParams['records'] = $records;
+        $this->viewParams['snapshotSignatureStatuses'] = $this->signatureStatuses(
+            $records->map(fn (RestoreRecord $record) => $record->preRestoreBackup)->filter()->all()
+        );
         $this->viewParams['modeData'] = AdminModeHelper::getViewModeData('settings.systems.backup.restores');
 
         return view('admin::settings.systems.backup.restores', $this->viewParams);
@@ -288,8 +294,13 @@ class AdminSystemBackupController extends AdminLoggedInController
     /**
      * Restore from backup
      */
-    public function restore(BackupRecord $backup, CoreRestoreService $coreRestore): RedirectResponse
+    public function restore(Request $request, BackupRecord $backup, CoreRestoreService $coreRestore): RedirectResponse
     {
+        // The confirmation for a backup whose signature does not verify
+        // says so and sends this flag; the service records it (#635).
+        $allowUnverified = $request->boolean('allow_unverified_signature');
+        $signatureArgument = $allowUnverified ? ['--allow-unverified-signature'] : [];
+
         if ($backup->status !== BackupRecord::STATUS_COMPLETED) {
             return redirect()
                 ->route('admin.settings.systems.backup.index')
@@ -305,7 +316,7 @@ class AdminSystemBackupController extends AdminLoggedInController
         // process, exactly like a core update.
         if ($coreRestore->crossesDependencyBoundary($backup)) {
             return $this->startDetachedRestore(
-                [(string) $backup->id, '--force', '--refetch-vendor'],
+                [(string) $backup->id, '--force', '--refetch-vendor', ...$signatureArgument],
                 'admin/settings/systems/backup/index.flash.restore_dependency_started',
             );
         }
@@ -316,12 +327,14 @@ class AdminSystemBackupController extends AdminLoggedInController
         // Run it detached under maintenance mode instead (security review X5).
         if ($coreRestore->restoresCode($backup)) {
             return $this->startDetachedRestore(
-                [(string) $backup->id, '--force'],
+                [(string) $backup->id, '--force', ...$signatureArgument],
                 'admin/settings/systems/backup/index.flash.restore_code_started',
             );
         }
 
-        $result = $this->restoreService->restore($backup);
+        $result = $this->restoreService->restore($backup, [], $allowUnverified
+            ? [CoreRestoreService::OPTION_ALLOW_UNVERIFIED_SIGNATURE => true]
+            : []);
 
         if (! $result->success) {
             return redirect()
@@ -334,6 +347,23 @@ class AdminSystemBackupController extends AdminLoggedInController
             ->with('success', __('admin/settings/systems/backup/index.flash.restore_success', [
                 'duration' => round($result->duration ?? 0, 2),
             ]));
+    }
+
+    /**
+     * Signature state of each record, keyed by its id (#635).
+     *
+     * @param  array<int, BackupRecord>  $records
+     * @return array<int, string>
+     */
+    private function signatureStatuses(array $records): array
+    {
+        $signer = app(BackupArchiveSigner::class);
+        $statuses = [];
+        foreach ($records as $record) {
+            $statuses[$record->id] = $signer->check($record);
+        }
+
+        return $statuses;
     }
 
     /**
@@ -378,8 +408,10 @@ class AdminSystemBackupController extends AdminLoggedInController
     /**
      * Rollback restore
      */
-    public function rollback(RestoreRecord $restore, CoreRestoreService $coreRestore): RedirectResponse
+    public function rollback(Request $request, RestoreRecord $restore, CoreRestoreService $coreRestore): RedirectResponse
     {
+        $allowUnverified = $request->boolean('allow_unverified_signature');
+
         if (! $restore->canRollback()) {
             return redirect()
                 ->route('admin.settings.systems.backup.restores')
@@ -390,13 +422,16 @@ class AdminSystemBackupController extends AdminLoggedInController
         // code whenever the restore did: same detached path as restore().
         if ($restore->preRestoreBackup && $coreRestore->restoresCode($restore->preRestoreBackup)) {
             return $this->startDetachedRestore(
-                ['--rollback-of='.$restore->id, '--force'],
+                ['--rollback-of='.$restore->id, '--force', ...($allowUnverified ? ['--allow-unverified-signature'] : [])],
                 'admin/settings/systems/backup/restores.flash.rollback_code_started',
                 'admin.settings.systems.backup.restores',
             );
         }
 
-        $result = $this->restoreService->rollback($restore);
+        // The contract's rollback() takes no options; core's does.
+        $result = $allowUnverified && $this->restoreService instanceof CoreRestoreService
+            ? $this->restoreService->rollback($restore, [CoreRestoreService::OPTION_ALLOW_UNVERIFIED_SIGNATURE => true])
+            : $this->restoreService->rollback($restore);
 
         if (! $result->success) {
             return redirect()

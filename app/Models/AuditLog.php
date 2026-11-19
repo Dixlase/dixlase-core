@@ -391,6 +391,12 @@ class AuditLog extends Model
 
     public const ACTION_BACKUP_ROLLED_BACK = 'backup_rolled_back';
 
+    /** A restore was refused because the archive's signature did not verify (#635) */
+    public const ACTION_BACKUP_SIGNATURE_REJECTED = 'backup_signature_rejected';
+
+    /** A restore went ahead although the archive's signature did not verify (#635) */
+    public const ACTION_BACKUP_SIGNATURE_OVERRIDDEN = 'backup_signature_overridden';
+
     // ========================================
     // Action constants - schema maintenance related
     // ========================================
@@ -946,6 +952,7 @@ class AuditLog extends Model
             self::ACTION_AI_RATE_LIMIT_HIT, self::ACTION_AI_BULK_OPERATION,
             self::ACTION_BACKUP_FAILED, self::ACTION_BACKUP_RESTORED,
             self::ACTION_BACKUP_RESTORE_FAILED, self::ACTION_BACKUP_ROLLED_BACK,
+            self::ACTION_BACKUP_SIGNATURE_REJECTED, self::ACTION_BACKUP_SIGNATURE_OVERRIDDEN,
             self::ACTION_INTEGRITY_KEY_ROTATED, self::ACTION_INTEGRITY_BASELINE_REGENERATED,
         ];
 
