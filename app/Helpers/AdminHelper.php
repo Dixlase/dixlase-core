@@ -38,8 +38,10 @@
 namespace App\Helpers;
 
 use App\Enums\MemberRole;
+use App\Enums\PermissionGrantType;
 use App\Models\Member;
 use App\Models\SiteSetting;
+use App\Services\CustomRolePermissionResolver;
 use App\Services\PermissionRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -220,6 +222,14 @@ class AdminHelper
             return true;
         }
 
+        // An override of the member's custom role decides before the role does
+        if ($user instanceof Member) {
+            $override = CustomRolePermissionResolver::pluginOverrideFor($user, $pluginSlug, $menuKey);
+            if ($override !== null) {
+                return $override === PermissionGrantType::Grant;
+            }
+        }
+
         // Use PermissionRegistry
         $effective = PermissionRegistry::getPluginEffective($pluginSlug, $menuKey);
 
@@ -246,7 +256,7 @@ class AdminHelper
             return true;
         }
 
-        return PermissionRegistry::canViewPlugin($pluginSlug, $menuKey, $user->role);
+        return PermissionRegistry::canViewPlugin($pluginSlug, $menuKey, $user->role, $user instanceof Member ? $user : null);
     }
 
     /**
@@ -263,7 +273,7 @@ class AdminHelper
             return true;
         }
 
-        return PermissionRegistry::canAccessPlugin($pluginSlug, $menuKey, $user->role);
+        return PermissionRegistry::canAccessPlugin($pluginSlug, $menuKey, $user->role, $user instanceof Member ? $user : null);
     }
 
     /**

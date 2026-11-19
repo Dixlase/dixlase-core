@@ -40,7 +40,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\MemberRole;
+use App\Enums\PermissionGrantType;
 use App\Helpers\PluginHelper;
+use App\Models\Member;
 use App\Models\Plugin;
 use App\Models\RolePermissionOverride;
 use App\Support\Cache\CacheKey;
@@ -645,11 +647,21 @@ class PermissionRegistry
 
     /**
      * Check if user can access plugin menu
+     *
+     * @param  Member|null  $member  When given, an override of the member's
+     *                               custom role decides before the role does
      */
-    public static function canAccessPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole): bool
+    public static function canAccessPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole, ?Member $member = null): bool
     {
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
+        }
+
+        $override = $member !== null
+            ? CustomRolePermissionResolver::pluginOverrideFor($member, $pluginSlug, $menuKey)
+            : null;
+        if ($override !== null) {
+            return $override === PermissionGrantType::Grant;
         }
 
         $effective = self::getPluginEffective($pluginSlug, $menuKey);
@@ -664,11 +676,21 @@ class PermissionRegistry
 
     /**
      * Check if user can view plugin menu
+     *
+     * @param  Member|null  $member  When given, an override of the member's
+     *                               custom role decides before the role does
      */
-    public static function canViewPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole): bool
+    public static function canViewPlugin(string $pluginSlug, string $menuKey, MemberRole $userRole, ?Member $member = null): bool
     {
         if ($userRole === MemberRole::SUPER_ADMIN) {
             return true;
+        }
+
+        $override = $member !== null
+            ? CustomRolePermissionResolver::pluginOverrideFor($member, $pluginSlug, $menuKey)
+            : null;
+        if ($override !== null) {
+            return $override === PermissionGrantType::Grant;
         }
 
         $effective = self::getPluginEffective($pluginSlug, $menuKey);

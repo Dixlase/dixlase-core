@@ -47,6 +47,7 @@ use App\Traits\HasPermissions;
 use App\Traits\TwoFa\TwoFactorEnableCheck;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -64,6 +65,8 @@ use Laravel\Passkeys\PasskeyAuthenticatable;
  * PHPStan baseline.
  *
  * @property AuthenticationMode|int|null $two_fa_mode
+ * @property int|null $custom_role_id
+ * @property-read CustomRole|null $customRole
  */
 class Member extends Authenticatable implements MustVerifyEmail, PasskeyUser, TwoFaInterface
 {
@@ -282,6 +285,20 @@ class Member extends Authenticatable implements MustVerifyEmail, PasskeyUser, Tw
     public function twoFaPasskeys(): HasMany
     {
         return $this->passkeys();
+    }
+
+    /**
+     * The member's custom role, if one is assigned.
+     *
+     * Soft-deleted roles are excluded, so a member whose role was deleted
+     * reads as having none. Assign through CustomRole::assignTo(), which
+     * keeps `role` equal to the custom role's base role.
+     *
+     * @return BelongsTo<CustomRole, $this>
+     */
+    public function customRole(): BelongsTo
+    {
+        return $this->belongsTo(CustomRole::class, 'custom_role_id');
     }
 
     /**
