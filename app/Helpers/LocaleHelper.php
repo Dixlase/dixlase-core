@@ -41,6 +41,7 @@ use App\Contracts\I18n\EnabledLocales;
 use App\Contracts\I18n\LocaleUrlRouting;
 use App\Contracts\Multilingual\TranslatableContentTypes;
 use App\Contracts\Site\SiteContextInterface;
+use App\Contracts\TranslationSearch;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request as RequestFacade;
 
@@ -292,6 +293,61 @@ class LocaleHelper
         $types = app(TranslatableContentTypes::class);
 
         return $types instanceof TranslatableContentTypes && $types->isRegistered($key);
+    }
+
+    /**
+     * The primary keys of the models whose translations contain the words.
+     *
+     * Every word must appear in at least one of the fields, in the given
+     * locale; see the TranslationSearch contract for the matching rules.
+     * The answer comes from the translation provider. With no provider
+     * installed, or with nothing left to search after empty words and
+     * fields are dropped, it is an empty list — so a caller can always add
+     * `orWhereIn($keyName, $keys)` and keep searching its own columns.
+     *
+     * @param  class-string  $modelClass
+     * @param  array<mixed>  $fields
+     * @param  array<mixed>  $words
+     * @return list<int|string>
+     */
+    public static function findTranslatedKeys(string $modelClass, array $fields, string $locale, array $words): array
+    {
+        $fields = self::nonEmptyStrings($fields);
+        $words = self::nonEmptyStrings($words);
+
+        if ($modelClass === '' || $locale === '' || $fields === [] || $words === []
+            || ! app()->bound(TranslationSearch::class)) {
+            return [];
+        }
+
+        $search = app(TranslationSearch::class);
+
+        if (! $search instanceof TranslationSearch) {
+            return [];
+        }
+
+        $keys = [];
+
+        foreach ($search->findKeys($modelClass, $fields, $locale, $words) as $key) {
+            if (is_int($key) || (is_string($key) && $key !== '')) {
+                $keys[get_debug_type($key).':'.$key] = $key;
+            }
+        }
+
+        return array_values($keys);
+    }
+
+    /**
+     * The distinct non-empty strings of a list, in order.
+     *
+     * @param  array<mixed>  $values
+     * @return list<string>
+     */
+    private static function nonEmptyStrings(array $values): array
+    {
+        $strings = array_filter($values, static fn ($value): bool => is_string($value) && $value !== '');
+
+        return array_values(array_unique($strings));
     }
 
     /**

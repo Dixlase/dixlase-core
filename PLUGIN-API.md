@@ -138,6 +138,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\Site\SiteContextInterface` | Provides the current site context for the request. |
 | `App\Contracts\Theme\ThemePermissionServiceInterface` | Theme permission management service interface |
 | `App\Contracts\TranslationResolver` | Translation Resolver Contract |
+| `App\Contracts\TranslationSearch` | Finds the models whose translations contain the words searched for. |
 | `App\Contracts\TwoFaInterface` | Interface for users with two-factor authentication functionality |
 | `App\Contracts\TwoFa\TwoFaPasskeyServiceInterface` | Contract for Passkey (WebAuthn) authentication service |
 | `App\Contracts\Verification\FileVerificationServiceInterface` | File integrity verification service interface |
