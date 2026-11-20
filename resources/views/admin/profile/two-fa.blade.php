@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <form method="POST" action="{{ route('admin.profile.two-fa.update') }}" id="profile-two-fa-form">
         @csrf
 
-        <div x-data="twoFaProfileSettings(@js(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))))" id="two-fa-settings-wrapper">
+        <div x-data="twoFaProfileSettings({{ json_encode(old('two_fa_mode', (string) ($twoFaMode?->value ?? 0))) }})" id="two-fa-settings-wrapper">
             {{-- Passkey unregistered warning is omitted as it is handled by the passkey registration promotion modal on the dashboard --}}
 
             <section class="transition-colors-unified">
