@@ -26,6 +26,7 @@ use App\Helpers\ComposerLocalHelper;
 use App\Models\BackupRecord;
 use App\Models\CoreVersionHistory;
 use App\Models\RestoreRecord;
+use App\Services\Backup\BackupArchiveSigner;
 use App\Services\Backup\CoreRestoreService;
 use App\Services\Core\CoreVendorManager;
 use Illuminate\Console\Command;
@@ -39,6 +40,7 @@ use Illuminate\Support\Facades\Artisan;
  *   php artisan dls:backup:restore 1 --targets=database
  *   php artisan dls:backup:restore 1 --no-snapshot --force
  *   php artisan dls:backup:restore 1 --refetch-vendor --force
+ *   php artisan dls:backup:restore 1 --allow-unverified-signature
  */
 class BackupRestoreCommand extends Command
 {
@@ -48,14 +50,15 @@ class BackupRestoreCommand extends Command
                             {--no-snapshot : Skip the pre-restore safety snapshot.}
                             {--refetch-vendor : If the restore winds dependencies back, re-fetch the matching vendor/ from the old release under maintenance mode.}
                             {--rollback-of= : Undo a completed restore (RestoreRecord ID) from its pre-restore snapshot instead of restoring a backup.}
+                            {--allow-unverified-signature : Restore even though the signature of the archive does not verify with the integrity key of this site. Recorded in the audit log.}
                             {--force : Skip confirmation prompt.}';
 
     protected $description = 'Restore from a backup (destructive operation)';
 
-    public function handle(CoreRestoreService $restoreService, CoreVendorManager $vendorManager): int
+    public function handle(CoreRestoreService $restoreService, CoreVendorManager $vendorManager, BackupArchiveSigner $signer): int
     {
         if ($this->option('rollback-of') !== null) {
-            return $this->rollbackRestore($restoreService, (int) $this->option('rollback-of'));
+            return $this->rollbackRestore($restoreService, $signer, (int) $this->option('rollback-of'));
         }
 
         $id = (int) $this->argument('id');
@@ -95,6 +98,12 @@ class BackupRestoreCommand extends Command
         $this->line('Snapshot: '.($this->option('no-snapshot') ? 'DISABLED' : 'enabled (auto)'));
         $this->line('Vendor:  '.($dependencyRollback ? 're-fetch from old release (maintenance mode)' : 'unchanged'));
 
+        $signatureStatus = $signer->check($backup);
+        $this->line('Signature: '.$signatureStatus);
+        if (! $this->signatureAccepted($restoreService, $signer, $backup, $signatureStatus, $targets)) {
+            return self::FAILURE;
+        }
+
         // Restoring code (core source, plugins, themes) clears each tree and
         // writes it back file by file. Requests landing in that window run a
         // half-written tree, so the site is taken down for it as well, not
@@ -110,6 +119,9 @@ class BackupRestoreCommand extends Command
         $options = [];
         if ($this->option('no-snapshot')) {
             $options['skip_pre_restore_backup'] = true;
+        }
+        if ($this->option('allow-unverified-signature')) {
+            $options[CoreRestoreService::OPTION_ALLOW_UNVERIFIED_SIGNATURE] = true;
         }
 
         // A dependency rollback rewinds source + DB and then swaps vendor/.
@@ -201,12 +213,19 @@ class BackupRestoreCommand extends Command
      * dispatches this to a detached process for the same reason it does a
      * code restore.
      */
-    private function rollbackRestore(CoreRestoreService $restoreService, int $restoreId): int
+    private function rollbackRestore(CoreRestoreService $restoreService, BackupArchiveSigner $signer, int $restoreId): int
     {
         $restore = RestoreRecord::find($restoreId);
         if (! $restore || ! $restore->canRollback() || ! $restore->preRestoreBackup) {
             $this->error("Restore #{$restoreId} cannot be rolled back.");
 
+            return self::FAILURE;
+        }
+
+        $snapshot = $restore->preRestoreBackup;
+        $signatureStatus = $signer->check($snapshot);
+        $this->line('Snapshot signature: '.$signatureStatus);
+        if (! $this->signatureAccepted($restoreService, $signer, $snapshot, $signatureStatus, [])) {
             return self::FAILURE;
         }
 
@@ -223,7 +242,9 @@ class BackupRestoreCommand extends Command
         }
 
         try {
-            $result = $restoreService->rollback($restore);
+            $result = $restoreService->rollback($restore, $this->option('allow-unverified-signature')
+                ? [CoreRestoreService::OPTION_ALLOW_UNVERIFIED_SIGNATURE => true]
+                : []);
             if (! $result->success) {
                 $this->error('Rollback failed: '.$result->error);
 
@@ -238,5 +259,36 @@ class BackupRestoreCommand extends Command
                 Artisan::call('up');
             }
         }
+    }
+
+    /**
+     * Whether the restore may go on as far as the signature is concerned.
+     * A refusal is decided here, before the confirmation and before
+     * maintenance mode, and recorded in the audit log by the service.
+     *
+     * @param  string[]  $targets
+     */
+    private function signatureAccepted(
+        CoreRestoreService $restoreService,
+        BackupArchiveSigner $signer,
+        BackupRecord $backup,
+        string $signatureStatus,
+        array $targets,
+    ): bool {
+        if (! $signer->refuses($signatureStatus)) {
+            return true;
+        }
+
+        if ($this->option('allow-unverified-signature')) {
+            $this->warn('The signature does not verify; restoring anyway because --allow-unverified-signature was given. This is recorded in the audit log.');
+
+            return true;
+        }
+
+        $result = $restoreService->refuseUnverifiedSignature($backup, $signatureStatus, $targets);
+        $this->error((string) $result->error);
+        $this->line('Only if you know where this archive came from, run again with --allow-unverified-signature.');
+
+        return false;
     }
 }

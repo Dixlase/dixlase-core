@@ -34,6 +34,8 @@ return [
         'message' => 'This will overwrite the current state with the backup contents. A safety snapshot of the current state will be taken automatically before restore. Continue?',
         'confirm_label' => 'Restore',
         'cancel_label' => 'Cancel',
+        'unverified_message' => 'The signature of this backup could not be verified: :reason Restore it only if you know where it came from. Restoring it anyway is recorded in the audit log. Continue?',
+        'unverified_confirm_label' => 'Restore Anyway',
     ],
 
     // 削除
@@ -112,6 +114,15 @@ return [
     ],
 
     // 詳細画面（メタデータ + 編集可能なメモ）
+    // Signature of a backup archive (#635)
+    'signature_statuses' => [
+        'valid' => 'Signed with this site\'s integrity key, and the signature matches.',
+        'unsigned' => 'Not signed. It was taken before this site had an integrity key, or by other means.',
+        'invalid' => 'The signature does not match this backup.',
+        'key_unavailable' => 'Signed with a version of the integrity key that this site no longer has.',
+        'not_checked' => 'Not checked: this site has no integrity key.',
+    ],
+
     'detail' => [
         'heading' => 'Backup Details',
         'back' => 'Back to backups',
@@ -122,6 +133,7 @@ return [
         'file_name' => 'File name',
         'path' => 'Storage path',
         'hash' => 'Hash',
+        'signature' => 'Signature',
         'retention' => 'Retention until',
         'retention_none' => 'Kept indefinitely',
         'duration' => 'Duration',

@@ -245,6 +245,8 @@ return [
     'action_integrity_key_created' => 'Integrity Key Created',
     'action_integrity_key_rotated' => 'Integrity Key Rotated',
     'action_integrity_baseline_regenerated' => 'Integrity Baseline Regenerated',
+    'action_backup_signature_rejected' => 'Backup Restore Refused (Signature)',
+    'action_backup_signature_overridden' => 'Backup Restored Without a Valid Signature',
     'action_api_key_revoked' => 'API Key Revoked',
     'action_api_keys_revoked_all' => 'All API Keys Revoked',
     'action_api_key_regenerated' => 'API Key Regenerated',
