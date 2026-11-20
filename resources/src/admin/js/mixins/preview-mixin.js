@@ -115,6 +115,36 @@ export function previewMixin(config) {
             return Math.round(this.currentPreviewHeight * this.previewScale);
         },
 
+        // The scale as a percentage label. Kept here because the strict
+        // Alpine build does not expose Math to directive expressions.
+        get previewScaleLabel() {
+            return Math.round(this.previewScale * 100) + '%';
+        },
+
+        /**
+         * Apply the frame URL, size and scale to the preview iframe.
+         *
+         * The strict Alpine build refuses to evaluate any directive on an
+         * iframe, so the wrapper calls this from x-effect instead. The src is
+         * set only when it changes, because assigning it again reloads the
+         * frame. The iframe is looked up in the wrapper rather than through
+         * $refs, which is not filled in yet when the effect first runs.
+         */
+        syncPreviewIframe(wrapper) {
+            const iframe = wrapper.querySelector('iframe');
+            if (!iframe) return;
+
+            const url = this.previewFrameUrl;
+            if (url && iframe.getAttribute('src') !== url) {
+                iframe.setAttribute('src', url);
+            }
+
+            iframe.style.width = this.currentPreviewWidth + 'px';
+            iframe.style.height = this.currentPreviewHeight + 'px';
+            iframe.style.transform = 'scale(' + this.previewScale + ')';
+            iframe.style.transformOrigin = 'top left';
+        },
+
         // --- プレビュー初期化（init() 内から呼ぶ） ---
         initPreview() {
             this._onMessage = (e) => {

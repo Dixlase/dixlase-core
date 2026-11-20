@@ -55,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- Scale display (only when zoomed out) --}}
             <span x-show="previewScale < 1" x-cloak
                   class="text-[10px] text-gray-400 dark:text-gray-500"
-                  x-text="Math.round(previewScale * 100) + '%'"></span>
+                  x-text="previewScaleLabel"></span>
         </div>
 
         <div class="flex items-center gap-3">
