@@ -113,9 +113,14 @@ class CoreBackupService implements BackupServiceInterface
      */
     private const DUMP_BATCH_SIZE = 100;
 
+    private BackupArchiveSigner $signer;
+
     public function __construct(
         private FileVerificationServiceInterface $verifier,
-    ) {}
+        ?BackupArchiveSigner $signer = null,
+    ) {
+        $this->signer = $signer ?? app(BackupArchiveSigner::class);
+    }
 
     public function backup(array $targets, array $options = []): BackupResultDTO
     {
@@ -795,6 +800,10 @@ class CoreBackupService implements BackupServiceInterface
             ? now()->addDays((int) $retentionDays)
             : null;
 
+        // Signed with the integrity key when the site has one (#635), so a
+        // restore can tell this archive from one put in its place.
+        $signature = $this->signer->sign('core', $fileName, 'sha256', $hash, array_values($targets));
+
         return BackupRecord::create([
             'plugin_slug' => 'core',
             'type' => $type,
@@ -805,6 +814,7 @@ class CoreBackupService implements BackupServiceInterface
             'is_encrypted' => false,
             'hash' => $hash,
             'hash_algorithm' => 'sha256',
+            ...$signature,
             'verification_status' => BackupRecord::VERIFICATION_UNCHECKED,
             'retention_until' => $retentionUntil,
             'status' => BackupRecord::STATUS_COMPLETED,

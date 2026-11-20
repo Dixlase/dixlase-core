@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\Log;
  * One secret, set in `.env` as `INTEGRITY_KEY=<version>:base64:<32+ bytes>`,
  * keys everything core uses to notice tampering: the audit log's per-row
  * hash chain, its daily seals and the boundary between unkeyed and keyed
- * rows. Each use gets its own key, derived with HKDF, so a key recovered
+ * rows, the file-integrity baseline and the backup archives. Each use gets its own key, derived with HKDF, so a key recovered
  * from one use says nothing about another.
  *
  * Rotation moves the current key into `INTEGRITY_PREVIOUS_KEYS` (comma
@@ -96,6 +96,9 @@ class IntegrityKeyring
 
     /** MAC of the enabled-plugins cache read during register() (#803) */
     public const PURPOSE_PLUGIN_CACHE = 'plugin-cache';
+
+    /** Signature of a backup archive (#635) */
+    public const PURPOSE_BACKUP_ARCHIVE = 'backup-archive';
 
     /** Prefix of the HKDF info string, so a derived key is bound to Dixlase */
     private const INFO_PREFIX = 'dixlase-integrity:';

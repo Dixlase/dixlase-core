@@ -66,6 +66,9 @@ missing: no plugin providers register for that request, the mismatch is logged, 
 cache is rebuilt from the database. The plugin scanner reports any extension code that
 refers to the key (`dangerous_api.integrity_key`).
 
+It also signs every backup archive, so a restore can refuse an archive that was put in
+place of the one recorded ([Signed Backups](backup-commands.md#signed-backups)).
+
 It is kept in `.env` because that is outside the database, which is what the chain
 guards, and outside the backup archive. Restoring a backup on another server therefore
 needs the key copied over by hand; without it the restored rows and seals fail with

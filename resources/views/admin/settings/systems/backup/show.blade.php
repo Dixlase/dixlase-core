@@ -79,6 +79,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.hash') }}</dt>
             <dd class="font-mono break-all text-xs">{{ $record->hash ?: '-' }}</dd>
         </div>
+        <div class="sm:col-span-2">
+            <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.signature') }}</dt>
+            <dd class="{{ in_array($signatureStatus, ['invalid', 'key_unavailable', 'unsigned'], true) ? 'text-yellow-700 dark:text-yellow-300' : '' }}">{{ __('admin/settings/systems/backup/index.signature_statuses.' . $signatureStatus) }}</dd>
+        </div>
         <div>
             <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/backup/index.detail.retention') }}</dt>
             <dd><x-ui-datetime :value="$record->retention_until" format="full" :empty-label="__('admin/settings/systems/backup/index.detail.retention_none')" /></dd>

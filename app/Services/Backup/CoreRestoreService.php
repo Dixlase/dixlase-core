@@ -81,11 +81,22 @@ class CoreRestoreService implements RestoreServiceInterface
         BackupServiceInterface::TARGET_THEMES_ALL,
     ];
 
+    /**
+     * Restore option: restore even though the archive's signature does not
+     * verify with this site's integrity key. Recorded in the audit log.
+     */
+    public const OPTION_ALLOW_UNVERIFIED_SIGNATURE = 'allow_unverified_signature';
+
+    private BackupArchiveSigner $signer;
+
     public function __construct(
         private FileVerificationServiceInterface $verifier,
         private BackupServiceInterface $backupService,
         private \App\Services\Core\CoreVendorManager $vendorManager,
-    ) {}
+        ?BackupArchiveSigner $signer = null,
+    ) {
+        $this->signer = $signer ?? app(BackupArchiveSigner::class);
+    }
 
     /**
      * Whether restoring this backup (all of its targets, or the given
@@ -164,6 +175,29 @@ class CoreRestoreService implements RestoreServiceInterface
             if (! $this->verifier->verifyHash($backup->file_path, $backup->hash, $algorithm)) {
                 return RestoreResultDTO::failure('Backup file hash mismatch (file may be corrupted)');
             }
+        }
+
+        // Signature (#635). The hash above ties the archive to its record;
+        // the signature ties the record to this site's integrity key, which
+        // neither the archive nor the database holds.
+        $signatureStatus = $this->signer->check($backup);
+        if ($this->signer->refuses($signatureStatus)) {
+            if (! ($options[self::OPTION_ALLOW_UNVERIFIED_SIGNATURE] ?? false)) {
+                return $this->refuseUnverifiedSignature($backup, $signatureStatus, $targets);
+            }
+
+            Audit::log([
+                'action' => AuditLog::ACTION_BACKUP_SIGNATURE_OVERRIDDEN,
+                'category' => AuditLog::CATEGORY_SYSTEM,
+                'severity' => AuditLog::SEVERITY_WARNING,
+                'actor' => auth()->user(),
+                'target' => $backup,
+                'context' => [
+                    'backup_record_id' => $backup->id,
+                    'signature_status' => $signatureStatus,
+                    'targets' => $targets,
+                ],
+            ]);
         }
 
         // Determine restore targets (all targets in backup if not specified)
@@ -317,7 +351,41 @@ class CoreRestoreService implements RestoreServiceInterface
         }
     }
 
-    public function rollback(RestoreRecord $restore): RestoreResultDTO
+    /**
+     * Refuse a restore whose archive signature does not verify, and record
+     * the refusal in the audit log.
+     *
+     * @param  string  $signatureStatus  A BackupArchiveSigner status that refuses()
+     * @param  string[]  $targets  Targets that were asked for
+     */
+    public function refuseUnverifiedSignature(BackupRecord $backup, string $signatureStatus, array $targets = []): RestoreResultDTO
+    {
+        Audit::log([
+            'action' => AuditLog::ACTION_BACKUP_SIGNATURE_REJECTED,
+            'category' => AuditLog::CATEGORY_SYSTEM,
+            'severity' => AuditLog::SEVERITY_WARNING,
+            'actor' => auth()->user(),
+            'target' => $backup,
+            'context' => [
+                'backup_record_id' => $backup->id,
+                'signature_status' => $signatureStatus,
+                'targets' => $targets,
+            ],
+        ]);
+
+        $reason = match ($signatureStatus) {
+            BackupArchiveSigner::UNSIGNED => 'the backup is not signed',
+            BackupArchiveSigner::KEY_UNAVAILABLE => 'the backup was signed with an integrity key version this site no longer has',
+            default => 'the backup signature does not match',
+        };
+
+        return RestoreResultDTO::failure('Restore refused: '.$reason.'. This site has an integrity key, so it restores only backups signed with it.');
+    }
+
+    /**
+     * @param  array<string,mixed>  $options  Passed on to restore(); OPTION_ALLOW_UNVERIFIED_SIGNATURE is honoured
+     */
+    public function rollback(RestoreRecord $restore, array $options = []): RestoreResultDTO
     {
         if (! $restore->canRollback()) {
             return RestoreResultDTO::failure('Restore cannot be rolled back (status not completed or no pre-restore backup)');
@@ -329,7 +397,7 @@ class CoreRestoreService implements RestoreServiceInterface
         }
 
         // Restore from safety snapshot (do not take another snapshot)
-        $result = $this->restore($preRestoreBackup, [], ['skip_pre_restore_backup' => true]);
+        $result = $this->restore($preRestoreBackup, [], ['skip_pre_restore_backup' => true] + $options);
 
         if ($result->success) {
             $restore->markAsRolledBack();

@@ -98,6 +98,18 @@ class IntegrityKeyringTest extends TestCase
         $this->assertSame($keys[0], $keyring->key(IntegrityKeyring::PURPOSE_AUDIT_CHAIN, 3));
     }
 
+    public function test_no_two_uses_share_a_purpose(): void
+    {
+        $purposes = array_filter(
+            (new \ReflectionClass(IntegrityKeyring::class))->getConstants(),
+            fn (string $name) => str_starts_with($name, 'PURPOSE_'),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        $this->assertContains(IntegrityKeyring::PURPOSE_BACKUP_ARCHIVE, $purposes);
+        $this->assertSame(count($purposes), count(array_unique($purposes)));
+    }
+
     /**
      * @return array<string, array{0: string}>
      */

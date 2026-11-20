@@ -57,6 +57,8 @@ return [
         'message' => 'This will restore the state from before the original restore (using the safety snapshot). The current state will be overwritten. Continue?',
         'confirm_label' => 'Rollback',
         'cancel_label' => 'Cancel',
+        'unverified_message' => 'The signature of the safety snapshot could not be verified: :reason Roll back only if you know where it came from. Rolling back anyway is recorded in the audit log. Continue?',
+        'unverified_confirm_label' => 'Roll Back Anyway',
     ],
 
     'flash' => [
