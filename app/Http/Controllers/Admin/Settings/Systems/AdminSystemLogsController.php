@@ -37,11 +37,13 @@ namespace App\Http\Controllers\Admin\Settings\Systems;
 
 use App\Enums\LogLevel;
 use App\Enums\MemberRole;
+use App\Enums\Permission;
 use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Http\Controllers\Admin\AdminLoggedInController;
 use App\Models\AuditLog;
 use App\Services\AuditLogRetentionService;
+use App\Services\PermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -248,6 +250,16 @@ class AdminSystemLogsController extends AdminLoggedInController
         // File log access is not allowed in simple mode
         if (AdminModeHelper::isSimpleMode()) {
             return redirect()->route('admin.settings.systems.logs.index');
+        }
+
+        // Clearing the file logs deletes the admin-activity and error trail,
+        // which Permission::SYSTEM_LOGS_DELETE reserves for SUPER_ADMIN. The
+        // route's menu key (settings.systems.logs) has no definition of its
+        // own and resolves through its ADMIN-level children, so the gate alone
+        // let an ADMIN clear it -- the same gap auditCleanup() closes below.
+        $member = AdminHelper::getMember();
+        if ($member === null || ! PermissionService::memberCan($member, Permission::SYSTEM_LOGS_DELETE)) {
+            abort(403);
         }
 
         $days = (int) $request->input('days', 0);
