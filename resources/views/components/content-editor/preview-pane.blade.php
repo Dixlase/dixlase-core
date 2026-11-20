@@ -58,7 +58,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- Scale display (only when scaled down) --}}
             <span x-show="previewScale < 1" x-cloak
                   class="text-[10px] text-gray-400 dark:text-gray-500"
-                  x-text="Math.round(previewScale * 100) + '%'"></span>
+                  x-text="previewScaleLabel"></span>
         </div>
 
         <div class="flex items-center gap-3">
@@ -124,11 +124,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </div>
 
         {{-- Scaling Wrapper --}}
-        <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'">
+        {{-- The iframe carries no Alpine directive: the strict build refuses to evaluate one there --}}
+        <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'"
+             x-effect="syncPreviewIframe($el)">
             <iframe x-ref="previewIframe"
-                    :src="previewFrameUrl"
                     class="bg-white"
-                    :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
                     sandbox="allow-scripts allow-same-origin allow-forms"
                     title="{{ __('components/content-editor.preview_title') }}">
             </iframe>
