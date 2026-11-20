@@ -38,6 +38,7 @@ return [
     'theme_settings' => 'Theme Settings',
     'edit' => 'Edit',
     'edit_front_page' => 'Edit the front page',
+    'back_to_editor' => 'Back to the editor',
     'profile' => 'Profile Settings',
 
     // Environment badges

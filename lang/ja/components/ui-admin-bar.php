@@ -38,6 +38,7 @@ return [
     'theme_settings' => 'テーマ設定',
     'edit' => '編集',
     'edit_front_page' => 'フロントページを編集',
+    'back_to_editor' => '編集に戻る',
     'profile' => 'プロフィール設定',
 
     // 環境バッジ

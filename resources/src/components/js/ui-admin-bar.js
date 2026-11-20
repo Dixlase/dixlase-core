@@ -65,5 +65,23 @@ window.adminBar = function () {
             this.openSidebar = false;
             this.openUserMenu = false;
         },
+
+        /**
+         * "Back to the editor" on a preview (#1079): close the preview tab,
+         * which returns to the editor's tab. A browser closes only a tab a
+         * script opened, so when this one stays (opened from a bookmark,
+         * or with a middle click), the link opens the edit screen instead.
+         *
+         * @param {MouseEvent} event
+         */
+        backToEditor(event) {
+            const href = event.currentTarget.href;
+            window.close();
+            setTimeout(() => {
+                if (!window.closed) {
+                    window.location.href = href;
+                }
+            }, 150);
+        },
     };
 };

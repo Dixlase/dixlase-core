@@ -48,10 +48,41 @@ window.Dixlase.mixins = {
 };
 
 /**
+ * The name of the one tab a preview URL opens in (#1079). Previewing the
+ * same record again replaces that tab instead of opening another.
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+function previewTabName(url) {
+    return 'dixlase-preview:' + url;
+}
+
+/**
+ * @api Available to plugins and themes as window.Dixlase.openPreviewTab()
+ *
+ * Open a saved preview (a GET URL) in its own named tab, the one
+ * newTabPreview() uses for the same URL. The tab is opened by script,
+ * so the admin bar's "Back to the editor" can close it (#1079).
+ *
+ * @param {string} url - The preview page's URL
+ */
+window.Dixlase.openPreviewTab = function(url) {
+    if (!url) return;
+
+    var tab = window.open(url, previewTabName(url));
+    if (tab) tab.focus();
+};
+
+/**
  * @api プラグイン/テーマから window.Dixlase.newTabPreview() として使用可能
  *
  * 別タブプレビュー: 親フォームのデータを収集し、指定URLにPOSTして新しいタブで開く。
  * x-content-editor.new-tab-preview コンポーネントから呼び出される。
+ *
+ * The tab is named after the URL and opened by script first, so a second
+ * preview of the same record replaces it, and the admin bar's "Back to
+ * the editor" can close it (#1079).
  *
  * @param {string} url - プレビュー用POSTエンドポイントのURL
  * @param {HTMLElement} el - ボタン要素（親フォームの特定に使用）
@@ -59,11 +90,19 @@ window.Dixlase.mixins = {
 window.Dixlase.newTabPreview = function(url, el) {
     if (!url) return;
 
+    // An empty URL opens a blank tab, or returns the named tab as it is
+    // without reloading it; the form below then navigates it. A browser
+    // that blocks the pop-up gets the name anyway, and the form opens a
+    // new tab under it.
+    var tabName = previewTabName(url);
+    var tab = window.open('', tabName);
+    if (tab) tab.focus();
+
     var parentForm = el.closest('form');
     var previewForm = document.createElement('form');
     previewForm.method = 'POST';
     previewForm.action = url;
-    previewForm.target = '_blank';
+    previewForm.target = tabName;
     previewForm.style.display = 'none';
 
     if (parentForm) {
