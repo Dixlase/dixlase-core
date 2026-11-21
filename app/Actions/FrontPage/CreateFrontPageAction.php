@@ -44,6 +44,7 @@ use App\Enums\ContentEditorType;
 use App\Enums\ContentStatus;
 use App\Enums\ContentStorageType;
 use App\Enums\Permission;
+use App\Events\DixlaseEvents;
 use App\Models\FrontPage;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\ScriptAuthoringPolicy;
@@ -156,5 +157,23 @@ class CreateFrontPageAction extends AbstractAction
             'editor_type' => $result->model?->editor_type ?? null,
             'storage_type' => $result->model?->storage_type ?? null,
         ];
+    }
+
+    /**
+     * A new front page is created published, so it is announced as both
+     * created and published (#1099).
+     */
+    protected function dispatchEvents(Actor $actor, array $data, ActionResult $result): void
+    {
+        if (! $result->success || ! $result->model instanceof FrontPage) {
+            return;
+        }
+
+        $payload = $result->model->contentEventPayload($actor->getActorId());
+        $payload->dispatch(DixlaseEvents::CONTENT_CREATED);
+
+        if ($result->model->isPublished()) {
+            $payload->dispatch(DixlaseEvents::CONTENT_PUBLISHED);
+        }
     }
 }

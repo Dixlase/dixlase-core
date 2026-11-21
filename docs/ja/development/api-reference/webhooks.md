@@ -272,6 +272,13 @@ protected function schedule(Schedule $schedule): void
 - `dixlase.plugin.deactivated`
 - `dixlase.plugin.uninstalled`
 
+### コンテンツのイベント
+- `dixlase.content.created`
+- `dixlase.content.updated`
+- `dixlase.content.published`
+- `dixlase.content.unpublished`
+- `dixlase.content.deleted`
+
 ### セキュリティイベント
 - `dixlase.integrity.scan.completed`
 - `dixlase.security.alert`

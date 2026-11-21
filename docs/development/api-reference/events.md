@@ -217,6 +217,62 @@ When delivered through `WebhookDispatcher`, the payload's `toArray()` shape beco
 
 For naming rules of `action`, `category`, `actor_source`, etc., see [`docs/development/naming.md`](../naming.md).
 
+### 2.10 Content Events
+
+Fired by whatever provides the content — core or an extension — so a subscriber (a cache purge, a search index, a static-site rebuild) can react to content changes without knowing which extension the content came from.
+
+| Event | Constant | Fired when |
+|-------|----------|------------|
+| `dixlase.content.created` | `CONTENT_CREATED` | An item is created, whatever its status |
+| `dixlase.content.updated` | `CONTENT_UPDATED` | An existing item is saved. An emitter may fire it for a save that changed nothing |
+| `dixlase.content.published` | `CONTENT_PUBLISHED` | An item becomes publicly visible: published from a draft, created already published, or a scheduled item going live |
+| `dixlase.content.unpublished` | `CONTENT_UNPUBLISHED` | A visible item stops being visible without being deleted |
+| `dixlase.content.deleted` | `CONTENT_DELETED` | An item is deleted |
+
+One change can fire more than one event: creating an item that is published at once fires `created`, then `published`. When the change also moves the item's URL, the emitter fires `URL_SLUG_CHANGED` as well.
+
+#### Payload
+
+Every content event carries one array, built by `App\DTO\Content\ContentEventPayload::toArray()`. The listener receives it as its single argument, and a webhook delivers it as `data`.
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `version` | int | Payload schema version (`ContentEventPayload::SCHEMA_VERSION`, currently **1**) |
+| `source` | string | Extension slug of the emitter, or `core` |
+| `type` | string | Content type; the same string an `ApiResourceProviderInterface` reports from `getResourceType()` |
+| `id` | string\|int | Identifier of the item within its type |
+| `slug` | string\|null | Slug of the item, when it has one |
+| `url` | string\|null | Site-relative public path beginning with `/`, or null when the item has no public URL |
+| `site_id` | int\|null | Site the item belongs to |
+| `status` | string | Status slug after the change (`draft`, `published`, `scheduled`, …). For `deleted`, the status the item had |
+| `actor_id` | string\|int\|null | Member who made the change; null for system changes |
+| `occurred_at` | string | ISO 8601 timestamp |
+
+The payload never carries the content body, so a webhook delivery stays small and cannot leak a draft. A subscriber that needs the body reads it through the API. Within a schema version, fields are only added.
+
+#### Firing a content event
+
+Build the payload and fire it through `dispatch()`, which refuses an event name outside the content category:
+
+```php
+use App\DTO\Content\ContentEventPayload;
+use App\Events\DixlaseEvents;
+
+(new ContentEventPayload(
+    source: 'my-plugin',
+    type: 'event',
+    id: $item->id,
+    slug: $item->slug,
+    url: '/events/'.$item->slug,
+    siteId: $item->site_id,
+    status: 'published',
+    actorId: auth()->id(),
+    occurredAt: now()->toIso8601String(),
+))->dispatch(DixlaseEvents::CONTENT_PUBLISHED);
+```
+
+Core's front page fires `created` and `published` when it is created, `updated` when it is saved or a revision is restored, and `deleted` when it is deleted (`type` is `front_page`; `url` is `/`, or `/{locale}` when locale URL routing is on). It has no draft state, so it never fires `unpublished`.
+
 ## 3. Usage
 
 ### 3.1 Listening to Events

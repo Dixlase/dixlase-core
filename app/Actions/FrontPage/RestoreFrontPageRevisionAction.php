@@ -41,6 +41,7 @@ use App\Actions\AbstractAction;
 use App\Contracts\Action\Actor;
 use App\DTO\Action\ActionResult;
 use App\Enums\Permission;
+use App\Events\DixlaseEvents;
 use App\Models\FrontPage;
 use App\Models\FrontPageRevision;
 use App\Services\Content\FileContentPublisher;
@@ -100,5 +101,19 @@ class RestoreFrontPageRevisionAction extends AbstractAction
             'revision_type' => $this->revision->type,
             'revision_created_at' => $this->revision->created_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * Restoring a revision replaces the published content, so subscribers
+     * hear of it as an update (#1099).
+     */
+    protected function dispatchEvents(Actor $actor, array $data, ActionResult $result): void
+    {
+        if (! $result->success || ! $result->model instanceof FrontPage) {
+            return;
+        }
+
+        $result->model->contentEventPayload($actor->getActorId())
+            ->dispatch(DixlaseEvents::CONTENT_UPDATED);
     }
 }
