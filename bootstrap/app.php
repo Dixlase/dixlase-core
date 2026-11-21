@@ -247,6 +247,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => Authenticate::class, // Authentication
             'verified' => EnsureEmailIsVerified::class, // Email verification
             'member.active' => \App\Http\Middleware\EnsureMemberCanAuthenticate::class, // End the session of a deactivated member
+            'recent_auth' => \App\Http\Middleware\RequireRecentAuthentication::class, // Recent password / passkey confirmation for a sensitive operation (#675)
             'admin.ip' => AdminIpFilter::class, // IP address filter
             'admin.no-cache' => PreventAdminResponseCaching::class, // Force browsers not to cache authenticated admin responses
             'front.ip' => FrontIpFilter::class, // Front IP filter

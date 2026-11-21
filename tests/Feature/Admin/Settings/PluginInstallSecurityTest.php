@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Illuminate\Testing\TestResponse;
 use Mockery;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -54,6 +55,7 @@ use Tests\TestCase;
  */
 class PluginInstallSecurityTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     /** @var Member スーパー管理者メンバー */

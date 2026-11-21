@@ -206,6 +206,7 @@ return [
     'action_lockout_released' => 'Lockout Released',
     'action_step_up_auth_required' => 'Step-up Auth Required',
     'action_step_up_auth_completed' => 'Step-up Auth Completed',
+    'action_step_up_auth_failed' => 'Step-up Auth Failed',
     'action_session_created' => 'Session Created',
     'action_session_destroyed' => 'Session Destroyed',
     'action_forced_logout' => 'Forced Logout',

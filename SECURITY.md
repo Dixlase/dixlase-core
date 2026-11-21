@@ -276,7 +276,7 @@ The admin panel and the front site use **one** session cookie. The server keeps 
 - **`SameSite=Strict` is not the default.** A browser does not send a `Strict` cookie on the first request after following a link from another site, so a signed-in member who opens the site from an email or a search result would arrive signed out. An operator who accepts that can set `SESSION_SAME_SITE=strict`.
 - **Ending the session when the browser closes is not the default.** Browsers that restore the previous session keep such cookies anyway, so the guarantee is weak; the idle lifetime is the control. An operator can set `SESSION_EXPIRE_ON_CLOSE=true`.
 
-Both can be revisited if the admin panel gets a cookie of its own. Against a stolen admin session, the planned control is re-authentication before sensitive operations (#675).
+Both can be revisited if the admin panel gets a cookie of its own. Against a stolen admin session, the control is re-authentication before sensitive operations (see "Re-authentication for sensitive operations" below).
 
 ## Revocation
 
@@ -293,6 +293,23 @@ What an administrator can take away, and how fast it takes effect:
 **It takes effect on the next request, on every instance.** Admin sessions are stored in the database on an installed site (the session driver is set per request, whatever `SESSION_DRIVER` says), and API keys are looked up in the database on every request. Neither goes through a cache, so there is no grace period: any instance that shares the database refuses a revoked session or key at once. A browser that is mid-request finishes that request.
 
 Each action writes an audit row: `session_destroyed`, `forced_logout`, `email_verification_reset`, `api_key_revoked` or `api_keys_revoked_all`. Rows name sessions by a keyed hash and keys by id and name — never by the session id or key material.
+
+## Re-authentication for sensitive operations
+
+A session cookie alone is not enough for the operations that change how the site or its members are protected. Before one of them, the admin panel asks the member to confirm their **password** or one of their **passkeys**. A confirmation lasts **15 minutes** in that session; signing in does not count as one.
+
+| Setting | Default | Set with |
+|---|---|---|
+| How long a confirmation lasts | 15 minutes | `ADMIN_RECENT_AUTH_MINUTES` |
+| Wrong passwords or failed passkeys before the session is ended | 5 | `security.recent_auth.max_attempts` |
+
+**What asks for it:** changing your own password, email address and other basic details, two-factor settings, passkeys or recovery codes; creating, editing or deleting a member, changing their role or credentials, or the role permissions; exporting or erasing a member's personal data; the admin URL, mail server and admin mode settings; every security setting and the file-integrity baseline; installing, uploading, enabling, disabling, uninstalling, deleting or rolling back a plugin or theme, and switching the theme; API settings and creating or regenerating an API key; applying or rolling back an update; downloading, restoring, rolling back or deleting a backup and changing the backup schedule; database cleanup; downloading or clearing log files, and exporting or cleaning up the audit log. The list is pinned by `tests/Feature/Admin/Auth/RecentAuthenticationTest.php`.
+
+**What does not:** ending sessions, forcing a logout and deleting API keys (see "Revocation"). They are what an administrator reaches for during an incident, and they lock an intruder out rather than in.
+
+**How it behaves.** A page is sent to the confirmation screen and comes back to itself afterwards. A form submission is not replayed: the member comes back to the page the form was on and submits it again. A script request gets `423` with the confirmation URL in the `X-Dixlase-Recent-Auth` header, and the admin scripts follow it. A member with neither a password nor a usable passkey cannot confirm, and is told to set a password first.
+
+**After too many failures the session ends.** A session that cannot answer for its own member is treated as one that is not theirs. Each step writes an audit row: `step_up_auth_required`, `step_up_auth_completed` (with the factor used) and `step_up_auth_failed` (with the attempt count, and whether the session was ended).
 
 ## Scope
 

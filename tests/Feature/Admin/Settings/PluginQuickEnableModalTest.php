@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -44,6 +45,7 @@ use Tests\TestCase;
  */
 class PluginQuickEnableModalTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     /** @var Member スーパー管理者メンバー */

@@ -275,6 +275,8 @@ class AuditLog extends Model
 
     public const ACTION_STEP_UP_AUTH_COMPLETED = 'step_up_auth_completed';
 
+    public const ACTION_STEP_UP_AUTH_FAILED = 'step_up_auth_failed';
+
     // ========================================
     // Action constants - Session related
     // ========================================
@@ -871,7 +873,7 @@ class AuditLog extends Model
             self::ACTION_LOGIN_IDENTIFIER_NOT_FOUND, self::ACTION_IP_BLOCKED,
             self::ACTION_IP_ALLOWED, self::ACTION_LOCKOUT_TRIGGERED,
             self::ACTION_LOCKOUT_RELEASED, self::ACTION_STEP_UP_AUTH_REQUIRED,
-            self::ACTION_STEP_UP_AUTH_COMPLETED,
+            self::ACTION_STEP_UP_AUTH_COMPLETED, self::ACTION_STEP_UP_AUTH_FAILED,
             self::ACTION_BOT_LOGIN_DETECTED, self::ACTION_BOT_SCRAPING_DETECTED,
             self::ACTION_AI_RATE_LIMIT_HIT,
             self::ACTION_INTEGRITY_KEY_CREATED, self::ACTION_INTEGRITY_KEY_ROTATED,
@@ -954,6 +956,7 @@ class AuditLog extends Model
             self::ACTION_BACKUP_RESTORE_FAILED, self::ACTION_BACKUP_ROLLED_BACK,
             self::ACTION_BACKUP_SIGNATURE_REJECTED, self::ACTION_BACKUP_SIGNATURE_OVERRIDDEN,
             self::ACTION_INTEGRITY_KEY_ROTATED, self::ACTION_INTEGRITY_BASELINE_REGENERATED,
+            self::ACTION_STEP_UP_AUTH_FAILED,
         ];
 
         $noticeActions = [
