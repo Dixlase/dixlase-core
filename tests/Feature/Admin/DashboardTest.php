@@ -22,12 +22,14 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\MemberRole;
 use App\Http\Middleware\CheckInstallationReady;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Models\Member;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\View;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
@@ -150,6 +152,56 @@ class DashboardTest extends TestCase
         $response->assertViewHas('pluginWidgets');
         $pluginWidgets = $response->viewData('pluginWidgets');
         $this->assertIsArray($pluginWidgets);
+    }
+
+    /**
+     * @return array<string, array{MemberRole}>
+     */
+    public static function rolesBelowAdmin(): array
+    {
+        return [
+            'guest' => [MemberRole::GUEST],
+            'contributor' => [MemberRole::CONTRIBUTOR],
+            'editor' => [MemberRole::EDITOR],
+        ];
+    }
+
+    /**
+     * A role that cannot open the audit log, the member list or the system
+     * info page does not get their data on the dashboard either (#844).
+     */
+    #[DataProvider('rolesBelowAdmin')]
+    public function test_a_role_below_admin_does_not_get_the_gated_widgets(MemberRole $role): void
+    {
+        $user = Member::factory()->create(['role' => $role]);
+
+        $response = $this->actingAs($user, 'member')->get(route('admin.dashboard'));
+
+        $response->assertOk();
+        $this->assertNull($response->viewData('recentActivity'));
+        $this->assertNull($response->viewData('memberOverview'));
+        $this->assertNull($response->viewData('systemInfo'));
+        $response->assertDontSee(__('admin/dashboard.recent_activity'));
+        $response->assertDontSee(__('admin/dashboard.member_overview'));
+        $response->assertDontSee(__('admin/dashboard.system_info'));
+    }
+
+    /**
+     * An admin, who can open those screens, still sees the widgets.
+     */
+    public function test_an_admin_gets_the_gated_widgets(): void
+    {
+        $user = Member::factory()->create(['role' => MemberRole::ADMIN]);
+
+        $response = $this->actingAs($user, 'member')->get(route('admin.dashboard'));
+
+        $response->assertOk();
+        $this->assertIsArray($response->viewData('recentActivity'));
+        $this->assertIsArray($response->viewData('memberOverview'));
+        $this->assertIsArray($response->viewData('systemInfo'));
+        $response->assertSee(__('admin/dashboard.recent_activity'));
+        $response->assertSee(__('admin/dashboard.member_overview'));
+        $response->assertSee(__('admin/dashboard.system_info'));
     }
 
     /**

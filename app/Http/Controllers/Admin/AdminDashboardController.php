@@ -35,6 +35,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\AdminHelper;
 use App\Helpers\AdminModeHelper;
 use App\Presenters\Admin\DashboardPresenter;
 use App\Services\TwoFa\TwoFaPasskeyService;
@@ -105,12 +106,22 @@ class AdminDashboardController extends AdminLoggedInController
             [array_merge(['key' => 'captcha'], $captchaStatus)],
         );
         $this->viewParams['siteHealth'] = DashboardPresenter::decorateSiteHealthItems($siteHealthItems, $isAdvancedMode);
-        $this->viewParams['systemInfo'] = DashboardPresenter::systemInfo();
+        // The dashboard is open to every role, but these three widgets are
+        // built from data that has its own gated screen: the system info page,
+        // the member list and the audit log. A role that cannot open the screen
+        // gets null and the widget is not rendered (#844).
+        $this->viewParams['systemInfo'] = AdminHelper::canAccessMenu('settings.systems.info')
+            ? DashboardPresenter::systemInfo()
+            : null;
         $this->viewParams['pluginWidgets'] = DashboardPresenter::pluginWidgets();
         $this->viewParams['pluginNotifications'] = DashboardPresenter::pluginNotifications();
         $this->viewParams['extensionOverview'] = DashboardPresenter::extensionOverview();
-        $this->viewParams['memberOverview'] = DashboardPresenter::memberOverview();
-        $this->viewParams['recentActivity'] = DashboardPresenter::recentActivity();
+        $this->viewParams['memberOverview'] = AdminHelper::canAccessMenu('members.index')
+            ? DashboardPresenter::memberOverview()
+            : null;
+        $this->viewParams['recentActivity'] = AdminHelper::canAccessMenu('settings.systems.logs.audit')
+            ? DashboardPresenter::recentActivity()
+            : null;
         $this->viewParams['isAdvancedMode'] = $isAdvancedMode;
 
         return view('admin::dashboard', $this->viewParams);
