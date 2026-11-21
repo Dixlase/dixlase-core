@@ -36,8 +36,6 @@
 namespace App\Services\Licensing;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Validates the `license` field of plugin.json / theme.json against the
  * SPDX whitelist configured in config/licensing.php.
  *

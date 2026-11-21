@@ -38,8 +38,6 @@ namespace App\Services\Core;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * @api Stable API usable from plugins and themes.
- *
  * Answers one question: does the `vendor/` on disk match the `composer.lock`
  * that ships beside it?
  *

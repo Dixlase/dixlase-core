@@ -6,8 +6,6 @@
  * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
  *
- * @api Available for plugins/themes as \App\Support\RelativeSymlink
- *
  * Dixlase is dual-licensed. You may use this file under either:
  *
  *   (a) the GNU Affero General Public License version 3 or later, as
@@ -38,8 +36,6 @@
 namespace App\Support;
 
 /**
- * @api Stable API available for plugins/themes.
- *
  * Creates POSIX symlinks whose recorded target is a relative path,
  * not an absolute one anchored at the container that ran the code.
  *

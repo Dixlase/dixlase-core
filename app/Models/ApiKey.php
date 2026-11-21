@@ -43,8 +43,6 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * @api Stable API for plugins/themes (Bearer-token authentication backbone).
- *
  * Site keys are bound to a single site via site_id. Network keys (site_id = null)
  * are CLI-issued only and authenticate against any site. See
  * docs/development/api-reference/versioning.md for the full contract.
