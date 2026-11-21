@@ -32,6 +32,7 @@ import '../security/js/safe-mode-banner';
 import '../security/js/integrity';
 import './sidebar-edit';
 import './content-editor';
+import './front-page-preview';
 import './unsaved-changes-guard';
 
 // プラグイン/テーマ向けランタイム API（import 不要で使用可能）
