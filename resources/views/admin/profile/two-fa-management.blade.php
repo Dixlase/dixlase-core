@@ -36,17 +36,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @section('content')
 
     <!-- 2FA管理セクション -->
-    <div x-data="{
-        twoFaMode: '{{ (string) ($twoFaMode?->value ?? 0) }}',
-        passkeyEnabled: {{ $currentPasskeyEnabled ? 'true' : 'false' }},
-        isTwoFaActuallyDisabled: {{ $isTwoFaActuallyDisabled ? 'true' : 'false' }},
-        get isTwoFaDisabled() {
-            return this.isTwoFaActuallyDisabled;
-        },
-        get isPasskeyDisabled() {
-            return this.isTwoFaActuallyDisabled || !this.passkeyEnabled;
-        }
-    }">
+    {{-- The values below are fixed when the page loads, so Blade decides what is shown --}}
+    <div>
         <div class="mb-8">
             
             @if(!$isMailServerTested)
@@ -57,23 +48,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             @endif
 
             {{-- Explanation when two-factor authentication is disabled --}}
-            <div x-show="isTwoFaDisabled" class="mb-6">
+            @if($isTwoFaActuallyDisabled)
+            <div class="mb-6">
                 <x-ui-message 
                     type="warning" 
                     :message="__('admin/profile/common.two_fa_disabled_notice')"
                 />
             </div>
+            @endif
 
             {{-- Explanation when Passkey is disabled --}}
-            <div x-show="!isTwoFaDisabled && !passkeyEnabled" class="mb-6">
+            @if(!$isTwoFaActuallyDisabled && !$currentPasskeyEnabled)
+            <div class="mb-6">
                 <x-ui-message 
                     type="warning" 
                     :message="__('admin/profile/common.passkey_disabled_notice')"
                 />
             </div>
+            @endif
 
             {{-- Two-factor authentication management component --}}
-            <div :class="{ 'opacity-50 pointer-events-none': {{ !$isMailServerTested ? 'true' : 'false' }} }">
+            <div class="{{ $isMailServerTested ? '' : 'opacity-50 pointer-events-none' }}">
                 <x-two-fa.management
                 :twoFaPasskeyEnabled="$twoFaPasskeyEnabled"
                 :twoFaPasskeyDevices="$twoFaPasskeyDevices"

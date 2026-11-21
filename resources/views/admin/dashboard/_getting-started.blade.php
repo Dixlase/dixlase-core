@@ -31,7 +31,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 --}}
 
-<div x-data="gettingStartedCard(@js($gettingStarted['visited']), {{ $gettingStarted['allCompleted'] ? 'true' : 'false' }})"
+<div x-data="gettingStartedCard({{ json_encode($gettingStarted['visited']) }}, {{ $gettingStarted['allCompleted'] ? 'true' : 'false' }})"
      x-show="!dismissed"
      x-cloak
      x-transition:leave="transition ease-in duration-300"
