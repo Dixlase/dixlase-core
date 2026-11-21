@@ -85,11 +85,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
              thing that cannot wait for Alpine is the class itself. Keep this
              in step with sidebarBandFor() / readStoredRail() /
              readStoredTabletExpanded() in
-             resources/src/admin/js/layout.js. --}}
+             resources/src/admin/js/layout.js.
+
+             The two numbers below are SIDEBAR_DESKTOP_MIN (1024) and
+             SIDEBAR_TABLET_MIN (640) from that file, and they decide which
+             key is read. They have to be the same numbers, because the band
+             decides which key the tab button WRITES: this script said 1280
+             while layout.js said 1024, so between the two a viewer who chose
+             the full menu had it stored under the desktop key and read back
+             under the tablet key, which is unset -- the rail painted first
+             and the correction then animated (#1083).
+             AdminSidebarBreakpointsTest pins them to each other. --}}
         <script @cspNonce>
             (function(){
                 var w=window.innerWidth,rail=false;
-                if(w>=1280){
+                if(w>=1024){
                     var m=null;
                     try{m=localStorage.getItem('adminSidebarMode');}catch(e){}
                     if(m===null){

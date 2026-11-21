@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 @endphp
 
 <x-ui-modal :id="$modalId" :title="$error ? __('common.error') : ($title ?? __('two-fa/recovery-code.title'))" :icon_type="$error ? 'danger' : 'warning'" :dismissible="false">
-    <div class="space-y-4" x-data="recoveryCodesModal(@js($modalId), @js($codes), @js($autoOpen), @js($clearSessionRoute), @js($nextModal))">
+    <div class="space-y-4" x-data="recoveryCodesModal({{ json_encode($modalId) }}, {{ json_encode($codes) }}, {{ json_encode($autoOpen) }}, {{ json_encode($clearSessionRoute) }}, {{ json_encode($nextModal) }})">
         @if($error)
             {{-- Error display mode --}}
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">

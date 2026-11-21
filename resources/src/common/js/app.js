@@ -74,6 +74,7 @@ import '../../admin/settings/themes/js/online-themes';
 import '../../admin/js/login-flow';
 import '../../admin/js/getting-started-card';
 import '../../admin/members/js/role-permission-range';
+import '../../admin/privacy/js/user-delete';
 import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse'
 import { registerCspBridge } from './alpine-csp-bridge';
