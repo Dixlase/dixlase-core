@@ -94,5 +94,5 @@ return [
 
     // 別タブプレビュー
     'new_tab_preview' => 'Preview',
-    'new_tab_preview_help' => 'Preview current content in a new window before saving.',
+    'new_tab_preview_help' => 'Preview the current content in its own tab before saving. Previewing again updates the same tab.',
 ];

@@ -41,6 +41,13 @@ A front page can offer an edit link for its content by setting Blade
 sections in its view, only when the signed-in member may edit it:
   @section('admin_bar_edit_url', route('...edit', $item))
   @section('admin_bar_edit_label', __('...'))   (optional; "Edit")
+  @section('admin_bar_edit_closes', '1')        (optional; a preview)
+
+A preview opened in its own tab (window.Dixlase.newTabPreview() /
+openPreviewTab()) sets admin_bar_edit_closes: the link then reads "Back
+to the editor" and closes the preview tab, returning to the editor's tab
+with what is still being typed there. It opens the edit URL only when the
+browser keeps the tab open (#1079).
 
 Core's own front page sets no sections — a theme renders it — so the bar
 offers that page's link itself, below. A view that sets the sections
@@ -80,8 +87,10 @@ still wins.
     if ($editUrl !== '' && ! preg_match('~^(https?://|/(?!/))~i', $editUrl)) {
         $editUrl = '';
     }
+    // A preview tab's link goes back to the editor by closing the tab.
+    $editCloses = $editUrl !== '' && trim(\Illuminate\Support\Facades\View::yieldContent('admin_bar_edit_closes')) !== '';
     $editLabel = html_entity_decode(trim(\Illuminate\Support\Facades\View::yieldContent('admin_bar_edit_label')), ENT_QUOTES | ENT_HTML5)
-        ?: __('components/ui-admin-bar.edit');
+        ?: ($editCloses ? __('components/ui-admin-bar.back_to_editor') : __('components/ui-admin-bar.edit'));
 
     // The site's own front page is rendered by the active theme, so no
     // core view is in a position to set the sections above for it. The
@@ -154,8 +163,13 @@ still wins.
                         {{-- The label shows from sm up, earlier than the other
                              links: it names what this page offers, not a fixed
                              place. --}}
+                        @if($editCloses)
+                        <a href="{{ $editUrl }}" aria-label="{{ $editLabel }}" title="{{ $editLabel }}" data-admin-bar-edit data-admin-bar-edit-closes @click.prevent="backToEditor" class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
+                            <i class="fas fa-arrow-left mr-1" aria-hidden="true"></i>
+                        @else
                         <a href="{{ $editUrl }}" aria-label="{{ $editLabel }}" title="{{ $editLabel }}" data-admin-bar-edit class="px-3 py-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm whitespace-nowrap">
                             <i class="fas fa-pen-to-square mr-1" aria-hidden="true"></i>
+                        @endif
                             <span class="hidden sm:inline">{{ $editLabel }}</span>
                         </a>
                     @endif
