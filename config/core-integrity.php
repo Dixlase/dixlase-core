@@ -60,17 +60,35 @@ return [
     | no network and no key-distribution plugin present. Pin the current public
     | key(s) here ("pin the root, fetch the leaves"). The verifier checks these
     | first, then falls back to AuthorityPublicKeyResolver for online rotation.
-    | Format: 'key_id' => 'base64:...' (or plain base64).
+    |
+    | Format: 'key_id' => 'base64:...' (or plain base64) pins the key at the
+    | "official" tier. To pin one at a lower tier, write an array instead:
+    | 'key_id' => ['key' => 'base64:...', 'tier' => 'partner'], where the tier
+    | is 'official', 'verified', 'partner' or 'community'.
+    |
+    | This list is the ONLY source of a key's trust tier. A key_id's prefix
+    | grants nothing: it is a name, and whoever publishes the key chooses it,
+    | so 'dixlase-verified-*' and 'partner-*' used to award their own badge to
+    | anyone who asked (#845; 'official' was narrowed to pinned keys in #445).
+    | A tier is therefore something core states by shipping the key in a
+    | release -- a third party's key included.
     */
     'pinned_public_keys' => [
         // The Authority key that signs the official plugins and themes
         // (rotated 2026-09-26). A pinned key_id is verified with this value
-        // only, never with what the Authority returns, and only pinned keys
-        // count as "official" -- see App\Support\PinnedPublicKeys. A new
-        // official key has to be added here in a core release before
-        // extensions signed with it are shown as official.
+        // only, never with what the Authority returns -- see
+        // App\Support\PinnedPublicKeys. A new official key has to be added
+        // here in a core release before extensions signed with it are shown
+        // as official.
         'dixlase-authority-2026' => 'base64:Xn22kURy4V7xrHup/C4VmwMbr6PDeMNWe15iRZkXQ1Q=',
         // 'dixlase-core-2026' => 'base64:REPLACE_WITH_CORE_PUBLIC_KEY',
+        //
+        // A third party's key names its tier, because nothing else grants
+        // one. This is where a "Verified" or "Partner" badge comes from.
+        // 'partner-example-2026' => [
+        //     'key' => 'base64:REPLACE_WITH_PARTNER_PUBLIC_KEY',
+        //     'tier' => 'partner',
+        // ],
     ],
 
     /*

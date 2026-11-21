@@ -657,27 +657,20 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
     }
 
     /**
-     * Determine signature type from key_id (for badge display)
+     * The trust tier for a key_id (for badge display).
      *
-     * "official" requires a key pinned in core. The prefix is only a name:
-     * an unpinned `dixlase-official-*` / `dixlase-authority-*` key gets no
-     * official badge (security review X7).
+     * It comes from the pinned list in config/core-integrity.php and from
+     * nothing else. The prefix of a key_id is only a name, chosen by whoever
+     * publishes the key, so 'dixlase-verified-*' and 'partner-*' used to
+     * hand out their own badge (#845); 'official' had already been narrowed
+     * to pinned keys (#445). See PinnedPublicKeys::tier().
      */
     protected function determineSignatureType(?string $keyId): ?string
     {
         if ($keyId === null) {
             return null;
         }
-        if (str_starts_with($keyId, 'dixlase-official') || str_starts_with($keyId, 'dixlase-authority')) {
-            return PinnedPublicKeys::isPinned($keyId) ? 'official' : null;
-        }
-        if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
-            return 'verified';
-        }
-        if (str_starts_with($keyId, 'partner-')) {
-            return 'partner';
-        }
 
-        return null;
+        return PinnedPublicKeys::tier($keyId);
     }
 }

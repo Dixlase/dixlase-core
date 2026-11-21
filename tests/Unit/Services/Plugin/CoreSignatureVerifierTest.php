@@ -190,9 +190,11 @@ class CoreSignatureVerifierTest extends TestCase
     }
 
     /**
-     * 署名タイプ判定: verified
+     * Signature type: a verified-looking key_id that is not pinned in core
+     * gets no "verified" badge. The prefix is a name the publisher of the
+     * key chooses (#845).
      */
-    public function test_determines_verified_type(): void
+    public function test_unpinned_verified_prefix_is_not_verified(): void
     {
         $pluginDir = $this->createTempPlugin(
             ['name' => 'TestPlugin', 'signing' => ['key_id' => 'dixlase-verified-001']],
@@ -200,13 +202,14 @@ class CoreSignatureVerifierTest extends TestCase
         );
 
         $result = $this->verifyWithPluginDir($pluginDir, 'test-plugin');
-        $this->assertEquals('verified', $result->type);
+        $this->assertNull($result->type);
     }
 
     /**
-     * 署名タイプ判定: partner
+     * Signature type: a partner-looking key_id that is not pinned in core
+     * gets no "partner" badge (#845).
      */
-    public function test_determines_partner_type(): void
+    public function test_unpinned_partner_prefix_is_not_partner(): void
     {
         $pluginDir = $this->createTempPlugin(
             ['name' => 'TestPlugin', 'signing' => ['key_id' => 'partner-acme']],
@@ -214,7 +217,28 @@ class CoreSignatureVerifierTest extends TestCase
         );
 
         $result = $this->verifyWithPluginDir($pluginDir, 'test-plugin');
-        $this->assertEquals('partner', $result->type);
+        $this->assertNull($result->type);
+    }
+
+    /**
+     * Signature type: a pinned key carries the tier its entry names, and a
+     * tier can be named nowhere else (#845).
+     */
+    public function test_pinned_key_carries_the_tier_its_entry_names(): void
+    {
+        $key = 'base64:'.base64_encode(sodium_crypto_sign_publickey(sodium_crypto_sign_keypair()));
+
+        config(['core-integrity.pinned_public_keys' => [
+            'partner-acme-2026' => ['key' => $key, 'tier' => 'partner'],
+            'dixlase-verified-001' => ['key' => $key, 'tier' => 'verified'],
+        ]]);
+
+        $method = new \ReflectionMethod($this->verifier, 'determineSignatureType');
+
+        $this->assertSame('partner', $method->invoke($this->verifier, 'partner-acme-2026'));
+        $this->assertSame('verified', $method->invoke($this->verifier, 'dixlase-verified-001'));
+        $this->assertNull($method->invoke($this->verifier, 'partner-acme-2027'));
+        $this->assertNull($method->invoke($this->verifier, null));
     }
 
     /**
