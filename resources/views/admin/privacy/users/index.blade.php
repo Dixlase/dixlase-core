@@ -119,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
         {{-- Delete --}}
         <section class="bg-white dark:bg-gray-800 rounded-lg border border-red-300 dark:border-red-800 p-4"
-                 x-data="{ confirmed: false }">
+                 x-data="privacyUserDelete">
             <h2 class="text-lg font-semibold text-red-700 dark:text-red-400 mb-3">
                 {{ __('admin/privacy/users.delete.heading') }}
             </h2>
@@ -128,7 +128,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </p>
 
             <form action="{{ route('admin.privacy.users.delete', ['id' => $member->id]) }}" method="POST"
-                  x-on:submit="if (!confirm('{{ __('admin/privacy/users.delete.confirm_prompt') }}')) $event.preventDefault();">
+                  data-confirm-prompt="{{ __('admin/privacy/users.delete.confirm_prompt') }}"
+                  x-on:submit="confirmSubmit($event)">
                 @csrf
 
                 <fieldset class="mb-4">
