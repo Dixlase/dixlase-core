@@ -424,7 +424,7 @@ return [
         'signature_unknown_key_info' => 'The signing key for this plugin is not registered as a trusted key. Please verify the source.',
         'signature_expired_info' => 'The signing key used for this plugin has expired.',
         'signature_error_info' => 'An error occurred during signature verification.',
-        'signed_by' => 'Signed By',
+        'signing_key' => 'Signing key',
         'permission_info' => 'Permission Information',
         'database_owned_tables_label' => 'Created Tables',
         'database_owned_tables_description' => 'Tables this extension creates via its migrations.',

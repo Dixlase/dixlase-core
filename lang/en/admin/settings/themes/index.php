@@ -247,7 +247,7 @@ return [
         'signature_unknown_key_info' => 'The signing key for this theme is not registered as a trusted key. Please verify the source.',
         'signature_expired_info' => 'The signing key used for this theme has expired.',
         'signature_error_info' => 'An error occurred during signature verification.',
-        'signed_by' => 'Signed By',
+        'signing_key' => 'Signing key',
         'permission_info' => 'Permission Information',
         'category_database' => 'Database',
         'category_storage' => 'Storage',

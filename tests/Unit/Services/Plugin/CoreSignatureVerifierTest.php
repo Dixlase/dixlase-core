@@ -154,9 +154,18 @@ class CoreSignatureVerifierTest extends TestCase
         $this->assertEquals(SignatureVerificationResult::STATUS_PENDING, $result->status);
         // Not pinned in core, so the official-looking name earns no badge (X7)
         $this->assertNull($result->type);
-        $this->assertEquals('exc-D inc.', $result->signedBy);
-        $this->assertEquals('2025-06-01T00:00:00Z', $result->signedAt);
         $this->assertEquals('dixlase-official-001', $result->keyId);
+
+        // The sidecar's claims are not carried through (#1098). This fixture
+        // puts a plausible name and date in signature.sig; neither is inside
+        // the signed payload, so neither reaches the panel.
+        $this->assertNull($result->signedBy);
+        $this->assertNull($result->signedAt);
+
+        // No pinned entry for this key_id, so core has no name for it and
+        // the key_id itself is what there is to show.
+        $this->assertNull($result->keyLabel);
+        $this->assertSame('dixlase-official-001', $result->toArray()['key_display']);
     }
 
     /**

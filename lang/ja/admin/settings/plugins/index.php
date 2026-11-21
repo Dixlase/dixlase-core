@@ -424,7 +424,7 @@ return [
         'signature_unknown_key_info' => 'このプラグインの署名鍵は信頼済み鍵として登録されていません。配布元を確認してください。',
         'signature_expired_info' => 'このプラグインの署名に使用された鍵は失効しています。',
         'signature_error_info' => '署名検証中にエラーが発生しました。',
-        'signed_by' => '署名者',
+        'signing_key' => '署名鍵',
         'permission_info' => '権限情報',
         'database_owned_tables_label' => '作成するテーブル',
         'database_owned_tables_description' => 'このプラグイン/テーマがマイグレーションで作成するテーブルです。',

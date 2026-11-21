@@ -88,9 +88,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ $card['badgeLabel'] }}
                     </span>
                 </div>
-                @if($card['signature']['signed_by'] ?? null)
+                @if($card['signature']['key_display'] ?? null)
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('admin/settings/themes/index.permissions.signed_by') }}: {{ $card['signature']['signed_by'] }}
+                        {{ __('admin/settings/themes/index.permissions.signing_key') }}: {{ $card['signature']['key_display'] }}
                     </p>
                 @endif
             @elseif($card['signatureStatus'] === 'invalid')

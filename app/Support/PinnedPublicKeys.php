@@ -53,10 +53,18 @@ use Illuminate\Support\Facades\Log;
  * pinned keys before them (#445, security review X7). A tier is therefore
  * something core states by shipping the key in a release.
  *
+ * The same goes for the signer's display name. The one in the signature
+ * sidecar is outside the signed payload, so it is a claim, not a fact
+ * (#1098); an entry's 'label' is a name core ships.
+ *
  * Two entry shapes:
  *
  *     'dixlase-authority-2026' => 'base64:...',                    // official
- *     'partner-acme-2026' => ['key' => 'base64:...', 'tier' => 'partner'],
+ *     'partner-acme-2026' => [
+ *         'key' => 'base64:...',
+ *         'tier' => 'partner',
+ *         'label' => 'Acme Ltd.',
+ *     ],
  */
 class PinnedPublicKeys
 {
@@ -114,6 +122,26 @@ class PinnedPublicKeys
         }
 
         return $level->value;
+    }
+
+    /**
+     * The display name core gives a pinned key_id, or null when the entry
+     * names none -- in which case the key_id itself is what there is to show.
+     *
+     * This is the only signer name the admin panel shows. The sidecar's
+     * 'signed_by' is outside the signed payload (#1098), so it says only
+     * what the signer chose to write.
+     */
+    public static function label(string $keyId): ?string
+    {
+        if (! self::isPinned($keyId)) {
+            return null;
+        }
+
+        $entry = self::entry($keyId);
+        $label = is_array($entry) ? ($entry['label'] ?? null) : null;
+
+        return is_string($label) && $label !== '' ? $label : null;
     }
 
     /**

@@ -141,7 +141,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'unknownKeyInfo' => __('admin/settings/plugins/index.permissions.signature_unknown_key_info'),
             'expiredInfo' => __('admin/settings/plugins/index.permissions.signature_expired_info'),
             'errorInfo' => __('admin/settings/plugins/index.permissions.signature_error_info'),
-            'signedBy' => __('admin/settings/plugins/index.permissions.signed_by'),
+            'signingKey' => __('admin/settings/plugins/index.permissions.signing_key'),
         ],
         'cspLabels' => [
             'title' => __('admin/settings/plugins/index.permissions.csp_status'),

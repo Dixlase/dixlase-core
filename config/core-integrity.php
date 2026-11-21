@@ -62,9 +62,20 @@ return [
     | first, then falls back to AuthorityPublicKeyResolver for online rotation.
     |
     | Format: 'key_id' => 'base64:...' (or plain base64) pins the key at the
-    | "official" tier. To pin one at a lower tier, write an array instead:
-    | 'key_id' => ['key' => 'base64:...', 'tier' => 'partner'], where the tier
-    | is 'official', 'verified', 'partner' or 'community'.
+    | "official" tier. To pin one at a lower tier, or to give it a display
+    | name, write an array instead:
+    |
+    |     'key_id' => [
+    |         'key' => 'base64:...',
+    |         'tier' => 'partner',            // official (default), verified,
+    |                                         // partner, community
+    |         'label' => 'Acme Ltd.',         // shown instead of the key_id
+    |     ],
+    |
+    | The label is the only signer name the admin panel will show. The one in
+    | the signature sidecar ('signed_by') is outside the signed payload, so a
+    | signer can put anything there (#1098); a label here is a name core
+    | ships, like the tier.
     |
     | This list is the ONLY source of a key's trust tier. A key_id's prefix
     | grants nothing: it is a name, and whoever publishes the key chooses it,
@@ -80,14 +91,19 @@ return [
         // App\Support\PinnedPublicKeys. A new official key has to be added
         // here in a core release before extensions signed with it are shown
         // as official.
-        'dixlase-authority-2026' => 'base64:Xn22kURy4V7xrHup/C4VmwMbr6PDeMNWe15iRZkXQ1Q=',
+        'dixlase-authority-2026' => [
+            'key' => 'base64:Xn22kURy4V7xrHup/C4VmwMbr6PDeMNWe15iRZkXQ1Q=',
+            'label' => 'Dixlase Authority',
+        ],
         // 'dixlase-core-2026' => 'base64:REPLACE_WITH_CORE_PUBLIC_KEY',
         //
         // A third party's key names its tier, because nothing else grants
-        // one. This is where a "Verified" or "Partner" badge comes from.
+        // one. This is where a "Verified" or "Partner" badge comes from, and
+        // the only place a signer's name can come from.
         // 'partner-example-2026' => [
         //     'key' => 'base64:REPLACE_WITH_PARTNER_PUBLIC_KEY',
         //     'tier' => 'partner',
+        //     'label' => 'Example Ltd.',
         // ],
     ],
 

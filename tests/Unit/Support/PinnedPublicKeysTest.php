@@ -154,12 +154,57 @@ class PinnedPublicKeysTest extends TestCase
         }
     }
 
-    public function test_the_key_core_ships_is_official(): void
+    public function test_the_key_core_ships_is_official_and_named(): void
     {
         // Not a fixture -- the list core actually ships. Every official
         // extension is signed under this key_id, so a change that stops it
         // reading as official takes the badge off all of them at once.
         $this->assertTrue(PinnedPublicKeys::isPinned('dixlase-authority-2026'));
         $this->assertSame('official', PinnedPublicKeys::tier('dixlase-authority-2026'));
+
+        // The panel shows this name instead of the key_id, so it has to be
+        // there (#1098).
+        $this->assertNotNull(PinnedPublicKeys::label('dixlase-authority-2026'));
+    }
+
+    public function test_an_unpinned_key_id_has_no_label(): void
+    {
+        $this->pin([]);
+
+        $this->assertNull(PinnedPublicKeys::label('partner-acme-2026'));
+    }
+
+    public function test_a_bare_string_entry_has_no_label(): void
+    {
+        $this->pin(['dixlase-authority-2026' => self::KEY]);
+
+        // Nothing to show but the key_id, which is the honest fallback: the
+        // claim in the sidecar is not an alternative (#1098).
+        $this->assertNull(PinnedPublicKeys::label('dixlase-authority-2026'));
+    }
+
+    public function test_an_array_entry_carries_the_label_it_names(): void
+    {
+        $this->pin([
+            'partner-acme-2026' => ['key' => self::KEY, 'tier' => 'partner', 'label' => 'Acme Ltd.'],
+        ]);
+
+        $this->assertSame('Acme Ltd.', PinnedPublicKeys::label('partner-acme-2026'));
+    }
+
+    public function test_an_unusable_label_is_no_label(): void
+    {
+        $this->pin([
+            'empty-label' => ['key' => self::KEY, 'label' => ''],
+            'array-label' => ['key' => self::KEY, 'label' => ['Acme']],
+            'no-label' => ['key' => self::KEY],
+        ]);
+
+        foreach (['empty-label', 'array-label', 'no-label'] as $keyId) {
+            $this->assertNull(
+                PinnedPublicKeys::label($keyId),
+                $keyId.' names no usable label, so the key_id is what is shown.'
+            );
+        }
     }
 }

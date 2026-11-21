@@ -57,6 +57,10 @@ use Illuminate\Support\Str;
  * tool (typically run by a signing/distribution plugin):
  * Follow the format:
  *   - signature.sig: { algo, key_id, signature(base64), signed_at }
+ *     The sidecar is NOT inside the signed payload, so only its key_id and
+ *     signature mean anything: the key_id has to match plugin.json's and the
+ *     signature only verifies against the key that id names. Its signed_by
+ *     and signed_at are the signer's own claims and are not read (#1098).
  *   - Signature target: canonical JSON of plugin.json excluding the signing section
  *     (ksort + JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
  *   - files[]: sha256 hash of each file (excluding plugin.json itself and
@@ -218,8 +222,12 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
         }
 
         $signatureKeyId = $sigData['key_id'];
-        $signedAt = $sigData['signed_at'] ?? null;
-        $signedBy = $sigData['signed_by'] ?? null;
+        // The name shown for the signer comes from core's pinned list, not
+        // from the sidecar's signed_by: the sidecar is outside the signed
+        // payload, so anyone resigning a tree can write any name there and
+        // the signature still verifies (#1098). Null here means "no name
+        // core vouches for", and the key_id is what the panel shows instead.
+        $keyLabel = is_string($signatureKeyId) ? PinnedPublicKeys::label($signatureKeyId) : null;
 
         // Check if key_id matches between plugin.json and signature.sig
         if ($declaredKeyId !== null && $declaredKeyId !== $signatureKeyId) {
@@ -261,9 +269,8 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
             return new SignatureVerificationResult(
                 status: SignatureVerificationResult::STATUS_PENDING,
                 type: $this->determineSignatureType($signatureKeyId),
-                signedBy: $signedBy,
-                signedAt: $signedAt,
                 keyId: $signatureKeyId,
+                keyLabel: $keyLabel,
                 message: __('services/plugin/core_signature_verifier.verification_suspended_no_key'),
             );
         }
@@ -290,8 +297,7 @@ class CoreSignatureVerifier implements SignatureVerifierInterface
 
         return SignatureVerificationResult::valid(
             keyId: $signatureKeyId,
-            signedBy: $signedBy,
-            signedAt: $signedAt,
+            keyLabel: $keyLabel,
             type: $this->determineSignatureType($signatureKeyId),
         );
     }

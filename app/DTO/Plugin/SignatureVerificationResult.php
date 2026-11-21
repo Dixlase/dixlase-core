@@ -68,10 +68,19 @@ final readonly class SignatureVerificationResult implements JsonSerializable
     /**
      * @param  string  $status  Verification status
      * @param  string|null  $type  Signature type (official, verified, partner)
-     * @param  string|null  $signedBy  Signer
-     * @param  string|null  $signedAt  Signature timestamp
-     * @param  string|null  $keyId  Key ID
-     * @param  string|null  $keyLabel  Key label
+     * @param  string|null  $signedBy  The signer's claimed name. Core's
+     *                                 verifier no longer fills this: it lives in the
+     *                                 detached sidecar, outside the signed payload, so
+     *                                 a signer can write anything there (#1098). Kept
+     *                                 in the shape because this DTO is on the Plugin
+     *                                 API boundary
+     * @param  string|null  $signedAt  The signer's claimed timestamp, not
+     *                                 filled for the same reason
+     * @param  string|null  $keyId  Key ID -- covered, because a signature
+     *                              only verifies against the key this id names
+     * @param  string|null  $keyLabel  The display name core's pinned list
+     *                                 gives that key, when it gives one. This is the
+     *                                 signer identity to show
      * @param  string|null  $message  Message
      * @param  array  $errors  Error list
      * @param  bool  $waived  Operator waiver overlay (suppresses the warning;
@@ -225,6 +234,10 @@ final readonly class SignatureVerificationResult implements JsonSerializable
             'signed_at' => $this->signedAt,
             'key_id' => $this->keyId,
             'key_label' => $this->keyLabel,
+            // What to show for "who signed this": the name core's pinned
+            // list gives the key, or the key_id when it gives none. Both are
+            // covered by the signature, unlike signed_by (#1098).
+            'key_display' => $this->keyLabel ?? $this->keyId,
             'message' => $this->message,
             'errors' => $this->errors,
             'waived' => $this->waived,
