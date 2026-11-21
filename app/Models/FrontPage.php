@@ -42,6 +42,7 @@ use App\Contracts\Content\ProvidesFileContentEditLink;
 use App\Contracts\Content\PublishesFileContent;
 use App\Contracts\Revisionable;
 use App\Contracts\TranslationResolver;
+use App\DTO\Content\ContentEventPayload;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentPublishMode;
 use App\Enums\ContentStatus;
@@ -189,6 +190,34 @@ class FrontPage extends Model implements DeclaresScriptCapableParts, ProvidesFil
     public function scopePublished($query)
     {
         return $query->where('status', ContentStatus::PUBLISHED->value);
+    }
+
+    /**
+     * Content type reported in content events (and, later, through the API).
+     */
+    public const CONTENT_TYPE = 'front_page';
+
+    /**
+     * Build the payload of a content event about this front page.
+     *
+     * The front page is served at "/", or at "/{locale}" when locale URL
+     * routing is on; the locale used is the one this row is stored in.
+     */
+    public function contentEventPayload(?int $actorId): ContentEventPayload
+    {
+        return new ContentEventPayload(
+            source: 'core',
+            type: self::CONTENT_TYPE,
+            id: (int) $this->getKey(),
+            slug: null,
+            url: LocaleHelper::localeUrlRoutingEnabled() && is_string($this->lang) && $this->lang !== ''
+                ? '/'.$this->lang
+                : '/',
+            siteId: $this->site_id !== null ? (int) $this->site_id : null,
+            status: ($this->status ?? ContentStatus::PUBLISHED)->slug(),
+            actorId: $actorId,
+            occurredAt: now()->toIso8601String(),
+        );
     }
 
     public function revisionModel(): string

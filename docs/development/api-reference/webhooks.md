@@ -272,6 +272,13 @@ All events defined in the `DixlaseEvents` class are eligible for webhook deliver
 - `dixlase.plugin.deactivated`
 - `dixlase.plugin.uninstalled`
 
+### Content Events
+- `dixlase.content.created`
+- `dixlase.content.updated`
+- `dixlase.content.published`
+- `dixlase.content.unpublished`
+- `dixlase.content.deleted`
+
 ### Security Events
 - `dixlase.integrity.scan.completed`
 - `dixlase.security.alert`
