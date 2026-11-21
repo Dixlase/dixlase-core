@@ -52,14 +52,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{-- Site health --}}
         @include('admin.dashboard._site-health')
 
-        {{-- Extension and member overview --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{-- Extension and member overview; the member overview is null for a role that cannot open the member list --}}
+        <div class="grid grid-cols-1 {{ $memberOverview !== null ? 'lg:grid-cols-2' : '' }} gap-6">
             @include('admin.dashboard._extension-overview', ['extensionOverview' => $extensionOverview])
-            @include('admin.dashboard._member-overview', ['memberOverview' => $memberOverview])
+            @if($memberOverview !== null)
+                @include('admin.dashboard._member-overview', ['memberOverview' => $memberOverview])
+            @endif
         </div>
 
-        {{-- Recent activity --}}
-        @include('admin.dashboard._recent-activity', ['recentActivity' => $recentActivity])
+        {{-- Recent activity; null for a role that cannot open the audit log --}}
+        @if($recentActivity !== null)
+            @include('admin.dashboard._recent-activity', ['recentActivity' => $recentActivity])
+        @endif
 
         {{-- Plugin notifications --}}
         @if(count($pluginNotifications) > 0)
@@ -75,10 +79,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </div>
         @endif
 
-        {{-- System information --}}
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-            @include('admin.dashboard._system-info')
-        </div>
+        {{-- System information; null for a role that cannot open the system info page --}}
+        @if($systemInfo !== null)
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                @include('admin.dashboard._system-info')
+            </div>
+        @endif
 
     </div>
 
