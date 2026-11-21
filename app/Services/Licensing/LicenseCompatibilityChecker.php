@@ -36,8 +36,6 @@
 namespace App\Services\Licensing;
 
 /**
- * @api Stable API available for plugins/themes
- *
  * Checks whether a plugin/theme `license` value is compatible with the
  * AGPL-3.0 core, taking the Dixlase Plugin and Theme Exception (see
  * LICENSE-EXCEPTIONS) into account.

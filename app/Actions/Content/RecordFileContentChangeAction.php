@@ -61,8 +61,8 @@ class RecordFileContentChangeAction extends AbstractAction
     /**
      * Nobody known made this change: it arrived through the files
      *
-     * @api Read it from the audit context to tell such an entry apart from
-     *      one Dixlase wrote by itself.
+     * Read it from the audit context to tell such an entry apart from one
+     * Dixlase wrote by itself.
      */
     public const SOURCE_OUTSIDE_ADMIN = 'outside_admin';
 
