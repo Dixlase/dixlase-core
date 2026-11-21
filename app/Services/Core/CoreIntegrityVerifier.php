@@ -139,7 +139,13 @@ class CoreIntegrityVerifier
         }
 
         $keyId = (string) $sig['key_id'];
-        $signedAt = $sig['signed_at'] ?? null;
+
+        // core-signature.sig is detached: only its key_id and signature are
+        // covered by anything. Its signed_at is the signer's own claim, so
+        // it is not read and not reported (#1098) -- the same sidecar the
+        // extension verifier stopped trusting. The key_id is covered,
+        // because the signature verifies against the key that id names.
+        $signedAt = null;
 
         if ($declaredKeyId !== null && $declaredKeyId !== $keyId) {
             return CoreIntegrityResult::invalid('key_id mismatch between manifest and signature.', ['key_id' => $keyId]);

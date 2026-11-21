@@ -68,6 +68,8 @@ class ThemeSignatureVerificationTest extends TestCase
 
     private string $secretKey;
 
+    private string $publicKey;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -83,6 +85,7 @@ class ThemeSignatureVerificationTest extends TestCase
         $pair = sodium_crypto_sign_keypair();
         $this->secretKey = sodium_crypto_sign_secretkey($pair);
         $publicKey = 'base64:'.base64_encode(sodium_crypto_sign_publickey($pair));
+        $this->publicKey = $publicKey;
 
         $this->mock(AuthorityPublicKeyResolver::class, function ($mock) use ($publicKey): void {
             $mock->shouldReceive('resolve')->andReturn(new AuthorityPublicKey(['public_key' => $publicKey]));
@@ -101,7 +104,12 @@ class ThemeSignatureVerificationTest extends TestCase
      * Sign the fixture the way PluginSigner does: files[] and a signing
      * section in the manifest, the detached signature in signature.sig.
      */
-    private function sign(): void
+    /**
+     * @param  array<string, string>  $extraSidecar  fields to add to
+     *                                               signature.sig, which is
+     *                                               outside the signed payload
+     */
+    private function sign(array $extraSidecar = []): void
     {
         $verifier = new class(app(AuthorityPublicKeyResolver::class)) extends CoreSignatureVerifier
         {
@@ -123,7 +131,10 @@ class ThemeSignatureVerificationTest extends TestCase
         $signature = sodium_crypto_sign_detached(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $this->secretKey);
 
         File::put($this->theme.'/theme.json', json_encode($manifest));
-        File::put($this->theme.'/signature.sig', json_encode(['key_id' => self::KEY_ID, 'signature' => base64_encode($signature)]));
+        File::put($this->theme.'/signature.sig', json_encode(array_merge(
+            ['key_id' => self::KEY_ID, 'signature' => base64_encode($signature)],
+            $extraSidecar,
+        )));
     }
 
     private function signatureStatus(): string
@@ -141,6 +152,55 @@ class ThemeSignatureVerificationTest extends TestCase
         $this->sign();
 
         $this->assertSame('valid', $this->signatureStatus());
+    }
+
+    /**
+     * The identity shown for a valid signature is the key, under the name
+     * core's pinned list gives it -- never the name the sidecar claims
+     * (#1098). The sidecar is not inside the signed payload, so a signer can
+     * write any name there and the signature still verifies.
+     */
+    public function test_the_signer_identity_comes_from_the_pinned_list(): void
+    {
+        config(['core-integrity.pinned_public_keys' => [
+            self::KEY_ID => [
+                'key' => $this->publicKey,
+                'label' => 'Dixlase Authority (test)',
+            ],
+        ]]);
+
+        $this->sign([
+            'signed_by' => 'Someone Else Entirely',
+            'signed_at' => '2025-06-01T00:00:00Z',
+        ]);
+
+        $signature = app(ThemePermissionService::class)->getSignatureInfo('signed-theme');
+
+        $this->assertSame('valid', $signature['status']);
+        $this->assertSame('Dixlase Authority (test)', $signature['key_label']);
+        $this->assertSame('Dixlase Authority (test)', $signature['key_display']);
+        $this->assertNull(
+            $signature['signed_by'],
+            'The sidecar claimed a name, and nothing vouches for it, so it must not be carried.'
+        );
+        $this->assertNull($signature['signed_at']);
+    }
+
+    /**
+     * With no name pinned for the key, the key_id is what there is to show.
+     * It is still covered: a signature verifies only against the key its
+     * key_id names.
+     */
+    public function test_without_a_pinned_name_the_key_id_is_shown(): void
+    {
+        $this->sign(['signed_by' => 'Someone Else Entirely']);
+
+        $signature = app(ThemePermissionService::class)->getSignatureInfo('signed-theme');
+
+        $this->assertSame('valid', $signature['status']);
+        $this->assertNull($signature['key_label']);
+        $this->assertSame(self::KEY_ID, $signature['key_display']);
+        $this->assertNull($signature['signed_by']);
     }
 
     public function test_a_modified_file_invalidates_the_signature(): void

@@ -1155,7 +1155,10 @@ class ExtensionCardPresenter
     ): array {
         // Convert signature information to audit-compatible format
         $signatureStatus = $badge['signatureStatus'] ?? 'unsigned';
-        $signatureSigner = $badge['signature']['signed_by'] ?? '';
+        // The key the signature verified against, named by core's pinned
+        // list. Not the sidecar's signed_by, which is outside the signed
+        // payload and so says only what the signer wrote (#1098).
+        $signatureKey = $badge['signature']['key_display'] ?? '';
         $signatureType = $badge['signature']['type'] ?? null;
 
         // Signature status mapping (presenter → scan-result-builder compatible)
@@ -1179,7 +1182,7 @@ class ExtensionCardPresenter
         return [
             'audit' => [
                 'signature_status' => $sigStatusMap[$signatureStatus] ?? 'unsigned',
-                'signature_signer' => $signatureSigner,
+                'signature_key' => $signatureKey,
                 'has_mismatches' => $badge['hasMismatches'],
                 'mismatches' => $auditResult['mismatches'] ?? [],
                 'formatted_attention_reasons' => $formattedReasons,

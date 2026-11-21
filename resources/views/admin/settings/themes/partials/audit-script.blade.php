@@ -108,7 +108,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             'unknownKeyInfo' => __('admin/settings/themes/index.permissions.signature_unknown_key_info'),
             'expiredInfo' => __('admin/settings/themes/index.permissions.signature_expired_info'),
             'errorInfo' => __('admin/settings/themes/index.permissions.signature_error_info'),
-            'signedBy' => __('admin/settings/themes/index.permissions.signed_by'),
+            'signingKey' => __('admin/settings/themes/index.permissions.signing_key'),
         ],
         'cspLabels' => [
             'title' => __('admin/settings/themes/index.permissions.csp_status'),

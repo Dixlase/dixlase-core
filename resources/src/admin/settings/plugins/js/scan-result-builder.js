@@ -22,6 +22,25 @@
  */
 
 /**
+ * Escape a string for interpolation into HTML.
+ *
+ * This file builds HTML strings that the callers assign to innerHTML, and
+ * some of the values come from an extension's own manifest, so they are not
+ * markup and must not be able to become markup.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
  * 署名ステータスのスタイルマップ
  */
 const SIGNATURE_STYLES = {
@@ -161,7 +180,10 @@ function buildBarometerHtml(items) {
  */
 function buildSignatureSection(audit, labels, config) {
     const status = audit.signature_status || 'unsigned';
-    const signer = audit.signature_signer || '';
+    // The key the signature verified against, as the presenter resolved it
+    // (the name core's pinned list gives it, or the key id). Not the
+    // sidecar's claimed signer name, which nothing vouches for (#1098).
+    const signingKey = audit.signature_key || '';
     const style = SIGNATURE_STYLES[status] || SIGNATURE_STYLES['unsigned'];
     const statusLabel = labels[status] || status;
 
@@ -183,8 +205,10 @@ function buildSignatureSection(audit, labels, config) {
         </div>
     `;
 
-    if (signer) {
-        html += `<p class="text-xs mt-1 ${style.text}">${labels.signedBy || ''}: ${signer}</p>`;
+    if (signingKey) {
+        // A key id is read from the extension's own manifest, and this string
+        // goes into innerHTML, so it is escaped here rather than trusted.
+        html += `<p class="text-xs mt-1 ${style.text}">${labels.signingKey || ''}: ${escapeHtml(signingKey)}</p>`;
     }
 
     if (status === 'unsigned' && labels.unsignedInfo) {
