@@ -22,6 +22,7 @@ import '../scss/style.scss';
 import './layout';
 //import './layout-vanilla';
 import './login-flow';
+import './recent-auth';
 import '../media/js/index';
 import '../media/js/tags';
 import '../media/js/preview';

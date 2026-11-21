@@ -43,6 +43,7 @@ use App\Http\Controllers\Admin\Auth\AdminEmailVerificationNotificationController
 use App\Http\Controllers\Admin\Auth\AdminEmailVerificationPromptController;
 use App\Http\Controllers\Admin\Auth\AdminNewPasswordController;
 use App\Http\Controllers\Admin\Auth\AdminPasswordResetLinkController;
+use App\Http\Controllers\Admin\Auth\AdminRecentAuthController;
 use App\Http\Controllers\Admin\Front\AdminFrontController;
 use App\Http\Controllers\Admin\Front\AdminFrontRevisionController;
 use App\Http\Controllers\Admin\Media\AdminMediaController;
@@ -237,16 +238,27 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('media.settings.update');
             });
 
+            // Confirm the member's identity before a sensitive operation
+            // (`recent_auth` middleware, #675). These routes must not carry
+            // that middleware themselves.
+            Route::get('/confirm-access', [AdminRecentAuthController::class, 'show'])->name('recent-auth.show');
+            Route::post('/confirm-access', [AdminRecentAuthController::class, 'confirmPassword'])
+                ->middleware('throttle:20,1')->name('recent-auth.password');
+            Route::post('/confirm-access/passkey/options', [AdminRecentAuthController::class, 'passkeyOptions'])
+                ->middleware('throttle:20,1')->name('recent-auth.passkey.options');
+            Route::post('/confirm-access/passkey/verify', [AdminRecentAuthController::class, 'passkeyVerify'])
+                ->middleware('throttle:20,1')->name('recent-auth.passkey.verify');
+
             // Profile settings (accessible to all)
             Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
 
             // Basic information
             Route::get('/profile/basic', [AdminProfileBasicController::class, 'index'])->name('profile.basic');
-            Route::post('/profile/basic', [AdminProfileBasicController::class, 'update'])->name('profile.basic.update');
+            Route::post('/profile/basic', [AdminProfileBasicController::class, 'update'])->middleware('recent_auth')->name('profile.basic.update');
 
             // Password settings
             Route::get('/profile/password', [AdminProfilePasswordController::class, 'index'])->name('profile.password');
-            Route::post('/profile/password', [AdminProfilePasswordController::class, 'update'])->name('profile.password.update');
+            Route::post('/profile/password', [AdminProfilePasswordController::class, 'update'])->middleware('recent_auth')->name('profile.password.update');
 
             // Appearance settings
             Route::get('/profile/appearance', [AdminProfileAppearanceController::class, 'index'])->name('profile.appearance');
@@ -258,20 +270,20 @@ Route::prefix($adminUrl)->name('admin.')
 
             // Two-factor authentication settings
             Route::get('/profile/two-fa', [AdminProfileTwoFaController::class, 'index'])->name('profile.two-fa');
-            Route::post('/profile/two-fa', [AdminProfileTwoFaController::class, 'update'])->name('profile.two-fa.update');
+            Route::post('/profile/two-fa', [AdminProfileTwoFaController::class, 'update'])->middleware('recent_auth')->name('profile.two-fa.update');
 
             // Two-factor authentication management (passkey/code)
             Route::get('/profile/two-fa-management', [AdminProfileTwoFaManagementController::class, 'index'])->name('profile.two-fa-management');
 
             // Passkey management
-            Route::post('/profile/passkey/register-options', [AdminProfileTwoFaManagementController::class, 'passkeyRegisterOptions'])->name('profile.passkey.register-options');
-            Route::post('/profile/passkey/register', [AdminProfileTwoFaManagementController::class, 'passkeyRegister'])->name('profile.passkey.register');
-            Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFaManagementController::class, 'revokePasskey'])->name('profile.passkey.revoke');
-            Route::delete('/profile/passkey/all', [AdminProfileTwoFaManagementController::class, 'revokeAllPasskeys'])->name('profile.passkey.revoke-all');
+            Route::post('/profile/passkey/register-options', [AdminProfileTwoFaManagementController::class, 'passkeyRegisterOptions'])->middleware('recent_auth')->name('profile.passkey.register-options');
+            Route::post('/profile/passkey/register', [AdminProfileTwoFaManagementController::class, 'passkeyRegister'])->middleware('recent_auth')->name('profile.passkey.register');
+            Route::delete('/profile/passkey/{credentialId}', [AdminProfileTwoFaManagementController::class, 'revokePasskey'])->middleware('recent_auth')->name('profile.passkey.revoke');
+            Route::delete('/profile/passkey/all', [AdminProfileTwoFaManagementController::class, 'revokeAllPasskeys'])->middleware('recent_auth')->name('profile.passkey.revoke-all');
 
             // Recovery code management
-            Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFaManagementController::class, 'generateRecoveryCodes'])->name('profile.recovery-codes.generate');
-            Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFaManagementController::class, 'regenerateRecoveryCodes'])->name('profile.recovery-codes.regenerate');
+            Route::post('/profile/recovery-codes/generate', [AdminProfileTwoFaManagementController::class, 'generateRecoveryCodes'])->middleware('recent_auth')->name('profile.recovery-codes.generate');
+            Route::post('/profile/recovery-codes/regenerate', [AdminProfileTwoFaManagementController::class, 'regenerateRecoveryCodes'])->middleware('recent_auth')->name('profile.recovery-codes.regenerate');
             Route::post('/profile/recovery-codes/clear-session', [AdminProfileTwoFaManagementController::class, 'clearRecoveryCodesSession'])->name('profile.recovery-codes.clear-session');
 
             // Passkey registration prompt modal settings
@@ -293,33 +305,33 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('create');
                 Route::post('/', [Members\AdminMemberFormController::class, 'store'])
                     ->middleware(['check.menu.access:members.create_edit', 'check.menu.edit:members.create_edit'])
-                    ->name('store');
+                    ->middleware('recent_auth')->name('store');
                 Route::get('/edit/{member}', [Members\AdminMemberFormController::class, 'edit'])
                     ->middleware('check.menu.access:members.create_edit')
                     ->name('edit');
                 Route::post('/update/{member}', [Members\AdminMemberFormController::class, 'update'])
                     ->middleware(['check.menu.access:members.create_edit', 'check.menu.edit:members.create_edit'])
-                    ->name('update');
+                    ->middleware('recent_auth')->name('update');
                 Route::delete('/destroy/{member}', [Members\AdminMemberFormController::class, 'destroy'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('destroy');
+                    ->middleware('recent_auth')->name('destroy');
 
                 // Security operations
                 Route::delete('/passkey/{member}/{credentialId}', [Members\AdminMemberSecurityController::class, 'revokePasskey'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('passkey.revoke');
+                    ->middleware('recent_auth')->name('passkey.revoke');
                 Route::delete('/passkey/{member}/all', [Members\AdminMemberSecurityController::class, 'revokeAllPasskeys'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('passkey.revoke-all');
+                    ->middleware('recent_auth')->name('passkey.revoke-all');
                 Route::delete('/recovery-codes/{member}', [Members\AdminMemberSecurityController::class, 'revokeRecoveryCodes'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('recovery-codes.revoke');
+                    ->middleware('recent_auth')->name('recovery-codes.revoke');
                 Route::post('/force-logout/{member}', [Members\AdminMemberSecurityController::class, 'forceLogout'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout');
                 Route::post('/unlock-lockout/{member}', [Members\AdminMemberSecurityController::class, 'unlockTwoFa'])
                     ->middleware('check.menu.edit:members.index')
-                    ->name('unlock-lockout');
+                    ->middleware('recent_auth')->name('unlock-lockout');
                 Route::post('/force-logout-all', [Members\AdminMemberSecurityController::class, 'forceLogoutAll'])
                     ->middleware('check.menu.edit:members.index')
                     ->name('force-logout-all');
@@ -342,7 +354,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('roles');
                 Route::post('/roles', [Members\AdminMemberRolesController::class, 'update'])
                     ->middleware('check.menu.edit:members.roles')
-                    ->name('roles.update');
+                    ->middleware('recent_auth')->name('roles.update');
             });
 
             // Privacy (subject access export/erasure) — super-admin stub
@@ -351,10 +363,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('index');
                 Route::get('/{id}/export', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'export'])
                     ->whereNumber('id')
-                    ->name('export');
+                    ->middleware('recent_auth')->name('export');
                 Route::post('/{id}/delete', [\App\Http\Controllers\Admin\Privacy\UserDataController::class, 'delete'])
                     ->whereNumber('id')
-                    ->name('delete');
+                    ->middleware('recent_auth')->name('delete');
             });
 
             // Global settings
@@ -377,7 +389,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('admin');
                 Route::post('/admin', [Base\AdminBaseAdminController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.admin')
-                    ->name('admin.update');
+                    ->middleware('recent_auth')->name('admin.update');
 
                 // Email settings
                 Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])
@@ -385,7 +397,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('mail');
                 Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mail')
-                    ->name('mail.update');
+                    ->middleware('recent_auth')->name('mail.update');
                 Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])
                     ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
                     ->name('mail.test-mail');
@@ -418,7 +430,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('mode');
                 Route::post('/mode', [Base\AdminBaseModeController::class, 'update'])
                     ->middleware('check.menu.edit:settings.base.mode')
-                    ->name('mode.update');
+                    ->middleware('recent_auth')->name('mode.update');
 
                 // Content settings (revision retention count, etc., common to all content types)
                 Route::get('/content', [Base\AdminBaseContentController::class, 'index'])
@@ -448,7 +460,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('password');
                 Route::post('/password', [Security\AdminSecurityPasswordController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.password')
-                    ->name('password.update');
+                    ->middleware('recent_auth')->name('password.update');
 
                 // Login attempt restriction
                 Route::get('/login', [Security\AdminSecurityLoginController::class, 'index'])
@@ -456,7 +468,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('login');
                 Route::post('/login', [Security\AdminSecurityLoginController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.login')
-                    ->name('login.update');
+                    ->middleware('recent_auth')->name('login.update');
 
                 // Session management
                 Route::get('/session', [Security\AdminSecuritySessionController::class, 'index'])
@@ -464,7 +476,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('session');
                 Route::post('/session', [Security\AdminSecuritySessionController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.session')
-                    ->name('session.update');
+                    ->middleware('recent_auth')->name('session.update');
 
                 // Two-factor authentication settings
                 Route::get('/two-fa', [Security\AdminSecurityTwoFaController::class, 'index'])
@@ -472,7 +484,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('two-fa');
                 Route::post('/two-fa', [Security\AdminSecurityTwoFaController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.two-fa')
-                    ->name('two-fa.update');
+                    ->middleware('recent_auth')->name('two-fa.update');
 
                 // CAPTCHA
                 Route::get('/captcha', [Security\AdminSecurityCaptchaController::class, 'index'])
@@ -480,7 +492,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('captcha');
                 Route::post('/captcha', [Security\AdminSecurityCaptchaController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.captcha')
-                    ->name('captcha.update');
+                    ->middleware('recent_auth')->name('captcha.update');
                 Route::post('/captcha/validate-widget', [Security\AdminSecurityCaptchaController::class, 'validateWidget'])
                     ->middleware(['check.menu.access:settings.security.captcha', 'check.menu.edit:settings.security.captcha'])
                     ->name('captcha.validate-widget');
@@ -494,7 +506,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('ip');
                 Route::post('/ip', [Security\AdminSecurityIpController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.ip')
-                    ->name('ip.update');
+                    ->middleware('recent_auth')->name('ip.update');
 
                 // Extension security
                 Route::get('/extensions', [Security\AdminSecurityExtensionsController::class, 'index'])
@@ -502,7 +514,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('extensions');
                 Route::post('/extensions', [Security\AdminSecurityExtensionsController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.extensions')
-                    ->name('extensions.update');
+                    ->middleware('recent_auth')->name('extensions.update');
                 Route::post('/extensions/test-source', [Security\AdminSecurityExtensionsController::class, 'testSource'])
                     ->middleware('check.menu.edit:settings.security.extensions')
                     ->name('extensions.test-source');
@@ -513,7 +525,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('csp');
                 Route::post('/csp', [Security\AdminSecurityCspController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.csp')
-                    ->name('csp.update');
+                    ->middleware('recent_auth')->name('csp.update');
                 Route::post('/csp/confirm', [Security\AdminSecurityCspController::class, 'confirm'])
                     ->middleware('check.menu.edit:settings.security.csp')
                     ->name('csp.confirm');
@@ -527,7 +539,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('notifications');
                 Route::post('/notifications', [Security\AdminSecurityNotificationsController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.notifications')
-                    ->name('notifications.update');
+                    ->middleware('recent_auth')->name('notifications.update');
 
                 // Environment settings
                 Route::get('/environment', [Security\AdminSecurityEnvironmentController::class, 'index'])
@@ -535,7 +547,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('environment');
                 Route::post('/environment', [Security\AdminSecurityEnvironmentController::class, 'update'])
                     ->middleware('check.menu.edit:settings.security.environment')
-                    ->name('environment.update');
+                    ->middleware('recent_auth')->name('environment.update');
 
                 // File integrity
                 Route::get('/integrity', [Security\AdminSecurityIntegrityController::class, 'index'])
@@ -546,16 +558,16 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('integrity.scan');
                 Route::post('/integrity/regenerate-baseline', [Security\AdminSecurityIntegrityController::class, 'regenerateBaseline'])
                     ->middleware('check.menu.edit:settings.security.integrity')
-                    ->name('integrity.regenerate-baseline');
+                    ->middleware('recent_auth')->name('integrity.regenerate-baseline');
                 Route::delete('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'destroy'])
                     ->middleware('check.menu.edit:settings.security.integrity')
-                    ->name('integrity.destroy');
+                    ->middleware('recent_auth')->name('integrity.destroy');
                 Route::post('/integrity/bulk-delete', [Security\AdminSecurityIntegrityController::class, 'bulkDelete'])
                     ->middleware('check.menu.edit:settings.security.integrity')
-                    ->name('integrity.bulk-delete');
+                    ->middleware('recent_auth')->name('integrity.bulk-delete');
                 Route::post('/integrity/scheduled-checks/acknowledge-extensions', [Security\AdminSecurityIntegrityController::class, 'acknowledgeExtensionAlerts'])
                     ->middleware('check.menu.edit:settings.security.integrity')
-                    ->name('integrity.acknowledge-extensions');
+                    ->middleware('recent_auth')->name('integrity.acknowledge-extensions');
                 Route::get('/integrity/{audit}', [Security\AdminSecurityIntegrityController::class, 'show'])
                     ->middleware('check.menu.access:settings.security.integrity')
                     ->name('integrity.show');
@@ -573,19 +585,19 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/settings/themes/show/{slug}', [AdminThemesSettingsController::class, 'show'])->name('settings.themes.show');
                 Route::post('/settings/themes/upload', [AdminThemesSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.upload');
+                    ->middleware('recent_auth')->name('settings.themes.upload');
                 Route::post('/settings/themes/install', [AdminThemesSettingsController::class, 'install'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.install');
+                    ->middleware('recent_auth')->name('settings.themes.install');
                 Route::post('/settings/themes/uninstall/{id}', [AdminThemesSettingsController::class, 'uninstall'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.uninstall');
+                    ->middleware('recent_auth')->name('settings.themes.uninstall');
                 Route::post('/settings/themes/switch/{id}', [AdminThemesSettingsController::class, 'switch'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.switch');
+                    ->middleware('recent_auth')->name('settings.themes.switch');
                 Route::post('/settings/themes/delete', [AdminThemesSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.delete');
+                    ->middleware('recent_auth')->name('settings.themes.delete');
                 Route::post('/settings/themes/audit', [AdminThemesSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.audit');
@@ -596,13 +608,13 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('settings.themes.available-from-source');
                 Route::post('/settings/themes/download-from-source', [AdminThemesSettingsController::class, 'downloadFromSource'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.download-from-source');
+                    ->middleware('recent_auth')->name('settings.themes.download-from-source');
                 Route::post('/settings/themes/check-updates', [AdminThemesSettingsController::class, 'checkUpdates'])
                     ->middleware('check.menu.edit:settings.themes.add')
                     ->name('settings.themes.check-updates');
                 Route::post('/settings/themes/rollback/{id}', [AdminThemesSettingsController::class, 'rollbackTheme'])
                     ->middleware('check.menu.edit:settings.themes.add')
-                    ->name('settings.themes.rollback');
+                    ->middleware('recent_auth')->name('settings.themes.rollback');
             });
 
             // Extension thumbnail (image only) — served directly from
@@ -645,22 +657,22 @@ Route::prefix($adminUrl)->name('admin.')
                 Route::get('/settings/plugins/show-online/{slug}', [AdminPluginsSettingsController::class, 'showOnline'])->name('settings.plugins.show-online');
                 Route::post('/settings/plugins/upload', [AdminPluginsSettingsController::class, 'upload'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.upload');
+                    ->middleware('recent_auth')->name('settings.plugins.upload');
                 Route::post('/settings/plugins/install', [AdminPluginsSettingsController::class, 'install'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.install');
+                    ->middleware('recent_auth')->name('settings.plugins.install');
                 Route::post('/settings/plugins/uninstall/{id}', [AdminPluginsSettingsController::class, 'uninstall'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.uninstall');
+                    ->middleware('recent_auth')->name('settings.plugins.uninstall');
                 Route::post('/settings/plugins/enable/{id}', [AdminPluginsSettingsController::class, 'enable'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.enable');
+                    ->middleware('recent_auth')->name('settings.plugins.enable');
                 Route::post('/settings/plugins/disable/{id}', [AdminPluginsSettingsController::class, 'disable'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.disable');
+                    ->middleware('recent_auth')->name('settings.plugins.disable');
                 Route::post('/settings/plugins/delete', [AdminPluginsSettingsController::class, 'delete'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.delete');
+                    ->middleware('recent_auth')->name('settings.plugins.delete');
                 Route::post('/settings/plugins/audit', [AdminPluginsSettingsController::class, 'audit'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.audit');
@@ -671,13 +683,13 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('settings.plugins.available-from-source');
                 Route::post('/settings/plugins/download-from-source', [AdminPluginsSettingsController::class, 'downloadFromSource'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.download-from-source');
+                    ->middleware('recent_auth')->name('settings.plugins.download-from-source');
                 Route::post('/settings/plugins/check-updates', [AdminPluginsSettingsController::class, 'checkUpdates'])
                     ->middleware('check.menu.edit:settings.plugins')
                     ->name('settings.plugins.check-updates');
                 Route::post('/settings/plugins/rollback/{id}', [AdminPluginsSettingsController::class, 'rollbackPlugin'])
                     ->middleware('check.menu.edit:settings.plugins')
-                    ->name('settings.plugins.rollback');
+                    ->middleware('recent_auth')->name('settings.plugins.rollback');
             });
 
             // System settings (with permission check)
@@ -688,10 +700,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('api');
                 Route::post('/api', [Systems\AdminSystemApiController::class, 'update'])
                     ->middleware('check.menu.edit:settings.systems.api')
-                    ->name('api.update');
+                    ->middleware('recent_auth')->name('api.update');
                 Route::post('/api/generate-key', [Systems\AdminSystemApiController::class, 'generateKey'])
                     ->middleware('check.menu.edit:settings.systems.api')
-                    ->name('api.generate-key');
+                    ->middleware('recent_auth')->name('api.generate-key');
                 Route::delete('/api/revoke-key/{id}', [Systems\AdminSystemApiController::class, 'revokeKey'])
                     ->middleware('check.menu.edit:settings.systems.api')
                     ->name('api.revoke-key');
@@ -700,7 +712,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('api.revoke-all');
                 Route::post('/api/regenerate-key/{id}', [Systems\AdminSystemApiController::class, 'regenerateKey'])
                     ->middleware('check.menu.edit:settings.systems.api')
-                    ->name('api.regenerate-key');
+                    ->middleware('recent_auth')->name('api.regenerate-key');
 
                 // Integrated update management (Core / plugin / theme)
                 Route::prefix('updates')->name('updates.')->group(function () {
@@ -712,13 +724,13 @@ Route::prefix($adminUrl)->name('admin.')
                         ->name('check');
                     Route::post('/apply', [Systems\AdminSystemUpdatesController::class, 'apply'])
                         ->middleware('check.menu.edit:settings.systems.updates')
-                        ->name('apply');
+                        ->middleware('recent_auth')->name('apply');
                     Route::post('/apply-core', [Systems\AdminSystemUpdatesController::class, 'applyCore'])
                         ->middleware('check.menu.edit:settings.systems.updates')
-                        ->name('apply-core');
+                        ->middleware('recent_auth')->name('apply-core');
                     Route::post('/rollback-core', [Systems\AdminSystemUpdatesController::class, 'rollbackCore'])
                         ->middleware('check.menu.edit:settings.systems.updates')
-                        ->name('rollback-core');
+                        ->middleware('recent_auth')->name('rollback-core');
                 });
 
                 // Cache management (Easy mode: Full)
@@ -736,7 +748,7 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('database');
                 Route::post('/database/cleanup', [Systems\AdminSystemDatabaseController::class, 'cleanup'])
                     ->middleware('check.menu.edit:settings.systems.database')
-                    ->name('database.cleanup');
+                    ->middleware('recent_auth')->name('database.cleanup');
 
                 // Backup management
                 Route::prefix('backup')->name('backup.')->group(function () {
@@ -748,13 +760,13 @@ Route::prefix($adminUrl)->name('admin.')
                         ->name('create');
                     Route::get('/{backup}/download', [Systems\AdminSystemBackupController::class, 'download'])
                         ->middleware('check.menu.access:settings.systems.backup.index')
-                        ->name('download');
+                        ->middleware('recent_auth')->name('download');
                     Route::post('/{backup}/restore', [Systems\AdminSystemBackupController::class, 'restore'])
                         ->middleware('check.menu.edit:settings.systems.backup.index')
-                        ->name('restore');
+                        ->middleware('recent_auth')->name('restore');
                     Route::delete('/{backup}', [Systems\AdminSystemBackupController::class, 'destroy'])
                         ->middleware('check.menu.edit:settings.systems.backup.index')
-                        ->name('destroy');
+                        ->middleware('recent_auth')->name('destroy');
                     // whereNumber keeps these from shadowing the literal
                     // /restores and /settings routes below.
                     Route::get('/{backup}', [Systems\AdminSystemBackupController::class, 'show'])
@@ -770,13 +782,13 @@ Route::prefix($adminUrl)->name('admin.')
                         ->name('restores');
                     Route::post('/restores/{restore}/rollback', [Systems\AdminSystemBackupController::class, 'rollback'])
                         ->middleware('check.menu.edit:settings.systems.backup.restores')
-                        ->name('restores.rollback');
+                        ->middleware('recent_auth')->name('restores.rollback');
                     Route::get('/settings', [Systems\AdminSystemBackupController::class, 'settings'])
                         ->middleware('check.menu.access:settings.systems.backup.settings')
                         ->name('settings');
                     Route::post('/settings', [Systems\AdminSystemBackupController::class, 'updateSettings'])
                         ->middleware('check.menu.edit:settings.systems.backup.settings')
-                        ->name('settings.update');
+                        ->middleware('recent_auth')->name('settings.update');
                 });
 
                 // Audit log (Easy mode: Full)
@@ -790,10 +802,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('logs.files');
                 Route::get('/logs/files/{type}/download', [Systems\AdminSystemLogsController::class, 'download'])
                     ->middleware('check.menu.access:settings.systems.logs')
-                    ->name('logs.download');
+                    ->middleware('recent_auth')->name('logs.download');
                 Route::post('/logs/files/{type}/clear', [Systems\AdminSystemLogsController::class, 'clear'])
                     ->middleware('check.menu.edit:settings.systems.logs')
-                    ->name('logs.clear');
+                    ->middleware('recent_auth')->name('logs.clear');
                 Route::post('/logs/files/test', [Systems\AdminSystemLogsController::class, 'test'])
                     ->middleware('check.menu.edit:settings.systems.logs')
                     ->name('logs.test');
@@ -811,10 +823,10 @@ Route::prefix($adminUrl)->name('admin.')
                     ->name('logs.audit.show');
                 Route::get('/logs/audit-export', [Systems\AdminSystemLogsController::class, 'auditExport'])
                     ->middleware('check.menu.access:settings.systems.logs')
-                    ->name('logs.audit.export');
+                    ->middleware('recent_auth')->name('logs.audit.export');
                 Route::post('/logs/audit/cleanup', [Systems\AdminSystemLogsController::class, 'auditCleanup'])
                     ->middleware('check.menu.edit:settings.systems.logs')
-                    ->name('logs.audit.cleanup');
+                    ->middleware('recent_auth')->name('logs.audit.cleanup');
 
                 // System information (Easy mode: ReadOnly)
                 Route::get('/info', [Systems\AdminSystemInfoController::class, 'index'])

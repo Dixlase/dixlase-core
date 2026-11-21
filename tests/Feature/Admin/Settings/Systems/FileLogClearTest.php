@@ -47,6 +47,7 @@ use App\Models\Member;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -62,6 +63,7 @@ use Tests\TestCase;
  */
 class FileLogClearTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     private string $storage;

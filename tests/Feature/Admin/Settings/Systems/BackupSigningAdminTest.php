@@ -37,6 +37,7 @@ use App\Services\Backup\CoreBackupService;
 use App\Services\Security\IntegrityKeyring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\View;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -46,6 +47,7 @@ use Tests\TestCase;
  */
 class BackupSigningAdminTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     private string $customDirRelative;

@@ -204,4 +204,23 @@ return [
         'previous' => env('INTEGRITY_PREVIOUS_KEYS'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Recent re-authentication for sensitive admin operations
+    |--------------------------------------------------------------------------
+    |
+    | Routes that carry the `recent_auth` middleware (changing a password,
+    | a passkey or a role, installing an extension, creating an API key,
+    | changing a security setting, exporting personal data, restoring a
+    | backup, ...) ask the member to confirm their password or a passkey
+    | first. A confirmation stays valid for this many minutes in that
+    | session. A stolen session cookie alone is then not enough for them.
+    | After `max_attempts` wrong passwords the session is ended.
+    |
+    */
+    'recent_auth' => [
+        'minutes' => (int) env('ADMIN_RECENT_AUTH_MINUTES', 15),
+        'max_attempts' => 5,
+    ],
+
 ];

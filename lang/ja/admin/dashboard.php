@@ -206,6 +206,7 @@ return [
     'action_lockout_released' => 'ロックアウト解除',
     'action_step_up_auth_required' => 'ステップアップ認証要求',
     'action_step_up_auth_completed' => 'ステップアップ認証完了',
+    'action_step_up_auth_failed' => 'ステップアップ認証失敗',
     'action_session_created' => 'セッション作成',
     'action_session_destroyed' => 'セッション破棄',
     'action_forced_logout' => '強制ログアウト',

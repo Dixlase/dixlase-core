@@ -33,6 +33,7 @@ use App\Models\SecuritySetting;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -43,6 +44,7 @@ use Tests\TestCase;
  */
 class AdminSecurityLoginIdentifierModeTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     private Member $admin;

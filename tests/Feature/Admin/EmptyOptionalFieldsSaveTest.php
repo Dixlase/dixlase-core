@@ -44,6 +44,7 @@ use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\View;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -56,6 +57,7 @@ use Tests\TestCase;
  */
 class EmptyOptionalFieldsSaveTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     private Member $admin;

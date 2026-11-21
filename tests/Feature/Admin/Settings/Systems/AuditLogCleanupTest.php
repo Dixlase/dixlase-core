@@ -47,6 +47,7 @@ use App\Models\SiteSetting;
 use App\Services\AuditLogIntegrityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Tests\Concerns\BypassesRecentAuthentication;
 use Tests\TestCase;
 
 /**
@@ -57,6 +58,7 @@ use Tests\TestCase;
  */
 class AuditLogCleanupTest extends TestCase
 {
+    use BypassesRecentAuthentication;
     use RefreshDatabase;
 
     protected function setUp(): void
