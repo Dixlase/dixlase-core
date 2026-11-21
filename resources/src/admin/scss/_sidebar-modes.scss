@@ -66,6 +66,19 @@ html.dls-sidebar-switching .dls-sidebar-body > * {
     opacity: 0;
 }
 
+/*
+ * Held off while a correction is applied (applySidebarModeWithoutMotion() in
+ * layout.js, #1083). Everything that moves when the shape changes is listed
+ * here: the sidebar's own width, the fade of its rows, and the tab button's
+ * transform -- whose transition is written as an inline style, so it takes
+ * the !important to hold off.
+ */
+html.dls-sidebar-no-motion .dls-admin-sidebar,
+html.dls-sidebar-no-motion .dls-sidebar-body > *,
+html.dls-sidebar-no-motion #admin-sidebar-toggle {
+    transition: none !important;
+}
+
 /* The tab button docks to the sidebar's right edge, whichever width it is. */
 #admin-sidebar-toggle {
     transform: translateX(var(--dls-sidebar-width));

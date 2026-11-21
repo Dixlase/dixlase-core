@@ -42,6 +42,7 @@ const SIDEBAR_LEGACY_KEY = 'sidebarCollapsed';
 const SIDEBAR_TABLET_KEY = 'adminSidebarTabletMode';
 const SIDEBAR_RAIL_CLASS = 'dls-sidebar-rail-active';
 const SIDEBAR_SWITCHING_CLASS = 'dls-sidebar-switching';
+const SIDEBAR_NO_MOTION_CLASS = 'dls-sidebar-no-motion';
 // Keep in step with _sidebar-modes.scss: the content's fade, and the
 // sidebar's width transition (duration-300 on the <aside>).
 const SIDEBAR_FADE_MS = 150;
@@ -147,7 +148,22 @@ window.adminLayout = function() {
                 this.rightSidebarCollapsed = true;
             }
 
-            this.applySidebarMode();
+            // The inline script in layouts/admin.blade.php has already put the
+            // shape on <html>, before the first paint. Normally it agrees with
+            // what is computed here and this changes nothing.
+            //
+            // When it does not agree -- the two readers' breakpoints drifting
+            // apart again, or localStorage readable in one of them and not the
+            // other -- the correction must not animate. The <aside> carries a
+            // width transition and the rail and the full menu lay their rows
+            // out differently, so an animated correction is a visible reflow,
+            // and the fade that hides a deliberate switch is not in this path
+            // (#1083). A wrong first frame is the worst case; a reflow is not.
+            if (this.sidebarRailActive() !== document.documentElement.classList.contains(SIDEBAR_RAIL_CLASS)) {
+                this.applySidebarModeWithoutMotion();
+            } else {
+                this.applySidebarMode();
+            }
 
             // ウィンドウリサイズ時にモバイル幅になったら右サイドバーを折りたたむ
             window.addEventListener('resize', () => {
@@ -219,6 +235,27 @@ window.adminLayout = function() {
                 SIDEBAR_RAIL_CLASS,
                 this.sidebarRailActive()
             );
+        },
+
+        /**
+         * Publish the computed shape with every transition held off, so a
+         * correction lands as one frame rather than as an animation.
+         *
+         * The class is added, the shape applied and the layout read back in
+         * the same task: reading `offsetWidth` forces the new width to be
+         * computed while the transitions are still off, so none of them can
+         * start. Letting them back in on the next frame leaves the deliberate
+         * switches animating as before.
+         */
+        applySidebarModeWithoutMotion() {
+            const root = document.documentElement;
+            root.classList.add(SIDEBAR_NO_MOTION_CLASS);
+            this.applySidebarMode();
+            void document.body.offsetWidth;
+
+            requestAnimationFrame(() => {
+                root.classList.remove(SIDEBAR_NO_MOTION_CLASS);
+            });
         },
 
         /**
