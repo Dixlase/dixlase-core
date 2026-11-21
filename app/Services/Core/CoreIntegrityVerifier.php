@@ -256,21 +256,14 @@ class CoreIntegrityVerifier
     }
 
     /**
-     * Signature type for badge display. Core keys count as official, but
-     * only when pinned -- the prefix alone is just a name (security review X7).
+     * Signature type for badge display. It comes from the pinned list and
+     * from nothing else, so a 'dixlase-core-*' key is official once it is
+     * pinned, like any other key -- see PinnedPublicKeys::tier() and #845.
+     * This used to be a second copy of the prefix test the plugin verifier
+     * carried, which is how both read one list now.
      */
     protected function determineType(string $keyId): ?string
     {
-        if (str_starts_with($keyId, 'dixlase-core') || str_starts_with($keyId, 'dixlase-official') || str_starts_with($keyId, 'dixlase-authority')) {
-            return PinnedPublicKeys::isPinned($keyId) ? 'official' : null;
-        }
-        if (str_starts_with($keyId, 'dixlase-verified') || str_starts_with($keyId, 'marketplace')) {
-            return 'verified';
-        }
-        if (str_starts_with($keyId, 'partner-')) {
-            return 'partner';
-        }
-
-        return null;
+        return PinnedPublicKeys::tier($keyId);
     }
 }

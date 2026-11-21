@@ -35,15 +35,28 @@
 
 namespace App\Support;
 
+use App\Enums\PluginTrustLevel;
+use Illuminate\Support\Facades\Log;
+
 /**
  * Public keys compiled into core (config/core-integrity.php
  * `pinned_public_keys`) -- the root of trust for signatures.
  *
  * A pinned key_id is verified with the pinned key only; the Authority is
  * not asked, so a compromised or impersonated Authority cannot hand out a
- * different key under the same id. Only a pinned key earns the "official"
- * badge: the key_id prefix alone is a name anyone can choose (security
- * review X7). A new official key therefore ships with a core release.
+ * different key under the same id.
+ *
+ * The list is also where a key's trust tier comes from, and the only place.
+ * A key_id's prefix is a name, chosen by whoever publishes the key, so it
+ * grants nothing: 'dixlase-verified-*' and 'partner-*' used to award their
+ * own badge to anyone who asked (#845), and 'official' was narrowed to
+ * pinned keys before them (#445, security review X7). A tier is therefore
+ * something core states by shipping the key in a release.
+ *
+ * Two entry shapes:
+ *
+ *     'dixlase-authority-2026' => 'base64:...',                    // official
+ *     'partner-acme-2026' => ['key' => 'base64:...', 'tier' => 'partner'],
  */
 class PinnedPublicKeys
 {
@@ -53,8 +66,8 @@ class PinnedPublicKeys
      */
     public static function get(string $keyId): ?string
     {
-        $pinned = (array) config('core-integrity.pinned_public_keys', []);
-        $key = $pinned[$keyId] ?? null;
+        $entry = self::entry($keyId);
+        $key = is_array($entry) ? ($entry['key'] ?? null) : $entry;
 
         return is_string($key) && $key !== '' ? $key : null;
     }
@@ -62,5 +75,58 @@ class PinnedPublicKeys
     public static function isPinned(string $keyId): bool
     {
         return self::get($keyId) !== null;
+    }
+
+    /**
+     * The trust tier a pinned key_id carries -- 'official', 'verified',
+     * 'partner' or 'community' -- or null when the key_id is not pinned, or
+     * names a tier core does not know.
+     *
+     * A bare string entry means 'official'. The pinned list changes only in
+     * a core release, so shipping a key in it is the strongest statement
+     * core makes about one; anything lower is written out.
+     */
+    public static function tier(string $keyId): ?string
+    {
+        if (! self::isPinned($keyId)) {
+            return null;
+        }
+
+        $entry = self::entry($keyId);
+        if (! is_array($entry) || ! array_key_exists('tier', $entry)) {
+            return PluginTrustLevel::Official->value;
+        }
+
+        $tier = $entry['tier'];
+        $level = is_string($tier) ? PluginTrustLevel::tryFrom($tier) : null;
+
+        // Local is not a tier a key can carry -- it is what an install shows
+        // when nothing vouches for the signer at all. Anything else here is
+        // a typo in a core release, and the safe reading of a tier core
+        // cannot name is "no tier".
+        if ($level === null || $level === PluginTrustLevel::Local) {
+            Log::warning('PinnedPublicKeys: pinned key names a trust tier core does not know', [
+                'key_id' => $keyId,
+                'tier' => is_string($tier) ? $tier : gettype($tier),
+            ]);
+
+            return null;
+        }
+
+        return $level->value;
+    }
+
+    /**
+     * The configured entry for a key_id: its key as a string, the array form,
+     * or null when the key_id is absent or configured as something else.
+     *
+     * @return string|array<string, mixed>|null
+     */
+    private static function entry(string $keyId): string|array|null
+    {
+        $pinned = (array) config('core-integrity.pinned_public_keys', []);
+        $entry = $pinned[$keyId] ?? null;
+
+        return is_string($entry) || is_array($entry) ? $entry : null;
     }
 }
