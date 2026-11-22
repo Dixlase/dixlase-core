@@ -72,6 +72,8 @@ $stored = $registry->storeInput($fields, $request->input('fields', []));
 $apiFields = $registry->apiValues($fields, $stored);
 ```
 
+`$apiFields` goes into `ApiResourceDTO::$fields` (see [resources.md](resources.md)).
+
 In a Blade form:
 
 ```blade

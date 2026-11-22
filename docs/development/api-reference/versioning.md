@@ -118,7 +118,7 @@ All API responses use a uniform JSON envelope built on top of Laravel API Resour
 
 ### 3.4 Naming distinction
 
-`App\DTO\Api\ApiResourceDTO` and `ApiResourceCollection` (in `app/DTO/Api/`) are a **different layer** from `BaseApiResource`. They are content abstractions used by plugins implementing `ApiResourceProviderInterface` to hand data to core. `BaseApiResource` is the Laravel HTTP Resource base used to render outgoing JSON. Do not confuse the two.
+`App\DTO\Api\ApiResourceDTO` and `ApiResourceCollection` (in `app/DTO/Api/`) are a **different layer** from `BaseApiResource`. They are content abstractions used by plugins implementing `ApiResourceProviderInterface` to hand data to core. `BaseApiResource` is the Laravel HTTP Resource base used to render outgoing JSON. Do not confuse the two. The properties of `ApiResourceDTO`, including `content_format` and `fields`, are described in [resources.md](resources.md).
 
 ## 4. HTTP Status Codes
 
