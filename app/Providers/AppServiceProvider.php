@@ -264,6 +264,10 @@ class AppServiceProvider extends ServiceProvider
         // service providers are visible across the whole request.
         $this->app->singleton(SettingDefinitionRegistry::class);
 
+        // FieldTypeRegistry collects core's field types and the extensions'
+        // once per request, so a duplicate key is reported once.
+        $this->app->singleton(\App\Services\Fields\FieldTypeRegistry::class);
+
         // Tag the core member privacy provider so the privacy aggregator
         // services (UserPrivacyExporter / UserPrivacyEraser) discover it
         // alongside any plugin-provided implementations.

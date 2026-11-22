@@ -37,6 +37,8 @@
 
 namespace App\DTO\PluginIntegration;
 
+use App\DTO\Fields\FieldDefinition;
+use InvalidArgumentException;
 use JsonSerializable;
 
 /**
@@ -55,8 +57,10 @@ final readonly class BlockDescriptor implements JsonSerializable
      * @param  string  $label  Human-readable label (recommended: a translation key)
      * @param  string|null  $description  Short description shown in block pickers
      * @param  string|null  $icon  Icon identifier (e.g. heroicon name) for UI
-     * @param  array<string, mixed>  $configSchema  JSON Schema-like config description
-     *                                              (drives form generation + validation)
+     * @param  array<int, FieldDefinition|array<string, mixed>>  $configSchema  The block's
+     *                                                                          settings, as FieldDefinitions or the arrays
+     *                                                                          FieldDefinition::toArray() produces; read
+     *                                                                          them with configFields()
      * @param  array<string, mixed>  $defaultConfig  Default config values used when a new
      *                                               instance is added by the user
      * @param  array<int, string>  $usableIn  Surfaces where this block can be placed
@@ -75,6 +79,41 @@ final readonly class BlockDescriptor implements JsonSerializable
         public string $source = '',
         public array $meta = [],
     ) {}
+
+    /**
+     * The block's settings as FieldDefinitions, so they are drawn, validated
+     * and stored by the same field types as custom fields
+     *
+     * An entry that is not a FieldDefinition or a valid definition array is
+     * skipped, so a descriptor written for an earlier schema shape lists
+     * nothing rather than failing.
+     *
+     * @return list<FieldDefinition>
+     */
+    public function configFields(): array
+    {
+        $fields = [];
+
+        foreach ($this->configSchema as $entry) {
+            if ($entry instanceof FieldDefinition) {
+                $fields[] = $entry;
+
+                continue;
+            }
+
+            if (! is_array($entry)) {
+                continue;
+            }
+
+            try {
+                $fields[] = FieldDefinition::fromArray($entry);
+            } catch (InvalidArgumentException) {
+                continue;
+            }
+        }
+
+        return $fields;
+    }
 
     /**
      * Whether this block declares it can be used in the GUI editor surface.
