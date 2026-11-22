@@ -331,7 +331,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             icon="fas fa-trash"
                             :disabled="$viewOnly"
                             :title="$tooltipText"
-                            @click="openModal('clearConfirmModal')"
+                            @click="$openModal('clearConfirmModal')"
                         />
                     </div>
                 </div>

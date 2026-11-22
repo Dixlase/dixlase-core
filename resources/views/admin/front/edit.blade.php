@@ -151,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ __('admin/front.edit.reset_description') }}
                 </p>
                 <x-form-button type="button" variant="danger" size="sm" icon="fas fa-undo"
-                    @click="openModal('resetFrontPageEditModal')">
+                    @click="$openModal('resetFrontPageEditModal')">
                     {{ __('admin/front.edit.reset_button') }}
                 </x-form-button>
             </div>

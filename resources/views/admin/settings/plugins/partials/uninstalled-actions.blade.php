@@ -160,7 +160,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :disabled="$viewOnly"
         :title="$tooltipText"
         class="py-2 px-3"
-        @click="openModal('deleteModal-{{ $card['directory'] }}')"
+        @click="$openModal('deleteModal-{{ $card['directory'] }}')"
     />
 
     <x-ui-modal

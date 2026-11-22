@@ -156,7 +156,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     <button type="button"
                             @if($viewOnly) disabled @endif
                             @if($viewOnly) title="{{ $tooltipText }}" @endif
-                            @click="openModal('deleteModal')"
+                            @click="$openModal('deleteModal')"
                             class="bg-red-500 text-white py-2 px-4 rounded flex items-center gap-2 hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-trash-alt"></i> {{ __('common.delete') }}
                     </button>

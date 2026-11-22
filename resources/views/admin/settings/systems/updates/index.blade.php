@@ -138,7 +138,7 @@ file is governed by the AGPL terms below.
              check completes and the controller's redirect reloads the
              page. --}}
         <form method="POST" action="{{ route('admin.settings.systems.updates.check') }}"
-              @submit="openModal('checkUpdatesInProgressModal')">
+              @submit="$openModal('checkUpdatesInProgressModal')">
             @csrf
             <x-form-button
                 type="submit"
@@ -301,7 +301,7 @@ file is governed by the AGPL terms below.
                             icon="fas fa-cloud-arrow-down"
                             :disabled="$viewOnly"
                             :title="$tooltipText"
-                            xClick="openModal('confirmCoreUpdateModal')" />
+                            xClick="$openModal('confirmCoreUpdateModal')" />
                     </div>
 
                     {{-- Release notes (GitHub Releases body, persisted to
@@ -410,7 +410,7 @@ file is governed by the AGPL terms below.
                         icon="fas fa-rotate-left"
                         :disabled="$viewOnly"
                         :title="$tooltipText"
-                        xClick="openModal('confirmCoreRollbackModal')" />
+                        xClick="$openModal('confirmCoreRollbackModal')" />
                 </div>
             @endif
         </section>
@@ -768,7 +768,7 @@ file is governed by the AGPL terms below.
                         :disabled="$viewOnly"
                         :title="$tooltipText"
                         xDisabled="submitting"
-                        xClick="closeModal('confirmSingleUpdateModal'); submitting = true; openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
+                        xClick="$closeModal('confirmSingleUpdateModal'); submitting = true; $openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
                         class="mx-2"
                     />
                 </x-slot:footer>

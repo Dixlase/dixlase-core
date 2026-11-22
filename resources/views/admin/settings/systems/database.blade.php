@@ -104,7 +104,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-database"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    @click="openModal('cleanupModal{{ ucfirst($type) }}')"
+                    @click="$openModal('cleanupModal{{ ucfirst($type) }}')"
                 />
             </div>
         </section>
@@ -147,7 +147,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-trash-alt"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('cleanupAllModal')"
+                @click="$openModal('cleanupAllModal')"
             />
         </div>
     </section>
@@ -194,7 +194,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                             icon="fas fa-trash"
                             :disabled="$viewOnly"
                             :title="$tooltipText"
-                            @click="openModal('{{ $modalId }}')"
+                            @click="$openModal('{{ $modalId }}')"
                         />
                     </div>
                 </div>

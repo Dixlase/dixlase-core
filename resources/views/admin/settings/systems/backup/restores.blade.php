@@ -116,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                 @if($record->canRollback())
                                     <button type="button"
                                             @if($viewOnly) disabled @endif
-                                            @click="openModal('rollbackRestoreModal{{ $record->id }}')"
+                                            @click="$openModal('rollbackRestoreModal{{ $record->id }}')"
                                             class="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="{{ $viewOnly ? $tooltipText : __('admin/settings/systems/backup/restores.actions.rollback') }}">
                                         <i class="fas fa-rotate-left"></i>
