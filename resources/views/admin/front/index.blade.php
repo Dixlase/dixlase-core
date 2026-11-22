@@ -105,37 +105,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     {{-- Theme Preview (iframe) --}}
     @if ($frontPage && !empty($previewContent))
-        <div class="mt-6 min-w-0 overflow-hidden" x-data="{
-            previewFrameUrl: '{{ $previewFrameUrl }}',
-            previewDevice: 'desktop',
-            freeWidth: 1440,
-            freeHeight: 900,
-            _previewContainerWidth: 0,
-            get currentPreviewWidth() {
-                const presets = { mobile: 375, tablet: 768, desktop: 1440 };
-                return this.previewDevice === 'free' ? this.freeWidth : (presets[this.previewDevice] ?? 1440);
-            },
-            get currentPreviewHeight() {
-                const presets = { mobile: 667, tablet: 1024, desktop: 900 };
-                return this.previewDevice === 'free' ? this.freeHeight : (presets[this.previewDevice] ?? 900);
-            },
-            get previewScale() {
-                if (this._previewContainerWidth <= 0 || this.currentPreviewWidth <= this._previewContainerWidth) return 1;
-                return this._previewContainerWidth / this.currentPreviewWidth;
-            },
-            get scaledPreviewWidth() { return Math.round(this.currentPreviewWidth * this.previewScale); },
-            get scaledPreviewHeight() { return Math.round(this.currentPreviewHeight * this.previewScale); },
-            setPreviewDevice(d) { this.previewDevice = d; },
-            init() {
-                this.$nextTick(() => {
-                    const c = this.$refs.previewContainer;
-                    if (!c) return;
-                    new ResizeObserver(entries => {
-                        for (const e of entries) this._previewContainerWidth = e.contentRect.width;
-                    }).observe(c);
-                });
-            }
-        }">
+        <div class="mt-6 min-w-0 overflow-hidden"
+             x-data="frontPagePreview"
+             data-preview-frame-url="{{ $previewFrameUrl }}">
             {{-- Preview header --}}
             <div class="flex flex-wrap items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-t-lg gap-2">
                 <div class="flex items-center gap-2">
@@ -144,7 +116,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     </span>
                     <span x-show="previewScale < 1" x-cloak
                           class="text-[10px] text-gray-400 dark:text-gray-500"
-                          x-text="Math.round(previewScale * 100) + '%'"></span>
+                          x-text="previewScaleLabel"></span>
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -197,10 +169,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <div x-ref="previewContainer"
                  class="relative overflow-hidden bg-gray-100 dark:bg-gray-900 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg"
                  :style="'height: ' + scaledPreviewHeight + 'px'">
-                <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'">
-                    <iframe :src="previewFrameUrl"
-                            class="bg-white"
-                            :style="'width: ' + currentPreviewWidth + 'px; height: ' + currentPreviewHeight + 'px; transform: scale(' + previewScale + '); transform-origin: top left;'"
+                {{-- The iframe carries no Alpine directive: the strict build refuses to evaluate one there --}}
+                <div :style="'width: ' + scaledPreviewWidth + 'px; height: ' + scaledPreviewHeight + 'px; margin: 0 auto;'"
+                     x-effect="syncPreviewIframe($el)">
+                    <iframe class="bg-white"
                             sandbox="allow-scripts allow-same-origin allow-forms"
                             title="{{ __('components/content-editor.preview_title') }}">
                     </iframe>
