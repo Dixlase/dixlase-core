@@ -43,6 +43,69 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+## [0.2.19] — 2026-11-23
+
+Upgrading: run `php artisan migrate`. It adds the signature columns to the backup records. The
+most sensitive admin operations now ask for a password or passkey confirmed in the last 15 minutes
+(`ADMIN_RECENT_AUTH_MINUTES`); a script that drives those routes gets `423` until the member
+confirms. Backups are now taken on a schedule, which needs the Laravel scheduler (cron) to run.
+
+### Security
+- Sensitive admin operations require a recent confirmation of the member's password or one of
+  their passkeys. Without it a page is sent to a confirmation screen and comes back, a form returns
+  to its page to be submitted again (never replayed), and a script request gets `423` with the
+  confirmation URL in `X-Dixlase-Recent-Auth`. Signing in does not count, and five failed
+  confirmations in a row end the session (#675, #1095)
+- An extension's trust tier is taken from the list of pinned keys rather than from the shape of
+  its `key_id`, so a key can no longer choose its tier by its name (#845, #1097)
+- The signature panel shows the key a signature verified against, not the signer name its sidecar
+  claims, which the signature does not cover (#1098, #1103)
+- Backups are signed with the integrity key, and a restore or rollback checks the signature after
+  the hash. A missing or mismatched signature refuses the restore before anything changes, unless
+  it is accepted explicitly (`--allow-unverified-signature`, or the confirmation in the admin), and
+  both outcomes are audited. A site without a key behaves as before (#635, #1073)
+- The dashboard shows its audit, member and system widgets only to members who can open the
+  screens they come from (#844, #1096)
+- Clearing the file logs needs the SUPER_ADMIN permission; ADMIN can still download them (#843,
+  #1075)
+
+### Added
+- Backups run on a schedule: the database daily by default, with retention cleanup, configurable
+  in the backup settings (daily or weekly, and targets). A failed scheduled backup notifies the
+  administrator and shows a banner until one succeeds, and Site Health gains a "Backups" item
+  (#635, #1072)
+- `dls:backup:create --format=json` prints one JSON object with the result, for tools that run a
+  backup before changing a site (#780, #1067)
+- Custom roles take effect: a member with a custom role is judged by its base preset plus its
+  per-site overrides, and an explicit `deny` wins (#912, #1066)
+- Plugin API: field types that extensions share — `FieldTypeInterface`, `FieldDefinition` and
+  `FieldTypeRegistry` — covering the admin input, validation, storage and API value of a field
+  (#1105, #1110)
+- Plugin API: content events. `DixlaseEvents` gains a `content` category (created, updated,
+  published, unpublished, deleted) with one payload, `ContentEventPayload`, delivered by webhooks
+  as well; the front page fires them first (#1099, #1108)
+- Plugin API: `App\Contracts\TranslationSearch` and `LocaleHelper::findTranslatedKeys()` let an
+  extension search translated fields; with no provider bound the helper returns no keys (#536,
+  #1074)
+- Content editor: the new-tab preview reuses one tab, and the preview's admin bar offers "Back to
+  the editor". `window.Dixlase.openPreviewTab(url)` does the same for a saved preview (#1079,
+  #1080)
+
+### Changed
+- The bundled theme is locked at DixlaseOnePage v0.6.0 (#1114)
+- 23 classes that were not in `PLUGIN-API.md` no longer carry the `@api` tag. No extension
+  referenced any of them (#1089, #1090)
+- Saving mail settings that resets the mail tests now says so, with the number of two-factor
+  accounts affected, and a banner stays until the tests pass again (#932, #1068)
+- More admin screens work with the strict Alpine build: the post editor's preview, the front page
+  preview, the profile two-factor screens and the member privacy delete form (#1078, #1081,
+  #1082, #1086, #1087, #1088, #1094, #1112)
+
+### Fixed
+- Between 1024 and 1279px the admin sidebar is painted in the shape that was stored (#1083, #1085)
+- Two success messages no longer show `<br>` as text (#1070, #1071)
+- A release test build from a branch no longer fails at the ZIP step (#533, #1069)
+
 ## [0.2.18] — 2026-11-16
 
 Upgrading: run `php artisan migrate`. It adds the table that records where audit log retention
