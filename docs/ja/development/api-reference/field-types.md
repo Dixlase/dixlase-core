@@ -72,6 +72,8 @@ $stored = $registry->storeInput($fields, $request->input('fields', []));
 $apiFields = $registry->apiValues($fields, $stored);
 ```
 
+`$apiFields` は `ApiResourceDTO::$fields` に入れます（[resources.md](resources.md) を参照）。
+
 Blade のフォームでは次のように書きます。
 
 ```blade

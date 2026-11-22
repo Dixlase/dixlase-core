@@ -118,7 +118,7 @@ API は機能ではなくアーキテクチャ層です。AI-operable ワーク�
 
 ### 3.4 命名上の区別
 
-`App\DTO\Api\ApiResourceDTO` および `ApiResourceCollection` (`app/DTO/Api/` 配下) は `BaseApiResource` とは **別レイヤー** です。前者はプラグインが `ApiResourceProviderInterface` を実装してコアにデータを渡すためのコンテンツ抽象化です。後者は出力 JSON を整形する Laravel HTTP Resource の基底です。混同しないでください。
+`App\DTO\Api\ApiResourceDTO` および `ApiResourceCollection` (`app/DTO/Api/` 配下) は `BaseApiResource` とは **別レイヤー** です。前者はプラグインが `ApiResourceProviderInterface` を実装してコアにデータを渡すためのコンテンツ抽象化です。後者は出力 JSON を整形する Laravel HTTP Resource の基底です。混同しないでください。 `ApiResourceDTO` の各プロパティ（`content_format` と `fields` を含む）は [resources.md](resources.md) で説明しています。
 
 ## 4. HTTP ステータスコード
 
