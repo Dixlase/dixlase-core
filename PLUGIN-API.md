@@ -255,53 +255,57 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\Backup\BackupResultDTO`
 - `App\DTO\Backup\RestoreResultDTO`
 
-### 4.5 Core DTOs
+### 4.5 Content DTOs
+
+- `App\DTO\Content\ContentEventPayload`
+
+### 4.6 Core DTOs
 
 - `App\DTO\Core\CoreIntegrityResult`
 
-### 4.6 Editor DTOs
+### 4.7 Editor DTOs
 
 - `App\DTO\Editor\EditorInfo`
 
-### 4.7 Encryption DTOs
+### 4.8 Encryption DTOs
 
 - `App\DTO\Encryption\EncryptionResultDTO`
 
-### 4.8 Extension DTOs
+### 4.9 Extension DTOs
 
 - `App\DTO\Extension\CompatibilityResult`
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.9 File Integrity DTOs
+### 4.10 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.10 Front DTOs
+### 4.11 Front DTOs
 
 - `App\DTO\Front\FrontPageBodyContext`
 - `App\DTO\Front\FrontPageBodyDTO`
 - `App\DTO\Front\FrontPageBodyResult`
 
-### 4.11 Licensing DTOs
+### 4.12 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.12 Logging DTOs
+### 4.13 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.13 Mail DTOs
+### 4.14 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.14 Plugin Integration DTOs
+### 4.15 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -318,23 +322,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.15 Plugin Privacy DTOs
+### 4.16 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.16 Plugin DTOs
+### 4.17 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.17 RouteSlug DTOs
+### 4.18 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.18 Security DTOs
+### 4.19 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`

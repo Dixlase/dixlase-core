@@ -43,6 +43,7 @@ use App\DTO\Action\ActionResult;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStorageType;
 use App\Enums\Permission;
+use App\Events\DixlaseEvents;
 use App\Models\FrontPage;
 use App\Services\Content\FileContentPublisher;
 use App\Services\Content\ScriptAuthoringPolicy;
@@ -144,5 +145,21 @@ class UpdateFrontPageAction extends AbstractAction
             model: $this->frontPage,
             label: $this->frontPage->lang ?? 'default',
         );
+    }
+
+    /**
+     * Announce the save to subscribers (#1099). It fires on every
+     * successful save: with a translation provider bound, the content may be
+     * written to the provider's table rather than this row, so the row's
+     * dirty state cannot tell whether anything changed.
+     */
+    protected function dispatchEvents(Actor $actor, array $data, ActionResult $result): void
+    {
+        if (! $result->success) {
+            return;
+        }
+
+        $this->frontPage->contentEventPayload($actor->getActorId())
+            ->dispatch(DixlaseEvents::CONTENT_UPDATED);
     }
 }

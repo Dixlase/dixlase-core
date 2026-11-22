@@ -43,6 +43,7 @@ use App\DTO\Action\ActionResult;
 use App\Enums\ContentEditorType;
 use App\Enums\ContentStorageType;
 use App\Enums\Permission;
+use App\Events\DixlaseEvents;
 use App\Models\FrontPage;
 use App\Services\FrontPageContentService;
 
@@ -99,5 +100,19 @@ class DeleteFrontPageAction extends AbstractAction
             targetId: $this->frontPage->id,
             targetLabel: $label,
         );
+    }
+
+    /**
+     * The model keeps its attributes after delete(), so the payload still
+     * carries the identifiers and the status the page had (#1099).
+     */
+    protected function dispatchEvents(Actor $actor, array $data, ActionResult $result): void
+    {
+        if (! $result->success) {
+            return;
+        }
+
+        $this->frontPage->contentEventPayload($actor->getActorId())
+            ->dispatch(DixlaseEvents::CONTENT_DELETED);
     }
 }

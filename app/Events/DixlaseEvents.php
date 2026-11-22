@@ -408,6 +408,53 @@ final class DixlaseEvents
     public const AUDIT_LOG_CREATED = 'dixlase.audit.log.created';
 
     // =========================================================================
+    // Content Events
+    // =========================================================================
+    //
+    // Fired by whatever provides the content -- core or an extension -- with
+    // one payload shape for all of them: an App\DTO\Content\ContentEventPayload
+    // serialised to an array (see its toArray()). Fire them through
+    // ContentEventPayload::dispatch() so the shape cannot drift.
+    //
+    // The payload carries identifiers only, never the content body, so a
+    // webhook delivery stays small and never carries a draft.
+
+    /**
+     * Fired when a content item is created, whatever its status.
+     * Payload: ContentEventPayload array
+     */
+    public const CONTENT_CREATED = 'dixlase.content.created';
+
+    /**
+     * Fired when an existing content item is saved. An emitter may fire it
+     * for a save that changed nothing, so a subscriber should not assume a
+     * difference.
+     * Payload: ContentEventPayload array
+     */
+    public const CONTENT_UPDATED = 'dixlase.content.updated';
+
+    /**
+     * Fired when a content item becomes publicly visible: published from a
+     * draft, created already published, or a scheduled item going live.
+     * Payload: ContentEventPayload array
+     */
+    public const CONTENT_PUBLISHED = 'dixlase.content.published';
+
+    /**
+     * Fired when a publicly visible content item stops being visible without
+     * being deleted (returned to draft, closed, hidden).
+     * Payload: ContentEventPayload array
+     */
+    public const CONTENT_UNPUBLISHED = 'dixlase.content.unpublished';
+
+    /**
+     * Fired when a content item is deleted. `status` is the status it had
+     * before deletion, so a subscriber can tell whether it was visible.
+     * Payload: ContentEventPayload array
+     */
+    public const CONTENT_DELETED = 'dixlase.content.deleted';
+
+    // =========================================================================
     // URL / Slug Events
     // =========================================================================
 
@@ -472,7 +519,7 @@ final class DixlaseEvents
     /**
      * Get events by category
      *
-     * @param  string  $category  (backup, deploy, translation, plugin, theme, cache, maintenance, security, url, audit, ai)
+     * @param  string  $category  (backup, deploy, translation, plugin, theme, cache, maintenance, security, content, url, audit, ai)
      */
     public static function byCategory(string $category): array
     {
@@ -488,6 +535,7 @@ final class DixlaseEvents
             'security' => 'dixlase.security.',
             'integrity' => 'dixlase.integrity.',
             'audit' => 'dixlase.audit.',
+            'content' => 'dixlase.content.',
             'url' => 'dixlase.url.',
             'ai' => 'dixlase.ai.',
             default => $category,

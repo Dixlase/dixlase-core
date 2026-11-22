@@ -57,4 +57,33 @@ class DixlaseEventsTest extends TestCase
         $this->assertContains(DixlaseEvents::URL_SLUG_CHANGED, $all);
         $this->assertContains(DixlaseEvents::ADMIN_URL_CHANGED, $all);
     }
+
+    public function test_content_event_constants_are_defined(): void
+    {
+        $this->assertSame('dixlase.content.created', DixlaseEvents::CONTENT_CREATED);
+        $this->assertSame('dixlase.content.updated', DixlaseEvents::CONTENT_UPDATED);
+        $this->assertSame('dixlase.content.published', DixlaseEvents::CONTENT_PUBLISHED);
+        $this->assertSame('dixlase.content.unpublished', DixlaseEvents::CONTENT_UNPUBLISHED);
+        $this->assertSame('dixlase.content.deleted', DixlaseEvents::CONTENT_DELETED);
+    }
+
+    public function test_content_category_returns_exactly_the_content_events(): void
+    {
+        $this->assertEqualsCanonicalizing([
+            DixlaseEvents::CONTENT_CREATED,
+            DixlaseEvents::CONTENT_UPDATED,
+            DixlaseEvents::CONTENT_PUBLISHED,
+            DixlaseEvents::CONTENT_UNPUBLISHED,
+            DixlaseEvents::CONTENT_DELETED,
+        ], array_values(DixlaseEvents::byCategory('content')));
+    }
+
+    public function test_all_includes_content_events(): void
+    {
+        $all = DixlaseEvents::all();
+
+        foreach (DixlaseEvents::byCategory('content') as $event) {
+            $this->assertContains($event, $all);
+        }
+    }
 }

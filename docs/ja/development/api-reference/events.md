@@ -217,6 +217,62 @@ Event::listen(AuditLogCreated::class, function (AuditLogCreated $event) {
 
 `action`、`category`、`actor_source` 等の命名規則は [`docs/development/naming.md`](../naming.md) を参照。
 
+### 2.10 コンテンツのイベント
+
+コンテンツを出すもの（コアでも拡張機能でも）が発火する。購読する側（キャッシュの破棄、検索の索引、静的サイトの作り直しなど）は、コンテンツがどの拡張機能から来たかを知らなくても、変化に反応できる。
+
+| イベント | 定数 | 発火するとき |
+|---------|------|-------------|
+| `dixlase.content.created` | `CONTENT_CREATED` | 項目が作られたとき（状態を問わない） |
+| `dixlase.content.updated` | `CONTENT_UPDATED` | 既存の項目が保存されたとき。何も変わらない保存でも発火することがある |
+| `dixlase.content.published` | `CONTENT_PUBLISHED` | 項目が公開状態になったとき。下書きからの公開、公開状態での作成、予約の公開を含む |
+| `dixlase.content.unpublished` | `CONTENT_UNPUBLISHED` | 公開中の項目が、削除されずに見えなくなったとき |
+| `dixlase.content.deleted` | `CONTENT_DELETED` | 項目が削除されたとき |
+
+1 つの変化で複数のイベントが出ることがある。最初から公開の状態で項目を作ると、`created` のあとに `published` が出る。変化によって項目の URL も変わるときは、出す側が `URL_SLUG_CHANGED` も発火する。
+
+#### ペイロード
+
+コンテンツのイベントはどれも、`App\DTO\Content\ContentEventPayload::toArray()` が作る 1 つの配列を運ぶ。リスナーはそれを唯一の引数として受け取り、Webhook は `data` として配信する。
+
+| フィールド | 型 | 意味 |
+|-----------|----|------|
+| `version` | int | ペイロードの形の版（`ContentEventPayload::SCHEMA_VERSION`、今は **1**） |
+| `source` | string | 発火した拡張機能のスラッグ、または `core` |
+| `type` | string | コンテンツの種類。`ApiResourceProviderInterface` の `getResourceType()` が返すのと同じ文字列 |
+| `id` | string\|int | 種類の中での項目の識別子 |
+| `slug` | string\|null | 項目のスラッグ（あれば） |
+| `url` | string\|null | `/` で始まるサイト内の公開パス。公開 URL がなければ null |
+| `site_id` | int\|null | 項目が属するサイト |
+| `status` | string | 変化のあとの状態のスラッグ（`draft`、`published`、`scheduled` など）。`deleted` では削除前の状態 |
+| `actor_id` | string\|int\|null | 変更したメンバー。システムによる変更では null |
+| `occurred_at` | string | ISO 8601 のタイムスタンプ |
+
+ペイロードに本文は入れない。Webhook の配信を小さく保ち、下書きが漏れないようにするため。本文が要る購読者は API から読む。同じ版の中では、フィールドは足すだけで変えない。
+
+#### コンテンツのイベントを発火する
+
+ペイロードを作り、`dispatch()` で発火する。`dispatch()` はコンテンツの分類にないイベント名を受け付けない。
+
+```php
+use App\DTO\Content\ContentEventPayload;
+use App\Events\DixlaseEvents;
+
+(new ContentEventPayload(
+    source: 'my-plugin',
+    type: 'event',
+    id: $item->id,
+    slug: $item->slug,
+    url: '/events/'.$item->slug,
+    siteId: $item->site_id,
+    status: 'published',
+    actorId: auth()->id(),
+    occurredAt: now()->toIso8601String(),
+))->dispatch(DixlaseEvents::CONTENT_PUBLISHED);
+```
+
+コアのフロントページは、作成で `created` と `published`、保存とリビジョンの復元で `updated`、削除で `deleted` を発火する（`type` は `front_page`。`url` は `/`、ロケールの URL ルーティングが有効なら `/{locale}`）。下書きの状態を持たないので、`unpublished` は発火しない。
+
 ## 3. 使い方
 
 ### 3.1 イベントのリッスン
