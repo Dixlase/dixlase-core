@@ -159,6 +159,7 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | Contract for plugins that provide dashboard notifications |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | Contract for plugins that provide dashboard widgets |
 | `App\Contracts\PluginIntegration\DeployProtectionRegistryInterface` | Aggregated view of every "protect from cross-environment sync |
+| `App\Contracts\PluginIntegration\FieldTypeInterface` | A kind of field that content can carry: text, a number, a date, a map. |
 | `App\Contracts\PluginIntegration\LinkableInterface` | Minimal contract for linkable content |
 | `App\Contracts\PluginIntegration\LinkableProviderInterface` | Contract for plugins that provide linkable content |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
@@ -276,36 +277,40 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\Extension\CompatibilityResult`
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.10 File Integrity DTOs
+### 4.10 Fields DTOs
+
+- `App\DTO\Fields\FieldDefinition`
+
+### 4.11 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.11 Front DTOs
+### 4.12 Front DTOs
 
 - `App\DTO\Front\FrontPageBodyContext`
 - `App\DTO\Front\FrontPageBodyDTO`
 - `App\DTO\Front\FrontPageBodyResult`
 
-### 4.12 Licensing DTOs
+### 4.13 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.13 Logging DTOs
+### 4.14 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.14 Mail DTOs
+### 4.15 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.15 Plugin Integration DTOs
+### 4.16 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -322,23 +327,23 @@ If any condition is not met, your plugin/theme is subject to the full AGPL-3.0 t
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.16 Plugin Privacy DTOs
+### 4.17 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.17 Plugin DTOs
+### 4.18 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.18 RouteSlug DTOs
+### 4.19 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.19 Security DTOs
+### 4.20 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
