@@ -45,6 +45,7 @@ use App\Models\AuditLogRetentionPoint;
 use App\Models\FileIntegrityAudit;
 use App\Services\FileIntegrityService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Default implementation of {@see FreshInstallBootstrapperInterface}.
@@ -63,22 +64,40 @@ class FreshInstallBootstrapper implements FreshInstallBootstrapperInterface
     public function resetAuditTrail(): void
     {
         DB::transaction(function (): void {
-            // Empty every table that holds audit-trail data. These are
-            // mass deletes rather than truncates so they stay inside the
-            // transaction (TRUNCATE commits implicitly on MySQL) and so a
-            // table protected by a foreign key is cleared in order.
-            AuditLogRetentionPoint::query()->delete();
-            AuditLogDailySeal::query()->delete();
-            AuditLogKeyEpoch::query()->delete();
-            AuditLog::query()->delete();
+            // Empty every table that holds audit-trail data, skipping any a
+            // given install does not have. The audit tables are created by
+            // separate migrations added over time, so a database copied or
+            // templated from an older schema can be missing the newer ones
+            // (e.g. audit_log_key_epochs, audit_log_retention_points). A
+            // reset should clear what is present rather than hard-fail on a
+            // table that was never created; the hasTable guard keeps it
+            // tolerant of a schema that trails the current one.
+            //
+            // These are mass deletes rather than truncates so they stay
+            // inside the transaction (TRUNCATE commits implicitly on MySQL)
+            // and so a table protected by a foreign key is cleared in order.
+            if (Schema::hasTable('audit_log_retention_points')) {
+                AuditLogRetentionPoint::query()->delete();
+            }
+            if (Schema::hasTable('audit_log_daily_seals')) {
+                AuditLogDailySeal::query()->delete();
+            }
+            if (Schema::hasTable('audit_log_key_epochs')) {
+                AuditLogKeyEpoch::query()->delete();
+            }
+            if (Schema::hasTable('audit_logs')) {
+                AuditLog::query()->delete();
+            }
 
             // Reset the chain lock to its brand-new-install value (a single
             // row, generation 0) rather than deleting it, so the next audit
             // entry starts a fresh chain exactly as it would after a clean
             // install. insertOrIgnore + update covers both "row present"
             // (copied) and "row somehow missing" cases.
-            DB::table('audit_log_chain_lock')->insertOrIgnore(['id' => 1, 'generation' => 0]);
-            DB::table('audit_log_chain_lock')->where('id', 1)->update(['generation' => 0]);
+            if (Schema::hasTable('audit_log_chain_lock')) {
+                DB::table('audit_log_chain_lock')->insertOrIgnore(['id' => 1, 'generation' => 0]);
+                DB::table('audit_log_chain_lock')->where('id', 1)->update(['generation' => 0]);
+            }
         });
     }
 

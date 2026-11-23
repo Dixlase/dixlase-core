@@ -8,9 +8,11 @@ use App\Contracts\Install\FreshInstallBootstrapperInterface;
 use App\Models\FileIntegrityAudit;
 use App\Services\AuditLogIntegrityService;
 use App\Services\FileIntegrityService;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -85,6 +87,53 @@ class FreshInstallBootstrapperTest extends TestCase
 
         $health = (new AuditLogIntegrityService())->getHealth();
         $this->assertSame(AuditLogIntegrityService::HEALTH_EMPTY, $health['state']);
+    }
+
+    public function test_reset_audit_trail_tolerates_a_database_missing_a_newer_audit_table(): void
+    {
+        $this->seedAuditTrail();
+        DB::table('audit_log_chain_lock')->updateOrInsert(['id' => 1], ['generation' => 7]);
+
+        // Simulate a database copied or templated from an older schema: one
+        // of the later audit-table migrations has not run, so the table is
+        // absent. The reset must clear what is present rather than throw on
+        // the missing table.
+        Schema::drop('audit_log_retention_points');
+        $this->assertFalse(Schema::hasTable('audit_log_retention_points'));
+
+        try {
+            $this->bootstrapper->resetAuditTrail();
+
+            // The tables that exist are still emptied and the chain lock is
+            // still reset — the missing table is simply skipped.
+            $this->assertSame(0, DB::table('audit_logs')->count());
+            $this->assertSame(0, DB::table('audit_log_daily_seals')->count());
+            $this->assertSame(0, DB::table('audit_log_key_epochs')->count());
+            $this->assertSame(
+                0,
+                (int) DB::table('audit_log_chain_lock')->where('id', 1)->value('generation'),
+            );
+        } finally {
+            // Restore the table so later tests see the full schema. DROP
+            // TABLE commits the surrounding RefreshDatabase transaction on
+            // MySQL/MariaDB, so the recreate cannot be left to a rollback.
+            // dropIfExists + create keeps it idempotent whatever state the
+            // try block left behind. Mirrors
+            // database/migrations/..._create_audit_log_retention_points_table.
+            Schema::dropIfExists('audit_log_retention_points');
+            Schema::create('audit_log_retention_points', function (Blueprint $table): void {
+                $table->id();
+                $table->unsignedBigInteger('first_log_id');
+                $table->string('previous_hash', 64);
+                $table->timestamp('cutoff_at')->nullable();
+                $table->unsignedBigInteger('deleted_rows')->default(0);
+                $table->unsignedSmallInteger('key_version');
+                $table->string('signature', 64);
+                $table->timestamp('created_at')->nullable();
+
+                $table->index('first_log_id');
+            });
+        }
     }
 
     public function test_record_core_baseline_audit_writes_a_clean_core_row_from_the_baseline_file(): void
