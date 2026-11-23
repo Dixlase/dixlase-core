@@ -3,7 +3,7 @@
 > **注記 — 暫定版。** 本書は Dixlase プラグイン API 境界定義の暫定版であり、プラグイン・テーマ例外条項（`LICENSE-EXCEPTIONS` を参照）が初期リリース時点で参照可能な API 境界を持てるよう公開するものです。境界定義は今後のリリースで精緻化される可能性があり、特定のリリースに適用されるのは、そのリリースと共に配布された版です。
 
 **バージョン:** dev
-**最終更新日:** 2026-11-15
+**最終更新日:** 2026-11-23
 **目的:** AGPL ライセンス例外条項のための公開プラグイン API 境界の定義（`LICENSE-EXCEPTIONS` を参照）
 
 このドキュメントは「プラグイン API」を構成するすべてのコンポーネントを定義します。
@@ -123,6 +123,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\I18n\LocaleUrlRouting` | Tells whether front URLs on this site carry a leading locale segment. |
 | `App\Contracts\I18n\LocalizedUrlProvider` | Exposes alternate-language URLs for the current request. |
 | `App\Contracts\I18n\MissingTranslationHandler` | Decides what to do when a route exists but no translation is available |
+| `App\Contracts\Install\FreshInstallBootstrapperInterface` | Bootstraps a freshly-provisioned install into a clean, healthy state. |
 | `App\Contracts\LegalPage\LegalPageServiceInterface` | Contract for legal page registry service |
 | `App\Contracts\Logging\LogServiceInterface` | Log service contract |
 | `App\Contracts\Mail\MailServiceInterface` | Mail service contract |
@@ -159,6 +160,7 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 | `App\Contracts\PluginIntegration\DashboardNotificationProviderInterface` | Contract for plugins that provide dashboard notifications |
 | `App\Contracts\PluginIntegration\DashboardWidgetProviderInterface` | Contract for plugins that provide dashboard widgets |
 | `App\Contracts\PluginIntegration\DeployProtectionRegistryInterface` | Aggregated view of every "protect from cross-environment sync |
+| `App\Contracts\PluginIntegration\FieldTypeInterface` | A kind of field that content can carry: text, a number, a date, a map. |
 | `App\Contracts\PluginIntegration\LinkableInterface` | Minimal contract for linkable content |
 | `App\Contracts\PluginIntegration\LinkableProviderInterface` | Contract for plugins that provide linkable content |
 | `App\Contracts\PluginIntegration\MenuProviderInterface` | Contract for plugins that provide navigation menus |
@@ -255,53 +257,61 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 - `App\DTO\Backup\BackupResultDTO`
 - `App\DTO\Backup\RestoreResultDTO`
 
-### 4.5 Core DTOs
+### 4.5 Content DTOs
+
+- `App\DTO\Content\ContentEventPayload`
+
+### 4.6 Core DTOs
 
 - `App\DTO\Core\CoreIntegrityResult`
 
-### 4.6 Editor DTOs
+### 4.7 Editor DTOs
 
 - `App\DTO\Editor\EditorInfo`
 
-### 4.7 Encryption DTOs
+### 4.8 Encryption DTOs
 
 - `App\DTO\Encryption\EncryptionResultDTO`
 
-### 4.8 Extension DTOs
+### 4.9 Extension DTOs
 
 - `App\DTO\Extension\CompatibilityResult`
 - `App\DTO\Extension\ReleaseInfo`
 
-### 4.9 File Integrity DTOs
+### 4.10 Fields DTOs
+
+- `App\DTO\Fields\FieldDefinition`
+
+### 4.11 File Integrity DTOs
 
 - `App\DTO\FileIntegrity\BaselineDTO`
 - `App\DTO\FileIntegrity\FileChangeDTO`
 - `App\DTO\FileIntegrity\ScanResultDTO`
 - `App\DTO\FileIntegrity\ScanTargetDTO`
 
-### 4.10 Front DTOs
+### 4.12 Front DTOs
 
 - `App\DTO\Front\FrontPageBodyContext`
 - `App\DTO\Front\FrontPageBodyDTO`
 - `App\DTO\Front\FrontPageBodyResult`
 
-### 4.11 Licensing DTOs
+### 4.13 Licensing DTOs
 
 - `App\DTO\Licensing\LicenseVerificationResult`
 
-### 4.12 Logging DTOs
+### 4.14 Logging DTOs
 
 - `App\DTO\Logging\LogContextDTO`
 - `App\DTO\Logging\LogEntryDTO`
 
-### 4.13 Mail DTOs
+### 4.15 Mail DTOs
 
 - `App\DTO\Mail\MailAttachmentDTO`
 - `App\DTO\Mail\MailConfigDTO`
 - `App\DTO\Mail\MailMessageDTO`
 - `App\DTO\Mail\MailResultDTO`
 
-### 4.14 Plugin Integration DTOs
+### 4.16 Plugin Integration DTOs
 
 - `App\DTO\PluginIntegration\BlockContext`
 - `App\DTO\PluginIntegration\BlockDescriptor`
@@ -318,23 +328,23 @@ Dixlase と**このドキュメントに記載されたインターフェース�
 - `App\DTO\PluginIntegration\SearchQueryDTO`
 - `App\DTO\PluginIntegration\SeoMetaDTO`
 
-### 4.15 Plugin Privacy DTOs
+### 4.17 Plugin Privacy DTOs
 
 - `App\DTO\PluginPrivacy\UserDataDeletionDTO`
 - `App\DTO\PluginPrivacy\UserDataExportDTO`
 
-### 4.16 Plugin DTOs
+### 4.18 Plugin DTOs
 
 - `App\DTO\Plugin\CapabilityResolutionResult`
 - `App\DTO\Plugin\DeclaresVerificationResult`
 - `App\DTO\Plugin\EnabledPluginRecord`
 - `App\DTO\Plugin\SignatureVerificationResult`
 
-### 4.17 RouteSlug DTOs
+### 4.19 RouteSlug DTOs
 
 - `App\DTO\RouteSlug\RegisteredSlug`
 
-### 4.18 Security DTOs
+### 4.20 Security DTOs
 
 - `App\DTO\Security\LoginContext`
 - `App\DTO\Security\RiskScore`
