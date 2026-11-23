@@ -40,6 +40,7 @@ use App\Contracts\Backup\RestoreServiceInterface;
 use App\Contracts\Core\CoreManifestBuilderInterface;
 use App\Contracts\Encryption\FileEncryptionServiceInterface;
 use App\Contracts\FileIntegrity\FileIntegrityServiceInterface;
+use App\Contracts\Install\FreshInstallBootstrapperInterface;
 use App\Contracts\LegalPage\LegalPageServiceInterface;
 use App\Contracts\Licensing\LicenseVerifierInterface;
 use App\Contracts\Logging\LogServiceInterface;
@@ -63,6 +64,7 @@ use App\Services\Core\CoreMaintenanceGuard;
 use App\Services\Core\CoreManifestBuilder;
 use App\Services\Encryption\CoreFileEncryptionService;
 use App\Services\FileIntegrityService;
+use App\Services\Install\FreshInstallBootstrapper;
 use App\Services\LegalPageService;
 use App\Services\Licensing\CoreLicenseVerifier;
 use App\Services\LogService;
@@ -147,6 +149,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Bind file integrity service
         $this->app->bind(FileIntegrityServiceInterface::class, FileIntegrityService::class);
+
+        // Bind fresh-install bootstrapper (brings a provisioned copy to a
+        // clean audit + integrity state through the public API)
+        $this->app->bind(FreshInstallBootstrapperInterface::class, FreshInstallBootstrapper::class);
 
         // Bind file hash verification service
         $this->app->bind(FileVerificationServiceInterface::class, CoreFileVerificationService::class);
