@@ -119,7 +119,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         :label="__('admin/settings/systems/api.revoke_all')"
                         :disabled="$viewOnly"
                         :title="$tooltipText"
-                        @click="openModal('revokeAllModal')"
+                        @click="$openModal('revokeAllModal')"
                     />
                 @endif
                 <x-form-button
@@ -129,7 +129,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     :label="__('admin/settings/systems/api.create_key')"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    @click="openModal('createKeyModal')"
+                    @click="$openModal('createKeyModal')"
                     xDisabled="apiEnabled !== '1'"
                 />
             </div>
@@ -211,7 +211,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @csrf
                                     <button type="button"
                                             @if($viewOnly) disabled @endif
-                                            @click="openModal('regenerateModal{{ $key->id }}')"
+                                            @click="$openModal('regenerateModal{{ $key->id }}')"
                                             class="btn btn-sm btn-warning disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="{{ $viewOnly ? $tooltipText : __('admin/settings/systems/api.regenerate') }}">
                                         <i class="fas fa-sync-alt"></i>
@@ -222,7 +222,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                     @method('DELETE')
                                     <button type="button"
                                             @if($viewOnly) disabled @endif
-                                            @click="openModal('revokeModal{{ $key->id }}')"
+                                            @click="$openModal('revokeModal{{ $key->id }}')"
                                             class="btn btn-sm btn-danger disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="{{ $viewOnly ? $tooltipText : __('common.delete') }}">
                                         <i class="fas fa-trash"></i>
@@ -254,7 +254,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="secondary"
                 :label="__('common.close')"
-                @click="closeModal('viewKeyModal')"
+                @click="$closeModal('viewKeyModal')"
                 class="mx-2"
             />
         </x-slot>
@@ -312,7 +312,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         class="button-save"
         :disabled="$viewOnly"
         :title="$tooltipText"
-        @click="openModal('apiSettingsConfirmationModal')"
+        @click="$openModal('apiSettingsConfirmationModal')"
     />
 @endsection
 
@@ -418,7 +418,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 type="button"
                 variant="secondary"
                 :label="__('common.cancel')"
-                @click="closeModal('createKeyModal')"
+                @click="$closeModal('createKeyModal')"
                 class="mx-2"
             />
             <x-form-button

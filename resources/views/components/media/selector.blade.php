@@ -94,7 +94,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         </button>
                     @endif
                     <button type="button"
-                            @click="closeMediaSelector('{{ $id }}')"
+                            @click="$closeMediaSelector('{{ $id }}')"
                             class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
                         <i class="fas fa-times text-xl"></i>
                     </button>
@@ -199,7 +199,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
                 <div class="flex gap-3 sm:col-start-3 sm:row-start-1 sm:justify-self-end">
                     <button type="button" 
-                            @click="closeMediaSelector('{{ $id }}')"
+                            @click="$closeMediaSelector('{{ $id }}')"
                             class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         {{ __('common.cancel') }}
                     </button>

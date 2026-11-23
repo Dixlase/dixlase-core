@@ -79,7 +79,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-trash"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    @click="openModal('clearCacheModal{{ ucfirst($type) }}')"
+                    @click="$openModal('clearCacheModal{{ ucfirst($type) }}')"
                 />
 
                 @if($info['rebuildable'])
@@ -95,7 +95,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         icon="fas fa-bolt"
                         :disabled="$viewOnly"
                         :title="$tooltipText"
-                        @click="openModal('rebuildCacheModal{{ ucfirst($type) }}')"
+                        @click="$openModal('rebuildCacheModal{{ ucfirst($type) }}')"
                     />
                 @endif
             </div>
@@ -123,7 +123,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-trash-alt"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    @click="openModal('clearAllCacheModal')"
+                    @click="$openModal('clearAllCacheModal')"
                 />
             </div>
         </section>
@@ -149,7 +149,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     icon="fas fa-bolt"
                     :disabled="$viewOnly"
                     :title="$tooltipText"
-                    @click="openModal('rebuildAllCacheModal')"
+                    @click="$openModal('rebuildAllCacheModal')"
                 />
             </div>
         </section>

@@ -74,7 +74,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     type="button"
                     variant="danger"
                     icon="fas fa-undo"
-                    @click="openModal('resetFrontPageModal')"
+                    @click="$openModal('resetFrontPageModal')"
                 >
                     {{ __('admin/front.index.reset_button') }}
                 </x-form-button>

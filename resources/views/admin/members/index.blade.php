@@ -231,7 +231,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                                         icon="fas fa-trash"
                                         class="!text-red-600 hover:!text-red-900 dark:!text-red-400 dark:hover:!text-red-300"
                                         :disabled="$viewOnly"
-                                        :xClick="'openModal(\'deleteModal-' . $member->id . '\')'"
+                                        :xClick="'$openModal(\'deleteModal-' . $member->id . '\')'"
                                         :title="$viewOnly ? $tooltipText : __('common.delete')"
                                     />
                                     <x-ui-modal

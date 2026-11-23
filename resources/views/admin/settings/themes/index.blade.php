@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-search"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('bulkAuditThemesModal')"
+                @click="$openModal('bulkAuditThemesModal')"
             />
 
             <x-ui-modal

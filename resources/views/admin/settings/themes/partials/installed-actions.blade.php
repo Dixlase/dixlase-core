@@ -68,7 +68,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 icon="fas fa-play"
                 :disabled="$viewOnly"
                 :title="$tooltipText"
-                @click="openModal('{{ $card['enableModalId'] }}')"
+                @click="$openModal('{{ $card['enableModalId'] }}')"
                 class="py-2 px-3"
             />
 
@@ -121,7 +121,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :title="$tooltipText"
             class="py-2 px-3"
             icon="fas fa-trash"
-            @click="openModal('uninstallThemeModal-{{ $card['id'] }}')"
+            @click="$openModal('uninstallThemeModal-{{ $card['id'] }}')"
         />
 
         <x-ui-modal
@@ -150,7 +150,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :title="$tooltipText"
             class="py-2 px-3"
             icon="fas fa-rotate-left"
-            @click="openModal('rollbackThemeModal-{{ $card['id'] }}')"
+            @click="$openModal('rollbackThemeModal-{{ $card['id'] }}')"
         />
 
         <x-ui-modal

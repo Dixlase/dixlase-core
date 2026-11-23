@@ -52,7 +52,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :title="$tooltipText"
         class="py-2 px-3"
         icon="fas fa-download"
-        @click="openModal('installThemeModal-{{ $card['directory'] }}')"
+        @click="$openModal('installThemeModal-{{ $card['directory'] }}')"
     />
 
     <x-ui-modal
@@ -124,7 +124,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :title="$tooltipText"
         class="py-2 px-3"
         icon="fas fa-trash"
-        @click="openModal('deleteThemeModal-{{ $card['directory'] }}')"
+        @click="$openModal('deleteThemeModal-{{ $card['directory'] }}')"
     />
 
     <x-ui-modal
