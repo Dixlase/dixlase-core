@@ -84,6 +84,45 @@ class CaptchaHelper
     }
 
     /**
+     * The request attribute a preview renderer sets to suppress the widget.
+     */
+    protected const PREVIEW_RENDER_ATTRIBUTE = 'dixlase.captcha.preview_render';
+
+    /**
+     * Declare that this request renders a preview, so no CAPTCHA is drawn.
+     *
+     * A preview is a throwaway page. It is never submitted, so a widget drawn
+     * in one is never verified, and drawing it anyway costs the browser the
+     * provider's script and a third-party round trip on every re-render --
+     * which is every change the operator makes. It also fills the console with
+     * the provider's own errors, burying the ones that are ours.
+     *
+     * This suppresses *rendering* only. Verification reads nothing from here:
+     * VerifiesCaptcha and the submit requests keep asking
+     * shouldShowCaptcha(), so a form that really submits still verifies even
+     * when it was drawn under a preview route. That is also why this is opt-in
+     * from the renderer rather than inferred from the route name -- several
+     * preview routes do submit, and a form-basic preview really sends a
+     * message.
+     *
+     * @api
+     */
+    public static function markPreviewRender(): void
+    {
+        request()->attributes->set(self::PREVIEW_RENDER_ATTRIBUTE, true);
+    }
+
+    /**
+     * Whether markPreviewRender() was called for this request.
+     *
+     * @api
+     */
+    public static function isPreviewRender(): bool
+    {
+        return (bool) request()->attributes->get(self::PREVIEW_RENDER_ATTRIBUTE, false);
+    }
+
+    /**
      * Check if CAPTCHA should be displayed on the specified form
      */
     public static function shouldShowCaptcha(?string $formName = null): bool
