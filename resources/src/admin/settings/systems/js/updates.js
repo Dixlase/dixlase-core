@@ -78,6 +78,22 @@ Alpine.data('systemUpdatesPage', () => ({
         return this.singleConfirmTemplate.replace('%name%', this.pendingSingleUpdate.name || '');
     },
 
+    /**
+     * Confirm button of confirmSingleUpdateModal: swap the confirm modal for
+     * the in-progress one and submit the row's hidden form. One method,
+     * because the strict Alpine build evaluates a single expression only.
+     *
+     * The button sits inside the modal's own x-data, so `this` is the merged
+     * scope and `submitting` is the modal's flag: setting it keeps the
+     * modal's buttons disabled while the request runs, as before.
+     */
+    confirmSingleUpdate() {
+        closeModalById('confirmSingleUpdateModal');
+        this.submitting = true;
+        openModalById(IN_PROGRESS_MODAL);
+        window.submitModalForm(this.pendingSingleUpdate.formId);
+    },
+
     // @submit handler of the standalone core forms: swap the confirm modal
     // for the in-progress one once the request is under way.
     showProgressAfter(confirmModalId) {

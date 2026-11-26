@@ -42,6 +42,24 @@ Plugin API の安定性は [`PLUGIN-API.md`](./PLUGIN-API.md#stability-pledge) �
 
 ---
 
+## [0.2.20] — 2026-11-24
+
+### 追加
+- Plugin API: `App\Contracts\Install\FreshInstallBootstrapperInterface` を追加しました。インストール
+  済みのサイトの複製を、新規インストールの状態にします。`resetAuditTrail()` は監査証跡を空にして
+  チェーンを初期化し、監査の健全性が「空」になります。`recordCoreBaselineAudit()` は、ディスクに
+  あるベースラインのファイルから、インストーラーと同じようにコアのベースラインの監査を記録します。
+  どちらも既定の接続で動きます。`dixlase_api` は `0.1.x` のままです（#1117、#1118）
+- Plugin API: `ApiResourceDTO` に `contentFormat`（`html`・`markdown`・`blocks`。`content_format`
+  として出力）と、フィールドのキーで引く型のある値 `fields` を加えました。どちらも省略でき、
+  最後に置いたので、既存の呼び出しはそのまま動きます。`meta` はプロバイダー独自の値のために残し
+  ます。形は `api-reference/resources.md` に書きました（#1101、#1111）
+
+### 修正
+- 厳格版の Alpine で、管理画面の多くのページ（フロントページ、メンバー、メディア、プラグイン、
+  テーマ、API キー、バックアップ、キャッシュ、データベース、ログ、更新）の確認ダイアログと
+  メディアの選択が、「Undefined variable」のエラーにならずに開くようにしました（#1113、#1121）
+
 ## [0.2.19] — 2026-11-23
 
 更新するときは `php artisan migrate` を実行してください。バックアップの記録に署名の列を追加します。

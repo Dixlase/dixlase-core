@@ -43,6 +43,24 @@ The full policy is in [`docs/development/versioning.md`](./docs/development/vers
 
 ## [Unreleased]
 
+## [0.2.20] — 2026-11-24
+
+### Added
+- Plugin API: `App\Contracts\Install\FreshInstallBootstrapperInterface` brings a copy of an
+  installed site to a fresh-install state. `resetAuditTrail()` empties the audit trail and
+  resets its chain, so the audit health reads as empty, and `recordCoreBaselineAudit()` records
+  the core baseline audit from the baseline file already on disk, as the installer does. Both
+  work on the default connection. `dixlase_api` stays at `0.1.x` (#1117, #1118)
+- Plugin API: `ApiResourceDTO` gains `contentFormat` (`html`, `markdown` or `blocks`, serialised
+  as `content_format`) and `fields`, the resource's typed values keyed by field key. Both are
+  optional and placed last, so existing calls keep working; `meta` stays for provider extras.
+  The shape is documented in `api-reference/resources.md` (#1101, #1111)
+
+### Fixed
+- With the strict Alpine build, the confirmation dialogs on many admin pages (front page,
+  members, media, plugins, themes, API keys, backup, cache, database, logs, updates) and the
+  media selector open again; they used to fail with "Undefined variable" (#1113, #1121)
+
 ## [0.2.19] — 2026-11-23
 
 Upgrading: run `php artisan migrate`. It adds the signature columns to the backup records. The

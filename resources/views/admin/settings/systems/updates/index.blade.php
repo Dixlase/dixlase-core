@@ -768,7 +768,7 @@ file is governed by the AGPL terms below.
                         :disabled="$viewOnly"
                         :title="$tooltipText"
                         xDisabled="submitting"
-                        xClick="$closeModal('confirmSingleUpdateModal'); submitting = true; $openModal('updatesInProgressModal'); submitModalForm(pendingSingleUpdate.formId)"
+                        xClick="confirmSingleUpdate()"
                         class="mx-2"
                     />
                 </x-slot:footer>
