@@ -39,12 +39,11 @@ use App\Services\Tailwind\PluginSourceAggregator;
 use Illuminate\Console\Command;
 
 /**
- * Regenerate resources/src/common/css/dixlase-tailwind-plugin-sources.css
- * from the current set of enabled plugins.
+ * Regenerate resources/src/common/css/dixlase-tailwind-plugin-sources.css.
  *
  * The plugin lifecycle commands (install / enable / disable / update
  * / uninstall) already invoke the aggregator automatically; this
- * command is for two cases:
+ * command is for three cases:
  *
  *   - Fresh installs, before the first asset build (the file does
  *     not exist yet and the theme's Vite build would otherwise fail
@@ -52,22 +51,35 @@ use Illuminate\Console\Command;
  *   - Manual recovery when the file has been accidentally edited or
  *     deleted, or when plugin.json was edited on disk without going
  *     through the lifecycle commands.
+ *   - A build outside a running site (an extension's CI, a release
+ *     build), with `--from-disk`: every plugin in the tree contributes,
+ *     enabled or not, and no database is needed. Without the flag the
+ *     command falls back to the same reading when the database cannot
+ *     be queried.
  */
 class TailwindSourcesRegenerate extends Command
 {
-    protected $signature = 'dls:tailwind:regenerate-plugin-sources';
+    protected $signature = 'dls:tailwind:regenerate-plugin-sources
+        {--from-disk : Read every plugin on disk instead of the enabled ones (for a build)}';
 
-    protected $description = 'Regenerate the Tailwind plugin-source aggregator CSS from enabled plugins';
+    protected $description = 'Regenerate the Tailwind plugin-source aggregator CSS from enabled plugins, or from every plugin on disk';
 
     public function handle(PluginSourceAggregator $aggregator): int
     {
-        $result = $aggregator->regenerate();
+        $result = $aggregator->regenerate((bool) $this->option('from-disk'));
 
         $this->info(sprintf(
-            'Aggregated %d source path(s) from %d enabled plugin(s).',
+            $result['mode'] === PluginSourceAggregator::MODE_ENABLED
+                ? 'Aggregated %d source path(s) from %d enabled plugin(s).'
+                : 'Aggregated %d source path(s) from %d plugin(s) on disk.',
             $result['source_count'],
             $result['plugin_count'],
         ));
+
+        if ($result['mode'] === PluginSourceAggregator::MODE_DISK && ! $this->option('from-disk')) {
+            $this->warn('The database could not be queried, so every plugin on disk was read.');
+        }
+
         $this->line("  Output: {$result['path']}");
 
         return self::SUCCESS;
