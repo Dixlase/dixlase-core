@@ -38,7 +38,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     'widget' => null,
 ])
 
-@if($enabled && $widget)
+{{-- A preview draws no widget. A preview page is never submitted, so the
+     widget would never be verified, and it would still cost the browser the
+     provider's script and a third-party round trip on every re-render. The
+     renderer declares the preview through CaptchaHelper::markPreviewRender();
+     verification never reads that marker, so a form that really submits is
+     unaffected. --}}
+@if($enabled && $widget && ! \App\Helpers\CaptchaHelper::isPreviewRender())
     <div class="my-6 flex justify-center">
         {!! $widget !!}
     </div>
