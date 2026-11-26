@@ -243,10 +243,59 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         id="viewKeyModal"
         :title="__('admin/settings/systems/api.key_details')"
         icon-type="info"
+        message=""
         :close-only="true"
     >
-        <div class="px-4 pt-5 pb-4 sm:p-6">
-            <div x-html="keyDetails" class="space-y-3"></div>
+        {{-- Each value is bound with x-text: the strict Alpine build refuses x-html --}}
+        <div class="px-4 pt-5 pb-4 sm:p-6 text-left">
+            <dl class="grid grid-cols-2 gap-2 text-sm">
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.key_name') }}</dt>
+                <dd class="font-medium" x-text="keyField('name')"></dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.environment') }}</dt>
+                <dd>
+                    <span x-show="isLiveKey()" class="text-green-600">Live</span>
+                    <span x-show="!isLiveKey()" class="text-orange-600">Test</span>
+                </dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.key_prefix') }}</dt>
+                <dd><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded" x-text="keyPrefixLabel()"></code></dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.rate_limit') }}</dt>
+                <dd x-text="keyRateLimitLabel()"></dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.expires_at') }}</dt>
+                <dd x-text="keyExpiresLabel()"></dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.usage_count') }}</dt>
+                <dd x-text="keyUsageLabel()"></dd>
+
+                <dt class="text-gray-500 dark:text-gray-400">{{ __('admin/settings/systems/api.created_at') }}</dt>
+                <dd x-text="keyCreatedLabel()"></dd>
+            </dl>
+
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">{{ __('admin/settings/systems/api.scopes') }}</div>
+                <div>
+                    <template x-for="scope in keyScopes()" :key="scope">
+                        <span class="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded mr-1 mb-1" x-text="scope"></span>
+                    </template>
+                    <span x-show="keyScopes().length === 0" class="text-sm text-gray-400">{{ __('admin/settings/systems/api.no_scopes') }}</span>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">{{ __('admin/settings/systems/api.allowed_ips') }}</div>
+                <div class="text-sm">
+                    <span x-show="keyAllowedIps() !== ''" x-text="keyAllowedIps()"></span>
+                    <span x-show="keyAllowedIps() === ''" class="text-gray-400">{{ __('admin/settings/systems/api.all_ips_allowed') }}</span>
+                </div>
+            </div>
+
+            <div x-show="keyField('description') !== ''" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">{{ __('admin/settings/systems/api.key_description') }}</div>
+                <div class="text-sm" x-text="keyField('description')"></div>
+            </div>
         </div>
 
         <x-slot name="footer">
