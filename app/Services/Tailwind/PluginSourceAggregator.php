@@ -36,21 +36,34 @@
 namespace App\Services\Tailwind;
 
 use App\Models\Plugin;
+use App\Support\ExtensionDirectories;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Generate resources/src/common/css/dixlase-tailwind-plugin-sources.css
- * from each enabled plugin's `declares.tailwind_content` paths.
+ * from the plugins' content directories.
  *
- * Themes import the generated file so Tailwind v4 can scan content
- * directories owned by plugins (typically user-editable HTML or
- * Markdown that lives under storage/) without the theme itself having
- * to know which plugins are active.
+ * Themes import the generated file so Tailwind v4 can scan directories
+ * owned by plugins without the theme itself having to know which plugins
+ * exist. Each plugin contributes its `resources/views` directory, when it
+ * has one, and every path it declares under `declares.tailwind_content`
+ * in plugin.json (typically user-editable HTML or Markdown that lives
+ * under storage/).
  *
- * The file is overwritten in place on every regenerate so it always
- * matches the current set of enabled plugins. Disabled / uninstalled
- * plugins drop out automatically.
+ * The set of plugins comes from one of two sources, and they differ on
+ * purpose:
+ *
+ *   - **Enabled** (the default): every plugin the database records as
+ *     enabled. A live site regenerates this way, so classes from code the
+ *     operator has not turned on stay out of its stylesheet.
+ *   - **Disk**: every plugin directory with a plugin.json, read from the
+ *     tree. A build needs this — the CSS it emits has to carry whatever the
+ *     site may enable later, and an extension's CI, the release build or a
+ *     fresh checkout has no database to ask. When the database cannot be
+ *     queried, the enabled mode falls back to this one.
+ *
+ * The file is overwritten in place on every regenerate.
  */
 class PluginSourceAggregator
 {
@@ -62,26 +75,53 @@ class PluginSourceAggregator
      */
     public const OUTPUT_PATH = 'resources/src/common/css/dixlase-tailwind-plugin-sources.css';
 
+    public const MODE_ENABLED = 'enabled';
+
+    public const MODE_DISK = 'disk';
+
     /**
-     * Regenerate the aggregator CSS file from the current set of
-     * enabled plugins. Always writes a valid file (possibly empty
-     * with just the header) so the theme Vite build can succeed
-     * even when no plugin declares Tailwind sources.
-     *
-     * @return array{path: string, plugin_count: int, source_count: int}
+     * A plugin's own view directory, relative to the plugin directory.
      */
-    public function regenerate(): array
+    private const VIEWS_DIRECTORY = 'resources/views';
+
+    /**
+     * @param  string|null  $outputPath  absolute output path; tests pass a
+     *                                   throwaway file, everything else
+     *                                   writes {@see self::OUTPUT_PATH}
+     */
+    public function __construct(private ?string $outputPath = null) {}
+
+    /**
+     * Regenerate the aggregator CSS file. Always writes a valid file
+     * (possibly empty with just the header) so the theme Vite build can
+     * succeed even when no plugin contributes a source.
+     *
+     * @param  bool  $fromDisk  read every plugin on disk instead of the
+     *                          enabled ones
+     * @return array{path: string, mode: string, plugin_count: int, source_count: int}
+     */
+    public function regenerate(bool $fromDisk = false): array
     {
-        $contributions = $this->collectContributions();
+        $mode = self::MODE_DISK;
+        $directories = null;
+
+        if (! $fromDisk) {
+            $directories = $this->enabledDirectories();
+            if ($directories !== null) {
+                $mode = self::MODE_ENABLED;
+            }
+        }
+
+        $contributions = $this->collectContributions($directories ?? $this->diskDirectories());
 
         $sourceCount = 0;
         foreach ($contributions as $entry) {
             $sourceCount += count($entry['paths']);
         }
 
-        $css = $this->buildCss($contributions);
+        $css = $this->buildCss($contributions, $mode);
 
-        $absolutePath = base_path(self::OUTPUT_PATH);
+        $absolutePath = $this->outputPath ?? base_path(self::OUTPUT_PATH);
         File::ensureDirectoryExists(dirname($absolutePath));
 
         // Atomic write — write to a sibling temp file and rename so the
@@ -92,33 +132,89 @@ class PluginSourceAggregator
 
         return [
             'path' => $absolutePath,
+            'mode' => $mode,
             'plugin_count' => count($contributions),
             'source_count' => $sourceCount,
         ];
     }
 
     /**
-     * Walk every enabled plugin, read its plugin.json, and pull the
-     * `declares.tailwind_content` array out of it.
+     * The directories of the enabled plugins, or null when the database
+     * cannot be queried (no database yet, or not migrated).
      *
-     * @return array<int, array{slug: string, directory: string, paths: array<int, string>}>
+     * @return list<string>|null
      */
-    private function collectContributions(): array
+    private function enabledDirectories(): ?array
     {
         // Plugin::scopeEnabled() filters by enabled_at, matching the
         // rest of the codebase. Newly installed-but-not-enabled plugins
         // intentionally do not contribute scan paths — Tailwind would
         // otherwise pick up classes from code paths the user has not
         // turned on.
-        $plugins = Plugin::query()
-            ->enabled()
-            ->orderBy('slug')
-            ->get(['id', 'slug', 'directory']);
+        try {
+            $directories = Plugin::query()
+                ->enabled()
+                ->orderBy('slug')
+                ->pluck('directory')
+                ->all();
+        } catch (\Throwable $e) {
+            Log::info('PluginSourceAggregator: database unavailable, reading plugins from disk', [
+                'error' => $e->getMessage(),
+            ]);
 
+            return null;
+        }
+
+        return array_values(array_filter($directories, 'is_string'));
+    }
+
+    /**
+     * Every plugin directory on disk that carries a plugin.json, by name.
+     *
+     * @return list<string>
+     */
+    private function diskDirectories(): array
+    {
+        $root = ExtensionDirectories::pluginsRoot();
+        if (! File::isDirectory($root)) {
+            return [];
+        }
+
+        $directories = [];
+        foreach (File::directories($root) as $path) {
+            $name = basename($path);
+            if (File::exists($path.'/plugin.json')) {
+                $directories[] = $name;
+            }
+        }
+
+        sort($directories, SORT_STRING);
+
+        return $directories;
+    }
+
+    /**
+     * Read each plugin's plugin.json and collect its scan paths: its view
+     * directory, then its `declares.tailwind_content` entries.
+     *
+     * @param  list<string>  $directories
+     * @return array<int, array{slug: string, paths: array<int, string>}>
+     */
+    private function collectContributions(array $directories): array
+    {
         $contributions = [];
 
-        foreach ($plugins as $plugin) {
-            $pluginJsonPath = base_path("plugins/{$plugin->directory}/plugin.json");
+        foreach ($directories as $directory) {
+            // The name goes into a CSS string and a comment, so only a
+            // plain extension directory name is accepted. A leftover copy
+            // (`Name.bak`) is refused here too.
+            if (! ExtensionDirectories::isInstalledName($directory)
+                || preg_match('/^[A-Za-z0-9_-]+$/', $directory) !== 1) {
+                continue;
+            }
+
+            $pluginPath = ExtensionDirectories::pluginsRoot($directory);
+            $pluginJsonPath = $pluginPath.'/plugin.json';
             if (! File::exists($pluginJsonPath)) {
                 continue;
             }
@@ -127,7 +223,7 @@ class PluginSourceAggregator
                 $data = json_decode(File::get($pluginJsonPath), true);
             } catch (\Throwable $e) {
                 Log::warning('PluginSourceAggregator: failed to read plugin.json', [
-                    'plugin' => $plugin->slug,
+                    'plugin' => $directory,
                     'error' => $e->getMessage(),
                 ]);
 
@@ -138,34 +234,30 @@ class PluginSourceAggregator
                 continue;
             }
 
-            $declared = $data['declares']['tailwind_content'] ?? null;
-            if (! is_array($declared) || empty($declared)) {
-                continue;
-            }
-
             $paths = [];
-            foreach ($declared as $path) {
-                if (! is_string($path) || $path === '') {
-                    continue;
-                }
-                // Normalize to forward slashes and trim leading/trailing
-                // separators so the resulting @source directive is
-                // consistent regardless of how the plugin author wrote
-                // the entry.
-                $normalized = trim(str_replace('\\', '/', $path), '/');
-                if ($normalized === '') {
-                    continue;
-                }
-                $paths[] = $normalized;
+
+            if (File::isDirectory($pluginPath.'/'.self::VIEWS_DIRECTORY)) {
+                $paths[] = $this->projectRelative($pluginPath.'/'.self::VIEWS_DIRECTORY);
             }
 
-            if (empty($paths)) {
+            $declared = $data['declares']['tailwind_content'] ?? null;
+            foreach (is_array($declared) ? $declared : [] as $path) {
+                $normalized = is_string($path) ? $this->normalizeDeclaredPath($path) : null;
+                if ($normalized !== null && ! in_array($normalized, $paths, true)) {
+                    $paths[] = $normalized;
+                }
+            }
+
+            if ($paths === []) {
                 continue;
             }
+
+            $slug = is_string($data['slug'] ?? null) && preg_match('/^[a-z0-9_-]+$/', $data['slug']) === 1
+                ? $data['slug']
+                : $directory;
 
             $contributions[] = [
-                'slug' => $plugin->slug,
-                'directory' => $plugin->directory,
+                'slug' => $slug,
                 'paths' => $paths,
             ];
         }
@@ -174,15 +266,50 @@ class PluginSourceAggregator
     }
 
     /**
+     * A declared path, normalized, or null when it cannot be emitted.
+     *
+     * Paths in plugin.json are written relative to the project root.
+     * Normalize to forward slashes and trim leading/trailing separators so
+     * the resulting @source directive is consistent regardless of how the
+     * plugin author wrote the entry. A path that climbs out of the project
+     * (`..`) or carries a character that would end the CSS string or
+     * comment is dropped.
+     */
+    private function normalizeDeclaredPath(string $path): ?string
+    {
+        $normalized = trim(str_replace('\\', '/', $path), '/');
+
+        if ($normalized === '' || preg_match('/["\'\r\n\x00]|\*\//', $normalized) === 1) {
+            return null;
+        }
+
+        if (in_array('..', explode('/', $normalized), true)) {
+            return null;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * An absolute path inside the project, relative to the project root.
+     * A path outside it (a test's throwaway plugins root) stays absolute.
+     */
+    private function projectRelative(string $absolute): string
+    {
+        $base = rtrim(base_path(), '/').'/';
+
+        return str_starts_with($absolute, $base) ? substr($absolute, strlen($base)) : $absolute;
+    }
+
+    /**
      * Build the final CSS body. Each path becomes a Tailwind v4
      * `@source` directive resolved relative to the output file's
-     * location (resources/src/common/css/), so we prepend `../../../../`
-     * to climb back to the project root before joining the plugin's
-     * declared path.
+     * location (resources/src/common/css/), so a project-relative path
+     * is prefixed with `../../../../` to climb back to the project root.
      *
-     * @param  array<int, array{slug: string, directory: string, paths: array<int, string>}>  $contributions
+     * @param  array<int, array{slug: string, paths: array<int, string>}>  $contributions
      */
-    private function buildCss(array $contributions): string
+    private function buildCss(array $contributions, string $mode): string
     {
         $lines = [];
         $lines[] = '/*';
@@ -191,15 +318,21 @@ class PluginSourceAggregator
         $lines[] = ' * disabled, installed, updated, or uninstalled, or when';
         $lines[] = ' * `php artisan dls:tailwind:regenerate-plugin-sources` runs.';
         $lines[] = ' *';
-        $lines[] = ' * Aggregates @source directives from each enabled plugin\'s';
-        $lines[] = ' * `declares.tailwind_content` array in plugin.json. Themes import';
-        $lines[] = ' * this partial so Tailwind v4 scans plugin-owned content';
+        $lines[] = ' * Aggregates @source directives for each plugin\'s resources/views';
+        $lines[] = ' * and its `declares.tailwind_content` array in plugin.json. Themes';
+        $lines[] = ' * import this partial so Tailwind v4 scans plugin-owned content';
         $lines[] = ' * directories without the theme having to know plugin slugs.';
+        $lines[] = ' *';
+        $lines[] = $mode === self::MODE_ENABLED
+            ? ' * Source: the plugins enabled on this site.'
+            : ' * Source: every plugin on disk, enabled or not (a build).';
         $lines[] = ' */';
         $lines[] = '';
 
         if (empty($contributions)) {
-            $lines[] = '/* No enabled plugin currently declares Tailwind content sources. */';
+            $lines[] = $mode === self::MODE_ENABLED
+                ? '/* No enabled plugin currently contributes Tailwind content sources. */'
+                : '/* No plugin on disk contributes Tailwind content sources. */';
             $lines[] = '';
 
             return implode("\n", $lines);
@@ -208,12 +341,8 @@ class PluginSourceAggregator
         foreach ($contributions as $entry) {
             $lines[] = "/* {$entry['slug']} */";
             foreach ($entry['paths'] as $path) {
-                // Paths in plugin.json are written relative to the
-                // project root (base_path). The aggregator file lives
-                // at resources/src/common/css/, so prefix with
-                // `../../../../` to climb back out before appending the
-                // declared path.
-                $lines[] = "@source \"../../../../{$path}\";";
+                $source = str_starts_with($path, '/') ? $path : '../../../../'.$path;
+                $lines[] = "@source \"{$source}\";";
             }
             $lines[] = '';
         }
