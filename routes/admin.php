@@ -391,25 +391,31 @@ Route::prefix($adminUrl)->name('admin.')
                     ->middleware('check.menu.edit:settings.base.admin')
                     ->middleware('recent_auth')->name('admin.update');
 
-                // Email settings
-                Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])
-                    ->middleware('check.menu.access:settings.base.mail')
-                    ->name('mail');
-                Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
-                    ->middleware('check.menu.edit:settings.base.mail')
-                    ->middleware('recent_auth')->name('mail.update');
-                Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])
-                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
-                    ->name('mail.test-mail');
-                Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])
-                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
-                    ->name('mail.test-connection');
-                Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])
-                    ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
-                    ->name('mail.clear-test-session');
-                Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])
-                    ->middleware('check.menu.access:settings.base.mail')
-                    ->name('mail.check-test-session');
+                // Email settings. Super admin only, on top of the menu permission (#929):
+                // the configuration is site-wide and carries every account's mail,
+                // two-factor codes included, while the menu permission can be
+                // lowered on the role permission screen. The two links below the
+                // group are opened from the test mail and carry their own token.
+                Route::middleware('role:super_admin')->group(function () {
+                    Route::get('/mail', [Base\AdminBaseMailController::class, 'index'])
+                        ->middleware('check.menu.access:settings.base.mail')
+                        ->name('mail');
+                    Route::post('/mail', [Base\AdminBaseMailController::class, 'update'])
+                        ->middleware('check.menu.edit:settings.base.mail')
+                        ->middleware('recent_auth')->name('mail.update');
+                    Route::post('/mail/test-mail', [Base\AdminBaseMailController::class, 'testMail'])
+                        ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
+                        ->name('mail.test-mail');
+                    Route::post('/mail/test-connection', [Base\AdminBaseMailController::class, 'testConnection'])
+                        ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
+                        ->name('mail.test-connection');
+                    Route::post('/mail/clear-test-session', [Base\AdminBaseMailController::class, 'clearTestSession'])
+                        ->middleware(['check.menu.access:settings.base.mail', 'check.menu.edit:settings.base.mail'])
+                        ->name('mail.clear-test-session');
+                    Route::get('/mail/check-test-session', [Base\AdminBaseMailController::class, 'checkTestSession'])
+                        ->middleware('check.menu.access:settings.base.mail')
+                        ->name('mail.check-test-session');
+                });
                 Route::get('/mail/verify-mail/{token}', [Base\AdminBaseMailController::class, 'verifyMail'])->name('mail.verify-mail');
                 Route::get('/mail/mail-verification-success', [Base\AdminBaseMailController::class, 'mailVerificationSuccess'])->name('mail.mail-verification-success');
 
