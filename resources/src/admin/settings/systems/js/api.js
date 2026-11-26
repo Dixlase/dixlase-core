@@ -30,73 +30,68 @@ Alpine.data('apiSettings', () => {
         apiEnabled: config.apiEnabled || '0',
         showCreateModal: false,
         showViewModal: false,
-        keyDetails: '',
+        // The key whose details modal is open. The modal binds each value
+        // with x-text, because the strict Alpine build refuses x-html.
+        selectedKey: null,
 
         viewKey(id) {
             const keys = config.apiKeys || [];
             const key = keys.find(k => k.id === id);
             if (!key) return;
 
+            this.selectedKey = key;
+            window.openModal('viewKeyModal');
+        },
+
+        keyField(name) {
+            const value = this.selectedKey ? this.selectedKey[name] : null;
+            return value === null || value === undefined ? '' : String(value);
+        },
+
+        isLiveKey() {
+            return this.keyField('environment') === 'live';
+        },
+
+        keyPrefixLabel() {
+            return this.keyField('key_prefix') + '********...';
+        },
+
+        keyRateLimitLabel() {
             const t = config.translations || {};
+            const limit = this.selectedKey ? this.selectedKey.rate_limit : null;
+            return limit ? limit + ' ' + (t.requests_per_minute || '') : (t.unlimited || '');
+        },
 
-            let scopesHtml = '';
-            if (key.scopes && key.scopes.length > 0) {
-                scopesHtml = key.scopes.map(s => `<span class="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded mr-1 mb-1">${s}</span>`).join('');
-            } else {
-                scopesHtml = `<span class="text-gray-400">${t.no_scopes || ''}</span>`;
-            }
+        keyExpiresLabel() {
+            const t = config.translations || {};
+            const expires = this.keyField('expires_at');
+            return expires ? new Date(expires).toLocaleDateString() : (t.no_expiry || '');
+        },
 
-            let allowedIpsHtml = '';
-            if (key.allowed_ips && key.allowed_ips.length > 0) {
-                allowedIpsHtml = key.allowed_ips.join(', ');
-            } else {
-                allowedIpsHtml = `<span class="text-gray-400">${t.all_ips_allowed || ''}</span>`;
-            }
+        keyUsageLabel() {
+            const count = this.selectedKey ? this.selectedKey.usage_count : 0;
+            return Number(count || 0).toLocaleString();
+        },
 
-            this.keyDetails = `
-                <div class="grid grid-cols-2 gap-2 text-sm">
-                    <div class="text-gray-500 dark:text-gray-400">${t.key_name || ''}</div>
-                    <div class="font-medium">${key.name}</div>
+        keyCreatedLabel() {
+            const created = this.keyField('created_at');
+            return created ? new Date(created).toLocaleString() : '';
+        },
 
-                    <div class="text-gray-500 dark:text-gray-400">${t.environment || ''}</div>
-                    <div>${key.environment === 'live' ? '<span class="text-green-600">Live</span>' : '<span class="text-orange-600">Test</span>'}</div>
+        keyScopes() {
+            return (this.selectedKey && this.selectedKey.scopes) || [];
+        },
 
-                    <div class="text-gray-500 dark:text-gray-400">${t.key_prefix || ''}</div>
-                    <div><code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">${key.key_prefix}********...</code></div>
+        keyAllowedIps() {
+            const ips = (this.selectedKey && this.selectedKey.allowed_ips) || [];
+            return ips.join(', ');
+        },
 
-                    <div class="text-gray-500 dark:text-gray-400">${t.rate_limit || ''}</div>
-                    <div>${key.rate_limit ? key.rate_limit + ' ' + (t.requests_per_minute || '') : (t.unlimited || '')}</div>
-
-                    <div class="text-gray-500 dark:text-gray-400">${t.expires_at || ''}</div>
-                    <div>${key.expires_at ? new Date(key.expires_at).toLocaleDateString() : (t.no_expiry || '')}</div>
-
-                    <div class="text-gray-500 dark:text-gray-400">${t.usage_count || ''}</div>
-                    <div>${key.usage_count.toLocaleString()}</div>
-
-                    <div class="text-gray-500 dark:text-gray-400">${t.created_at || ''}</div>
-                    <div>${new Date(key.created_at).toLocaleString()}</div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">${t.scopes || ''}</div>
-                    <div>${scopesHtml}</div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">${t.allowed_ips || ''}</div>
-                    <div class="text-sm">${allowedIpsHtml}</div>
-                </div>
-
-                ${key.description ? `
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">${t.key_description || ''}</div>
-                    <div class="text-sm">${key.description}</div>
-                </div>
-                ` : ''}
-            `;
-
-            openModal('viewKeyModal');
-        }
+        // The copy button of the one-time key notice. A bare name in a
+        // directive is looked up only in Alpine's scope in the strict build.
+        copyToClipboard(elementId) {
+            window.copyToClipboard(elementId);
+        },
     };
 });
 
